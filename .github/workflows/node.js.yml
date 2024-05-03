@@ -1,0 +1,21 @@
+name: Build Package CI
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  publish-gpr:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 21.7.1
+        registry-url: https://npm.pkg.github.com/
+        scope: '@btc-vision'
+    - run: npm install
+    - run: npm run build
+    - run: npm publish
+    env:
+      NODE_AUTH_TOKEN: ${{secrets.BuildToken}}
+      NPM_TOKEN: ${{secrets.NpmToken}}

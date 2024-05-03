@@ -1,0 +1,67 @@
+{
+    "type": "module",
+    "version": "1.0.0",
+    "author": "BlobMaster41",
+    "description": "The perfect library for building Bitcoin based applications.",
+    "engines": {
+        "node": ">=16.0.0"
+    },
+    "exports": {
+        ".": {
+            "import": "./build/index.js",
+            "require": "./cjs/index.js",
+            "types": "./src/index.ts"
+        }
+    },
+    "homepage": "https://opnet.org",
+    "keywords": [
+        "bitcoin",
+        "opnet",
+        "btc"
+    ],
+    "license": "MIT",
+    "main": "build/index.js",
+    "types": "build/index.d.ts",
+    "typings": "build/index.d.ts",
+    "module": "build/index.js",
+    "name": "opnet",
+    "publishConfig": {
+        "access": "public",
+        "tag": "latest"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/bsi-vision/opnet.git"
+    },
+    "scripts": {
+        "watch": "gulp watch",
+        "start": "cd build && node index",
+        "build": "gulp",
+        "test": "jest --runInBand",
+        "setup": "npm npm i && npm run build",
+        "install": "gulp && gulp cjs"
+    },
+    "devDependencies": {
+        "@babel/preset-env": "^7.24.3",
+        "@types/node": "^20.11.30",
+        "eslint": "^8.57.0",
+        "jest": "^29.7.0",
+        "prettier": "^3.2.5",
+        "typescript": "^5.4.3",
+        "typescript-eslint": "^7.4.0"
+    },
+    "dependencies": {
+        "@jest/types": "^29.6.3",
+        "@types/jest": "^29.5.12",
+        "babel-plugin-transform-import-meta": "^2.2.1",
+        "bitcoinjs-lib": "^6.1.5",
+        "gulp": "^4.0.2",
+        "gulp-cached": "^1.1.1",
+        "gulp-logger": "^0.0.2",
+        "gulp-typescript": "^6.0.0-alpha.1",
+        "tiny-secp256k1": "^2.2.3",
+        "ts-jest": "^29.1.2",
+        "ts-node": "^10.9.2"
+    },
+    "sideEffects": false
+}
