@@ -1,6 +1,6 @@
 {
     "type": "module",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "author": "BlobMaster41",
     "description": "The perfect library for building Bitcoin based applications.",
     "engines": {
@@ -52,8 +52,8 @@
         "typescript-eslint": "^7.4.0"
     },
     "dependencies": {
-        "@btc-vision/bsi-binary": "^1.0.6",
-        "@btc-vision/bsi-bitcoin-rpc": "^1.0.8",
+        "@btc-vision/bsi-binary": "github:btc-vision/bsi-binary",
+        "@btc-vision/bsi-bitcoin-rpc": "github:btc-vision/bsi-bitcoin-rpc",
         "@jest/types": "^29.6.3",
         "@types/jest": "^29.5.12",
         "babel-plugin-transform-import-meta": "^2.2.1",
