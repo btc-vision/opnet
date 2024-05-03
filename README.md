@@ -46,14 +46,13 @@ npm i opnet
 
 ## Usage
 
-Refer to the `docs/` directory for detailed guides on how to use the BSI Transaction Builder. Start
+Refer to the `docs/` directory for detailed guides on how to use OPNet. Start
 with `getting_started.md` and explore `api_reference.md` for comprehensive information about the functions available.
 
 ## Contribution
 
 Contributions are welcome! Please read through the `CONTRIBUTING.md` file for guidelines on how to submit issues,
-feature requests, and pull requests. We appreciate your input and encourage you to help us improve the BSI Transaction
-Builder.
+feature requests, and pull requests. We appreciate your input and encourage you to help us improve OPNet.
 
 ## License
 
