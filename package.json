@@ -1,20 +1,20 @@
 {
     "type": "module",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "author": "BlobMaster41",
     "description": "The perfect library for building Bitcoin based applications.",
     "engines": {
         "node": ">=16.0.0"
     },
     "exports": {
-        ".": {
+        "node": {
             "import": "./build/index.js",
             "require": "./cjs/index.js",
-            "types": "./src/index.ts",
-            "browser": {
-                "types": "./browser/index.d.ts",
-                "default": "./browser/index.js"
-            }
+            "types": "./src/index.ts"
+        },
+        "browser": {
+            "types": "./browser/index.d.ts",
+            "default": "./browser/index.js"
         }
     },
     "homepage": "https://opnet.org",
