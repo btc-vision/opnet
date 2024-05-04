@@ -10,3 +10,7 @@ export * from './providers/JSONRpcProvider.js';
 
 export * from './block/Block.js';
 export * from './interfaces/blocks/IBlock.js';
+
+export default {
+    version: '0.0.1',
+};

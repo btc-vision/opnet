@@ -10,6 +10,6 @@ export * from './providers/JSONRpcProvider.js';
 export * from './block/Block.js';
 export * from './interfaces/blocks/IBlock.js';
 declare const _default: {
-    test: string;
+    version: string;
 };
 export default _default;
