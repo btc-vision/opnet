@@ -25,7 +25,10 @@
     "keywords": [
         "bitcoin",
         "opnet",
-        "btc"
+        "btc",
+        "bitcoin smart contracts",
+        "smart inscriptions",
+        "bsi"
     ],
     "license": "MIT",
     "main": "build/index.js",
