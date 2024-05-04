@@ -12,5 +12,5 @@ export * from './block/Block.js';
 export * from './interfaces/blocks/IBlock.js';
 
 export default {
-    test: 'test',
+    version: '0.0.1',
 };
