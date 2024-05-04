@@ -9,7 +9,6 @@ export default {
         libraryTarget: 'this',
         path: import.meta.dirname + '/browser',
     },
-    devtool: 'source-map',
     resolve: {
         extensionAlias: {
             '.js': ['.js', '.ts'],
@@ -23,7 +22,7 @@ export default {
     module: {
         rules: [
             {
-                test: /\.ts?$/,
+                test: /\.([cm]?ts|tsx)$/,
                 exclude: [/node_modules/],
                 loader: 'ts-loader',
                 resolve: {

@@ -44,7 +44,7 @@
         "test": "jest --runInBand",
         "setup": "npm npm i && npm run build",
         "browserBuild": "webpack --mode production",
-        "install": "gulp && gulp cjs && npm run browserBuild"
+        "install": "gulp && gulp cjs"
     },
     "devDependencies": {
         "@types/node": "^20.11.30",
