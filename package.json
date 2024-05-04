@@ -10,7 +10,11 @@
         ".": {
             "import": "./build/index.js",
             "require": "./cjs/index.js",
-            "types": "./src/index.ts"
+            "types": "./src/index.ts",
+            "browser": {
+                "types": "./browser/index.d.ts",
+                "default": "./browser/index.js"
+            }
         }
     },
     "homepage": "https://opnet.org",
@@ -39,10 +43,9 @@
         "build": "gulp",
         "test": "jest --runInBand",
         "setup": "npm npm i && npm run build",
-        "install": "gulp && gulp cjs"
+        "install": "gulp && gulp cjs && webpack --mode production"
     },
     "devDependencies": {
-        "@babel/preset-env": "^7.24.3",
         "@types/node": "^20.11.30",
         "@types/ws": "^8.5.10",
         "eslint": "^8.57.0",
@@ -58,6 +61,7 @@
         "@types/jest": "^29.5.12",
         "babel-plugin-transform-import-meta": "^2.2.1",
         "bitcoinjs-lib": "^6.1.5",
+        "buffer": "^6.0.3",
         "ethers": "^6.12.1",
         "gulp": "^4.0.2",
         "gulp-cached": "^1.1.1",
@@ -65,7 +69,9 @@
         "gulp-typescript": "^6.0.0-alpha.1",
         "tiny-secp256k1": "^2.2.3",
         "ts-jest": "^29.1.2",
-        "ts-node": "^10.9.2"
+        "ts-loader": "^9.5.1",
+        "ts-node": "^10.9.2",
+        "webpack": "^5.91.0"
     },
     "sideEffects": false
 }

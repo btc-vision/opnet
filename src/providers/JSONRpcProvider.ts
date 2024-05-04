@@ -1,5 +1,4 @@
-import { JsonRpcPayload, JsonRpcProvider, JsonRpcResult } from 'ethers';
-import type { BlockTag } from 'ethers/src.ts/providers/provider.js';
+import { BlockTag, JsonRpcPayload, JsonRpcProvider, JsonRpcResult } from 'ethers';
 import { Block } from '../block/Block.js';
 import { IBlock } from '../interfaces/blocks/IBlock.js';
 
@@ -44,7 +43,7 @@ export class JSONRpcProvider {
             blockNumber,
             prefetchTxs,
         ]);
-        
+
         const blockData: JsonRpcResult[] = await this.provider._send(payload);
         const block = blockData.shift();
 
