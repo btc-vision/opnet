@@ -7,10 +7,9 @@ export * from './transactions/Transaction.js';
 export * from './transactions/TransactionInput.js';
 export * from './transactions/TransactionOutput.js';
 export * from './providers/JSONRpcProvider.js';
-
 export * from './block/Block.js';
 export * from './interfaces/blocks/IBlock.js';
-
-export default {
-    test: 'test',
+declare const _default: {
+    test: string;
 };
+export default _default;

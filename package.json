@@ -1,6 +1,6 @@
 {
     "type": "module",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "author": "BlobMaster41",
     "description": "The perfect library for building Bitcoin based applications.",
     "engines": {
@@ -13,9 +13,12 @@
             "types": "./src/index.ts"
         },
         "browser": {
-            "types": "./browser/index.d.ts",
-            "default": "./browser/index.js"
+            "default": "./browser/index.js",
+            "types": "./browser/index.d.ts"
         }
+    },
+    "browser": {
+        "Buffer": "buffer"
     },
     "homepage": "https://opnet.org",
     "keywords": [
@@ -71,17 +74,21 @@
         "@types/jest": "^29.5.12",
         "babel-loader": "^9.1.3",
         "babel-plugin-transform-import-meta": "^2.2.1",
+        "babelify": "^10.0.0",
         "bitcoinjs-lib": "^6.1.5",
+        "browserify": "^17.0.0",
         "buffer": "^6.0.3",
         "ethers": "^6.12.1",
         "gulp": "^4.0.2",
         "gulp-cached": "^1.1.1",
         "gulp-logger": "^0.0.2",
+        "gulp-plumber": "^1.2.1",
         "gulp-typescript": "^6.0.0-alpha.1",
         "tiny-secp256k1": "^2.2.3",
         "ts-jest": "^29.1.2",
         "ts-loader": "^9.5.1",
         "ts-node": "^10.9.2",
+        "vinyl-source-stream": "^2.0.0",
         "wrapper-webpack-plugin": "^2.2.2"
     }
 }

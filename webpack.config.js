@@ -1,5 +1,4 @@
 import webpack from 'webpack';
-import WrapperPlugin from 'wrapper-webpack-plugin';
 
 export default {
     mode: 'production',
@@ -8,11 +7,13 @@ export default {
     output: {
         filename: 'index.js',
         path: import.meta.dirname + '/browser',
-        libraryTarget: 'commonjs2',
+        libraryTarget: 'module',
     },
-    target: ['web', 'es6'],
     node: {
         __dirname: false,
+    },
+    experiments: {
+        outputModule: true,
     },
     resolve: {
         extensionAlias: {
@@ -53,7 +54,7 @@ export default {
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
         }),
-        new WrapperPlugin({
+        /*new WrapperPlugin({
             test: /\.js$/,
             header: (
                 '(function umdWrapper(root, factory) {' +
@@ -69,6 +70,6 @@ export default {
                 'return '
             ).replace(/NAME/g, 'opnet'), // this is the name of the lib
             footer: '\n})',
-        }),
+        }),*/
     ],
 };

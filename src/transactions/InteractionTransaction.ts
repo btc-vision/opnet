@@ -1,4 +1,5 @@
 import { NetEvent } from '@btc-vision/bsi-binary';
+import { Buffer } from 'buffer';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IInteractionTransaction } from '../interfaces/transactions/ITransaction.js';
 import { TransactionBase } from './Transaction.js';
