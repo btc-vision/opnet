@@ -1,6 +1,6 @@
 {
     "type": "module",
-    "version": "1.0.10",
+    "version": "1.0.11",
     "author": "BlobMaster41",
     "description": "The perfect library for building Bitcoin based applications.",
     "engines": {
@@ -13,7 +13,8 @@
             "types": "./src/index.ts"
         },
         "browser": {
-            "default": "./browser/index.js",
+            "import": "./browser/index.js",
+            "require": "./browser/index.js",
             "types": "./browser/index.d.ts"
         }
     },
