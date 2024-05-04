@@ -3,6 +3,7 @@ import webpack from 'webpack';
 export default {
     mode: 'production',
     entry: './src/index.ts',
+    watch: false,
     output: {
         filename: 'index.js',
         libraryTarget: 'this',
