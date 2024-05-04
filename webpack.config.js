@@ -54,22 +54,5 @@ export default {
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
         }),
-        /*new WrapperPlugin({
-            test: /\.js$/,
-            header: (
-                '(function umdWrapper(root, factory) {' +
-                '  if(typeof exports === "object" && typeof module === "object")' +
-                '    module.exports = factory().default;' +
-                '  else if(typeof define === "function" && define.amd)' +
-                '    define("NAME", [], function() { return factory().default; });' +
-                '  else if(typeof exports === "object")' +
-                '    exports["NAME"] = factory().default;' +
-                '  else' +
-                '    root["NAME"] = factory().default;' +
-                '})(this, function() {' +
-                'return '
-            ).replace(/NAME/g, 'opnet'), // this is the name of the lib
-            footer: '\n})',
-        }),*/
     ],
 };

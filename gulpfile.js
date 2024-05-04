@@ -2,13 +2,10 @@ process.on('uncaughtException', function (err) {
     console.log('Caught exception: ', err);
 });
 
-import browserify from 'browserify';
 import gulp from 'gulp';
 import gulpcache from 'gulp-cached';
 import logger from 'gulp-logger';
-import plumber from 'gulp-plumber';
 import ts from 'gulp-typescript';
-import source from 'vinyl-source-stream';
 
 const tsProject = ts.createProject('tsconfig.json');
 const tsProjectCJS = ts.createProject('tsconfig.cjs.json');
@@ -56,7 +53,6 @@ async function buildCJS() {
             .on('error', onError)
             .pipe(gulp.dest('cjs'))
             .on('end', async () => {
-                //minimalExample(resolve);
                 resolve();
             });
     });
@@ -112,19 +108,6 @@ gulp.task('default', async () => {
 
     return true;
 });
-
-function minimalExample(done) {
-    return browserify({
-        entries: ['./cjs/index.js'],
-        standalone: 'opnet',
-    })
-        .transform('babelify')
-        .bundle()
-        .on('error', console.error)
-        .pipe(source('minimalExample.js'))
-        .pipe(plumber())
-        .pipe(gulp.dest('./browser'));
-}
 
 gulp.task('cjs', async () => {
     await buildCJS().catch((e) => {});
