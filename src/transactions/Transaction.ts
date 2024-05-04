@@ -26,7 +26,7 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
 
         this.index = transaction.index;
 
-        this.burnedBitcoin = transaction.burnedBitcoin;
+        this.burnedBitcoin = BigInt(transaction.burnedBitcoin) || 0n;
 
         this.inputs = transaction.inputs.map((input) => new TransactionInput(input));
         this.outputs = transaction.outputs.map(

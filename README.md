@@ -11,10 +11,12 @@
 
 ## Introduction
 
-A complete, compact and simple library for the Bitcoin ecosystem, written in TypeScript. This library is designed to be
-easy to use and understand, while providing a comprehensive set of functions for creating, reading and manipulating
-Bitcoin transactions. This library is designed to be able to manipulate anything related to BSI (Bitcoin Smart
-Inscription), smart contracts, and other Bitcoin-related technologies.
+A complete, compact and simple library for the Bitcoin ecosystem, written in
+TypeScript. This library is designed to be easy to use and understand, while
+providing a comprehensive set of functions for creating, reading and
+manipulating Bitcoin transactions. This library is designed to be able to
+manipulate anything related to BSI (Bitcoin Smart Inscription), smart contracts,
+and other Bitcoin-related technologies.
 
 ## Getting Started
 
@@ -37,7 +39,7 @@ npm i opnet
    ```
 2. Navigate to the repository directory:
    ```bash
-   cd bsi-binary
+   cd opnet
    ```
 3. Install the required dependencies:
    ```bash
@@ -47,14 +49,17 @@ npm i opnet
 ## Usage
 
 Refer to the `docs/` directory for detailed guides on how to use OPNet. Start
-with `getting_started.md` and explore `api_reference.md` for comprehensive information about the functions available.
+with `getting_started.md` and explore `api_reference.md` for comprehensive
+information about the functions available.
 
 ## Contribution
 
-Contributions are welcome! Please read through the `CONTRIBUTING.md` file for guidelines on how to submit issues,
-feature requests, and pull requests. We appreciate your input and encourage you to help us improve OPNet.
+Contributions are welcome! Please read through the `CONTRIBUTING.md` file for
+guidelines on how to submit issues, feature requests, and pull requests. We
+appreciate your input and encourage you to help us improve OPNet.
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE). If you have any suggestions or
-contributions, please feel free to submit a pull request.
+This project is open source and available under the [MIT License](LICENSE). If
+you have any suggestions or contributions, please feel free to submit a pull
+request.
