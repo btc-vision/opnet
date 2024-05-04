@@ -29,7 +29,15 @@
         "moduleResolution": "node",
         "allowJs": true,
         "incremental": true,
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true
     },
-    "include": ["src/**/*.ts", "src/*", "src/**/*.js", "src/*.ts", "src/*.js", "src/*.cjs"]
+    "include": [
+        "src/**/*.ts",
+        "src/*",
+        "src/**/*.js",
+        "src/*.ts",
+        "src/*.js",
+        "src/*.cjs"
+    ]
 }
