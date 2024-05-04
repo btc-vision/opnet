@@ -1,20 +1,25 @@
 import webpack from 'webpack';
 
 export default {
-    mode: 'production',
+    //mode: 'production',
+    mode: 'development',
     entry: './src/index.ts',
     watch: false,
     output: {
         filename: 'index.js',
-        libraryTarget: 'this',
+        libraryTarget: 'commonjs',
         path: import.meta.dirname + '/browser',
+    },
+    target: 'web',
+    node: {
+        __dirname: false,
     },
     resolve: {
         extensionAlias: {
             '.js': ['.js', '.ts'],
         },
         modules: ['.', 'node_modules'],
-        extensions: ['.js', '.webpack.js', '.web.js', '.d.ts', '.ts', '.tsx'],
+        extensions: ['*', '.js', '.jsx', '.tsx', '.ts'],
         fallback: {
             buffer: import.meta.resolve('buffer/'),
         },
@@ -22,14 +27,11 @@ export default {
     module: {
         rules: [
             {
-                test: /\.([cm]?ts|tsx)$/,
-                exclude: [/node_modules/],
-                loader: 'ts-loader',
+                test: /\.(js|jsx|tsx|ts)$/,
+                exclude: /node_modules/,
+                loader: 'babel-loader',
                 resolve: {
                     fullySpecified: false,
-                },
-                options: {
-                    configFile: 'tsconfig.webpack.json',
                 },
             },
         ],
