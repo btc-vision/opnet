@@ -10,7 +10,3 @@ export * from './providers/JSONRpcProvider.js';
 
 export * from './block/Block.js';
 export * from './interfaces/blocks/IBlock.js';
-
-export default {
-    test: 'test',
-};
