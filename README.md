@@ -22,7 +22,7 @@ and other Bitcoin-related technologies.
 
 ### Prerequisites
 
-- Node.js version 20.x or higher
+- Node.js version 16.x or higher
 - npm (Node Package Manager)
 
 ### Installation
@@ -33,8 +33,7 @@ npm i opnet
 
 ### Documentation
 
-Documentation available
-at [https://dev.opnet.org/index.html](https://dev.opnet.org/index.html) or in
+Documentation available at [https://dev.opnet.org](https://dev.opnet.org) or in
 the `docs/` directory of the repository.
 
 #### Development

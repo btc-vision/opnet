@@ -1,6 +1,6 @@
 {
     "type": "module",
-    "version": "1.0.13",
+    "version": "1.0.14",
     "author": "BlobMaster41",
     "description": "The perfect library for building Bitcoin based applications.",
     "engines": {
@@ -44,7 +44,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git://github.com/bsi-vision/opnet.git"
+        "url": "git://github.com/btc-vision/opnet.git"
     },
     "scripts": {
         "watch": "gulp watch",
@@ -99,7 +99,6 @@
         "gulp-cached": "^1.1.1",
         "gulp-logger": "^0.0.2",
         "gulp-typescript": "^6.0.0-alpha.1",
-        "node-polyfill-webpack-plugin": "^3.0.0",
         "tiny-secp256k1": "^2.2.3",
         "ts-jest": "^29.1.2",
         "ts-loader": "^9.5.1",
