@@ -1,9 +1,9 @@
 /// <reference types="node" />
 import { NetEvent } from '@btc-vision/bsi-binary';
 import { BigNumberish } from 'ethers';
-import { ITransactionInput, TransactionInput } from '../../transactions/TransactionInput.js';
-import { ITransactionOutput, TransactionOutput } from '../../transactions/TransactionOutput.js';
-import { OPNetTransactionTypes } from '../opnet/OPNetTransactionTypes.js';
+import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTypes.js';
+import { ITransactionInput, TransactionInput } from '../TransactionInput.js';
+import { ITransactionOutput, TransactionOutput } from '../TransactionOutput.js';
 export interface ITransactionBase<T extends OPNetTransactionTypes> {
     readonly id: string;
     readonly hash: string;
@@ -17,6 +17,14 @@ export interface ITransactionBase<T extends OPNetTransactionTypes> {
 export interface IGenericTransaction extends ITransactionBase<OPNetTransactionTypes.Generic> {
 }
 export interface IDeploymentTransaction extends ITransactionBase<OPNetTransactionTypes.Deployment> {
+    readonly contractAddress: string;
+    readonly virtualAddress: string;
+    readonly bytecode: Buffer | string;
+    readonly wasCompressed: boolean;
+    readonly deployerPubKey: Buffer | string;
+    readonly deployerAddress: string;
+    readonly contractSeed: Buffer | string;
+    readonly contractSaltHash: Buffer | string;
 }
 export interface IInteractionTransaction extends ITransactionBase<OPNetTransactionTypes.Interaction> {
     readonly calldata: string | Buffer;

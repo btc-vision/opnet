@@ -1,16 +1,8 @@
 import { BigNumberish } from 'ethers';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
-
-import { DeploymentTransaction } from '../transactions/DeploymentTransaction.js';
-import { GenericTransaction } from '../transactions/GenericTransaction.js';
-import { InteractionTransaction } from '../transactions/InteractionTransaction.js';
-import {
-    IDeploymentTransaction,
-    IGenericTransaction,
-    IInteractionTransaction,
-    ITransaction,
-} from '../transactions/interfaces/ITransaction.js';
+import { ITransaction } from '../transactions/interfaces/ITransaction.js';
 import { TransactionBase } from '../transactions/Transaction.js';
+import { TransactionParser } from '../transactions/TransactionParser.js';
 import { BlockHeaderChecksumProof, IBlock } from './interfaces/IBlock.js';
 
 export class Block implements IBlock {
@@ -67,39 +59,8 @@ export class Block implements IBlock {
 
         this.checksumProofs = block.checksumProofs;
 
-        this.transactions = this.getTransactions(block.transactions as ITransaction[]);
-    }
-
-    private getTransactions(
-        transactions: ITransaction[],
-    ): TransactionBase<OPNetTransactionTypes>[] {
-        if (!transactions) {
-            return [];
-        }
-
-        const transactionArray: TransactionBase<OPNetTransactionTypes>[] = [];
-        for (let transaction of transactions) {
-            switch (transaction.OPNetType) {
-                case OPNetTransactionTypes.Generic:
-                    transactionArray.push(
-                        new GenericTransaction(transaction as IGenericTransaction),
-                    );
-                    break;
-                case OPNetTransactionTypes.Interaction:
-                    transactionArray.push(
-                        new InteractionTransaction(transaction as IInteractionTransaction),
-                    );
-                    break;
-                case OPNetTransactionTypes.Deployment:
-                    transactionArray.push(
-                        new DeploymentTransaction(transaction as IDeploymentTransaction),
-                    );
-                    break;
-                default:
-                    throw new Error('Unknown transaction type');
-            }
-        }
-
-        return transactionArray;
+        this.transactions = TransactionParser.parseTransactions(
+            block.transactions as ITransaction[],
+        );
     }
 }

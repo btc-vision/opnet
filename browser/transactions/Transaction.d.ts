@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { BigNumberish } from 'ethers';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
-import { ITransactionBase } from '../interfaces/transactions/ITransaction.js';
+import { ITransactionBase } from './interfaces/ITransaction.js';
 import { TransactionInput } from './TransactionInput.js';
 import { TransactionOutput } from './TransactionOutput.js';
 export declare abstract class TransactionBase<T extends OPNetTransactionTypes> implements ITransactionBase<T> {

@@ -1,12 +1,8 @@
-import { BlockTag } from 'ethers';
-import { Block } from '../block/Block.js';
-export declare class JSONRpcProvider {
-    private readonly provider;
+import { JsonRpcProvider } from 'ethers';
+import { AbstractRpcProvider } from './AbstractRpcProvider.js';
+export declare class JSONRpcProvider extends AbstractRpcProvider {
     private readonly url;
-    private nextId;
+    protected readonly provider: JsonRpcProvider;
     constructor(url: string);
-    private providerUrl;
-    getBlockNumber(): Promise<number>;
-    getBlock(blockNumber: BlockTag | string, prefetchTxs?: boolean): Promise<Block>;
-    private buildJsonRpcPayload;
+    protected providerUrl(url: string): string;
 }

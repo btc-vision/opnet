@@ -1,7 +1,7 @@
 import { BigNumberish } from 'ethers';
-import { BlockHeaderChecksumProof, IBlock } from '../interfaces/blocks/IBlock.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { TransactionBase } from '../transactions/Transaction.js';
+import { BlockHeaderChecksumProof, IBlock } from './interfaces/IBlock.js';
 export declare class Block implements IBlock {
     readonly height: BigNumberish;
     readonly hash: string;
@@ -21,7 +21,6 @@ export declare class Block implements IBlock {
     readonly storageRoot: string;
     readonly receiptRoot: string;
     readonly checksumProofs: BlockHeaderChecksumProof;
-    readonly transactions?: TransactionBase<OPNetTransactionTypes>[];
+    readonly transactions: TransactionBase<OPNetTransactionTypes>[];
     constructor(block: IBlock);
-    private getTransactions;
 }
