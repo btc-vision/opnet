@@ -2,7 +2,7 @@ import { JSONRpcProvider } from '../providers/JSONRpcProvider.js';
 
 const provider: JSONRpcProvider = new JSONRpcProvider('https://testnet.opnet.org');
 
-/*
+(async () => {
     const blockNumber = await provider.getBlockNumber();
     console.log('Current network height:', blockNumber);
 
@@ -25,9 +25,7 @@ const provider: JSONRpcProvider = new JSONRpcProvider('https://testnet.opnet.org
         '63e77ba9fa4262b3d4d0d9d97fa8a7359534606c3f3af096284662e3f619f374',
     );
     console.log('Receipt:', receipt);
-*/
 
-(async () => {
     const net = await provider.getNetwork();
     console.log(net);
 

@@ -1,5 +1,4 @@
-import { NetEvent } from '@btc-vision/bsi-binary';
-import { BufferReader } from 'bitcoinjs-lib/src/bufferutils.js';
+import { BinaryReader, NetEvent } from '@btc-vision/bsi-binary';
 import { IAccessList } from './IAccessList.js';
 
 export interface ICallRequestError {
@@ -7,7 +6,7 @@ export interface ICallRequestError {
 }
 
 export interface ICallResultData {
-    readonly result: string | BufferReader;
+    readonly result: string | BinaryReader;
     readonly events: NetEvent[];
     readonly accessList: IAccessList;
 }
