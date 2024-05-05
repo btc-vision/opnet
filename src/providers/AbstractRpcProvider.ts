@@ -296,7 +296,7 @@ export abstract class AbstractRpcProvider {
 
         const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_call', params);
         const rawCall: JsonRpcResult = await this.callPayloadSingle(payload);
-        
+
         const result: ICallResult = rawCall.result;
         if ('error' in result) {
             return result;

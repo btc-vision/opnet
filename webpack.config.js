@@ -1,8 +1,7 @@
 import webpack from 'webpack';
 
 export default {
-    //mode: 'production',
-    mode: 'development',
+    mode: 'production',
     entry: './src/index.ts',
     watch: false,
     output: {
@@ -28,7 +27,7 @@ export default {
             buffer: import.meta.resolve('buffer/'),
 
             assert: import.meta.resolve('assert/'),
-            crypto: import.meta.resolve('crypto/'),
+            crypto: import.meta.resolve('./src/crypto/crypto-browser.js'),
             http: import.meta.resolve('stream-http/'),
             https: import.meta.resolve('https-browserify/'),
             os: import.meta.resolve('os-browserify/browser/'),
@@ -65,7 +64,6 @@ export default {
     plugins: [
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
-            crypto: 'crypto',
             process: 'process/browser',
             stream: 'stream-browserify',
         }),
