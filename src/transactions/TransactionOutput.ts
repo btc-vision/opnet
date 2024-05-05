@@ -4,7 +4,6 @@ import { script } from 'bitcoinjs-lib';
 /**
  * Transaction output interface
  * @category ITransactions
- * @interface ITransactionOutput
  */
 export interface ITransactionOutput {
     readonly index: number;
