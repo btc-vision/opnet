@@ -10,8 +10,9 @@ import {
     JsonRpcPayload,
     JsonRpcResult,
 } from 'ethers';
+import { IUTXO } from '../bitcoin/interfaces/IUTXO.js';
 
-import { IUTXO, UTXO } from '../bitcoin/UTXOs.js';
+import { UTXO, UTXOs } from '../bitcoin/UTXOs.js';
 import { Block } from '../block/Block.js';
 import { IBlock } from '../block/interfaces/IBlock.js';
 import { BitcoinAddressLike } from '../common/CommonTypes.js';
@@ -131,7 +132,7 @@ export abstract class AbstractRpcProvider {
         ]);
 
         const rawUXTOs: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: IUTXO[] = rawUXTOs.result || [];
+        const result: UTXOs = rawUXTOs.result || [];
 
         return result.map((utxo: IUTXO) => {
             return new UTXO(utxo);

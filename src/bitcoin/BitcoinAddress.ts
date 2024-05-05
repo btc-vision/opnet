@@ -8,6 +8,7 @@ initEccLib(ecc);
 const ECPair = ECPairFactory(ecc);
 
 /**
+ * Bitcoin Address
  * @description This class is used to create a Bitcoin address.
  * @cathegory Bitcoin
  */
