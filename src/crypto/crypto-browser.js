@@ -32,29 +32,40 @@ export function createHash(algo) {
 }
 
 export function createHmac(_algo, key) {
-    const algo = (
-        { sha256, sha512 }[_algo]
-    );
+    const algo = { sha256, sha512 }[_algo];
     assertArgument(algo != null, 'invalid hmac algorithm', 'algorithm', _algo);
     return hmac.create(algo, key);
 }
 
 export function pbkdf2Sync(password, salt, iterations, keylen, _algo) {
-    const algo = (
-        { sha256, sha512 }[_algo]
-    );
+    const algo = { sha256, sha512 }[_algo];
     assertArgument(algo != null, 'invalid pbkdf2 algorithm', 'algorithm', _algo);
     return pbkdf2(algo, password, salt, { c: iterations, dkLen: keylen });
 }
 
 export function randomBytes(length) {
-    assert(crypto != null, 'platform does not support secure random numbers', 'UNSUPPORTED_OPERATION', {
-        operation: 'randomBytes',
-    });
-    assertArgument(Number.isInteger(length) && length > 0 && length <= 1024, 'invalid length', 'length', length);
+    assert(
+        crypto != null,
+        'platform does not support secure random numbers',
+        'UNSUPPORTED_OPERATION',
+        {
+            operation: 'randomBytes',
+        },
+    );
+    assertArgument(
+        Number.isInteger(length) && length > 0 && length <= 1024,
+        'invalid length',
+        'length',
+        length,
+    );
     const result = new Uint8Array(length);
     crypto.getRandomValues(result);
     return result;
 }
 
-//# sourceMappingURL=crypto-browser.js.map
+export default {
+    createHash,
+    createHmac,
+    pbkdf2Sync,
+    randomBytes,
+};

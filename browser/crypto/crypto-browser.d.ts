@@ -31,3 +31,10 @@ export function createHash(algo: any): import("@noble/hashes/utils").Hash<{
 export function createHmac(_algo: any, key: any): import("@noble/hashes/hmac").HMAC<any>;
 export function pbkdf2Sync(password: any, salt: any, iterations: any, keylen: any, _algo: any): Uint8Array;
 export function randomBytes(length: any): Uint8Array;
+declare namespace _default {
+    export { createHash };
+    export { createHmac };
+    export { pbkdf2Sync };
+    export { randomBytes };
+}
+export default _default;
