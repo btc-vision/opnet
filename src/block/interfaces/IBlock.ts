@@ -1,7 +1,7 @@
 import { BigNumberish } from 'ethers';
+import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTypes.js';
+import { ITransaction } from '../../transactions/interfaces/ITransaction.js';
 import { TransactionBase } from '../../transactions/Transaction.js';
-import { OPNetTransactionTypes } from '../opnet/OPNetTransactionTypes.js';
-import { ITransaction } from '../transactions/ITransaction.js';
 
 export type BlockHeaderChecksumProof = Array<[number, string[]]>;
 

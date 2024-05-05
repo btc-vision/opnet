@@ -1,16 +1,17 @@
 import { BigNumberish } from 'ethers';
-import { BlockHeaderChecksumProof, IBlock } from '../interfaces/blocks/IBlock.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
+
+import { DeploymentTransaction } from '../transactions/DeploymentTransaction.js';
+import { GenericTransaction } from '../transactions/GenericTransaction.js';
+import { InteractionTransaction } from '../transactions/InteractionTransaction.js';
 import {
     IDeploymentTransaction,
     IGenericTransaction,
     IInteractionTransaction,
     ITransaction,
-} from '../interfaces/transactions/ITransaction.js';
-import { DeploymentTransaction } from '../transactions/DeploymentTransaction.js';
-import { GenericTransaction } from '../transactions/GenericTransaction.js';
-import { InteractionTransaction } from '../transactions/InteractionTransaction.js';
+} from '../transactions/interfaces/ITransaction.js';
 import { TransactionBase } from '../transactions/Transaction.js';
+import { BlockHeaderChecksumProof, IBlock } from './interfaces/IBlock.js';
 
 export class Block implements IBlock {
     public readonly height: BigNumberish;
@@ -38,7 +39,7 @@ export class Block implements IBlock {
 
     public readonly checksumProofs: BlockHeaderChecksumProof;
 
-    public readonly transactions?: TransactionBase<OPNetTransactionTypes>[];
+    public readonly transactions: TransactionBase<OPNetTransactionTypes>[] = [];
 
     constructor(block: IBlock) {
         this.height = BigInt(block.height.toString());

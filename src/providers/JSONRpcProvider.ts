@@ -1,20 +1,24 @@
-import { BlockTag, JsonRpcPayload, JsonRpcProvider, JsonRpcResult } from 'ethers';
-import { Block } from '../block/Block.js';
-import { IBlock } from '../interfaces/blocks/IBlock.js';
+import { JsonRpcProvider } from 'ethers';
+import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 
-export class JSONRpcProvider {
-    private readonly provider: JsonRpcProvider;
+/**
+ * @description This class is used to provide a JSON RPC provider.
+ * @class JSONRpcProvider
+ * @category Providers
+ */
+export class JSONRpcProvider extends AbstractRpcProvider {
     private readonly url: string;
 
-    private nextId: number = 0;
+    protected readonly provider: JsonRpcProvider;
 
     constructor(url: string) {
-        this.url = this.providerUrl(url);
+        super();
 
+        this.url = this.providerUrl(url);
         this.provider = new JsonRpcProvider(this.url);
     }
 
-    private providerUrl(url: string): string {
+    protected providerUrl(url: string): string {
         url = url.trim();
 
         if (url.endsWith('/')) {
@@ -26,41 +30,5 @@ export class JSONRpcProvider {
         } else {
             return `${url}/api/v1/json-rpc`;
         }
-    }
-
-    public async getBlockNumber(): Promise<number> {
-        return await this.provider.getBlockNumber();
-    }
-
-    public async getBlock(
-        blockNumber: BlockTag | string,
-        prefetchTxs: boolean = false,
-    ): Promise<Block> {
-        const method =
-            typeof blockNumber === 'string' ? 'btc_getBlockByHash' : 'btc_getBlockByNumber';
-
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [
-            blockNumber,
-            prefetchTxs,
-        ]);
-
-        const blockData: JsonRpcResult[] = await this.provider._send(payload);
-        const block = blockData.shift();
-
-        if (!block) {
-            throw new Error('Block not found');
-        }
-
-        const result: IBlock = block.result;
-        return new Block(result);
-    }
-
-    private buildJsonRpcPayload(method: string, params: unknown[]): JsonRpcPayload {
-        return {
-            method: method,
-            params: params,
-            id: this.nextId++,
-            jsonrpc: '2.0',
-        };
     }
 }
