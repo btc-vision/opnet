@@ -24,6 +24,9 @@ export * from './transactions/TransactionParser.js';
 
 /** Contract */
 export * from './contracts/ContractData.js';
+export * from './contracts/CallResult.js';
+export * from './contracts/interfaces/ICallResult.js';
+export * from './contracts/interfaces/IAccessList.js';
 
 /** Storage */
 export * from './storage/StoredValue.js';
