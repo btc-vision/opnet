@@ -94,7 +94,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const selector = Number('0x' + bitcoinAbiCoder.encodeSelector(element.name));
         writer.writeSelector(selector);
 
-        if (args.length !== element.inputs!.length) {
+        if (args.length !== (element.inputs?.length ?? 0)) {
             throw new Error('Invalid number of arguments provided');
         }
 
