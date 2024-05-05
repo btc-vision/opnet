@@ -117,7 +117,7 @@ export abstract class AbstractRpcProvider {
      * @param {BitcoinAddressLike} address The address to get the UTXOs of
      * @param {boolean} optimize Whether to optimize the UTXOs
      * @returns {Promise<UTXOs>} The UTXOs of the address
-     * @example await getUXTOsOf('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq');
+     * @example await getUXTOs('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq');
      * @throws {Error} If something went wrong while fetching the UTXOs
      */
     public async getUXTOs(
