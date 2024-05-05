@@ -58,3 +58,6 @@ export * from './common/CommonTypes.js';
 /** Bitcoin */
 export * from './bitcoin/BitcoinAddress.js';
 export * from './bitcoin/UTXOs.js';
+
+/** Other */
+export { ABIDataTypes } from '@btc-vision/bsi-binary';
