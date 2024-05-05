@@ -67,9 +67,5 @@ export default {
             process: 'process/browser',
             stream: 'stream-browserify',
         }),
-
-        /*new NodePolyfillPlugin({
-            excludeAliases: ['console', 'buffer'],
-        }),*/
     ],
 };
