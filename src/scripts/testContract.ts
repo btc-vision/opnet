@@ -14,6 +14,8 @@ interface TestContract extends BaseContractProperties {
     giveFreeMoney(bool: true): Promise<BaseContractProperty>;
 
     balanceOf(address: BitcoinAddressLike): Promise<BaseContractProperty>;
+
+    owner(): Promise<BaseContractProperty>;
 }
 
 (async () => {
@@ -34,6 +36,18 @@ interface TestContract extends BaseContractProperties {
             ],
             type: BitcoinAbiTypes.Function,
         },
+        {
+            name: 'owner',
+            constant: true,
+
+            outputs: [
+                {
+                    name: 'owner',
+                    type: ABIDataTypes.ADDRESS,
+                },
+            ],
+            type: BitcoinAbiTypes.Function,
+        },
     ];
 
     const contract: TestContract = getContract<TestContract>(
@@ -48,4 +62,8 @@ interface TestContract extends BaseContractProperties {
     )) as CallResult;
 
     console.log('Balance:', res.decoded);
+
+    const owner = (await contract.owner()) as CallResult;
+
+    console.log('Owner:', owner.decoded);
 })();
