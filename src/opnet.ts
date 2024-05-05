@@ -25,8 +25,21 @@ export * from './transactions/TransactionParser.js';
 /** Contract */
 export * from './contracts/ContractData.js';
 export * from './contracts/CallResult.js';
+export * from './contracts/Contract.js';
+export * from './contracts/interfaces/IContract.js';
 export * from './contracts/interfaces/ICallResult.js';
 export * from './contracts/interfaces/IAccessList.js';
+
+/** Abi */
+export * from './abi/BitcoinInterface.js';
+export * from './abi/interfaces/BitcoinInterfaceAbi.js';
+export * from './abi/interfaces/BitcoinAbiValue.js';
+export * from './abi/BitcoinAbiTypes.js';
+export * from './abi/interfaces/BaseContractProperties.js';
+export * from './abi/BaseContractProperty.js';
+
+/** Utils */
+export * from './utils/BitcoinUtils.js';
 
 /** Storage */
 export * from './storage/StoredValue.js';

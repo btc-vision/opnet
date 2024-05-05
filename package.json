@@ -1,6 +1,6 @@
 {
     "type": "module",
-    "version": "1.0.14",
+    "version": "1.0.15",
     "author": "BlobMaster41",
     "description": "The perfect library for building Bitcoin based applications.",
     "engines": {
@@ -31,7 +31,8 @@
         "bitcoin smart contracts",
         "smart inscriptions",
         "bsi",
-        "bsi-binary"
+        "bsi-binary",
+        "ordinals"
     ],
     "license": "MIT",
     "main": "build/index.js",
@@ -93,6 +94,7 @@
         "babel-plugin-transform-import-meta": "^2.2.1",
         "babel-preset-react": "^6.24.1",
         "babelify": "^10.0.0",
+        "bignumber.js": "^9.1.2",
         "bitcoinjs-lib": "^6.1.5",
         "buffer": "^6.0.3",
         "ethers": "^6.12.1",
