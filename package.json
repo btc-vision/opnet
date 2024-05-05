@@ -30,7 +30,8 @@
         "btc",
         "bitcoin smart contracts",
         "smart inscriptions",
-        "bsi"
+        "bsi",
+        "bsi-binary"
     ],
     "license": "MIT",
     "main": "build/index.js",
