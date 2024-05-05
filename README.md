@@ -33,8 +33,9 @@ npm i opnet
 
 ### Documentation
 
-Documentation available at [https://dev.opnet.org/index.html](https://dev.
-opnet.org/index.html) or in the `docs/` directory of the repository.
+Documentation available
+at [https://dev.opnet.org/index.html](https://dev.opnet.org/index.html) or in
+the `docs/` directory of the repository.
 
 #### Development
 
