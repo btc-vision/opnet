@@ -1,6 +1,10 @@
 import { BitcoinAbiValue } from './interfaces/BitcoinAbiValue.js';
 import { BitcoinInterfaceAbi } from './interfaces/BitcoinInterfaceAbi.js';
 
+/**
+ * @description This class is used to provide a Bitcoin interface.
+ * @cathegory Abi
+ */
 export class BitcoinInterface {
     public readonly abi: BitcoinInterfaceAbi;
 

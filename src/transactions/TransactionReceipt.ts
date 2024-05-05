@@ -1,6 +1,10 @@
 import { NetEvent } from '@btc-vision/bsi-binary';
 import { ITransactionReceipt } from './interfaces/ITransactionReceipt.js';
 
+/**
+ * Transaction receipt
+ * @category Transactions
+ */
 export class TransactionReceipt implements ITransactionReceipt {
     public readonly receipt: Buffer | null;
     public readonly receiptProofs: string[];

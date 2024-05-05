@@ -2,6 +2,11 @@ import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes
 import { IDeploymentTransaction } from './interfaces/ITransaction.js';
 import { TransactionBase } from './Transaction.js';
 
+/**
+ * @description This class is used to provide a deployment transaction.
+ * @class DeploymentTransaction
+ * @category Transactions
+ */
 export class DeploymentTransaction
     extends TransactionBase<OPNetTransactionTypes.Deployment>
     implements IDeploymentTransaction

@@ -1,6 +1,11 @@
 import { BufferHelper } from '@btc-vision/bsi-binary';
 import { IStorageValue } from './interfaces/IStorageValue.js';
 
+/**
+ * @description This class is used represent a stored value.
+ * @class StoredValue
+ * @category Storage
+ */
 export class StoredValue implements IStorageValue {
     public readonly pointer: bigint;
     public readonly value: Buffer;

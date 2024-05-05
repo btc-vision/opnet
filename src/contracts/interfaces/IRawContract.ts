@@ -1,3 +1,8 @@
+/**
+ * Interface for raw contract data.
+ * @interface IRawContract
+ * @cathegory Raw
+ */
 export interface IRawContract {
     readonly contractAddress: string;
     readonly virtualAddress: string;

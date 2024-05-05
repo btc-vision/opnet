@@ -1,5 +1,10 @@
 import { IRawContract } from './interfaces/IRawContract.js';
 
+/**
+ * @description This class is used to store contract data.
+ * @class ContractData
+ * @category Bitcoin
+ */
 export class ContractData implements IRawContract {
     public readonly contractAddress: string;
     public readonly virtualAddress: string;

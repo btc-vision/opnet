@@ -15,7 +15,12 @@ import { IContract } from './interfaces/IContract.js';
 const internal = Symbol.for('_btc_internal');
 const bitcoinAbiCoder = new ABICoder();
 
-export class IBaseContract<T extends BaseContractProperties> implements IContract {
+/**
+ * Represents the base contract class.
+ * @category Contracts
+ * @abstract
+ */
+export abstract class IBaseContract<T extends BaseContractProperties> implements IContract {
     /**
      * The address of the contract.
      */
@@ -39,7 +44,7 @@ export class IBaseContract<T extends BaseContractProperties> implements IContrac
 
     private events: object[] = [];
 
-    constructor(
+    protected constructor(
         address: BitcoinAddressLike,
         abi: BitcoinInterface | BitcoinInterfaceAbi,
         provider: AbstractRpcProvider,
@@ -231,6 +236,10 @@ export class IBaseContract<T extends BaseContractProperties> implements IContrac
     }
 }
 
+/**
+ * Represents the base contract class.
+ * @category Contracts
+ */
 export class BaseContract<T extends BaseContractProperties> extends IBaseContract<T> {
     constructor(
         address: BitcoinAddressLike,
@@ -277,6 +286,9 @@ export class BaseContract<T extends BaseContractProperties> extends IBaseContrac
     }
 }
 
+/**
+ * Creates a new contract class.
+ */
 function contractBase<T extends BaseContractProperties>(): new (
     address: BitcoinAddressLike,
     abi: BitcoinInterface | BitcoinInterfaceAbi,
@@ -289,6 +301,15 @@ function contractBase<T extends BaseContractProperties>(): new (
     ) => BaseContract<T> & Omit<T, keyof BaseContract<T>>;
 }
 
+/**
+ * Creates a new contract instance.
+ * @param {BitcoinAddressLike} address The address of the contract.
+ * @param {BitcoinInterface | BitcoinInterfaceAbi} abi The ABI of the contract.
+ * @param {AbstractRpcProvider} provider The provider for the contract.
+ * @returns {BaseContract<T> & Omit<T, keyof BaseContract<T>>} The contract instance.
+ * @template T The properties of the contract.
+ * @category Contracts
+ */
 export function getContract<T extends BaseContractProperties>(
     address: BitcoinAddressLike,
     abi: BitcoinInterface | BitcoinInterfaceAbi,

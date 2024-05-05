@@ -1,5 +1,9 @@
 import { ScriptSig } from '@btc-vision/bsi-bitcoin-rpc';
 
+/**
+ * Transaction input interface
+ * @category ITransactions
+ */
 export interface ITransactionInput {
     readonly originalTransactionId: string | undefined;
     readonly outputTransactionIndex: number | undefined;
@@ -10,6 +14,10 @@ export interface ITransactionInput {
     readonly transactionInWitness?: string[];
 }
 
+/**
+ * Transaction input
+ * @category ITransactions
+ */
 export class TransactionInput implements ITransactionInput {
     public readonly originalTransactionId: string | undefined;
     public readonly outputTransactionIndex: number | undefined;

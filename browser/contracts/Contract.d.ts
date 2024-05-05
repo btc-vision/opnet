@@ -6,13 +6,13 @@ import { BitcoinAddressLike } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { IContract } from './interfaces/IContract.js';
 declare const internal: unique symbol;
-export declare class IBaseContract<T extends BaseContractProperties> implements IContract {
+export declare abstract class IBaseContract<T extends BaseContractProperties> implements IContract {
     readonly address: BitcoinAddressLike;
     readonly interface: BitcoinInterface;
     readonly provider: AbstractRpcProvider;
     readonly [internal]: keyof T | undefined;
     private events;
-    constructor(address: BitcoinAddressLike, abi: BitcoinInterface | BitcoinInterfaceAbi, provider: AbstractRpcProvider);
+    protected constructor(address: BitcoinAddressLike, abi: BitcoinInterface | BitcoinInterfaceAbi, provider: AbstractRpcProvider);
     protected getFunction(name: symbol): BaseContractProperty | undefined | string | number | symbol;
     private defineInternalFunctions;
     private encodeFunctionData;

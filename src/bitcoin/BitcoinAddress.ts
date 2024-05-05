@@ -7,6 +7,10 @@ initEccLib(ecc);
 
 const ECPair = ECPairFactory(ecc);
 
+/**
+ * @description This class is used to create a Bitcoin address.
+ * @cathegory Bitcoin
+ */
 export class BitcoinAddress {
     readonly #keyPair: ECPairInterface;
     readonly #taprootAddress: string;
