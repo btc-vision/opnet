@@ -31,6 +31,11 @@ and other Bitcoin-related technologies.
 npm i opnet
 ```
 
+### Documentation
+
+Documentation available at [https://dev.opnet.org/index.html](https://dev.
+opnet.org/index.html) or in the `docs/` directory of the repository.
+
 #### Development
 
 1. Clone the repository:
@@ -45,12 +50,6 @@ npm i opnet
    ```bash
    npm i
    ```
-
-## Usage
-
-Refer to the `docs/` directory for detailed guides on how to use OPNet. Start
-with `getting_started.md` and explore `api_reference.md` for comprehensive
-information about the functions available.
 
 ## Contribution
 
