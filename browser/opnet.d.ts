@@ -34,3 +34,4 @@ export * from './contracts/interfaces/IRawContract.js';
 export * from './common/CommonTypes.js';
 export * from './bitcoin/BitcoinAddress.js';
 export * from './bitcoin/UTXOs.js';
+export { ABIDataTypes } from '@btc-vision/bsi-binary';

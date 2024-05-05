@@ -5,6 +5,11 @@ import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
 import { BlockHeaderChecksumProof, IBlock } from './interfaces/IBlock.js';
 
+/**
+ * @description This class is used to represent a block.
+ * @class Block
+ * @category Block
+ */
 export class Block implements IBlock {
     public readonly height: BigNumberish;
 

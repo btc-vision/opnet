@@ -10,6 +10,10 @@ import {
 } from './interfaces/ITransaction.js';
 import { TransactionBase } from './Transaction.js';
 
+/**
+ * Transaction parser
+ * @category Transactions
+ */
 export class TransactionParser {
     public static parseTransactions(
         transactions: ITransaction[],

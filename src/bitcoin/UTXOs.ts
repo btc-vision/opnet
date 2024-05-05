@@ -1,5 +1,9 @@
 import { ScriptPubKey } from '@btc-vision/bsi-bitcoin-rpc';
 
+/**
+ * Unspent Transaction Output
+ * @cathegory Interfaces
+ */
 export interface IUTXO {
     readonly transactionId: string;
     readonly outputIndex: number;
@@ -7,6 +11,10 @@ export interface IUTXO {
     readonly scriptPubKey: ScriptPubKey;
 }
 
+/**
+ * Unspent Transaction Output
+ * @cathegory Bitcoin
+ */
 export class UTXO implements IUTXO {
     public readonly transactionId: string;
     public readonly outputIndex: number;

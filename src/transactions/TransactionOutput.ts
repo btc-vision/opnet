@@ -1,6 +1,11 @@
 import { ScriptPubKey } from '@btc-vision/bsi-bitcoin-rpc';
 import { script } from 'bitcoinjs-lib';
 
+/**
+ * Transaction output interface
+ * @category ITransactions
+ * @interface ITransactionOutput
+ */
 export interface ITransactionOutput {
     readonly index: number;
     readonly scriptPubKey: {
@@ -12,6 +17,10 @@ export interface ITransactionOutput {
     readonly value: string;
 }
 
+/**
+ * Transaction output
+ * @category Transactions
+ */
 export class TransactionOutput {
     public readonly value: bigint;
     public readonly index: number;

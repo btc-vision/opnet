@@ -5,6 +5,10 @@ import { TransactionBase } from '../../transactions/Transaction.js';
 
 export type BlockHeaderChecksumProof = Array<[number, string[]]>;
 
+/**
+ * @description This interface is used to define the common properties of a block.
+ * @cathegory Raw
+ */
 export interface IBlockCommon {
     height: string | BigNumberish;
     hash: string;
@@ -33,6 +37,10 @@ export interface IBlockCommon {
     checksumProofs: BlockHeaderChecksumProof;
 }
 
+/**
+ * @description This interface is used to define the properties of a block.
+ * @cathegory Raw
+ */
 export interface IBlock extends IBlockCommon {
     transactions?: ITransaction[] | TransactionBase<OPNetTransactionTypes>[];
 }

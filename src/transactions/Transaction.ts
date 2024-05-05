@@ -4,6 +4,14 @@ import { ITransactionBase } from './interfaces/ITransaction.js';
 import { TransactionInput } from './TransactionInput.js';
 import { ITransactionOutput, TransactionOutput } from './TransactionOutput.js';
 
+/**
+ * @description This class is used to provide a base transaction.
+ * @class Transaction
+ * @implements {ITransactionBase<T>}
+ * @template T
+ * @category Transactions
+ * @abstract
+ */
 export abstract class TransactionBase<T extends OPNetTransactionTypes>
     implements ITransactionBase<T>
 {

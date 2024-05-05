@@ -3,6 +3,10 @@ import { DecodedCallResult } from '../common/CommonTypes.js';
 import { IAccessList } from './interfaces/IAccessList.js';
 import { ICallResultData } from './interfaces/ICallResult.js';
 
+/**
+ * Represents the result of a contract call.
+ * @category Contracts
+ */
 export class CallResult implements ICallResultData {
     public readonly result: BinaryReader;
     public readonly events: NetEvent[];

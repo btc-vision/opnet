@@ -4,6 +4,10 @@ import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes
 import { IInteractionTransaction } from './interfaces/ITransaction.js';
 import { TransactionBase } from './Transaction.js';
 
+/**
+ * Interaction transaction.
+ * @category Transactions
+ */
 export class InteractionTransaction
     extends TransactionBase<OPNetTransactionTypes.Interaction>
     implements IInteractionTransaction

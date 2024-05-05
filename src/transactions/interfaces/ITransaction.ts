@@ -4,6 +4,12 @@ import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTy
 import { ITransactionInput, TransactionInput } from '../TransactionInput.js';
 import { ITransactionOutput, TransactionOutput } from '../TransactionOutput.js';
 
+/**
+ * @description This interface represents the base of a transaction.
+ * @interface ITransactionBase
+ * @template T
+ * @category ITransactions
+ */
 export interface ITransactionBase<T extends OPNetTransactionTypes> {
     readonly id: string;
     readonly hash: string;
@@ -19,8 +25,18 @@ export interface ITransactionBase<T extends OPNetTransactionTypes> {
     readonly OPNetType: T;
 }
 
+/**
+ * @description This interface represents a generic transaction.
+ * @interface IGenericTransaction
+ * @category ITransactions
+ */
 export interface IGenericTransaction extends ITransactionBase<OPNetTransactionTypes.Generic> {}
 
+/**
+ * @description This interface represents a deployment transaction.
+ * @interface IDeploymentTransaction
+ * @category ITransactions
+ */
 export interface IDeploymentTransaction extends ITransactionBase<OPNetTransactionTypes.Deployment> {
     readonly contractAddress: string;
     readonly virtualAddress: string;
@@ -35,6 +51,11 @@ export interface IDeploymentTransaction extends ITransactionBase<OPNetTransactio
     readonly contractSaltHash: Buffer | string;
 }
 
+/**
+ * @description This interface represents an interaction transaction.
+ * @interface IInteractionTransaction
+ * @category ITransactions
+ */
 export interface IInteractionTransaction
     extends ITransactionBase<OPNetTransactionTypes.Interaction> {
     readonly calldata: string | Buffer;
@@ -49,4 +70,9 @@ export interface IInteractionTransaction
     readonly receiptProofs?: string[];
 }
 
+/**
+ * @description This type represents a transaction.
+ * @type ITransaction
+ * @category ITransactions
+ */
 export type ITransaction = IDeploymentTransaction | IInteractionTransaction | IGenericTransaction;
