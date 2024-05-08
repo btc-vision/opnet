@@ -57,8 +57,9 @@ interface TestContract extends BaseContractProperties {
     const balanceExample: CallResult = (await contract.balanceOf(
         'bc1p134a291b21a4ef28c961daee77a75e81cd7c0f00733a152930f76746a3e9',
     )) as CallResult;
+
     console.log('Balance:', balanceExample.decoded);
 
     const owner = (await contract.owner()) as CallResult;
-    console.log('Owner:', owner.decoded);
+    console.log('Owner:', owner.properties);
 })();

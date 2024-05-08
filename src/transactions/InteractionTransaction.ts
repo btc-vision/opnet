@@ -24,6 +24,9 @@ export class InteractionTransaction
 
     public readonly receiptProofs?: string[];
 
+    public readonly from: string;
+    public readonly contractAddress: string;
+
     constructor(transaction: IInteractionTransaction) {
         super(transaction);
 
@@ -33,6 +36,8 @@ export class InteractionTransaction
         this.interactionPubKey = Buffer.from(transaction.interactionPubKey as string, 'base64');
 
         this.wasCompressed = transaction.wasCompressed;
+        this.from = transaction.from;
+        this.contractAddress = transaction.contractAddress;
 
         this.events = transaction.events;
         this.receipt = transaction.receipt

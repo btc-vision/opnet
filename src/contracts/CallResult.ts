@@ -1,5 +1,6 @@
 import { BinaryReader, BufferHelper, NetEvent } from '@btc-vision/bsi-binary';
 import { DecodedCallResult } from '../common/CommonTypes.js';
+import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';
 import { IAccessList } from './interfaces/IAccessList.js';
 import { ICallResultData } from './interfaces/ICallResult.js';
 
@@ -13,6 +14,7 @@ export class CallResult implements ICallResultData {
     public readonly accessList: IAccessList;
 
     public readonly decoded: Array<DecodedCallResult> = [];
+    public properties: ContractDecodedObjectResult = {};
 
     constructor(iCallResult: ICallResultData) {
         this.events = iCallResult.events;
@@ -24,8 +26,10 @@ export class CallResult implements ICallResultData {
                 : iCallResult.result;
     }
 
-    public setDecoded(decoded: Array<DecodedCallResult>): void {
-        this.decoded.push(...decoded);
+    public setDecoded(decoded: DecodedOutput): void {
+        this.properties = Object.freeze(decoded.obj);
+
+        this.decoded.push(...decoded.values);
     }
 
     private base64ToUint8Array(base64: string): Uint8Array {
