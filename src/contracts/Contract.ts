@@ -15,6 +15,9 @@ import { IContract } from './interfaces/IContract.js';
 const internal = Symbol.for('_btc_internal');
 const bitcoinAbiCoder = new ABICoder();
 
+export type ContractDecodedObjectResult = { [key: string]: DecodedCallResult };
+export type DecodedOutput = { values: Array<DecodedCallResult>; obj: ContractDecodedObjectResult };
+
 /**
  * Represents the base contract class.
  * @category Contracts
@@ -172,47 +175,55 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         }
     }
 
-    private decodeOutput(abi: BitcoinAbiValue[], reader: BinaryReader): Array<DecodedCallResult> {
+    private decodeOutput(abi: BitcoinAbiValue[], reader: BinaryReader): DecodedOutput {
         const result: Array<DecodedCallResult> = [];
+        const obj: ContractDecodedObjectResult = {};
 
         for (let i = 0; i < abi.length; i++) {
             const type = abi[i].type;
             const name = abi[i].name;
 
+            let decodedResult: DecodedCallResult;
             switch (type) {
                 case ABIDataTypes.UINT256:
-                    result.push(reader.readU256());
+                    decodedResult = reader.readU256();
                     break;
                 case ABIDataTypes.BOOL:
-                    result.push(reader.readBoolean());
+                    decodedResult = reader.readBoolean();
                     break;
                 case ABIDataTypes.STRING:
-                    result.push(reader.readStringWithLength());
+                    decodedResult = reader.readStringWithLength();
                     break;
                 case ABIDataTypes.ADDRESS:
-                    result.push(reader.readAddress());
+                    decodedResult = reader.readAddress();
                     break;
                 case ABIDataTypes.TUPLE:
-                    result.push(reader.readTuple());
+                    decodedResult = reader.readTuple();
                     break;
                 case ABIDataTypes.UINT8:
-                    result.push(reader.readU8());
+                    decodedResult = reader.readU8();
                     break;
                 case ABIDataTypes.UINT16:
-                    result.push(reader.readU16());
+                    decodedResult = reader.readU16();
                     break;
                 case ABIDataTypes.UINT32:
-                    result.push(reader.readU32());
+                    decodedResult = reader.readU32();
                     break;
                 case ABIDataTypes.BYTES32:
-                    result.push(reader.readBytes(32));
+                    decodedResult = reader.readBytes(32);
                     break;
                 default:
                     throw new Error(`Unsupported type: ${type} (${name})`);
             }
+
+            result.push(decodedResult);
+            obj[name] = decodedResult;
         }
 
-        return result;
+        return {
+            values: result,
+            obj: obj,
+        };
     }
 
     private callFunction(
@@ -226,9 +237,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 return response;
             }
 
-            const decoded = element.outputs
+            const decoded: DecodedOutput = element.outputs
                 ? this.decodeOutput(element.outputs, response.result)
-                : [];
+                : { values: [], obj: {} };
+
             response.setDecoded(decoded);
 
             return response;

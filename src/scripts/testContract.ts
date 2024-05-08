@@ -11,8 +11,6 @@ import { JSONRpcProvider } from '../providers/JSONRpcProvider.js';
 const provider: JSONRpcProvider = new JSONRpcProvider('https://testnet.opnet.org');
 
 interface TestContract extends BaseContractProperties {
-    giveFreeMoney(bool: true): Promise<BaseContractProperty>;
-
     balanceOf(address: BitcoinAddressLike): Promise<BaseContractProperty>;
 
     owner(): Promise<BaseContractProperty>;
@@ -56,14 +54,12 @@ interface TestContract extends BaseContractProperties {
         provider,
     );
 
-    // 13sBQqJdnAdc7v5tnX3ifYqAMoFX79VfLy
-    const res: CallResult = (await contract.balanceOf(
+    const balanceExample: CallResult = (await contract.balanceOf(
         'bc1p134a291b21a4ef28c961daee77a75e81cd7c0f00733a152930f76746a3e9',
     )) as CallResult;
 
-    console.log('Balance:', res.decoded);
+    console.log('Balance:', balanceExample.decoded);
 
     const owner = (await contract.owner()) as CallResult;
-
-    console.log('Owner:', owner.decoded);
+    console.log('Owner:', owner.properties);
 })();

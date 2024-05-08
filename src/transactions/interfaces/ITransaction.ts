@@ -32,17 +32,22 @@ export interface ITransactionBase<T extends OPNetTransactionTypes> {
  */
 export interface IGenericTransaction extends ITransactionBase<OPNetTransactionTypes.Generic> {}
 
+export interface ICommonTransaction<T extends OPNetTransactionTypes> extends ITransactionBase<T> {
+    readonly from: string;
+    readonly wasCompressed: boolean;
+    readonly contractAddress: string;
+}
+
 /**
  * @description This interface represents a deployment transaction.
  * @interface IDeploymentTransaction
  * @category ITransactions
  */
-export interface IDeploymentTransaction extends ITransactionBase<OPNetTransactionTypes.Deployment> {
-    readonly contractAddress: string;
+export interface IDeploymentTransaction
+    extends ICommonTransaction<OPNetTransactionTypes.Deployment> {
     readonly virtualAddress: string;
 
     readonly bytecode: Buffer | string;
-    readonly wasCompressed: boolean;
 
     readonly deployerPubKey: Buffer | string;
     readonly deployerAddress: string;
@@ -57,13 +62,15 @@ export interface IDeploymentTransaction extends ITransactionBase<OPNetTransactio
  * @category ITransactions
  */
 export interface IInteractionTransaction
-    extends ITransactionBase<OPNetTransactionTypes.Interaction> {
+    extends ICommonTransaction<OPNetTransactionTypes.Interaction> {
     readonly calldata: string | Buffer;
     readonly senderPubKeyHash: string | Buffer;
     readonly contractSecret: string | Buffer;
     readonly interactionPubKey: string | Buffer;
 
     readonly wasCompressed: boolean;
+
+    readonly from: string;
 
     readonly events: NetEvent[];
     readonly receipt?: string | Buffer;

@@ -5,7 +5,7 @@ import { TransactionBase } from './Transaction.js';
 /**
  * @description This class is used to provide a deployment transaction.
  * @class DeploymentTransaction
- * @category Transactions
+ * @category Transactions<>
  */
 export class DeploymentTransaction
     extends TransactionBase<OPNetTransactionTypes.Deployment>
@@ -23,8 +23,12 @@ export class DeploymentTransaction
     public readonly contractSeed: Buffer;
     public readonly contractSaltHash: Buffer;
 
+    public readonly from: string;
+
     constructor(transaction: IDeploymentTransaction) {
         super(transaction);
+
+        this.from = transaction.from;
 
         this.contractAddress = transaction.contractAddress;
         this.virtualAddress = transaction.virtualAddress;
