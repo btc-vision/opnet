@@ -11,17 +11,44 @@ import { ITransactionOutput, TransactionOutput } from '../TransactionOutput.js';
  * @category ITransactions
  */
 export interface ITransactionBase<T extends OPNetTransactionTypes> {
+    /**
+     * @description The transaction ID (hash).
+     */
     readonly id: string;
+
+    /**
+     * @description The transaction "hash".
+     */
     readonly hash: string;
 
+    /**
+     * @description The index of the transaction in the block.
+     */
     readonly index: number; // Mark the order of the transaction in the block
 
+    /**
+     * @description Returns the amount of satoshi that were burned in the transaction.
+     */
     readonly burnedBitcoin: string | BigNumberish;
+
+    /**
+     * @description If the transaction was reverted, this field will contain the revert message.
+     */
     readonly revert?: string | Buffer;
 
+    /**
+     * @description The inputs of the transaction.
+     */
     readonly inputs: ITransactionInput[] | TransactionInput[];
+
+    /**
+     * @description The outputs of the transaction.
+     */
     readonly outputs: ITransactionOutput[] | TransactionOutput[];
 
+    /**
+     * @description The type of the transaction.
+     */
     readonly OPNetType: T;
 }
 
@@ -33,9 +60,20 @@ export interface ITransactionBase<T extends OPNetTransactionTypes> {
 export interface IGenericTransaction extends ITransactionBase<OPNetTransactionTypes.Generic> {}
 
 export interface ICommonTransaction<T extends OPNetTransactionTypes> extends ITransactionBase<T> {
+    /**
+     * @description This indicates who sent the transaction.
+     */
     readonly from: string;
-    readonly wasCompressed: boolean;
+
+    /**
+     * @description This indicates which contract the transaction was sent to. (AKA to)
+     */
     readonly contractAddress: string;
+
+    /**
+     * @description Was the binary data compressed?
+     */
+    readonly wasCompressed: boolean;
 }
 
 /**
@@ -45,14 +83,34 @@ export interface ICommonTransaction<T extends OPNetTransactionTypes> extends ITr
  */
 export interface IDeploymentTransaction
     extends ICommonTransaction<OPNetTransactionTypes.Deployment> {
+    /**
+     * @description The virtual address of the contract.
+     */
     readonly virtualAddress: string;
 
+    /**
+     * @description The bytecode of the contract.
+     */
     readonly bytecode: Buffer | string;
 
+    /**
+     * @description The public key of the deployer.
+     */
     readonly deployerPubKey: Buffer | string;
+
+    /**
+     * @description The address of the deployer. (ALWAYS TAPROOT. *This address is generated from the P2TR of the pubkey of the deployer.*)
+     */
     readonly deployerAddress: string;
 
+    /**
+     * @description The seed of the contract.
+     */
     readonly contractSeed: Buffer | string;
+
+    /**
+     * @description The salt verification hash of the contract.
+     */
     readonly contractSaltHash: Buffer | string;
 }
 
@@ -63,17 +121,44 @@ export interface IDeploymentTransaction
  */
 export interface IInteractionTransaction
     extends ICommonTransaction<OPNetTransactionTypes.Interaction> {
+    /**
+     * @description The calldata of the transaction.
+     */
     readonly calldata: string | Buffer;
+
+    /**
+     * @description The sender's public key hash.
+     */
     readonly senderPubKeyHash: string | Buffer;
+
+    /**
+     * @description The contract secret.
+     */
     readonly contractSecret: string | Buffer;
+
+    /**
+     * @description The interaction public key.
+     */
     readonly interactionPubKey: string | Buffer;
 
-    readonly wasCompressed: boolean;
-
+    /**
+     * @description Who sent the transaction. (ALWAYS TAPROOT. *This address is generated from the P2TR of the pubkey of the deployer.*)
+     */
     readonly from: string;
 
+    /**
+     * @description If the interaction returned events, they will be stored here.
+     */
     readonly events: NetEvent[];
+
+    /**
+     * @description The receipt of the transaction.
+     */
     readonly receipt?: string | Buffer;
+
+    /**
+     * @description The receipt proofs of the transaction.
+     */
     readonly receiptProofs?: string[];
 }
 

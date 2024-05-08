@@ -12,19 +12,54 @@ export class InteractionTransaction
     extends TransactionBase<OPNetTransactionTypes.Interaction>
     implements IInteractionTransaction
 {
+    /**
+     * @description The calldata of the transaction.
+     */
     public readonly calldata: Buffer;
+
+    /**
+     * @description The sender's public key hash.
+     */
     public readonly senderPubKeyHash: Buffer;
+
+    /**
+     * @description The contract secret.
+     */
     public readonly contractSecret: Buffer;
+
+    /**
+     * @description The interaction public key.
+     */
     public readonly interactionPubKey: Buffer;
 
+    /**
+     * @description Whether the transaction data was compressed.
+     */
     public readonly wasCompressed: boolean;
+
+    /**
+     * @description The events of the transaction.
+     */
     public readonly events: NetEvent[];
 
+    /**
+     * @description The receipt of the transaction.
+     */
     public readonly receipt?: Buffer;
 
+    /**
+     * @description The receipt proofs of the transaction.
+     */
     public readonly receiptProofs?: string[];
 
+    /**
+     * @description The from address of the transaction. (ALWAYS TAPROOT. *This address is generated from the P2TR of the pubkey of the deployer.*)
+     */
     public readonly from: string;
+
+    /**
+     * @description The contract address where the transaction was sent. (AKA "to").
+     */
     public readonly contractAddress: string;
 
     constructor(transaction: IInteractionTransaction) {
