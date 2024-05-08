@@ -15,17 +15,44 @@ import { ITransactionOutput, TransactionOutput } from './TransactionOutput.js';
 export abstract class TransactionBase<T extends OPNetTransactionTypes>
     implements ITransactionBase<T>
 {
+    /**
+     * @description The transaction ID (hash).
+     */
     public readonly id: string;
+
+    /**
+     * @description The transaction "hash".
+     */
     public readonly hash: string;
 
+    /**
+     * @description The index of the transaction in the block.
+     */
     public readonly index: number;
 
+    /**
+     * @description Returns the amount of satoshi that were burned in the transaction.
+     */
     public readonly burnedBitcoin: BigNumberish;
+
+    /**
+     * @description If the transaction was reverted, this field will contain the revert message.
+     */
     public readonly revert?: Buffer;
 
+    /**
+     * @description The inputs of the transaction.
+     */
     public readonly inputs: TransactionInput[];
+
+    /**
+     * @description The outputs of the transaction.
+     */
     public readonly outputs: TransactionOutput[];
 
+    /**
+     * @description The type of the transaction.
+     */
     public readonly OPNetType: T;
 
     protected constructor(transaction: ITransactionBase<T>) {
