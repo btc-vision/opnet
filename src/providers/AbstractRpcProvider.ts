@@ -24,7 +24,6 @@ import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
 import { ITransaction } from '../transactions/interfaces/ITransaction.js';
-import { ITransactionReceipt } from '../transactions/interfaces/ITransactionReceipt.js';
 import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
 import { TransactionReceipt } from '../transactions/TransactionReceipt.js';
@@ -162,11 +161,11 @@ export abstract class AbstractRpcProvider {
      * Get a transaction receipt by its hash.
      * @description This method is used to get a transaction receipt by its hash.
      * @param {string} txHash The transaction hash
-     * @returns {Promise<ITransactionReceipt>} The requested transaction receipt
+     * @returns {Promise<TransactionReceipt>} The requested transaction receipt
      * @example await getTransactionReceipt('63e77ba9fa4262b3d4d0d9d97fa8a7359534606c3f3af096284662e3f619f374');
      * @throws {Error} Something went wrong while fetching the transaction receipt
      */
-    public async getTransactionReceipt(txHash: string): Promise<ITransactionReceipt> {
+    public async getTransactionReceipt(txHash: string): Promise<TransactionReceipt> {
         const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_getTransactionReceipt', [
             txHash,
         ]);

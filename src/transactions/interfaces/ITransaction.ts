@@ -3,6 +3,7 @@ import { BigNumberish } from 'ethers';
 import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTypes.js';
 import { ITransactionInput, TransactionInput } from '../TransactionInput.js';
 import { ITransactionOutput, TransactionOutput } from '../TransactionOutput.js';
+import { ITransactionReceipt } from './ITransactionReceipt.js';
 
 /**
  * @description This interface represents the base of a transaction.
@@ -10,7 +11,7 @@ import { ITransactionOutput, TransactionOutput } from '../TransactionOutput.js';
  * @template T
  * @category ITransactions
  */
-export interface ITransactionBase<T extends OPNetTransactionTypes> {
+export interface ITransactionBase<T extends OPNetTransactionTypes> extends ITransactionReceipt {
     /**
      * @description The transaction ID (hash).
      */

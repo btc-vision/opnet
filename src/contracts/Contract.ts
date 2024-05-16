@@ -1,4 +1,10 @@
-import { ABICoder, ABIDataTypes, BinaryReader, BinaryWriter } from '@btc-vision/bsi-binary';
+import {
+    ABICoder,
+    ABIDataTypes,
+    BinaryReader,
+    BinaryWriter,
+    NetEvent,
+} from '@btc-vision/bsi-binary';
 import { BaseContractProperty } from '../abi/BaseContractProperty.js';
 import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
@@ -6,11 +12,13 @@ import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties
 import { BitcoinAbiValue } from '../abi/interfaces/BitcoinAbiValue.js';
 import {
     BitcoinInterfaceAbi,
-    BitcoinInterfaceAbiBase,
+    EventBaseData,
+    FunctionBaseData,
 } from '../abi/interfaces/BitcoinInterfaceAbi.js';
 import { BitcoinAddressLike, DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { IContract } from './interfaces/IContract.js';
+import { OPNetEvent } from './OPNetEvent.js';
 
 const internal = Symbol.for('_btc_internal');
 const bitcoinAbiCoder = new ABICoder();
@@ -45,7 +53,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
      */
     readonly [internal]: keyof T | undefined;
 
-    private events: object[] = [];
+    private events: Map<string, EventBaseData> = new Map();
 
     protected constructor(
         address: BitcoinAddressLike,
@@ -61,10 +69,44 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         this.defineInternalFunctions();
     }
 
+    public decodeEvents(events: NetEvent[]): OPNetEvent[] {
+        const decodedEvents: OPNetEvent[] = [];
+
+        for (let event of events) {
+            const eventData = this.events.get(event.eventType);
+            if (!eventData || eventData.values.length === 0) {
+                const decodedEvent = new OPNetEvent(
+                    event.eventType,
+                    event.eventDataSelector,
+                    event.eventData,
+                );
+                decodedEvents.push(decodedEvent);
+
+                continue;
+            }
+
+            const binaryReader: BinaryReader = new BinaryReader(event.eventData);
+            const out: DecodedOutput = this.decodeOutput(eventData.values, binaryReader);
+            const decodedEvent = new OPNetEvent(
+                event.eventType,
+                event.eventDataSelector,
+                event.eventData,
+            );
+
+            decodedEvent.setDecoded(out);
+            decodedEvents.push(decodedEvent);
+        }
+
+        return decodedEvents;
+    }
+
     protected getFunction(
         name: symbol,
     ): BaseContractProperty | undefined | string | number | symbol {
-        const key = name as keyof Omit<IBaseContract<T>, 'address' | 'provider' | 'interface'>;
+        const key = name as keyof Omit<
+            IBaseContract<T>,
+            'address' | 'provider' | 'interface' | 'decodeEvents'
+        >;
 
         // @ts-ignore
         return this[key];
@@ -79,12 +121,12 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             switch (element.type) {
                 case BitcoinAbiTypes.Function:
                     Object.defineProperty(this, element.name, {
-                        value: this.callFunction(element).bind(this),
+                        value: this.callFunction(element as FunctionBaseData).bind(this),
                     });
 
                     break;
                 case BitcoinAbiTypes.Event:
-                    this.events.push(element);
+                    this.events.set(element.name, element);
                     break;
                 default:
                     break;
@@ -92,7 +134,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         }
     }
 
-    private encodeFunctionData(element: BitcoinInterfaceAbiBase, args: unknown[]): BinaryWriter {
+    private encodeFunctionData(element: FunctionBaseData, args: unknown[]): BinaryWriter {
         const writer = new BinaryWriter();
         const selector = Number('0x' + bitcoinAbiCoder.encodeSelector(element.name));
         writer.writeSelector(selector);
@@ -227,7 +269,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     }
 
     private callFunction(
-        element: BitcoinInterfaceAbiBase,
+        element: FunctionBaseData,
     ): (...args: unknown[]) => Promise<BaseContractProperty> {
         return async (...args: unknown[]): Promise<BaseContractProperty> => {
             const data = this.encodeFunctionData(element, args);
