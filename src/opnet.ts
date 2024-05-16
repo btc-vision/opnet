@@ -29,6 +29,7 @@ export * from './contracts/Contract.js';
 export * from './contracts/interfaces/IContract.js';
 export * from './contracts/interfaces/ICallResult.js';
 export * from './contracts/interfaces/IAccessList.js';
+export * from './contracts/OPNetEvent.js';
 
 /** Abi */
 export * from './abi/BitcoinInterface.js';

@@ -3,6 +3,7 @@ import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes
 import { ITransactionBase } from './interfaces/ITransaction.js';
 import { TransactionInput } from './TransactionInput.js';
 import { ITransactionOutput, TransactionOutput } from './TransactionOutput.js';
+import { TransactionReceipt } from './TransactionReceipt.js';
 
 /**
  * @description This class is used to provide a base transaction.
@@ -13,6 +14,7 @@ import { ITransactionOutput, TransactionOutput } from './TransactionOutput.js';
  * @abstract
  */
 export abstract class TransactionBase<T extends OPNetTransactionTypes>
+    extends TransactionReceipt
     implements ITransactionBase<T>
 {
     /**
@@ -36,11 +38,6 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
     public readonly burnedBitcoin: BigNumberish;
 
     /**
-     * @description If the transaction was reverted, this field will contain the revert message.
-     */
-    public readonly revert?: Buffer;
-
-    /**
      * @description The inputs of the transaction.
      */
     public readonly inputs: TransactionInput[];
@@ -56,6 +53,13 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
     public readonly OPNetType: T;
 
     protected constructor(transaction: ITransactionBase<T>) {
+        super({
+            receipt: transaction.receipt,
+            receiptProofs: transaction.receiptProofs,
+            events: transaction.events,
+            revert: transaction.revert,
+        });
+
         this.id = transaction.id;
         this.hash = transaction.hash;
 
@@ -67,10 +71,6 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
         this.outputs = transaction.outputs.map(
             (output) => new TransactionOutput(output as ITransactionOutput),
         );
-
-        this.revert = transaction.revert
-            ? Buffer.from(transaction.revert as string, 'base64')
-            : undefined;
 
         this.OPNetType = transaction.OPNetType;
     }

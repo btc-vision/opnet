@@ -1,4 +1,3 @@
-import { NetEvent } from '@btc-vision/bsi-binary';
 import { Buffer } from 'buffer';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IInteractionTransaction } from './interfaces/ITransaction.js';
@@ -38,21 +37,6 @@ export class InteractionTransaction
     public readonly wasCompressed: boolean;
 
     /**
-     * @description The events of the transaction.
-     */
-    public readonly events: NetEvent[];
-
-    /**
-     * @description The receipt of the transaction.
-     */
-    public readonly receipt?: Buffer;
-
-    /**
-     * @description The receipt proofs of the transaction.
-     */
-    public readonly receiptProofs?: string[];
-
-    /**
      * @description The from address of the transaction. (ALWAYS TAPROOT. *This address is generated from the P2TR of the pubkey of the deployer.*)
      */
     public readonly from: string;
@@ -73,12 +57,5 @@ export class InteractionTransaction
         this.wasCompressed = transaction.wasCompressed;
         this.from = transaction.from;
         this.contractAddress = transaction.contractAddress;
-
-        this.events = transaction.events;
-        this.receipt = transaction.receipt
-            ? Buffer.from(transaction.receipt as string, 'base64')
-            : undefined;
-
-        this.receiptProofs = transaction.receiptProofs;
     }
 }

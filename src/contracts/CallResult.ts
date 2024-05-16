@@ -8,13 +8,13 @@ import { ICallResultData } from './interfaces/ICallResult.js';
  * Represents the result of a contract call.
  * @category Contracts
  */
-export class CallResult implements ICallResultData {
+export class CallResult<T extends ContractDecodedObjectResult = {}> implements ICallResultData {
     public readonly result: BinaryReader;
     public readonly events: NetEvent[];
     public readonly accessList: IAccessList;
 
     public readonly decoded: Array<DecodedCallResult> = [];
-    public properties: ContractDecodedObjectResult = {};
+    public properties: T = {} as T;
 
     constructor(iCallResult: ICallResultData) {
         this.events = iCallResult.events;
@@ -27,7 +27,7 @@ export class CallResult implements ICallResultData {
     }
 
     public setDecoded(decoded: DecodedOutput): void {
-        this.properties = Object.freeze(decoded.obj);
+        this.properties = Object.freeze(decoded.obj) as T;
 
         this.decoded.push(...decoded.values);
     }

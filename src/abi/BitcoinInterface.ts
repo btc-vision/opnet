@@ -1,3 +1,4 @@
+import { BitcoinAbiTypes } from './BitcoinAbiTypes.js';
 import { BitcoinAbiValue } from './interfaces/BitcoinAbiValue.js';
 import { BitcoinInterfaceAbi } from './interfaces/BitcoinInterfaceAbi.js';
 
@@ -23,7 +24,15 @@ export class BitcoinInterface {
     }
 
     public hasFunction(name: string): boolean {
-        return this.abi.some((element) => element.name === name && element.type === 'function');
+        return this.abi.some(
+            (element) => element.name === name && element.type === BitcoinAbiTypes.Function,
+        );
+    }
+
+    public hasEvent(name: string): boolean {
+        return this.abi.some(
+            (element) => element.name === name && element.type === BitcoinAbiTypes.Event,
+        );
     }
 
     private verifyAbi(abi: BitcoinInterfaceAbi): void {
@@ -42,8 +51,14 @@ export class BitcoinInterface {
                 throw new Error('The ABI provided is missing a type.');
             }
 
-            if (element.inputs && element.inputs!.length) this.verifyAbiValues(element.inputs);
-            if (element.outputs && element.outputs!.length) this.verifyAbiValues(element.outputs);
+            if (element.type === BitcoinAbiTypes.Function) {
+                if (element.inputs && element.inputs!.length) this.verifyAbiValues(element.inputs);
+                if (element.outputs && element.outputs!.length) {
+                    this.verifyAbiValues(element.outputs);
+                }
+            } else if (element.type === BitcoinAbiTypes.Event) {
+                if (element.values && element.values!.length) this.verifyAbiValues(element.values);
+            }
         }
     }
 
