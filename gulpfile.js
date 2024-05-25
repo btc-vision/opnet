@@ -83,20 +83,7 @@ async function buildProtoYaml() {
                     )
                     .pipe(gulp.dest('./build/'))
                     .on('end', async () => {
-                        gulp.src('./src/config/*.conf')
-                            .pipe(
-                                logger({
-                                    before: 'Starting...',
-                                    after: 'Compiled conf.',
-                                    extname: '.conf',
-                                    showChange: true,
-                                }),
-                            )
-                            .pipe(gulpcache())
-                            .pipe(gulp.dest('./build/config'))
-                            .on('end', async () => {
-                                resolve();
-                            });
+                        resolve();
                     });
             });
     });
