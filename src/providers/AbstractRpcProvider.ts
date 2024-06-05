@@ -14,19 +14,24 @@ import { IUTXO } from '../bitcoin/interfaces/IUTXO.js';
 
 import { UTXO, UTXOs } from '../bitcoin/UTXOs.js';
 import { Block } from '../block/Block.js';
+import { BlockWitnesses } from '../block/interfaces/BlockWitness.js';
 import { IBlock } from '../block/interfaces/IBlock.js';
 import { BitcoinAddressLike } from '../common/CommonTypes.js';
 import { CallResult } from '../contracts/CallResult.js';
 import { ContractData } from '../contracts/ContractData.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
+import { WrappedGeneration } from '../generator/WrappedGenerationParameters.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
+import { BroadcastedTransaction } from '../transactions/interfaces/BroadcastedTransaction.js';
 import { ITransaction } from '../transactions/interfaces/ITransaction.js';
 import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
 import { TransactionReceipt } from '../transactions/TransactionReceipt.js';
+import { GenerateTarget, WrappedGenerationParameters } from './interfaces/Generate.js';
+import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
 type JsonRpcCallResult = (JsonRpcResult | JsonRpcError)[];
 
@@ -303,6 +308,129 @@ export abstract class AbstractRpcProvider {
         }
 
         return new CallResult(result);
+    }
+
+    /**
+     * Send a raw transaction.
+     * @description This method is used to send a raw transaction.
+     * @param {string} tx The raw transaction to send as hex string
+     * @param {boolean} [psbt] Whether the transaction is a PSBT or not
+     * @returns {Promise<BroadcastedTransaction>} The result of the transaction
+     * @example await sendRawTransaction('02000000000101ad897689f66c98daae5fdc3606235c1ad7a17b9e0a6aaa0ea9e58ecc1198ad2a0100000000ffffffff01a154c39400000000160014482038efcc91af945f0c756d07a46401920380520247304402201c1f8718dec637ddb41b42abc44dcbf35a94c6be6a9de8c1db48c9fa6e456b7e022032a4b3286808372a7ac2c5094d6341b4d61b17663f4ccd1c1d92efa85c7dada80121020373626d317ae8788ce3280b491068610d840c23ecb64c14075bbb9f670af52c00000000', false);
+     * @throws {Error} If something went wrong while sending the transaction
+     */
+    public async sendRawTransaction(tx: string, psbt: boolean): Promise<BroadcastedTransaction> {
+        // verify if tx is a valid hex string
+        if (!/^[0-9A-Fa-f]+$/.test(tx)) {
+            throw new Error('Invalid hex string');
+        }
+
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_sendRawTransaction', [
+            tx,
+            psbt,
+        ]);
+
+        const rawTx: JsonRpcResult = await this.callPayloadSingle(payload);
+        const result: BroadcastedTransaction = rawTx.result;
+        if (result && result.identifier) {
+            return {
+                ...result,
+                identifier: BigInt(result.identifier),
+            };
+        }
+
+        return result as BroadcastedTransaction;
+    }
+
+    /**
+     * Get block witnesses.
+     * @description This method is used to get the witnesses of a block. This proves that the action executed inside a block are valid and confirmed by the network. If the minimum number of witnesses are not met, the block is considered as potentially invalid.
+     * @param {BlockTag} height The block number or hash, use -1 for latest block
+     * @param {boolean} [trusted] Whether to trust the witnesses or not
+     * @param {number} [limit] The maximum number of witnesses to return
+     * @param {number} [page] The page number of the witnesses
+     * @returns {Promise<BlockWitnesses>} The witnesses of the block
+     * @example await getBlockWitness(123456n);
+     * @throws {Error} If something went wrong while fetching the witnesses
+     */
+    public async getBlockWitness(
+        height: BigNumberish | -1 = -1,
+        trusted?: boolean,
+        limit?: number,
+        page?: number,
+    ): Promise<BlockWitnesses> {
+        const params: [BigNumberish | -1, boolean?, number?, number?] = [height.toString()];
+
+        if (trusted !== undefined && trusted !== null) params.push(trusted);
+        if (limit !== undefined && limit !== null) params.push(limit);
+        if (page !== undefined && page !== null) params.push(page);
+
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_blockWitness', params);
+
+        const rawWitnesses: JsonRpcResult = await this.callPayloadSingle(payload);
+        const result: BlockWitnesses = rawWitnesses.result;
+
+        for (let i = 0; i < result.length; i++) {
+            result[i].blockNumber = BigInt('0x' + result[i].blockNumber);
+        }
+
+        return result;
+    }
+
+    /**
+     * Get reorgs that happened between two blocks.
+     * @description This method is used to get the reorgs that happened between two blocks.
+     * @param {BigNumberish} [fromBlock] The block number to start from
+     * @param {BigNumberish} [toBlock] The block number to end at
+     * @returns {Promise<ReorgInformation>} The reorg information
+     * @example await getReorg(123456n, 123457n);
+     * @throws {Error} If something went wrong while fetching the reorg information
+     */
+    public async getReorg(
+        fromBlock?: BigNumberish,
+        toBlock?: BigNumberish,
+    ): Promise<ReorgInformation[]> {
+        const params: [string?, string?] = [];
+
+        if (fromBlock !== undefined && fromBlock !== null) params.push(fromBlock.toString());
+        if (toBlock !== undefined && toBlock !== null) params.push(toBlock.toString());
+
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_reorg', params);
+        const rawReorg: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        const result: ReorgInformation[] = rawReorg.result;
+        if (result.length > 0) {
+            for (let i = 0; i < result.length; i++) {
+                const res = result[i];
+
+                res.fromBlock = BigInt('0x' + res.fromBlock);
+                res.toBlock = BigInt('0x' + res.toBlock);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Generate parameters needed to wrap bitcoin.
+     * @description This method is used to generate the parameters needed to wrap bitcoin.
+     * @param {BigNumberish} amount The amount to wrap
+     * @returns {Promise<WrappedGeneration>} The wrapped generation parameters
+     * @example await requestTrustedPublicKeyForBitcoinWrapping(100000000n);
+     * @throws {Error} If something went wrong while generating the parameters
+     */
+    public async requestTrustedPublicKeyForBitcoinWrapping(
+        amount: BigNumberish,
+    ): Promise<WrappedGeneration> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_generate', [
+            GenerateTarget.WRAP,
+            amount.toString(),
+        ]);
+
+        const rawPublicKey: JsonRpcResult = await this.callPayloadSingle(payload);
+        const result: WrappedGenerationParameters = rawPublicKey.result;
+
+        return new WrappedGeneration(result);
     }
 
     protected abstract providerUrl(url: string): string;
