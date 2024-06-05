@@ -1,6 +1,6 @@
 {
     "type": "module",
-    "version": "1.0.19",
+    "version": "1.0.20",
     "author": "BlobMaster41",
     "description": "The perfect library for building Bitcoin based applications.",
     "engines": {
