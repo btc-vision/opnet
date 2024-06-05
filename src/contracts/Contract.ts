@@ -17,6 +17,7 @@ import {
 } from '../abi/interfaces/BitcoinInterfaceAbi.js';
 import { BitcoinAddressLike, DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
+import { ContractEvents } from '../transactions/interfaces/ITransactionReceipt.js';
 import { IContract } from './interfaces/IContract.js';
 import { OPNetEvent } from './OPNetEvent.js';
 
@@ -69,35 +70,41 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         this.defineInternalFunctions();
     }
 
-    public decodeEvents(events: NetEvent[]): OPNetEvent[] {
+    public decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[] {
         const decodedEvents: OPNetEvent[] = [];
 
-        for (let event of events) {
-            const eventData = this.events.get(event.eventType);
-            if (!eventData || eventData.values.length === 0) {
-                const decodedEvent = new OPNetEvent(
-                    event.eventType,
-                    event.eventDataSelector,
-                    event.eventData,
-                );
-                decodedEvents.push(decodedEvent);
+        if (!Array.isArray(events)) {
+            events = events[this.address.toString()];
 
-                continue;
+            if (!events) {
+                return [];
             }
+        }
 
-            const binaryReader: BinaryReader = new BinaryReader(event.eventData);
-            const out: DecodedOutput = this.decodeOutput(eventData.values, binaryReader);
-            const decodedEvent = new OPNetEvent(
-                event.eventType,
-                event.eventDataSelector,
-                event.eventData,
-            );
-
-            decodedEvent.setDecoded(out);
-            decodedEvents.push(decodedEvent);
+        for (let event of events) {
+            decodedEvents.push(this.decodeEvent(event));
         }
 
         return decodedEvents;
+    }
+
+    public decodeEvent(event: NetEvent): OPNetEvent {
+        const eventData = this.events.get(event.eventType);
+        if (!eventData || eventData.values.length === 0) {
+            return new OPNetEvent(event.eventType, event.eventDataSelector, event.eventData);
+        }
+
+        const binaryReader: BinaryReader = new BinaryReader(event.eventData);
+        const out: DecodedOutput = this.decodeOutput(eventData.values, binaryReader);
+        const decodedEvent = new OPNetEvent(
+            event.eventType,
+            event.eventDataSelector,
+            event.eventData,
+        );
+
+        decodedEvent.setDecoded(out);
+
+        return decodedEvent;
     }
 
     protected getFunction(
@@ -105,7 +112,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     ): BaseContractProperty | undefined | string | number | symbol {
         const key = name as keyof Omit<
             IBaseContract<T>,
-            'address' | 'provider' | 'interface' | 'decodeEvents'
+            'address' | 'provider' | 'interface' | 'decodeEvents' | 'decodeEvent'
         >;
 
         // @ts-ignore
@@ -273,7 +280,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     ): (...args: unknown[]) => Promise<BaseContractProperty> {
         return async (...args: unknown[]): Promise<BaseContractProperty> => {
             const data = this.encodeFunctionData(element, args);
-            const response = await this.provider.call(this.address, Buffer.from(data.getBuffer()));
+            const buffer = Buffer.from(data.getBuffer());
+            const response = await this.provider.call(this.address, buffer);
 
             if ('error' in response) {
                 return response;

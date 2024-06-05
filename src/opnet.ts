@@ -16,8 +16,14 @@ export * from './providers/JSONRpcProvider.js';
 export * from './providers/AbstractRpcProvider.js';
 export * from './providers/WebsocketRpcProvider.js';
 
+/** Providers interfaces */
+export * from './providers/interfaces/Generate.js';
+export * from './providers/interfaces/ReorgInformation.js';
+
 /** Block */
 export * from './block/Block.js';
+export * from './block/interfaces/IBlock.js';
+export * from './block/interfaces/BlockWitness.js';
 
 /** Parsers */
 export * from './transactions/TransactionParser.js';
@@ -42,16 +48,19 @@ export * from './abi/BaseContractProperty.js';
 /** Utils */
 export * from './utils/BitcoinUtils.js';
 
+/** Generators */
+export * from './generator/WrappedGenerationParameters.js';
+
 /** Storage */
 export * from './storage/StoredValue.js';
 export * from './storage/interfaces/IStorageValue.js';
 
 /** Interfaces */
-export * from './block/interfaces/IBlock.js';
 export * from './transactions/interfaces/ITransaction.js';
 export * from './transactions/interfaces/ITransactionReceipt.js';
 export * from './transactions/TransactionReceipt.js';
 export * from './contracts/interfaces/IRawContract.js';
+export * from './transactions/interfaces/BroadcastedTransaction.js';
 
 /** Common */
 export * from './common/CommonTypes.js';

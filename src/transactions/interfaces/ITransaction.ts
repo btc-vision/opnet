@@ -1,9 +1,8 @@
-import { NetEvent } from '@btc-vision/bsi-binary';
 import { BigNumberish } from 'ethers';
 import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTypes.js';
 import { ITransactionInput, TransactionInput } from '../TransactionInput.js';
 import { ITransactionOutput, TransactionOutput } from '../TransactionOutput.js';
-import { ITransactionReceipt } from './ITransactionReceipt.js';
+import { ContractEvents, ITransactionReceipt } from './ITransactionReceipt.js';
 
 /**
  * @description This interface represents the base of a transaction.
@@ -150,7 +149,7 @@ export interface IInteractionTransaction
     /**
      * @description If the interaction returned events, they will be stored here.
      */
-    readonly events: NetEvent[];
+    readonly events: ContractEvents;
 
     /**
      * @description The receipt of the transaction.

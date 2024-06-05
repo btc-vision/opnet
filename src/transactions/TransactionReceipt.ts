@@ -1,5 +1,10 @@
 import { NetEvent } from '@btc-vision/bsi-binary';
-import { ITransactionReceipt, NetEventDocument } from './interfaces/ITransactionReceipt.js';
+import {
+    ContractEvents,
+    ITransactionReceipt,
+    NetEventDocument,
+    RawContractEvents,
+} from './interfaces/ITransactionReceipt.js';
 
 /**
  * Transaction receipt
@@ -19,7 +24,7 @@ export class TransactionReceipt implements ITransactionReceipt {
     /**
      * @description The events of the transaction.
      */
-    public readonly events: NetEvent[];
+    public readonly events: ContractEvents;
 
     /**
      * @description If the transaction was reverted, this field will contain the revert message.
@@ -33,7 +38,7 @@ export class TransactionReceipt implements ITransactionReceipt {
 
         this.receiptProofs = receipt.receiptProofs || [];
 
-        this.events = receipt.events ? this.parseEvents(receipt.events) : [];
+        this.events = receipt.events ? this.parseEvents(receipt.events) : {};
         this.revert = receipt.revert ? Buffer.from(receipt.revert as string, 'base64') : undefined;
     }
 
@@ -42,24 +47,47 @@ export class TransactionReceipt implements ITransactionReceipt {
      * @param events - The events to parse.
      * @private
      */
-    private parseEvents(events: NetEventDocument[] | NetEvent[]): NetEvent[] {
-        return events.map((event: NetEventDocument | NetEvent) => {
-            let eventData: Uint8Array;
-            let eventDataSelector: bigint;
+    private parseEvents(events: RawContractEvents | ContractEvents): ContractEvents {
+        const parsedEvents: ContractEvents = {};
 
-            if (typeof event.eventData === 'string') {
-                eventData = new Uint8Array(Buffer.from(event.eventData, 'base64'));
-            } else {
-                eventData = event.eventData;
+        if (!Array.isArray(events)) {
+            for (const [key, value] of Object.entries(events)) {
+                parsedEvents[key] = value.map((event: NetEventDocument) => {
+                    return this.decodeEvent(event);
+                });
             }
+        } else {
+            for (const event of events) {
+                const parsedEvent = this.decodeEvent(event);
+                const contractAddress = event.contractAddress;
 
-            if (typeof event.eventDataSelector === 'string') {
-                eventDataSelector = BigInt(event.eventDataSelector);
-            } else {
-                eventDataSelector = event.eventDataSelector;
+                if (!parsedEvents[contractAddress]) {
+                    parsedEvents[contractAddress] = [];
+                }
+
+                parsedEvents[contractAddress].push(parsedEvent);
             }
+        }
 
-            return new NetEvent(event.eventType, eventDataSelector, eventData);
-        });
+        return parsedEvents;
+    }
+
+    private decodeEvent(event: NetEventDocument): NetEvent {
+        let eventData: Uint8Array;
+        let eventDataSelector: bigint;
+
+        if (typeof event.eventData === 'string') {
+            eventData = new Uint8Array(Buffer.from(event.eventData, 'base64'));
+        } else {
+            eventData = event.eventData;
+        }
+
+        if (typeof event.eventDataSelector === 'string') {
+            eventDataSelector = BigInt(event.eventDataSelector);
+        } else {
+            eventDataSelector = event.eventDataSelector;
+        }
+
+        return new NetEvent(event.eventType, eventDataSelector, eventData);
     }
 }
