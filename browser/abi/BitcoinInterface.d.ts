@@ -4,6 +4,7 @@ export declare class BitcoinInterface {
     constructor(abi: BitcoinInterfaceAbi);
     static from(abi: BitcoinInterface | BitcoinInterfaceAbi): BitcoinInterface;
     hasFunction(name: string): boolean;
+    hasEvent(name: string): boolean;
     private verifyAbi;
     private verifyAbiValues;
 }

@@ -1,13 +1,11 @@
 import type { Config } from '@jest/types';
 import { BabelConfig } from 'ts-jest';
 
-const esModules = ['chalk', 'supports-color'].join('|');
+const esModules = ['chalk', 'supports-color', '@btc-vision/logger'].join('|');
 
 const babelConfig: BabelConfig = {
     presets: ['@babel/preset-env'],
-    plugins: [
-        ["babel-plugin-transform-import-meta", { "module": "ES6" }]
-    ]
+    plugins: [['babel-plugin-transform-import-meta', { module: 'ES6' }]],
 };
 
 // @ts-ignore
@@ -24,7 +22,17 @@ const config: Config.InitialOptions = {
             },
         ],
     },
-    modulePathIgnorePatterns: ['packages', 'build', 'node_modules', 'data', 'documents', 'models', 'repositories', 'utils', 'config'],
+    modulePathIgnorePatterns: [
+        'packages',
+        'build',
+        'node_modules',
+        'data',
+        'documents',
+        'models',
+        'repositories',
+        'utils',
+        'config',
+    ],
     testMatch: [
         '<rootPath>/tests/**/*.test.ts',
         '<rootPath>/tests/*.test.ts',

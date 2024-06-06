@@ -11,5 +11,6 @@ export declare class DeploymentTransaction extends TransactionBase<OPNetTransact
     readonly deployerAddress: string;
     readonly contractSeed: Buffer;
     readonly contractSaltHash: Buffer;
+    readonly from: string;
     constructor(transaction: IDeploymentTransaction);
 }
