@@ -1,5 +1,4 @@
 /// <reference types="node" />
-import { NetEvent } from '@btc-vision/bsi-binary';
 import { Buffer } from 'buffer';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IInteractionTransaction } from './interfaces/ITransaction.js';
@@ -10,8 +9,7 @@ export declare class InteractionTransaction extends TransactionBase<OPNetTransac
     readonly contractSecret: Buffer;
     readonly interactionPubKey: Buffer;
     readonly wasCompressed: boolean;
-    readonly events: NetEvent[];
-    readonly receipt?: Buffer;
-    readonly receiptProofs?: string[];
+    readonly from: string;
+    readonly contractAddress: string;
     constructor(transaction: IInteractionTransaction);
 }

@@ -5,13 +5,13 @@ import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties
 import { BitcoinInterfaceAbi } from '../abi/interfaces/BitcoinInterfaceAbi.js';
 import { BitcoinAddressLike } from '../common/CommonTypes.js';
 
-export interface TestContract extends BaseContractProperties {
+export interface WBTCContract extends BaseContractProperties {
     balanceOf(address: BitcoinAddressLike): Promise<BaseContractProperty>;
 
     owner(): Promise<BaseContractProperty>;
 }
 
-export const TestContractABI: BitcoinInterfaceAbi = [
+export const wBTCAbi: BitcoinInterfaceAbi = [
     {
         name: 'balanceOf',
         inputs: [
