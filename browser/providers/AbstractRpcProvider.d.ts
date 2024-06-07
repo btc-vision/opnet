@@ -12,8 +12,8 @@ import { WrappedGeneration } from '../generator/WrappedGenerationParameters.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { StoredValue } from '../storage/StoredValue.js';
 import { BroadcastedTransaction } from '../transactions/interfaces/BroadcastedTransaction.js';
+import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.js';
 import { TransactionBase } from '../transactions/Transaction.js';
-import { TransactionReceipt } from '../transactions/TransactionReceipt.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 export declare abstract class AbstractRpcProvider {
     protected abstract readonly provider: JsonRpcApiProvider;

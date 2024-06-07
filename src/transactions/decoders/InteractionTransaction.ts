@@ -1,14 +1,14 @@
 import { Buffer } from 'buffer';
-import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
-import { IInteractionTransaction } from './interfaces/ITransaction.js';
-import { TransactionBase } from './Transaction.js';
+import { InteractionType } from '../../interfaces/opnet/OPNetTransactionTypes.js';
+import { IInteractionTransaction } from '../interfaces/transactions/IInteractionTransaction.js';
+import { TransactionBase } from '../Transaction.js';
 
 /**
  * Interaction transaction.
  * @category Transactions
  */
 export class InteractionTransaction
-    extends TransactionBase<OPNetTransactionTypes.Interaction>
+    extends TransactionBase<InteractionType>
     implements IInteractionTransaction
 {
     /**

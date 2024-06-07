@@ -6,6 +6,14 @@
         "target": "esnext",
         "declaration": true,
         "esModuleInterop": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "baseUrl": ".",
+        "paths": {
+            "@btc-vision/transaction": [
+                "node_modules/@btc-vision/transaction"
+            ]
+        },
         "moduleResolution": "bundler"
     }
 }

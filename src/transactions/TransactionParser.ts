@@ -1,13 +1,12 @@
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
-import { DeploymentTransaction } from './DeploymentTransaction.js';
-import { GenericTransaction } from './GenericTransaction.js';
-import { InteractionTransaction } from './InteractionTransaction.js';
-import {
-    IDeploymentTransaction,
-    IGenericTransaction,
-    IInteractionTransaction,
-    ITransaction,
-} from './interfaces/ITransaction.js';
+import { DeploymentTransaction } from './decoders/DeploymentTransaction.js';
+import { GenericTransaction } from './decoders/GenericTransaction.js';
+import { InteractionTransaction } from './decoders/InteractionTransaction.js';
+import { WrapTransaction } from './decoders/WrapTransaction.js';
+import { IGenericTransaction, ITransaction } from './interfaces/ITransaction.js';
+import { IDeploymentTransaction } from './interfaces/transactions/IDeploymentTransaction.js';
+import { IInteractionTransaction } from './interfaces/transactions/IInteractionTransaction.js';
+import { IWrapTransaction } from './interfaces/transactions/IWrapTransaction.js';
 import { TransactionBase } from './Transaction.js';
 
 /**
@@ -33,13 +32,17 @@ export class TransactionParser {
     public static parseTransaction(
         transaction: ITransaction,
     ): TransactionBase<OPNetTransactionTypes> {
-        switch (transaction.OPNetType) {
+        const opnetType: OPNetTransactionTypes = transaction.OPNetType;
+
+        switch (opnetType) {
             case OPNetTransactionTypes.Generic:
                 return new GenericTransaction(transaction as IGenericTransaction);
             case OPNetTransactionTypes.Interaction:
                 return new InteractionTransaction(transaction as IInteractionTransaction);
             case OPNetTransactionTypes.Deployment:
                 return new DeploymentTransaction(transaction as IDeploymentTransaction);
+            case OPNetTransactionTypes.WrapInteraction:
+                return new WrapTransaction(transaction as IWrapTransaction);
             default:
                 throw new Error('Unknown transaction type');
         }
