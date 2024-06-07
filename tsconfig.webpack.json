@@ -9,6 +9,11 @@
         "skipLibCheck": true,
         "strict": true,
         "baseUrl": ".",
-        "moduleResolution": "node"
+        "paths": {
+            "@btc-vision/transaction": [
+                "node_modules/@btc-vision/transaction"
+            ]
+        },
+        "moduleResolution": "bundler"
     }
 }
