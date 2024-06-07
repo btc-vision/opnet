@@ -5,8 +5,6 @@
  * @license  MIT
  */
 
-/*! For license information please see index.js.LICENSE.txt */
-
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 
 /*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) */

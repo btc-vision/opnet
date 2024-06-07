@@ -14,7 +14,7 @@ export default {
     },
     experiments: {
         outputModule: true,
-        asyncWebAssembly: true,
+        asyncWebAssembly: false,
         syncWebAssembly: true,
     },
     resolve: {
