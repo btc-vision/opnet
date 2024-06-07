@@ -1,3 +1,4 @@
+import { Address } from '@btc-vision/bsi-binary';
 import { IRawContract } from './interfaces/IRawContract.js';
 
 /**
@@ -6,16 +7,21 @@ import { IRawContract } from './interfaces/IRawContract.js';
  * @category Bitcoin
  */
 export class ContractData implements IRawContract {
-    public readonly contractAddress: string;
-    public readonly virtualAddress: string;
+    public readonly contractAddress: Address;
+    public readonly virtualAddress: Address;
+    public readonly p2trAddress: Address;
+
     public readonly bytecode: Buffer;
     public readonly wasCompressed: boolean;
+
     public readonly deployedTransactionId: string;
     public readonly deployedTransactionHash: string;
+
     public readonly deployerPubKey: Buffer;
     public readonly contractSeed: Buffer;
+
     public readonly contractSaltHash: Buffer;
-    public readonly deployerAddress: string;
+    public readonly deployerAddress: Address;
 
     constructor(raw: IRawContract) {
         this.contractAddress = raw.contractAddress;
@@ -24,6 +30,8 @@ export class ContractData implements IRawContract {
         this.bytecode = Buffer.isBuffer(raw.bytecode)
             ? raw.bytecode
             : Buffer.from(raw.bytecode, 'base64');
+
+        this.p2trAddress = raw.p2trAddress;
 
         this.wasCompressed = raw.wasCompressed;
         this.deployedTransactionId = raw.deployedTransactionId;

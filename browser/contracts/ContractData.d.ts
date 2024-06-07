@@ -1,8 +1,10 @@
 /// <reference types="node" />
+import { Address } from '@btc-vision/bsi-binary';
 import { IRawContract } from './interfaces/IRawContract.js';
 export declare class ContractData implements IRawContract {
-    readonly contractAddress: string;
-    readonly virtualAddress: string;
+    readonly contractAddress: Address;
+    readonly virtualAddress: Address;
+    readonly p2trAddress: Address;
     readonly bytecode: Buffer;
     readonly wasCompressed: boolean;
     readonly deployedTransactionId: string;
@@ -10,6 +12,6 @@ export declare class ContractData implements IRawContract {
     readonly deployerPubKey: Buffer;
     readonly contractSeed: Buffer;
     readonly contractSaltHash: Buffer;
-    readonly deployerAddress: string;
+    readonly deployerAddress: Address;
     constructor(raw: IRawContract);
 }

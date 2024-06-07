@@ -27,9 +27,9 @@ import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
 import { BroadcastedTransaction } from '../transactions/interfaces/BroadcastedTransaction.js';
 import { ITransaction } from '../transactions/interfaces/ITransaction.js';
+import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.js';
 import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
-import { TransactionReceipt } from '../transactions/TransactionReceipt.js';
 import { GenerateTarget, WrappedGenerationParameters } from './interfaces/Generate.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 

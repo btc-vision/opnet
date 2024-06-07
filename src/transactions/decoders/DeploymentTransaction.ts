@@ -1,6 +1,6 @@
-import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
-import { IDeploymentTransaction } from './interfaces/ITransaction.js';
-import { TransactionBase } from './Transaction.js';
+import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTypes.js';
+import { IDeploymentTransaction } from '../interfaces/transactions/IDeploymentTransaction.js';
+import { TransactionBase } from '../Transaction.js';
 
 /**
  * @description This class is used to provide a deployment transaction.
@@ -13,6 +13,8 @@ export class DeploymentTransaction
 {
     public readonly contractAddress: string;
     public readonly virtualAddress: string;
+
+    public readonly p2trAddress: string;
 
     public readonly bytecode: Buffer;
     public readonly wasCompressed: boolean;
@@ -32,6 +34,7 @@ export class DeploymentTransaction
 
         this.contractAddress = transaction.contractAddress;
         this.virtualAddress = transaction.virtualAddress;
+        this.p2trAddress = transaction.p2trAddress;
 
         this.bytecode = Buffer.from(transaction.bytecode as string, 'base64');
         this.wasCompressed = transaction.wasCompressed;

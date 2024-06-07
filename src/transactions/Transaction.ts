@@ -1,9 +1,9 @@
 import { BigNumberish } from 'ethers';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { ITransactionBase } from './interfaces/ITransaction.js';
-import { TransactionInput } from './TransactionInput.js';
-import { ITransactionOutput, TransactionOutput } from './TransactionOutput.js';
-import { TransactionReceipt } from './TransactionReceipt.js';
+import { TransactionInput } from './metadata/TransactionInput.js';
+import { ITransactionOutput, TransactionOutput } from './metadata/TransactionOutput.js';
+import { TransactionReceipt } from './metadata/TransactionReceipt.js';
 
 /**
  * @description This class is used to provide a base transaction.
@@ -52,6 +52,11 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
      */
     public readonly OPNetType: T;
 
+    /**
+     * @description The amount of gas used by the transaction.
+     */
+    public readonly gasUsed: bigint;
+
     protected constructor(transaction: ITransactionBase<T>) {
         super({
             receipt: transaction.receipt,
@@ -73,5 +78,7 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
         );
 
         this.OPNetType = transaction.OPNetType;
+
+        this.gasUsed = BigInt(transaction.gasUsed || '0x00') || 0n;
     }
 }

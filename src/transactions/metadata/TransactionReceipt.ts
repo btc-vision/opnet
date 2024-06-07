@@ -4,7 +4,7 @@ import {
     ITransactionReceipt,
     NetEventDocument,
     RawContractEvents,
-} from './interfaces/ITransactionReceipt.js';
+} from '../interfaces/ITransactionReceipt.js';
 
 /**
  * Transaction receipt
