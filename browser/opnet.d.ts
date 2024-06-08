@@ -34,7 +34,6 @@ export * from './abi/BitcoinAbiTypes.js';
 export * from './abi/interfaces/BaseContractProperties.js';
 export * from './abi/BaseContractProperty.js';
 export * from './utils/BitcoinUtils.js';
-export * from './generator/WrappedGenerationParameters.js';
 export * from './storage/StoredValue.js';
 export * from './storage/interfaces/IStorageValue.js';
 export * from './transactions/interfaces/ITransaction.js';

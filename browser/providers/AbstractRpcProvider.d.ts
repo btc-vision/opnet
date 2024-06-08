@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import '../serialize/BigInt.js';
+import { WrappedGeneration } from '@btc-vision/transaction';
 import { Network } from 'bitcoinjs-lib';
 import { BigNumberish, BlockTag, JsonRpcApiProvider } from 'ethers';
 import { Block } from '../block/Block.js';
@@ -8,7 +9,6 @@ import { BitcoinAddressLike } from '../common/CommonTypes.js';
 import { CallResult } from '../contracts/CallResult.js';
 import { ContractData } from '../contracts/ContractData.js';
 import { ICallRequestError } from '../contracts/interfaces/ICallResult.js';
-import { WrappedGeneration } from '../generator/WrappedGenerationParameters.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { StoredValue } from '../storage/StoredValue.js';
 import { BroadcastedTransaction } from '../transactions/interfaces/BroadcastedTransaction.js';
