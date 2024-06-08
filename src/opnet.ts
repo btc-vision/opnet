@@ -55,9 +55,6 @@ export * from './abi/BaseContractProperty.js';
 /** Utils */
 export * from './utils/BitcoinUtils.js';
 
-/** Generators */
-export * from './generator/WrappedGenerationParameters.js';
-
 /** Storage */
 export * from './storage/StoredValue.js';
 export * from './storage/interfaces/IStorageValue.js';

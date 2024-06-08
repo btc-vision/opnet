@@ -1,5 +1,6 @@
 import '../serialize/BigInt.js';
 import { BufferHelper } from '@btc-vision/bsi-binary';
+import { WrappedGeneration, WrappedGenerationParameters } from '@btc-vision/transaction';
 import { Network, networks } from 'bitcoinjs-lib';
 
 import {
@@ -21,7 +22,6 @@ import { CallResult } from '../contracts/CallResult.js';
 import { ContractData } from '../contracts/ContractData.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
-import { WrappedGeneration } from '../generator/WrappedGenerationParameters.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
@@ -30,7 +30,7 @@ import { ITransaction } from '../transactions/interfaces/ITransaction.js';
 import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.js';
 import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
-import { GenerateTarget, WrappedGenerationParameters } from './interfaces/Generate.js';
+import { GenerateTarget } from './interfaces/Generate.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
 type JsonRpcCallResult = (JsonRpcResult | JsonRpcError)[];
