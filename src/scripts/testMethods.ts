@@ -1,31 +1,31 @@
+import { BaseContractProperty } from '../abi/BaseContractProperty.js';
 import { getContract } from '../contracts/Contract.js';
 import { JSONRpcProvider } from '../providers/JSONRpcProvider.js';
 import { wBTCAbi, WBTCContract } from './ITestContract.js';
 
 const provider: JSONRpcProvider = new JSONRpcProvider('https://testnet.opnet.org'); //http://localhost:9001
 
-(async () => {
-    const contract: WBTCContract = getContract<WBTCContract>(
-        'tb1pq64lx73fwyrdp4asvl7xt5r5qvxvt9wy82x75taqtzvd64f58nasansurj',
-        wBTCAbi,
-        provider,
-    );
+const contract: WBTCContract = getContract<WBTCContract>(
+    'tb1pq64lx73fwyrdp4asvl7xt5r5qvxvt9wy82x75taqtzvd64f58nasansurj',
+    wBTCAbi,
+    provider,
+);
 
-    const myWBTCBalance = await contract.balanceOf(
-        'tb1pvajdvghss0tc737z72sq02cga9hd7wvdua9vcqj357a6yqhlhy4seud439',
-    );
+const myWBTCBalance: BaseContractProperty = await contract.balanceOf(
+    'tb1pvajdvghss0tc737z72sq02cga9hd7wvdua9vcqj357a6yqhlhy4seud439',
+);
 
-    if ('error' in myWBTCBalance) throw new Error(myWBTCBalance.error);
+if ('error' in myWBTCBalance) throw new Error(myWBTCBalance.error);
 
-    console.log('My WBTC balance:', myWBTCBalance.decoded[0]);
+console.log('My WBTC balance:', myWBTCBalance.decoded[0]);
 
-    const tx = await provider.getTransaction(
-        '4076964e2d70c44562cb4bb8afb074c723e850a7807abc73eb9a33682ec93f44',
-    );
+const tx = await provider.getTransaction(
+    '4076964e2d70c44562cb4bb8afb074c723e850a7807abc73eb9a33682ec93f44',
+);
 
-    console.log('Transaction:', tx);
+console.log('Transaction:', tx);
 
-    /*const blockNumber = await provider.getBlockNumber();
+/*const blockNumber = await provider.getBlockNumber();
                                                                                                                                         console.log('Current network height:', blockNumber);
 
                                                                                                                                         const block = await provider.getBlock(2810101n, true);
@@ -37,7 +37,7 @@ const provider: JSONRpcProvider = new JSONRpcProvider('https://testnet.opnet.org
                                                                                                                                         const utxos = await provider.getUXTOs('tb1qcfszz8dcvsz9mcp70ezw5zy2r3ydr0cfz60d3t');
                                                                                                                                         console.log('UTXOs:', utxos);*/
 
-    /*const transaction = (await provider.getTransaction(
+/*const transaction = (await provider.getTransaction(
                                             'af7a6001150b2b4ec7361515d3e5075c81d9f975c8ec22989db0a0c474c08418',
                                         )) as InteractionTransaction;
 
@@ -81,9 +81,9 @@ const provider: JSONRpcProvider = new JSONRpcProvider('https://testnet.opnet.org
                                         console.log('Wrap Params:', wrapParams);
 
                                         /*const net = await provider.getNetwork();*/
-    //console.log(net);
+//console.log(net);
 
-    /*const code = await provider.getCode(
+/*const code = await provider.getCode(
                                     'tb1pq64lx73fwyrdp4asvl7xt5r5qvxvt9wy82x75taqtzvd64f58nasansurj',
                                 );
 
@@ -103,4 +103,3 @@ const provider: JSONRpcProvider = new JSONRpcProvider('https://testnet.opnet.org
                                 );
 
                                 console.log('Call result:', callResult);*/
-})();
