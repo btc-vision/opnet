@@ -58,13 +58,3 @@ $$ \text{durationMultiplier} = \frac{10000}{2016} \approx 4.96 $$
 $$ \text{Reward} = 4.56 \times 0.000602 \times 4.96 \approx 0.0136 \text{ WBTC} $$
 
 In this example, you would receive approximately 0.0136 WBTC as a reward for staking your tokens.
-
-## Benefits of WBTC Staking
-
-- **Earn Rewards:** By staking your WBTC, you can earn additional WBTC over time.
-- **Long-term Gains:** The longer you stake, the more rewards you can earn.
-- **Support the Network:** Staking helps maintain the stability and security of the WBTC network.
-
-## Conclusion
-
-WBTC staking is a great way to earn rewards while supporting the network. By understanding how the staking process works and how rewards are calculated, you can make informed decisions about how much and how long to stake your WBTC.
