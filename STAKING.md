@@ -11,7 +11,7 @@ WBTC staking is a process where you can lock up your WBTC tokens (Wrapped Bitcoi
 
 ### 1. Staking Your WBTC
 
-When you stake your WBTC tokens, they are locked in the smart contract for a minimum duration of 576 blocks. This period ensures that your tokens are committed to the staking process and helps maintain the stability of the reward system. The minimum amount you can stake is 0.0001 WBTC (10000 sat).
+When you stake your WBTC tokens, they are locked in the smart contract for a minimum duration of 576 blocks. This period ensures that your tokens are committed to the staking process and helps maintain the stability of the reward system. The minimum amount you can stake is 0.0001 WBTC (10000 units).
 
 ### 2. Reward Pool
 
@@ -30,26 +30,32 @@ The rewards you earn from staking are calculated based on two factors:
 #### Mathematical Representation
 
 1. **Stake Proportion:**
-   \[ \text{stakeProportion} = \frac{\text{Your Staked Amount}}{\text{Total Staked Amount}} \]
+
+$$ \text{stakeProportion} = \frac{\text{Your Staked Amount}}{\text{Total Staked Amount}} $$
 
 2. **Duration Multiplier:**
-   \[ \text{durationMultiplier} = \frac{\text{Your Staking Duration}}{2016} \]
+
+$$ \text{durationMultiplier} = \frac{\text{Your Staking Duration}}{2016} $$
 
 3. **Reward Calculation:**
-   \[ \text{Reward} = \text{Reward Pool} \times \left( \frac{\text{Your Staked Amount}}{\text{Total Staked Amount}} \right) \times \left( \frac{\text{Your Staking Duration}}{2016} \right) \]
+
+$$ \text{Reward} = \text{Reward Pool} \times \left( \frac{\text{Your Staked Amount}}{\text{Total Staked Amount}} \right) \times \left( \frac{\text{Your Staking Duration}}{2016} \right) $$
 
 ### Example
 
 Imagine you staked 0.1 WBTC, the total amount of WBTC staked by all users is 166 WBTC, your staking duration is 10000 blocks, and the reward pool has 4.56 WBTC. Your reward would be calculated as follows:
 
 1. **Stake Proportion:**
-   \[ \text{stakeProportion} = \frac{0.1}{166} \approx 0.000602 \]
+
+$$ \text{stakeProportion} = \frac{0.1}{166} \approx 0.000602 $$
 
 2. **Duration Multiplier:**
-   \[ \text{durationMultiplier} = \frac{10000}{2016} \approx 4.96 \]
+
+$$ \text{durationMultiplier} = \frac{10000}{2016} \approx 4.96 $$
 
 3. **Reward Calculation:**
-   \[ \text{Reward} = 4.56 \times 0.000602 \times 4.96 \approx 0.0136 \text{ WBTC} \]
+
+$$ \text{Reward} = 4.56 \times 0.000602 \times 4.96 \approx 0.0136 \text{ WBTC} $$
 
 In this example, you would receive approximately 0.0136 WBTC as a reward for staking your tokens.
 
@@ -61,4 +67,4 @@ In this example, you would receive approximately 0.0136 WBTC as a reward for sta
 
 ## Conclusion
 
-WBTC staking is a great way to earn rewards while supporting the network. By understanding how the staking process works and how rewards are calculated, you can make informed decisions about how much and how long to stake your WBTC. Start staking today and watch your WBTC grow!
+WBTC staking is a great way to earn rewards while supporting the network. By understanding how the staking process works and how rewards are calculated, you can make informed decisions about how much and how long to stake your WBTC.
