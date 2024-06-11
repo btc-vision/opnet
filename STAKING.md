@@ -11,7 +11,7 @@ WBTC staking is a process where you can lock up your WBTC tokens (Wrapped Bitcoi
 
 ### 1. Staking Your WBTC
 
-When you stake your WBTC tokens, they are locked in the smart contract for a minimum duration of 576 blocks. This period ensures that your tokens are committed to the staking process and helps maintain the stability of the reward system. The minimum amount you can stake is 0.0001 WBTC (10000 units).
+When you stake your WBTC tokens, they are locked in the smart contract for a minimum duration of 576 blocks. This period ensures that your tokens are committed to the staking process and helps maintain the stability of the reward system. The minimum amount you can stake is 0.0001 WBTC (10000 sat).
 
 ### 2. Reward Pool
 
