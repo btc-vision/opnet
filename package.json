@@ -89,7 +89,7 @@
     "dependencies": {
         "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
         "@bitcoinerlab/secp256k1": "^1.1.1",
-        "@btc-vision/bsi-binary": "^1.0.16",
+        "@btc-vision/bsi-binary": "^1.0.17",
         "@btc-vision/bsi-bitcoin-rpc": "^1.0.17",
         "@btc-vision/transaction": "^1.0.19",
         "@noble/hashes": "^1.4.0",
