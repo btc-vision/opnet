@@ -14,3 +14,8 @@ export type DecodedCallResult =
     | Array<boolean>
     | Array<number>
     | Array<Uint8Array>;
+
+export type Numeric = number | bigint;
+
+export type BigNumberish = Numeric | string;
+export type BlockTag = BigNumberish | 'latest' | 'pending' | 'earliest';

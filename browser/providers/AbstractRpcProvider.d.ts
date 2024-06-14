@@ -2,10 +2,9 @@
 import '../serialize/BigInt.js';
 import { WrappedGeneration } from '@btc-vision/transaction';
 import { Network } from 'bitcoinjs-lib';
-import { BigNumberish, BlockTag, JsonRpcApiProvider } from 'ethers';
 import { Block } from '../block/Block.js';
 import { BlockWitnesses } from '../block/interfaces/BlockWitness.js';
-import { BitcoinAddressLike } from '../common/CommonTypes.js';
+import { BigNumberish, BitcoinAddressLike, BlockTag } from '../common/CommonTypes.js';
 import { CallResult } from '../contracts/CallResult.js';
 import { ContractData } from '../contracts/ContractData.js';
 import { ICallRequestError } from '../contracts/interfaces/ICallResult.js';
@@ -14,12 +13,15 @@ import { StoredValue } from '../storage/StoredValue.js';
 import { BroadcastedTransaction } from '../transactions/interfaces/BroadcastedTransaction.js';
 import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.js';
 import { TransactionBase } from '../transactions/Transaction.js';
+import { JsonRpcPayload } from './interfaces/JSONRpc.js';
+import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 export declare abstract class AbstractRpcProvider {
-    protected abstract readonly provider: JsonRpcApiProvider;
     private nextId;
+    private network;
+    private chainId;
     protected constructor();
-    getBlockNumber(): Promise<number>;
+    getBlockNumber(): Promise<bigint>;
     getBlock(blockNumberOrHash: BlockTag, prefetchTxs?: boolean): Promise<Block>;
     getBlockByHash(blockHash: string): Promise<Block>;
     getBalance(addressLike: BitcoinAddressLike): Promise<bigint>;
@@ -27,6 +29,7 @@ export declare abstract class AbstractRpcProvider {
     getTransaction(txHash: string): Promise<TransactionBase<OPNetTransactionTypes>>;
     getTransactionReceipt(txHash: string): Promise<TransactionReceipt>;
     getNetwork(): Promise<Network>;
+    getChainId(): Promise<bigint>;
     getCode(address: BitcoinAddressLike, onlyBytecode?: boolean): Promise<ContractData | Buffer>;
     getStorageAt(address: BitcoinAddressLike, rawPointer: bigint | string, proofs?: boolean, height?: BigNumberish): Promise<StoredValue>;
     call(to: BitcoinAddressLike, data: Buffer | string, from?: BitcoinAddressLike, height?: BigNumberish): Promise<CallResult | ICallRequestError>;
@@ -34,6 +37,7 @@ export declare abstract class AbstractRpcProvider {
     getBlockWitness(height?: BigNumberish | -1, trusted?: boolean, limit?: number, page?: number): Promise<BlockWitnesses>;
     getReorg(fromBlock?: BigNumberish, toBlock?: BigNumberish): Promise<ReorgInformation[]>;
     requestTrustedPublicKeyForBitcoinWrapping(amount: BigNumberish): Promise<WrappedGeneration>;
+    abstract _send(payload: JsonRpcPayload): Promise<JsonRpcCallResult>;
     protected abstract providerUrl(url: string): string;
     private bufferToHex;
     private bigintToBase64;

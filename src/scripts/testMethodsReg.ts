@@ -9,12 +9,9 @@ const provider: JSONRpcProvider = new JSONRpcProvider('http://localhost:9001');
 
     console.log('Transaction:', tx);
 
-    const c = await provider.getCode(
-        'bcrt1py2dhdrrf4s72gau3mkdw0mpnkgzp63qfdc0j7nah3luhmfcwf8kq4r44ef',
-        false,
-    );
+    const c = await provider.getCode('', false);
     console.log(c);
 
-    const d = await provider.getCode('bcrt1qr34ygwd8tqtt5gq2n6mvafygqmfawm7yl6u6kp', false);
+    const d = await provider.getCode('bcrt1qmsx5vpm6yfwtex5ygag0nwktnmj7a48eew2qn0', false);
     console.log(d);
 })();

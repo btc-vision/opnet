@@ -2,22 +2,13 @@ import '../serialize/BigInt.js';
 import { BufferHelper } from '@btc-vision/bsi-binary';
 import { WrappedGeneration, WrappedGenerationParameters } from '@btc-vision/transaction';
 import { Network, networks } from 'bitcoinjs-lib';
-
-import {
-    BigNumberish,
-    BlockTag,
-    JsonRpcApiProvider,
-    JsonRpcError,
-    JsonRpcPayload,
-    JsonRpcResult,
-} from 'ethers';
 import { IUTXO } from '../bitcoin/interfaces/IUTXO.js';
 
 import { UTXO, UTXOs } from '../bitcoin/UTXOs.js';
 import { Block } from '../block/Block.js';
 import { BlockWitnesses } from '../block/interfaces/BlockWitness.js';
 import { IBlock } from '../block/interfaces/IBlock.js';
-import { BitcoinAddressLike } from '../common/CommonTypes.js';
+import { BigNumberish, BitcoinAddressLike, BlockTag } from '../common/CommonTypes.js';
 import { CallResult } from '../contracts/CallResult.js';
 import { ContractData } from '../contracts/ContractData.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
@@ -31,9 +22,10 @@ import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.
 import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
 import { GenerateTarget } from './interfaces/Generate.js';
+import { JsonRpcPayload } from './interfaces/JSONRpc.js';
+import { JSONRpcMethods } from './interfaces/JSONRpcMethods.js';
+import { JSONRpc2ResponseResult, JsonRpcCallResult, JsonRpcResult } from './interfaces/JSONRpcResult.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
-
-type JsonRpcCallResult = (JsonRpcResult | JsonRpcError)[];
 
 /**
  * @description This class is used to provide an abstract RPC provider.
@@ -42,9 +34,10 @@ type JsonRpcCallResult = (JsonRpcResult | JsonRpcError)[];
  * @category Providers
  */
 export abstract class AbstractRpcProvider {
-    protected abstract readonly provider: JsonRpcApiProvider;
-
     private nextId: number = 0;
+
+    private network: Network | undefined;
+    private chainId: bigint | undefined;
 
     protected constructor() {}
 
@@ -54,8 +47,16 @@ export abstract class AbstractRpcProvider {
      * @returns {Promise<number>} The latest block number
      * @example await getBlockNumber();
      */
-    public async getBlockNumber(): Promise<number> {
-        return await this.provider.getBlockNumber();
+    public async getBlockNumber(): Promise<bigint> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.BLOCK_BY_NUMBER,
+            [],
+        );
+
+        const rawBlockNumber: JsonRpcResult = await this.callPayloadSingle(payload);
+        const result: string = rawBlockNumber.result as string;
+
+        return BigInt(result);
     }
 
     /**
@@ -72,7 +73,9 @@ export abstract class AbstractRpcProvider {
         prefetchTxs: boolean = false,
     ): Promise<Block> {
         const method =
-            typeof blockNumberOrHash === 'string' ? 'btc_getBlockByHash' : 'btc_getBlockByNumber';
+            typeof blockNumberOrHash === 'string'
+                ? JSONRpcMethods.GET_BLOCK_BY_HASH
+                : JSONRpcMethods.GET_BLOCK_BY_NUMBER;
 
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [
             blockNumberOrHash,
@@ -81,7 +84,7 @@ export abstract class AbstractRpcProvider {
 
         const block: JsonRpcResult = await this.callPayloadSingle(payload);
 
-        const result: IBlock = block.result;
+        const result: IBlock = block.result as IBlock;
         return new Block(result);
     }
 
@@ -105,10 +108,12 @@ export abstract class AbstractRpcProvider {
      */
     public async getBalance(addressLike: BitcoinAddressLike): Promise<bigint> {
         const address: string = addressLike.toString();
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_getBalance', [address]);
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_BALANCE, [
+            address,
+        ]);
         const rawBalance: JsonRpcResult = await this.callPayloadSingle(payload);
 
-        const result: string = rawBalance.result;
+        const result: string = rawBalance.result as string;
         if (!result || (result && !result.startsWith('0x'))) {
             throw new Error(`Invalid balance returned from provider: ${result}`);
         }
@@ -130,13 +135,13 @@ export abstract class AbstractRpcProvider {
         optimize: boolean = false,
     ): Promise<unknown> {
         const addressStr: string = address.toString();
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_getUTXOs', [
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_UTXOS, [
             addressStr,
             optimize,
         ]);
 
         const rawUXTOs: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: UTXOs = rawUXTOs.result || [];
+        const result: UTXOs = (rawUXTOs.result as UTXOs) || [];
 
         return result.map((utxo: IUTXO) => {
             return new UTXO(utxo);
@@ -152,12 +157,13 @@ export abstract class AbstractRpcProvider {
      * @throws {Error} If something went wrong while fetching the transaction
      */
     public async getTransaction(txHash: string): Promise<TransactionBase<OPNetTransactionTypes>> {
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_getTransactionByHash', [
-            txHash,
-        ]);
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_TRANSACTION_BY_HASH,
+            [txHash],
+        );
 
         const rawTransaction: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: ITransaction = rawTransaction.result;
+        const result: ITransaction = rawTransaction.result as ITransaction;
 
         return TransactionParser.parseTransaction(result);
     }
@@ -171,9 +177,10 @@ export abstract class AbstractRpcProvider {
      * @throws {Error} Something went wrong while fetching the transaction receipt
      */
     public async getTransactionReceipt(txHash: string): Promise<TransactionReceipt> {
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_getTransactionReceipt', [
-            txHash,
-        ]);
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_TRANSACTION_RECEIPT,
+            [txHash],
+        );
 
         const rawTransaction: JsonRpcResult = await this.callPayloadSingle(payload);
         return new TransactionReceipt(rawTransaction.result);
@@ -186,9 +193,12 @@ export abstract class AbstractRpcProvider {
      * @throws {Error} If the chain id is invalid
      */
     public async getNetwork(): Promise<Network> {
-        const network = await this.provider.getNetwork();
+        if (this.network) {
+            return this.network;
+        }
 
-        switch (network.chainId) {
+        const network = await this.getChainId();
+        switch (network) {
             case 1n:
                 return networks.bitcoin;
             case 2n:
@@ -197,8 +207,29 @@ export abstract class AbstractRpcProvider {
                 return networks.regtest;
 
             default:
-                throw new Error(`Invalid chain id: ${network.chainId}`);
+                throw new Error(`Invalid chain id: ${network}`);
         }
+    }
+
+    /**
+     * Get the chain id.
+     * @description This method is used to get the chain id.
+     * @returns {Promise<bigint>} The chain id
+     * @throws {Error} If something went wrong while fetching the chain id
+     */
+    public async getChainId(): Promise<bigint> {
+        if (this.chainId !== undefined) return this.chainId;
+
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.CHAIN_ID, []);
+        const rawChainId: JsonRpcResult = await this.callPayloadSingle(payload);
+        if ('error' in rawChainId) {
+            throw new Error(`Something went wrong while fetching: ${rawChainId.error}`);
+        }
+
+        const chainId = rawChainId.result as string;
+        this.chainId = BigInt(chainId);
+
+        return this.chainId;
     }
 
     /**
@@ -215,13 +246,21 @@ export abstract class AbstractRpcProvider {
         onlyBytecode: boolean = false,
     ): Promise<ContractData | Buffer> {
         const addressStr: string = address.toString();
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_getCode', [
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_CODE, [
             addressStr,
             onlyBytecode,
         ]);
 
         const rawCode: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: IRawContract | { bytecode: string } = rawCode.result;
+        if (rawCode.error) {
+            throw new Error(
+                `${rawCode.error.code}: Something went wrong while fetching: ${rawCode.error.message}`,
+            );
+        }
+
+        const result: IRawContract | { bytecode: string } = rawCode.result as
+            | IRawContract
+            | { bytecode: string };
 
         if ('contractAddress' in result) {
             return new ContractData(result);
@@ -257,10 +296,12 @@ export abstract class AbstractRpcProvider {
             params.push(height.toString());
         }
 
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_getStorageAt', params);
-
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_STORAGE_AT,
+            params,
+        );
         const rawStorage: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: IStorageValue = rawStorage.result;
+        const result: IStorageValue = rawStorage.result as IStorageValue;
 
         return new StoredValue(result);
     }
@@ -299,10 +340,10 @@ export abstract class AbstractRpcProvider {
             params.push(height.toString());
         }
 
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_call', params);
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.CALL, params);
         const rawCall: JsonRpcResult = await this.callPayloadSingle(payload);
 
-        const result: ICallResult = rawCall.result;
+        const result: ICallResult = rawCall.result as ICallResult;
         if ('error' in result) {
             return result;
         }
@@ -325,13 +366,13 @@ export abstract class AbstractRpcProvider {
             throw new Error('Invalid hex string');
         }
 
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_sendRawTransaction', [
-            tx,
-            psbt,
-        ]);
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.BROADCAST_TRANSACTION,
+            [tx, psbt],
+        );
 
         const rawTx: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: BroadcastedTransaction = rawTx.result;
+        const result: BroadcastedTransaction = rawTx.result as BroadcastedTransaction;
         if (result && result.identifier) {
             return {
                 ...result,
@@ -365,10 +406,13 @@ export abstract class AbstractRpcProvider {
         if (limit !== undefined && limit !== null) params.push(limit);
         if (page !== undefined && page !== null) params.push(page);
 
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_blockWitness', params);
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.BLOCK_WITNESS,
+            params,
+        );
 
         const rawWitnesses: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: BlockWitnesses = rawWitnesses.result;
+        const result: BlockWitnesses = rawWitnesses.result as BlockWitnesses;
 
         for (let i = 0; i < result.length; i++) {
             result[i].blockNumber = BigInt('0x' + result[i].blockNumber);
@@ -395,10 +439,10 @@ export abstract class AbstractRpcProvider {
         if (fromBlock !== undefined && fromBlock !== null) params.push(fromBlock.toString());
         if (toBlock !== undefined && toBlock !== null) params.push(toBlock.toString());
 
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_reorg', params);
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.REORG, params);
         const rawReorg: JsonRpcResult = await this.callPayloadSingle(payload);
 
-        const result: ReorgInformation[] = rawReorg.result;
+        const result: ReorgInformation[] = rawReorg.result as ReorgInformation[];
         if (result.length > 0) {
             for (let i = 0; i < result.length; i++) {
                 const res = result[i];
@@ -422,16 +466,24 @@ export abstract class AbstractRpcProvider {
     public async requestTrustedPublicKeyForBitcoinWrapping(
         amount: BigNumberish,
     ): Promise<WrappedGeneration> {
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload('btc_generate', [
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GENERATE, [
             GenerateTarget.WRAP,
             amount.toString(),
         ]);
 
         const rawPublicKey: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: WrappedGenerationParameters = rawPublicKey.result;
+        const result: WrappedGenerationParameters =
+            rawPublicKey.result as WrappedGenerationParameters;
 
         return new WrappedGeneration(result);
     }
+
+    /**
+     * Requests to the OPNET node
+     * @param {JsonRpcPayload} payload The method to call
+     * @returns {Promise<JSONRpc2Result<T extends JSONRpcMethods>>} The result of the request
+     */
+    public abstract _send(payload: JsonRpcPayload): Promise<JsonRpcCallResult>;
 
     protected abstract providerUrl(url: string): string;
 
@@ -451,9 +503,9 @@ export abstract class AbstractRpcProvider {
      * @private
      */
     private async callPayloadSingle(payload: JsonRpcPayload): Promise<JsonRpcResult> {
-        const rawData: JsonRpcCallResult = await this.provider._send(payload);
-        if (rawData.length !== 1) {
-            throw new Error(`Unexpected response length for get block request: ${rawData.length}`);
+        const rawData: JsonRpcCallResult = await this._send(payload);
+        if (!rawData.length) {
+            throw new Error('No data returned');
         }
 
         const data = rawData.shift();
@@ -461,14 +513,17 @@ export abstract class AbstractRpcProvider {
             throw new Error('Block not found');
         }
 
-        if ('error' in data) {
+        /*if (data.error) {
             throw new Error(`Something went wrong while fetching: ${data.error.message}`);
-        }
+        }*/
 
-        return data;
+        return data as JSONRpc2ResponseResult<JSONRpcMethods>;
     }
 
-    private buildJsonRpcPayload(method: string, params: unknown[]): JsonRpcPayload {
+    private buildJsonRpcPayload<T extends JSONRpcMethods>(
+        method: T,
+        params: unknown[],
+    ): JsonRpcPayload {
         return {
             method: method,
             params: params,

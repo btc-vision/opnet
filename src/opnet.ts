@@ -66,6 +66,11 @@ export * from './transactions/metadata/TransactionReceipt.js';
 export * from './contracts/interfaces/IRawContract.js';
 export * from './transactions/interfaces/BroadcastedTransaction.js';
 
+export * from './providers/interfaces/JSONRpc.js';
+export * from './providers/interfaces/JSONRpcMethods.js';
+export * from './providers/interfaces/JSONRpcParams.js';
+export * from './providers/interfaces/JSONRpcResult.js';
+
 /** Common */
 export * from './common/CommonTypes.js';
 

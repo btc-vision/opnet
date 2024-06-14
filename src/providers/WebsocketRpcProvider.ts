@@ -1,5 +1,6 @@
-import { WebSocketProvider } from 'ethers';
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
+import { JsonRpcPayload } from './interfaces/JSONRpc.js';
+import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';
 
 /**
  * @description This class is used to provide a WebSocket RPC provider.
@@ -9,13 +10,14 @@ import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 export class WebSocketRpcProvider extends AbstractRpcProvider {
     private readonly wsUrl: string;
 
-    protected readonly provider: WebSocketProvider;
-
     constructor(url: string) {
         super();
 
         this.wsUrl = this.providerUrl(url);
-        this.provider = new WebSocketProvider(this.wsUrl);
+    }
+
+    public async _send(payload: JsonRpcPayload): Promise<JsonRpcCallResult> {
+        throw new Error('Method not implemented.');
     }
 
     protected providerUrl(url: string): string {

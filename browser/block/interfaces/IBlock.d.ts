@@ -1,4 +1,4 @@
-import { BigNumberish } from 'ethers';
+import { BigNumberish } from '../../common/CommonTypes.js';
 import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTypes.js';
 import { ITransaction } from '../../transactions/interfaces/ITransaction.js';
 import { TransactionBase } from '../../transactions/Transaction.js';

@@ -27,7 +27,7 @@ export function createHash(algo: any): import("@noble/hashes/utils").Hash<{
     digest(): Uint8Array;
     _cloneInto(to?: any | undefined): any;
     clone(): any;
-}> | import("@noble/hashes/utils").Hash<import("@noble/hashes/sha512").SHA512>;
+}> | import("@noble/hashes/utils").Hash<import("@noble/hashes/sha512").SHA512> | undefined;
 export function createHmac(_algo: any, key: any): import("@noble/hashes/hmac").HMAC<any>;
 export function pbkdf2Sync(password: any, salt: any, iterations: any, keylen: any, _algo: any): Uint8Array;
 export function randomBytes(length: any): Uint8Array;
