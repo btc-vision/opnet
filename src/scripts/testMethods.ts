@@ -6,7 +6,7 @@ import { wBTCAbi, WBTCContract } from './ITestContract.js';
 const provider: JSONRpcProvider = new JSONRpcProvider('https://testnet.opnet.org'); //http://localhost:9001
 
 const contract: WBTCContract = getContract<WBTCContract>(
-    'tb1pq64lx73fwyrdp4asvl7xt5r5qvxvt9wy82x75taqtzvd64f58nasansurj',
+    'tb1qs4d69qpw57cm3pxyeuamenkv0aswtnhpgxry06',
     wBTCAbi,
     provider,
 );

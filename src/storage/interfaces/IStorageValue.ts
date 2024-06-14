@@ -1,5 +1,4 @@
-import { BigNumberish } from 'ethers';
-import { PointerLike } from '../../common/CommonTypes.js';
+import { BigNumberish, PointerLike } from '../../common/CommonTypes.js';
 
 /**
  * @description This interface is used to represent a stored value.

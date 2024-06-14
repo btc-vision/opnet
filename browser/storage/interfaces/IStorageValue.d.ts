@@ -1,6 +1,5 @@
 /// <reference types="node" />
-import { BigNumberish } from 'ethers';
-import { PointerLike } from '../../common/CommonTypes.js';
+import { BigNumberish, PointerLike } from '../../common/CommonTypes.js';
 export interface IStorageValue {
     readonly pointer: PointerLike;
     readonly value: string | Buffer;

@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { BigNumberish } from 'ethers';
+import { BigNumberish } from '../../common/CommonTypes.js';
 import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTypes.js';
 import { ITransactionInput, TransactionInput } from '../metadata/TransactionInput.js';
 import { ITransactionOutput, TransactionOutput } from '../metadata/TransactionOutput.js';

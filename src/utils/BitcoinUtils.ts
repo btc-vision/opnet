@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { BigNumberish } from 'ethers';
+import { BigNumberish } from '../common/CommonTypes.js';
 
 /**
  * Bitcoin Utilities
