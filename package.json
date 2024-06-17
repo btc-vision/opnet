@@ -91,7 +91,7 @@
         "@bitcoinerlab/secp256k1": "^1.1.1",
         "@btc-vision/bsi-binary": "^1.0.17",
         "@btc-vision/bsi-bitcoin-rpc": "^1.0.17",
-        "@btc-vision/transaction": "^1.0.33",
+        "@btc-vision/transaction": "^1.0.34",
         "@noble/hashes": "^1.4.0",
         "babel-loader": "^9.1.3",
         "babel-plugin-transform-import-meta": "^2.2.1",
