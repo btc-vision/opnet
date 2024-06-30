@@ -4,6 +4,6 @@ import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';
 export declare class JSONRpcProvider extends AbstractRpcProvider {
     private readonly url;
     constructor(url: string);
-    _send(payload: JsonRpcPayload): Promise<JsonRpcCallResult>;
+    _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult>;
     protected providerUrl(url: string): string;
 }

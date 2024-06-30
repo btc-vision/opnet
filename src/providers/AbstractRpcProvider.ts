@@ -89,6 +89,37 @@ export abstract class AbstractRpcProvider {
     }
 
     /**
+     * Get multiple blocks by number or hash.
+     * @param {BlockTag[]} blockNumbers The block numbers or hashes
+     * @param {boolean} prefetchTxs Whether to prefetch transactions
+     * @description This method is used to get multiple blocks by their numbers or hashes.
+     * @returns {Promise<Block[]>} The requested blocks
+     */
+    public async getBlocks(
+        blockNumbers: BlockTag[],
+        prefetchTxs: boolean = false,
+    ): Promise<Block[]> {
+        const payloads: JsonRpcPayload[] = blockNumbers.map((blockNumber) => {
+            return this.buildJsonRpcPayload(JSONRpcMethods.GET_BLOCK_BY_NUMBER, [
+                blockNumber,
+                prefetchTxs,
+            ]);
+        });
+
+        const blocks: JsonRpcCallResult = await this.callMultiplePayloads(payloads);
+
+        return blocks.map((block) => {
+            if ('error' in block) {
+                throw new Error(`Error fetching block: ${block.error}`);
+            }
+
+            const result: IBlock = block.result as IBlock;
+
+            return new Block(result);
+        });
+    }
+
+    /**
      * Get block by hash. This is the same method as getBlock.
      * @param {string} blockHash The block hash
      * @description This method is used to get a block by its hash. Note that this method is the same as getBlock.
@@ -480,20 +511,10 @@ export abstract class AbstractRpcProvider {
 
     /**
      * Requests to the OPNET node
-     * @param {JsonRpcPayload} payload The method to call
+     * @param {JsonRpcPayload | JsonRpcPayload[]} payload The method to call
      * @returns {Promise<JSONRpc2Result<T extends JSONRpcMethods>>} The result of the request
      */
-    public abstract _send(payload: JsonRpcPayload): Promise<JsonRpcCallResult>;
-
-    protected abstract providerUrl(url: string): string;
-
-    private bufferToHex(buffer: Buffer): string {
-        return buffer.toString('hex');
-    }
-
-    private bigintToBase64(bigint: bigint): string {
-        return Buffer.from(BufferHelper.pointerToUint8Array(bigint)).toString('base64');
-    }
+    public abstract _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult>;
 
     /**
      * Send a single payload. This method is used to send a single payload.
@@ -502,7 +523,7 @@ export abstract class AbstractRpcProvider {
      * @throws {Error} If no data is returned
      * @private
      */
-    private async callPayloadSingle(payload: JsonRpcPayload): Promise<JsonRpcResult> {
+    public async callPayloadSingle(payload: JsonRpcPayload): Promise<JsonRpcResult> {
         const rawData: JsonRpcCallResult = await this._send(payload);
         if (!rawData.length) {
             throw new Error('No data returned');
@@ -513,11 +534,39 @@ export abstract class AbstractRpcProvider {
             throw new Error('Block not found');
         }
 
-        /*if (data.error) {
-            throw new Error(`Something went wrong while fetching: ${data.error.message}`);
-        }*/
-
         return data as JSONRpc2ResponseResult<JSONRpcMethods>;
+    }
+
+    /**
+     * Send multiple payloads. This method is used to send multiple payloads.
+     * @param {JsonRpcPayload[]} payloads The payloads to send
+     * @returns {Promise<JsonRpcResult>} The result of the payloads
+     */
+    public async callMultiplePayloads(payloads: JsonRpcPayload[]): Promise<JsonRpcCallResult> {
+        const rawData: JsonRpcCallResult[] = (await this._send(
+            payloads,
+        )) as unknown as JsonRpcCallResult[];
+
+        if ('error' in rawData) {
+            throw new Error(`Error fetching block: ${rawData.error}`);
+        }
+
+        const data = rawData.shift();
+        if (!data) {
+            throw new Error('Block not found');
+        }
+
+        return data as JsonRpcCallResult;
+    }
+
+    protected abstract providerUrl(url: string): string;
+
+    private bufferToHex(buffer: Buffer): string {
+        return buffer.toString('hex');
+    }
+
+    private bigintToBase64(bigint: bigint): string {
+        return Buffer.from(BufferHelper.pointerToUint8Array(bigint)).toString('base64');
     }
 
     private buildJsonRpcPayload<T extends JSONRpcMethods>(

@@ -18,10 +18,10 @@ export class JSONRpcProvider extends AbstractRpcProvider {
 
     /**
      * @description Sends a JSON RPC payload to the provider.
-     * @param {JsonRpcPayload} payload - The payload to send
+     * @param {JsonRpcPayload | JsonRpcPayload[]} payload - The payload to send
      * @returns {Promise<JsonRpcCallResult>} - The result of the call
      */
-    public async _send(payload: JsonRpcPayload): Promise<JsonRpcCallResult> {
+    public async _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult> {
         const params = {
             method: 'POST',
             headers: {
