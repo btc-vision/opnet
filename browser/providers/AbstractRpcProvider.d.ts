@@ -14,7 +14,7 @@ import { BroadcastedTransaction } from '../transactions/interfaces/BroadcastedTr
 import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.js';
 import { TransactionBase } from '../transactions/Transaction.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
-import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';
+import { JsonRpcCallResult, JsonRpcResult } from './interfaces/JSONRpcResult.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 export declare abstract class AbstractRpcProvider {
     private nextId;
@@ -23,6 +23,7 @@ export declare abstract class AbstractRpcProvider {
     protected constructor();
     getBlockNumber(): Promise<bigint>;
     getBlock(blockNumberOrHash: BlockTag, prefetchTxs?: boolean): Promise<Block>;
+    getBlocks(blockNumbers: BlockTag[], prefetchTxs?: boolean): Promise<Block[]>;
     getBlockByHash(blockHash: string): Promise<Block>;
     getBalance(addressLike: BitcoinAddressLike): Promise<bigint>;
     getUXTOs(address: BitcoinAddressLike, optimize?: boolean): Promise<unknown>;
@@ -37,10 +38,11 @@ export declare abstract class AbstractRpcProvider {
     getBlockWitness(height?: BigNumberish | -1, trusted?: boolean, limit?: number, page?: number): Promise<BlockWitnesses>;
     getReorg(fromBlock?: BigNumberish, toBlock?: BigNumberish): Promise<ReorgInformation[]>;
     requestTrustedPublicKeyForBitcoinWrapping(amount: BigNumberish): Promise<WrappedGeneration>;
-    abstract _send(payload: JsonRpcPayload): Promise<JsonRpcCallResult>;
+    abstract _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult>;
+    callPayloadSingle(payload: JsonRpcPayload): Promise<JsonRpcResult>;
+    callMultiplePayloads(payloads: JsonRpcPayload[]): Promise<JsonRpcCallResult>;
     protected abstract providerUrl(url: string): string;
     private bufferToHex;
     private bigintToBase64;
-    private callPayloadSingle;
     private buildJsonRpcPayload;
 }

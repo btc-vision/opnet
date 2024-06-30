@@ -2,10 +2,12 @@ import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes
 import { DeploymentTransaction } from './decoders/DeploymentTransaction.js';
 import { GenericTransaction } from './decoders/GenericTransaction.js';
 import { InteractionTransaction } from './decoders/InteractionTransaction.js';
+import { UnwrapTransaction } from './decoders/UnwrapTransaction.js';
 import { WrapTransaction } from './decoders/WrapTransaction.js';
 import { IGenericTransaction, ITransaction } from './interfaces/ITransaction.js';
 import { IDeploymentTransaction } from './interfaces/transactions/IDeploymentTransaction.js';
 import { IInteractionTransaction } from './interfaces/transactions/IInteractionTransaction.js';
+import { IUnwrapTransaction } from './interfaces/transactions/IUnwrapTransaction.js';
 import { IWrapTransaction } from './interfaces/transactions/IWrapTransaction.js';
 import { TransactionBase } from './Transaction.js';
 
@@ -43,6 +45,8 @@ export class TransactionParser {
                 return new DeploymentTransaction(transaction as IDeploymentTransaction);
             case OPNetTransactionTypes.WrapInteraction:
                 return new WrapTransaction(transaction as IWrapTransaction);
+            case OPNetTransactionTypes.UnwrapInteraction:
+                return new UnwrapTransaction(transaction as IUnwrapTransaction);
             default:
                 throw new Error('Unknown transaction type');
         }

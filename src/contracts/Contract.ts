@@ -125,6 +125,13 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
      */
     private defineInternalFunctions(): void {
         for (const element of this.interface.abi) {
+            // @ts-ignore
+            if (this[element.name]) {
+                throw new Error(
+                    `Please do not name your method "${element.name}" inside your ABI. This is a reserved keyword.`,
+                );
+            }
+
             switch (element.type) {
                 case BitcoinAbiTypes.Function:
                     Object.defineProperty(this, element.name, {
