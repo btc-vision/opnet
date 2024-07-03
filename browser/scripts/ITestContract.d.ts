@@ -17,4 +17,6 @@ export interface WBTCContract extends BaseContractProperties {
     burn(to: BitcoinAddressLike, value: bigint): Promise<BaseContractProperty>;
     isAddressOwner(address: BitcoinAddressLike): Promise<BaseContractProperty>;
 }
+export declare const OP_NET_ABI: BitcoinInterfaceAbi;
+export declare const MotoSwapFactoryAbi: BitcoinInterfaceAbi;
 export declare const wBTCAbi: BitcoinInterfaceAbi;

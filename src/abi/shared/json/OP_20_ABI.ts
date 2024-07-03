@@ -1,46 +1,9 @@
 import { ABIDataTypes } from '@btc-vision/bsi-binary';
-import { BaseContractProperty } from '../abi/BaseContractProperty.js';
-import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
-import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties.js';
-import { BitcoinInterfaceAbi } from '../abi/interfaces/BitcoinInterfaceAbi.js';
-import { BitcoinAddressLike } from '../common/CommonTypes.js';
+import { BitcoinAbiTypes } from '../../BitcoinAbiTypes.js';
+import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi.js';
+import { OP_NET_ABI } from './OP_NET_ABI.js';
 
-export interface WBTCContract extends BaseContractProperties {
-    balanceOf(address: BitcoinAddressLike): Promise<BaseContractProperty>;
-
-    owner(): Promise<BaseContractProperty>;
-
-    name(): Promise<BaseContractProperty>;
-
-    symbol(): Promise<BaseContractProperty>;
-
-    totalSupply(): Promise<BaseContractProperty>;
-
-    decimals(): Promise<BaseContractProperty>;
-
-    transfer(to: BitcoinAddressLike, value: bigint): Promise<BaseContractProperty>;
-
-    transferFrom(
-        from: BitcoinAddressLike,
-        to: BitcoinAddressLike,
-        value: bigint,
-    ): Promise<BaseContractProperty>;
-
-    approve(spender: BitcoinAddressLike, value: bigint): Promise<BaseContractProperty>;
-
-    allowance(
-        owner: BitcoinAddressLike,
-        spender: BitcoinAddressLike,
-    ): Promise<BaseContractProperty>;
-
-    mint(to: BitcoinAddressLike, value: bigint): Promise<BaseContractProperty>;
-
-    burn(to: BitcoinAddressLike, value: bigint): Promise<BaseContractProperty>;
-
-    isAddressOwner(address: BitcoinAddressLike): Promise<BaseContractProperty>;
-}
-
-export const wBTCAbi: BitcoinInterfaceAbi = [
+export const OP_20_ABI: BitcoinInterfaceAbi = [
     {
         name: 'allowance',
         inputs: [
@@ -274,33 +237,25 @@ export const wBTCAbi: BitcoinInterfaceAbi = [
         ],
         type: BitcoinAbiTypes.Event,
     },
-
-    // OP_NET
     {
-        name: 'owner',
-        constant: true,
-        outputs: [
+        name: 'Approve',
+        values: [
             {
                 name: 'owner',
                 type: ABIDataTypes.ADDRESS,
             },
-        ],
-        type: BitcoinAbiTypes.Function,
-    },
-    {
-        name: 'isAddressOwner',
-        inputs: [
             {
-                name: 'address',
+                name: 'spender',
                 type: ABIDataTypes.ADDRESS,
             },
-        ],
-        outputs: [
             {
-                name: 'isOwner',
-                type: ABIDataTypes.BOOL,
+                name: 'value',
+                type: ABIDataTypes.UINT256,
             },
         ],
-        type: BitcoinAbiTypes.Function,
+        type: BitcoinAbiTypes.Event,
     },
+
+    // OP_NET
+    ...OP_NET_ABI,
 ];

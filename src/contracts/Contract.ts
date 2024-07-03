@@ -1,6 +1,7 @@
 import {
     ABICoder,
     ABIDataTypes,
+    Address,
     BinaryReader,
     BinaryWriter,
     NetEvent,
@@ -173,61 +174,95 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const name = abi.name;
 
         switch (type) {
-            case ABIDataTypes.UINT256:
+            case ABIDataTypes.UINT256: {
                 if (typeof value !== 'bigint') {
                     throw new Error(`Expected value to be of type bigint (${name})`);
                 }
                 writer.writeU256(value as bigint);
                 break;
-            case ABIDataTypes.BOOL:
+            }
+            case ABIDataTypes.BOOL: {
                 if (typeof value !== 'boolean') {
                     throw new Error(`Expected value to be of type boolean (${name})`);
                 }
                 writer.writeBoolean(value as boolean);
                 break;
-            case ABIDataTypes.STRING:
+            }
+            case ABIDataTypes.STRING: {
                 if (typeof value !== 'string') {
                     throw new Error(`Expected value to be of type string (${name})`);
                 }
                 writer.writeStringWithLength(value as string);
                 break;
-            case ABIDataTypes.ADDRESS:
+            }
+            case ABIDataTypes.ADDRESS: {
                 const address = value as BitcoinAddressLike;
                 writer.writeAddress(address.toString());
                 break;
-            case ABIDataTypes.TUPLE:
+            }
+            case ABIDataTypes.TUPLE: {
                 if (!(value instanceof Array)) {
                     throw new Error(`Expected value to be of type Array (${name})`);
                 }
 
                 writer.writeTuple(value as bigint[]);
                 break;
-            case ABIDataTypes.UINT8:
+            }
+            case ABIDataTypes.UINT8: {
                 if (typeof value !== 'number') {
                     throw new Error(`Expected value to be of type number (${name})`);
                 }
                 writer.writeU8(value as number);
                 break;
-            case ABIDataTypes.UINT16:
+            }
+            case ABIDataTypes.UINT16: {
                 if (typeof value !== 'number') {
                     throw new Error(`Expected value to be of type number (${name})`);
                 }
                 writer.writeU16(value as number);
                 break;
-            case ABIDataTypes.UINT32:
+            }
+            case ABIDataTypes.UINT32: {
                 if (typeof value !== 'number') {
                     throw new Error(`Expected value to be of type number (${name})`);
                 }
                 writer.writeU32(value as number);
                 break;
-            case ABIDataTypes.BYTES32:
+            }
+            case ABIDataTypes.BYTES32: {
                 if (!(value instanceof Uint8Array)) {
                     throw new Error(`Expected value to be of type Uint8Array (${name})`);
                 }
                 writer.writeBytes(value as Uint8Array);
                 break;
-            default:
+            }
+            case ABIDataTypes.ADDRESS_UINT256_TUPLE: {
+                if (!(value instanceof Map)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeAddressValueTupleMap(value as Map<Address, bigint>);
+                break;
+            }
+            case ABIDataTypes.BYTES: {
+                if (!(value instanceof Uint8Array)) {
+                    throw new Error(`Expected value to be of type Uint8Array (${name})`);
+                }
+
+                writer.writeBytesWithLength(value as Uint8Array);
+                break;
+            }
+            case ABIDataTypes.UINT64: {
+                if (typeof value !== 'bigint') {
+                    throw new Error(`Expected value to be of type bigint (${name})`);
+                }
+
+                writer.writeU64(value as bigint);
+                break;
+            }
+            default: {
                 throw new Error(`Unsupported type: ${type} (${name})`);
+            }
         }
     }
 
@@ -268,6 +303,17 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 case ABIDataTypes.BYTES32:
                     decodedResult = reader.readBytes(32);
                     break;
+                case ABIDataTypes.ADDRESS_UINT256_TUPLE:
+                    decodedResult = reader.readAddressValueTuple();
+                    break;
+                case ABIDataTypes.BYTES: {
+                    decodedResult = reader.readBytesWithLength();
+                    break;
+                }
+                case ABIDataTypes.UINT64: {
+                    decodedResult = reader.readU64();
+                    break;
+                }
                 default:
                     throw new Error(`Unsupported type: ${type} (${name})`);
             }
@@ -378,6 +424,21 @@ function contractBase<T extends BaseContractProperties>(): new (
  * @returns {BaseContract<T> & Omit<T, keyof BaseContract<T>>} The contract instance.
  * @template T The properties of the contract.
  * @category Contracts
+ *
+ * @example
+ * const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.org');
+ * const contract: IOP_20Contract = getContract<IOP_20Contract>(
+ *     'bcrt1qxeyh0pacdtkqmlna9n254fztp3ptadkkfu6efl',
+ *     OP_20_ABI,
+ *     provider,
+ * );
+ *
+ * const balanceExample = await contract.balanceOf(
+ *     'bcrt1pyrs3eqwnrmd4ql3nwvx66yzp0wc24xd2t9pf8699ln340pjs7f3sar3tum',
+ * );
+ *
+ * if ('error' in balanceExample) throw new Error('Error in fetching balance');
+ * console.log('Balance:', balanceExample.decoded);
  */
 export function getContract<T extends BaseContractProperties>(
     address: BitcoinAddressLike,
