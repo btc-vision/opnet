@@ -56,6 +56,8 @@ export class UnwrapTransaction extends InteractionTransaction implements IUnwrap
             return undefined;
         }
 
+        console.log(document);
+
         return {
             vault: document.vault,
             hash: document.hash,

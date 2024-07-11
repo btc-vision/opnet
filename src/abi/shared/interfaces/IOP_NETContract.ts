@@ -6,6 +6,7 @@ import { BaseContractProperties } from '../../interfaces/BaseContractProperties.
  * @description This interface represents the OP_NET base contract.
  * @interface IOP_NETContract
  * @extends {BaseContractProperties}
+ * @cathegory Contracts
  */
 export interface IOP_NETContract extends BaseContractProperties {
     owner(): Promise<BaseContractProperty>;

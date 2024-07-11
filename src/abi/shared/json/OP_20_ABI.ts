@@ -3,6 +3,75 @@ import { BitcoinAbiTypes } from '../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_NET_ABI } from './OP_NET_ABI.js';
 
+/**
+ * @category Events
+ */
+export const OP20Events: BitcoinInterfaceAbi = [
+    {
+        name: 'Mint',
+        values: [
+            {
+                name: 'to',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Transfer',
+        values: [
+            {
+                name: 'from',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'to',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Burn',
+        values: [
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Approve',
+        values: [
+            {
+                name: 'owner',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'spender',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'value',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+];
+
+/**
+ * @category ABI
+ */
 export const OP_20_ABI: BitcoinInterfaceAbi = [
     {
         name: 'allowance',
@@ -195,66 +264,7 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     },
 
     // Events
-    {
-        name: 'Mint',
-        values: [
-            {
-                name: 'to',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'Transfer',
-        values: [
-            {
-                name: 'from',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'to',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'Burn',
-        values: [
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'Approve',
-        values: [
-            {
-                name: 'owner',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'spender',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'value',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
+    ...OP20Events,
 
     // OP_NET
     ...OP_NET_ABI,

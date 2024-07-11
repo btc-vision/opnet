@@ -2,6 +2,45 @@ import { ABIDataTypes } from '@btc-vision/bsi-binary';
 import { BitcoinAbiTypes } from '../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi.js';
 
+/**
+ * @category Events
+ */
+export const StackingEvents: BitcoinInterfaceAbi = [
+    {
+        name: 'Stake',
+        values: [
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Unstake',
+        values: [
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Claim',
+        values: [
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+];
+
+/**
+ * @category ABI
+ */
 export const STAKING_ABI: BitcoinInterfaceAbi = [
     {
         name: 'stake',
@@ -97,34 +136,5 @@ export const STAKING_ABI: BitcoinInterfaceAbi = [
     },
 
     // EVENTS
-    {
-        name: 'Stake',
-        values: [
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'Unstake',
-        values: [
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'Claim',
-        values: [
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
+    ...StackingEvents,
 ];

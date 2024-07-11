@@ -7,6 +7,7 @@ import { IStackingContract } from './IStackingContract.js';
  * @interface MergedOP_20AndStackingContract
  * @extends {IOP_20Contract}
  * @extends {IStackingContract}
+ * @cathegory Contracts
  */
 export type MergedOP_20AndStackingContract = IOP_20Contract & IStackingContract;
 
@@ -14,6 +15,7 @@ export type MergedOP_20AndStackingContract = IOP_20Contract & IStackingContract;
  * @description This interface represents the WBTC contract.
  * @interface IWBTCContract
  * @extends {MergedOP_20AndStackingContract}
+ * @cathegory Contracts
  */
 export interface IWBTCContract extends MergedOP_20AndStackingContract {
     /**

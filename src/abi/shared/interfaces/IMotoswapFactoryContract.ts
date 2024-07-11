@@ -6,6 +6,7 @@ import { IOP_NETContract } from './IOP_NETContract.js';
  * @description This is the interface that represent the MotoSwap Factory contract.
  * @interface IMotoswapFactoryContract
  * @extends {IOP_NETContract}
+ * @cathegory Contracts
  */
 export interface IMotoswapFactoryContract extends IOP_NETContract {
     /**

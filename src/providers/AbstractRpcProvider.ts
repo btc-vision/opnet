@@ -196,6 +196,12 @@ export abstract class AbstractRpcProvider {
         const rawTransaction: JsonRpcResult = await this.callPayloadSingle(payload);
         const result: ITransaction = rawTransaction.result as ITransaction;
 
+        if ('error' in rawTransaction) {
+            throw new Error(
+                `Error fetching transaction: ${rawTransaction.error?.message || 'Unknown error'}`,
+            );
+        }
+
         return TransactionParser.parseTransaction(result);
     }
 

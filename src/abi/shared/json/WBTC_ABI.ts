@@ -4,6 +4,29 @@ import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_20_ABI } from './OP_20_ABI.js';
 import { STAKING_ABI } from './STAKING_ABI.js';
 
+/**
+ * @category Events
+ */
+export const WBTCEvents: BitcoinInterfaceAbi = [
+    {
+        name: 'WithdrawalRequest',
+        values: [
+            {
+                name: 'address',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+];
+
+/**
+ * @category ABI
+ */
 export const WBTC_ABI: BitcoinInterfaceAbi = [
     {
         name: 'requestWithdrawal',
@@ -40,20 +63,7 @@ export const WBTC_ABI: BitcoinInterfaceAbi = [
     },
 
     // EVENTS
-    {
-        name: 'WithdrawalRequest',
-        values: [
-            {
-                name: 'address',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
+    ...WBTCEvents,
 
     // STAKING
     ...STAKING_ABI,

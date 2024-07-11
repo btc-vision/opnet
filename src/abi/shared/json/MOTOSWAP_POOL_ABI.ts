@@ -4,6 +4,95 @@ import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_20_ABI } from './OP_20_ABI.js';
 import { OP_NET_ABI } from './OP_NET_ABI.js';
 
+/**
+ * @category Events
+ */
+export const MotoSwapPoolEvents: BitcoinInterfaceAbi = [
+    {
+        name: 'PoolBurn',
+        values: [
+            {
+                name: 'sender',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount0',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'amount1',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'PoolMint',
+        values: [
+            {
+                name: 'sender',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount0',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'amount1',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Swap',
+        values: [
+            {
+                name: 'sender',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount0In',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'amount1In',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'amount0Out',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'amount1Out',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'to',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Sync',
+        values: [
+            {
+                name: 'reserve0',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'reserve1',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+];
+
+/**
+ * @category ABI
+ */
 export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
     // OP_NET
     ...OP_NET_ABI,
@@ -198,92 +287,17 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
+                name: 'amount0',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'amount1',
+                type: ABIDataTypes.UINT256,
             },
         ],
         type: BitcoinAbiTypes.Function,
     },
 
     // EVENTS
-    {
-        name: 'PoolBurn',
-        values: [
-            {
-                name: 'sender',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount0',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'amount1',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'PoolMint',
-        values: [
-            {
-                name: 'sender',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount0',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'amount1',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'Swap',
-        values: [
-            {
-                name: 'sender',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount0In',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'amount1In',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'amount0Out',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'amount1Out',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'to',
-                type: ABIDataTypes.ADDRESS,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'Sync',
-        values: [
-            {
-                name: 'reserve0',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'reserve1',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
+    ...MotoSwapPoolEvents,
 ];

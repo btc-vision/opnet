@@ -126,25 +126,29 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
      */
     private defineInternalFunctions(): void {
         for (const element of this.interface.abi) {
-            // @ts-ignore
-            if (this[element.name]) {
-                throw new Error(
-                    `Please do not name your method "${element.name}" inside your ABI. This is a reserved keyword.`,
-                );
-            }
-
             switch (element.type) {
-                case BitcoinAbiTypes.Function:
+                case BitcoinAbiTypes.Function: {
+                    // @ts-ignore
+                    if (this[element.name]) {
+                        throw new Error(`Duplicate function found in the ABI: ${element.name}.`);
+                    }
+
                     Object.defineProperty(this, element.name, {
                         value: this.callFunction(element as FunctionBaseData).bind(this),
                     });
 
                     break;
-                case BitcoinAbiTypes.Event:
+                }
+                case BitcoinAbiTypes.Event: {
+                    if (this.events.has(element.name)) {
+                        throw new Error(`Duplicate event found in the ABI: ${element.name}.`);
+                    }
+
                     this.events.set(element.name, element);
                     break;
+                }
                 default:
-                    break;
+                    throw new Error(`Unsupported type.`);
             }
         }
     }
@@ -260,6 +264,76 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 writer.writeU64(value as bigint);
                 break;
             }
+            case ABIDataTypes.ARRAY_OF_ADDRESSES: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeAddressArray(value as Address[]);
+                break;
+            }
+            case ABIDataTypes.ARRAY_OF_UINT256: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeU256Array(value as bigint[]);
+                break;
+            }
+            case ABIDataTypes.ARRAY_OF_UINT32: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeU32Array(value as number[]);
+                break;
+            }
+
+            case ABIDataTypes.ARRAY_OF_STRING: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeStringArray(value as string[]);
+                break;
+            }
+
+            case ABIDataTypes.ARRAY_OF_BYTES: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeBytesArray(value as Uint8Array[]);
+                break;
+            }
+
+            case ABIDataTypes.ARRAY_OF_UINT64: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeU64Array(value as bigint[]);
+                break;
+            }
+
+            case ABIDataTypes.ARRAY_OF_UINT8: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeU8Array(value as number[]);
+                break;
+            }
+
+            case ABIDataTypes.ARRAY_OF_UINT16: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeU16Array(value as number[]);
+                break;
+            }
+
             default: {
                 throw new Error(`Unsupported type: ${type} (${name})`);
             }
@@ -312,6 +386,38 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 }
                 case ABIDataTypes.UINT64: {
                     decodedResult = reader.readU64();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_ADDRESSES: {
+                    decodedResult = reader.readAddressArray();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_UINT256: {
+                    decodedResult = reader.readU256Array();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_UINT32: {
+                    decodedResult = reader.readU32Array();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_STRING: {
+                    decodedResult = reader.readStringArray();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_BYTES: {
+                    decodedResult = reader.readBytesArray();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_UINT64: {
+                    decodedResult = reader.readU64Array();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_UINT8: {
+                    decodedResult = reader.readU8Array();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_UINT16: {
+                    decodedResult = reader.readU16Array();
                     break;
                 }
                 default:

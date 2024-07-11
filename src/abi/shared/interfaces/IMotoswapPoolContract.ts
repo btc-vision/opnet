@@ -1,3 +1,4 @@
+import { Address } from '@btc-vision/bsi-binary';
 import { BaseContractProperty } from '../../BaseContractProperty.js';
 import { IOP_20Contract } from './IOP_20Contract.js';
 
@@ -5,6 +6,7 @@ import { IOP_20Contract } from './IOP_20Contract.js';
  * @description This interface represents a motoswap pool contract.
  * @interface IMotoswapPoolContract
  * @extends {Omit<IOP_20Contract, 'burn' | 'mint'>}
+ * @cathegory Contracts
  */
 export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mint'> {
     /**
@@ -42,11 +44,10 @@ export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mi
 
     /**
      * @description This method burns liquidity.
-     * @param {bigint} amount0
-     * @param {bigint} amount1
+     * @param {Address} to
      * @returns {Promise<BaseContractProperty>}
      */
-    burn(amount0: bigint, amount1: bigint): Promise<BaseContractProperty>;
+    burn(to: Address): Promise<BaseContractProperty>;
 
     /**
      * @description This method syncs the pool.

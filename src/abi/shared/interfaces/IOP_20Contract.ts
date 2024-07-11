@@ -6,6 +6,8 @@ import { IOP_NETContract } from './IOP_NETContract.js';
  * @description This interface represents the OP_20 base contract.
  * @interface IOP_20Contract
  * @extends {IOP_NETContract}
+ * @cathegory Contracts
+ *
  * @example
  * import { IOP_20Contract } from '../abi/shared/interfaces/IOP_20Contract.js';
  * import { OP_20_ABI } from '../abi/shared/json/OP_20_ABI.js';

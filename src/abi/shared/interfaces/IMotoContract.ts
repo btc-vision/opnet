@@ -6,6 +6,7 @@ import { IOP_20Contract } from './IOP_20Contract.js';
  * @description This interface represents the Moto token contract.
  * @interface IMotoContract
  * @extends {IOP_20Contract}
+ * @cathegory Contracts
  */
 export interface IMotoContract extends IOP_20Contract {
     /**

@@ -5,6 +5,7 @@ import { BaseContractProperties } from '../../interfaces/BaseContractProperties.
  * @description This interface represents the WBTC contract.
  * @interface IWBTCContract
  * @extends {BaseContractProperties}
+ * @cathegory Contracts
  */
 export interface IStackingContract {
     stake(amount: bigint): Promise<BaseContractProperties>;

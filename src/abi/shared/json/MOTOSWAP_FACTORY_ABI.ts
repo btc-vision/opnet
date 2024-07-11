@@ -3,6 +3,33 @@ import { BitcoinAbiTypes } from '../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_NET_ABI } from './OP_NET_ABI.js';
 
+/**
+ * @category Events
+ */
+export const MotoSwapFactoryEvents: BitcoinInterfaceAbi = [
+    {
+        name: 'PoolCreated',
+        values: [
+            {
+                name: 'token0',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'token1',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'pool',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+];
+
+/**
+ * @category ABI
+ */
 export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
     {
         name: 'createPool',
@@ -48,24 +75,8 @@ export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
         ],
         type: BitcoinAbiTypes.Function,
     },
-    {
-        name: 'PoolCreated',
-        values: [
-            {
-                name: 'token0',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'token1',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'pool',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
+
+    ...MotoSwapFactoryEvents,
 
     // OP_NET
     ...OP_NET_ABI,

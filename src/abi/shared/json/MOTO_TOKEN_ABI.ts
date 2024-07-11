@@ -3,6 +3,9 @@ import { BitcoinAbiTypes } from '../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_20_ABI } from './OP_20_ABI.js';
 
+/**
+ * @category ABI
+ */
 export const MOTO_TOKEN_ABI: BitcoinInterfaceAbi = [
     {
         name: 'airdrop',

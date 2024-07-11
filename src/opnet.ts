@@ -93,6 +93,7 @@ export * from './abi/shared/json/STAKING_ABI.js';
 export * from './abi/shared/json/MOTOSWAP_FACTORY_ABI.js';
 export * from './abi/shared/json/MOTO_TOKEN_ABI.js';
 export * from './abi/shared/json/MOTOSWAP_POOL_ABI.js';
+export * from './abi/shared/json/MOTOSWAP_ROUTER_ABI.js';
 
 /** ABI Interfaces */
 export * from './abi/shared/interfaces/IOP_20Contract.js';
@@ -102,3 +103,4 @@ export * from './abi/shared/interfaces/IStackingContract.js';
 export * from './abi/shared/interfaces/IMotoswapFactoryContract.js';
 export * from './abi/shared/interfaces/IMotoContract.js';
 export * from './abi/shared/interfaces/IMotoswapPoolContract.js';
+export * from './abi/shared/interfaces/IMotoswapRouterContract.js';
