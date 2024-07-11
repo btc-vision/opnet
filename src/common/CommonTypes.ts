@@ -1,3 +1,4 @@
+import { Address } from '@btc-vision/bsi-binary';
 import { BitcoinAddress } from '../bitcoin/BitcoinAddress.js';
 
 export type BitcoinAddressLike = string | BitcoinAddress;
@@ -13,7 +14,8 @@ export type DecodedCallResult =
     | Array<string>
     | Array<boolean>
     | Array<number>
-    | Array<Uint8Array>;
+    | Array<Uint8Array>
+    | Map<Address, bigint>;
 
 export type Numeric = number | bigint;
 

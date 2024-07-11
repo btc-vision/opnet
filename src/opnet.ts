@@ -71,6 +71,9 @@ export * from './providers/interfaces/JSONRpcMethods.js';
 export * from './providers/interfaces/JSONRpcParams.js';
 export * from './providers/interfaces/JSONRpcResult.js';
 
+export * from './transactions/decoders/UnwrapTransaction.js';
+export * from './transactions/interfaces/transactions/IUnwrapTransaction.js';
+
 /** Common */
 export * from './common/CommonTypes.js';
 
@@ -81,3 +84,23 @@ export * from './bitcoin/interfaces/IUTXO.js';
 
 /** Other */
 export { ABIDataTypes } from '@btc-vision/bsi-binary';
+
+/** ABI JSON */
+export * from './abi/shared/json/OP_20_ABI.js';
+export * from './abi/shared/json/OP_NET_ABI.js';
+export * from './abi/shared/json/WBTC_ABI.js';
+export * from './abi/shared/json/STAKING_ABI.js';
+export * from './abi/shared/json/MOTOSWAP_FACTORY_ABI.js';
+export * from './abi/shared/json/MOTO_TOKEN_ABI.js';
+export * from './abi/shared/json/MOTOSWAP_POOL_ABI.js';
+export * from './abi/shared/json/MOTOSWAP_ROUTER_ABI.js';
+
+/** ABI Interfaces */
+export * from './abi/shared/interfaces/IOP_20Contract.js';
+export * from './abi/shared/interfaces/IOP_NETContract.js';
+export * from './abi/shared/interfaces/IWBTCContract.js';
+export * from './abi/shared/interfaces/IStackingContract.js';
+export * from './abi/shared/interfaces/IMotoswapFactoryContract.js';
+export * from './abi/shared/interfaces/IMotoContract.js';
+export * from './abi/shared/interfaces/IMotoswapPoolContract.js';
+export * from './abi/shared/interfaces/IMotoswapRouterContract.js';
