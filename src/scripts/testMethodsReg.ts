@@ -17,5 +17,5 @@ console.log(owner);
 const name = await contract.name();
 console.log(name);
 
-const blocks = await provider.getBlocks([1, 2, 3, 4, 5]);
-console.log(blocks);
+//const blocks = await provider.getBlocks([1, 2, 3, 4, 5]);
+//console.log(blocks);

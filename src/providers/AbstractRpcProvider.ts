@@ -24,7 +24,11 @@ import { TransactionParser } from '../transactions/TransactionParser.js';
 import { GenerateTarget } from './interfaces/Generate.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JSONRpcMethods } from './interfaces/JSONRpcMethods.js';
-import { JSONRpc2ResponseResult, JsonRpcCallResult, JsonRpcResult } from './interfaces/JSONRpcResult.js';
+import {
+    JSONRpc2ResponseResult,
+    JsonRpcCallResult,
+    JsonRpcResult,
+} from './interfaces/JSONRpcResult.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
 /**
@@ -400,7 +404,7 @@ export abstract class AbstractRpcProvider {
     public async sendRawTransaction(tx: string, psbt: boolean): Promise<BroadcastedTransaction> {
         // verify if tx is a valid hex string
         if (!/^[0-9A-Fa-f]+$/.test(tx)) {
-            throw new Error('Invalid hex string');
+            throw new Error('sendRawTransaction: Invalid hex string');
         }
 
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(
