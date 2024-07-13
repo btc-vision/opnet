@@ -451,6 +451,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 : { values: [], obj: {} };
 
             response.setDecoded(decoded);
+            response.setCalldata(buffer);
 
             return response;
         };

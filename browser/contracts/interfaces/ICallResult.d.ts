@@ -7,5 +7,6 @@ export interface ICallResultData {
     readonly result: string | BinaryReader;
     readonly events: NetEvent[];
     readonly accessList: IAccessList;
+    readonly estimatedGas?: string;
 }
 export type ICallResult = ICallRequestError | ICallResultData;
