@@ -50,6 +50,11 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     public readonly provider: AbstractRpcProvider;
 
     /**
+     * Who is sending the transaction.
+     */
+    public readonly from?: Address;
+
+    /**
      * The internal functions of the contract.
      * @protected
      */
@@ -61,10 +66,12 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         address: BitcoinAddressLike,
         abi: BitcoinInterface | BitcoinInterfaceAbi,
         provider: AbstractRpcProvider,
+        from?: Address,
     ) {
         this.address = address;
         this.provider = provider;
         this.interface = BitcoinInterface.from(abi);
+        this.from = from;
 
         Object.defineProperty(this, internal, { value: {} });
 
@@ -440,7 +447,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         return async (...args: unknown[]): Promise<BaseContractProperty> => {
             const data = this.encodeFunctionData(element, args);
             const buffer = Buffer.from(data.getBuffer());
-            const response = await this.provider.call(this.address, buffer);
+            const response = await this.provider.call(this.address, buffer, this.from);
 
             if ('error' in response) {
                 return response;
@@ -467,8 +474,9 @@ export class BaseContract<T extends BaseContractProperties> extends IBaseContrac
         address: BitcoinAddressLike,
         abi: BitcoinInterface | BitcoinInterfaceAbi,
         provider: AbstractRpcProvider,
+        sender?: Address,
     ) {
-        super(address, abi, provider);
+        super(address, abi, provider, sender);
 
         return this.proxify();
     }
@@ -515,11 +523,13 @@ function contractBase<T extends BaseContractProperties>(): new (
     address: BitcoinAddressLike,
     abi: BitcoinInterface | BitcoinInterfaceAbi,
     provider: AbstractRpcProvider,
+    sender?: Address,
 ) => BaseContract<T> & Omit<T, keyof BaseContract<T>> {
     return BaseContract as new (
         address: BitcoinAddressLike,
         abi: BitcoinInterface | BitcoinInterfaceAbi,
         provider: AbstractRpcProvider,
+        sender?: Address,
     ) => BaseContract<T> & Omit<T, keyof BaseContract<T>>;
 }
 
@@ -528,6 +538,7 @@ function contractBase<T extends BaseContractProperties>(): new (
  * @param {BitcoinAddressLike} address The address of the contract.
  * @param {BitcoinInterface | BitcoinInterfaceAbi} abi The ABI of the contract.
  * @param {AbstractRpcProvider} provider The provider for the contract.
+ * @param {Address} [sender] Who is sending the transaction.
  * @returns {BaseContract<T> & Omit<T, keyof BaseContract<T>>} The contract instance.
  * @template T The properties of the contract.
  * @category Contracts
@@ -551,8 +562,9 @@ export function getContract<T extends BaseContractProperties>(
     address: BitcoinAddressLike,
     abi: BitcoinInterface | BitcoinInterfaceAbi,
     provider: AbstractRpcProvider,
+    sender?: Address,
 ): BaseContract<T> & Omit<T, keyof BaseContract<T>> {
     const base = contractBase<T>();
 
-    return new base(address, abi, provider);
+    return new base(address, abi, provider, sender);
 }

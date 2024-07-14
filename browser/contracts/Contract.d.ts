@@ -1,4 +1,4 @@
-import { NetEvent } from '@btc-vision/bsi-binary';
+import { Address, NetEvent } from '@btc-vision/bsi-binary';
 import { BaseContractProperty } from '../abi/BaseContractProperty.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
 import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties.js';
@@ -20,9 +20,10 @@ export declare abstract class IBaseContract<T extends BaseContractProperties> im
     readonly address: BitcoinAddressLike;
     readonly interface: BitcoinInterface;
     readonly provider: AbstractRpcProvider;
+    readonly from?: Address;
     readonly [internal]: keyof T | undefined;
     private events;
-    protected constructor(address: BitcoinAddressLike, abi: BitcoinInterface | BitcoinInterfaceAbi, provider: AbstractRpcProvider);
+    protected constructor(address: BitcoinAddressLike, abi: BitcoinInterface | BitcoinInterfaceAbi, provider: AbstractRpcProvider, from?: Address);
     decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[];
     decodeEvent(event: NetEvent): OPNetEvent;
     protected getFunction(name: symbol): BaseContractProperty | undefined | string | number | symbol;
@@ -33,8 +34,8 @@ export declare abstract class IBaseContract<T extends BaseContractProperties> im
     private callFunction;
 }
 export declare class BaseContract<T extends BaseContractProperties> extends IBaseContract<T> {
-    constructor(address: BitcoinAddressLike, abi: BitcoinInterface | BitcoinInterfaceAbi, provider: AbstractRpcProvider);
+    constructor(address: BitcoinAddressLike, abi: BitcoinInterface | BitcoinInterfaceAbi, provider: AbstractRpcProvider, sender?: Address);
     private proxify;
 }
-export declare function getContract<T extends BaseContractProperties>(address: BitcoinAddressLike, abi: BitcoinInterface | BitcoinInterfaceAbi, provider: AbstractRpcProvider): BaseContract<T> & Omit<T, keyof BaseContract<T>>;
+export declare function getContract<T extends BaseContractProperties>(address: BitcoinAddressLike, abi: BitcoinInterface | BitcoinInterfaceAbi, provider: AbstractRpcProvider, sender?: Address): BaseContract<T> & Omit<T, keyof BaseContract<T>>;
 export {};
