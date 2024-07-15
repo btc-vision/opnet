@@ -28,6 +28,7 @@ import {
     JSONRpc2ResponseResult,
     JsonRpcCallResult,
     JsonRpcResult,
+    JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
@@ -111,6 +112,12 @@ export abstract class AbstractRpcProvider {
         });
 
         const blocks: JsonRpcCallResult = await this.callMultiplePayloads(payloads);
+
+        if ('error' in blocks) {
+            const error = blocks.error as JSONRpcResultError<JSONRpcMethods.BLOCK_BY_NUMBER>;
+
+            throw new Error(`Error fetching block: ${error.message}`);
+        }
 
         return blocks.map((block) => {
             if ('error' in block) {

@@ -9,19 +9,30 @@ const contract: IWBTCContract = getContract<IWBTCContract>(
     'bcrt1q99qtptumw027cw8w274tqzd564q66u537vn0lh',
     WBTC_ABI,
     provider,
+    'bcrt1p2m2yz9hae5lkypuf8heh6udnt0tchmxhaftcfslqsr5vrwzh34yqgn6hs6',
 );
-
-const withdrawalRequest = await contract.requestWithdrawal(100000000n);
+/*
+const withdrawalRequest = await contract.requestWithdrawal(249789999n);
 
 if ('error' in withdrawalRequest) {
     throw new Error(withdrawalRequest.error);
 }
 
+console.log(withdrawalRequest);
+
 const owner = await contract.owner();
 console.log(owner);
 
 const name = await contract.name();
-console.log(name);
+console.log(name);*/
 
-//const blocks = await provider.getBlocks([1, 2, 3, 4, 5]);
-//console.log(blocks);
+for (let i = 0; i < 10; i++) {
+    (async () => {
+        try {
+            const blocks = await provider.getBlocks([1, 2, 3, 4, 5, 6, 7]);
+            console.log(blocks);
+        } catch (e) {
+            console.log((e as Error).message);
+        }
+    })();
+}
