@@ -12,9 +12,9 @@ const contract: IWBTCContract = getContract<IWBTCContract>(
     'bcrt1p2m2yz9hae5lkypuf8heh6udnt0tchmxhaftcfslqsr5vrwzh34yqgn6hs6',
 );
 
-const transferCalldata = await contract.transfer(amount, transferToAddress);
+//const transferCalldata = await contract.transfer(amount, transferToAddress);
 
-if ('error' in transferCalldata) throw transferCalldata.error;
+//if ('error' in transferCalldata) throw transferCalldata.error;
 
 /*
 const withdrawalRequest = await contract.requestWithdrawal(249789999n);
