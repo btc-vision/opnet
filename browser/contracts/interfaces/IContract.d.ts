@@ -4,6 +4,7 @@ import { ContractEvents } from '../../transactions/interfaces/ITransactionReceip
 import { OPNetEvent } from '../OPNetEvent.js';
 export interface IContract {
     readonly address: BitcoinAddressLike;
+    setSender(sender: BitcoinAddressLike): void;
     decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[];
     decodeEvent(event: NetEvent): OPNetEvent;
 }
