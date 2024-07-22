@@ -52,7 +52,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     /**
      * Who is sending the transaction.
      */
-    public readonly from?: Address;
+    public from?: Address;
 
     /**
      * The internal functions of the contract.
@@ -76,6 +76,14 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         Object.defineProperty(this, internal, { value: {} });
 
         this.defineInternalFunctions();
+    }
+
+    /**
+     * Sets the sender of the transaction.
+     * @param {Address} sender The sender of the transaction.
+     */
+    public setSender(sender: Address): void {
+        this.from = sender;
     }
 
     public decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[] {

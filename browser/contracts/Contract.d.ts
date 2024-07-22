@@ -20,10 +20,11 @@ export declare abstract class IBaseContract<T extends BaseContractProperties> im
     readonly address: BitcoinAddressLike;
     readonly interface: BitcoinInterface;
     readonly provider: AbstractRpcProvider;
-    readonly from?: Address;
+    from?: Address;
     readonly [internal]: keyof T | undefined;
     private events;
     protected constructor(address: BitcoinAddressLike, abi: BitcoinInterface | BitcoinInterfaceAbi, provider: AbstractRpcProvider, from?: Address);
+    setSender(sender: Address): void;
     decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[];
     decodeEvent(event: NetEvent): OPNetEvent;
     protected getFunction(name: symbol): BaseContractProperty | undefined | string | number | symbol;

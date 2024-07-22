@@ -11,7 +11,7 @@ import { IOP_NETContract } from './IOP_NETContract.js';
 export interface IMotoswapRouterContract extends IOP_NETContract {
     /**
      * @description Add liquidity to the pool.
-     * @returns {BaseContractProperty} - Returns (amountA) u256, (amountB) u256, (liquidity) u256
+     * @returns {Promise<BaseContractProperty>} - Returns (amountA) u256, (amountB) u256, (liquidity) u256
      */
     addLiquidity(
         tokenA: Address,
@@ -22,11 +22,11 @@ export interface IMotoswapRouterContract extends IOP_NETContract {
         amountBMin: bigint,
         to: Address,
         deadline: bigint,
-    ): BaseContractProperty;
+    ): Promise<BaseContractProperty>;
 
     /**
      * @description Remove liquidity from the pool.
-     * @returns {BaseContractProperty} - Returns (amountA) u256, (amountB) u256
+     * @returns {Promise<BaseContractProperty>} - Returns (amountA) u256, (amountB) u256
      */
     removeLiquidity(
         tokenA: Address,
@@ -36,41 +36,49 @@ export interface IMotoswapRouterContract extends IOP_NETContract {
         amountBMin: bigint,
         to: Address,
         deadline: bigint,
-    ): BaseContractProperty;
+    ): Promise<BaseContractProperty>;
 
     /**
      * @description Get a quote for the desired parameters.
-     * @returns {BaseContractProperty} - Return the quote for the desired parameters.
+     * @returns {Promise<BaseContractProperty>} - Return the quote for the desired parameters.
      */
-    quote(amountA: bigint, reserveA: bigint, reserveB: bigint): BaseContractProperty;
+    quote(amountA: bigint, reserveA: bigint, reserveB: bigint): Promise<BaseContractProperty>;
 
     /**
      * @description Get the amount out for the desired parameters.
-     * @returns {BaseContractProperty} - Return the amount out for the desired parameters.
+     * @returns {Promise<BaseContractProperty>} - Return the amount out for the desired parameters.
      */
-    getAmountOut(amountIn: bigint, reserveIn: bigint, reserveOut: bigint): BaseContractProperty;
+    getAmountOut(
+        amountIn: bigint,
+        reserveIn: bigint,
+        reserveOut: bigint,
+    ): Promise<BaseContractProperty>;
 
     /**
      * @description Get the amount in for the desired parameters.
-     * @returns {BaseContractProperty} - Return the amount in for the desired parameters.
+     * @returns {Promise<BaseContractProperty>} - Return the amount in for the desired parameters.
      */
-    getAmountIn(amountOut: bigint, reserveIn: bigint, reserveOut: bigint): BaseContractProperty;
+    getAmountIn(
+        amountOut: bigint,
+        reserveIn: bigint,
+        reserveOut: bigint,
+    ): Promise<BaseContractProperty>;
 
     /**
      * @description Get the amounts out for the desired parameters.
-     * @returns {BaseContractProperty} - Return the amounts out for the desired parameters.
+     * @returns {Promise<BaseContractProperty>} - Return the amounts out for the desired parameters.
      */
-    getAmountsOut(amountIn: bigint, path: Address[]): BaseContractProperty;
+    getAmountsOut(amountIn: bigint, path: Address[]): Promise<BaseContractProperty>;
 
     /**
      * @description Get the amounts in for the desired parameters.
-     * @returns {BaseContractProperty} - Return the amounts in for the desired parameters.
+     * @returns {Promise<BaseContractProperty>} - Return the amounts in for the desired parameters.
      */
-    getAmountsIn(amountOut: bigint, path: Address[]): BaseContractProperty;
+    getAmountsIn(amountOut: bigint, path: Address[]): Promise<BaseContractProperty>;
 
     /**
      * @description Swap exact tokens for tokens supporting fee on transfer tokens.
-     * @returns {BaseContractProperty} - Return the swap exact tokens for tokens supporting fee on transfer tokens.
+     * @returns {Promise<BaseContractProperty>} - Return the swap exact tokens for tokens supporting fee on transfer tokens.
      */
     swapExactTokensForTokensSupportingFeeOnTransferTokens(
         amountIn: bigint,
@@ -78,15 +86,15 @@ export interface IMotoswapRouterContract extends IOP_NETContract {
         path: Address[],
         to: Address,
         deadline: bigint,
-    ): BaseContractProperty;
+    ): Promise<BaseContractProperty>;
 
     /**
      * @description Get the factory address.
      */
-    factory(): BaseContractProperty;
+    factory(): Promise<BaseContractProperty>;
 
     /**
      * @description Get the WBTC address.
      */
-    WBTC(): BaseContractProperty;
+    WBTC(): Promise<BaseContractProperty>;
 }
