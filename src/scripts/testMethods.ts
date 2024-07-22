@@ -1,10 +1,4 @@
-import { Address } from '@btc-vision/bsi-binary';
 import { JSONRpcProvider } from '../providers/JSONRpcProvider.js';
-
-const FACTORY_ADDRESS: Address = 'bcrt1qkg4gn2g0zwksthnykuv2ey59dek3sg4tegd90c';
-const POOL_ADDRESS: Address = 'bcrt1qljpxj4sg5dd6v8knx5g6jq9ycsr0wgtwfqxfjs';
-const WBTC_ADDRESS: Address = 'bcrt1q99qtptumw027cw8w274tqzd564q66u537vn0lh';
-const MOTO_ADDRESS: Address = 'bcrt1qwx9h2fvqlzx84t6jhxa424y7g2ynayt8p9rs38';
 
 const provider: JSONRpcProvider = new JSONRpcProvider('http://localhost:9001');
 
