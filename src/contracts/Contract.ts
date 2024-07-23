@@ -123,6 +123,23 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         return decodedEvent;
     }
 
+    /**
+     * Encodes the calldata for a function.
+     * @param {string} functionName The name of the function.
+     * @param {unknown[]} args The arguments for the function.
+     * @returns {Buffer} The encoded calldata.
+     */
+    public encodeCalldata(functionName: string, args: unknown[]): Buffer {
+        for (const element of this.interface.abi) {
+            if (element.name === functionName) {
+                const data = this.encodeFunctionData(element as FunctionBaseData, args);
+                return Buffer.from(data.getBuffer());
+            }
+        }
+
+        throw new Error(`Function not found: ${functionName}`);
+    }
+
     protected getFunction(
         name: symbol,
     ): BaseContractProperty | undefined | string | number | symbol {
