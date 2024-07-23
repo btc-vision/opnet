@@ -16,4 +16,6 @@ export interface IContract {
     decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[];
 
     decodeEvent(event: NetEvent): OPNetEvent;
+
+    encodeCalldata(method: string, ...args: unknown[]): Buffer;
 }
