@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { Address, NetEvent } from '@btc-vision/bsi-binary';
 import { BaseContractProperty } from '../abi/BaseContractProperty.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
@@ -27,6 +28,7 @@ export declare abstract class IBaseContract<T extends BaseContractProperties> im
     setSender(sender: Address): void;
     decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[];
     decodeEvent(event: NetEvent): OPNetEvent;
+    encodeCalldata(functionName: string, args: unknown[]): Buffer;
     protected getFunction(name: symbol): BaseContractProperty | undefined | string | number | symbol;
     private defineInternalFunctions;
     private encodeFunctionData;
