@@ -2,7 +2,6 @@ import { ABIDataTypes } from '@btc-vision/bsi-binary';
 import { BitcoinAbiTypes } from '../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_20_ABI } from './OP_20_ABI.js';
-import { OP_NET_ABI } from './OP_NET_ABI.js';
 
 /**
  * @category Events
@@ -94,9 +93,6 @@ export const MotoSwapPoolEvents: BitcoinInterfaceAbi = [
  * @category ABI
  */
 export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
-    // OP_NET
-    ...OP_NET_ABI,
-
     // OP_20
     ...OP_20_ABI,
 
