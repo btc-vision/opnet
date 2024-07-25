@@ -1,20 +1,33 @@
+import { ROUTER_ADDRESS_REGTEST, WBTC_ADDRESS_REGTEST } from '@btc-vision/transaction';
+import { IOP_20Contract } from '../abi/shared/interfaces/IOP_20Contract.js';
+import { MOTO_TOKEN_ABI } from '../abi/shared/json/MOTO_TOKEN_ABI.js';
+import { getContract } from '../contracts/Contract.js';
 import { JSONRpcProvider } from '../providers/JSONRpcProvider.js';
 
 const provider: JSONRpcProvider = new JSONRpcProvider('http://localhost:9001');
 
-const tx = await provider.getTransaction(
+/*const tx = await provider.getTransaction(
     '335f66a330ba3cce82c271c1cbe3e9fa35ed6e47aa5d9104049066a2d52269e6',
 );
 
-console.log(tx);
+console.log(tx);*/
+//bcrt1pe0slk2klsxckhf90hvu8g0688rxt9qts6thuxk3u4ymxeejw53gs0xjlhn
 
-/*
-const contract: IWBTCContract = getContract<IWBTCContract>(
-    'tb1qs4d69qpw57cm3pxyeuamenkv0aswtnhpgxry06',
-    WBTC_ABI,
+const contract: IOP_20Contract = getContract<IOP_20Contract>(
+    WBTC_ADDRESS_REGTEST,
+    MOTO_TOKEN_ABI,
     provider,
+    'bcrt1pe0slk2klsxckhf90hvu8g0688rxt9qts6thuxk3u4ymxeejw53gs0xjlhn',
 );
 
+const res = await contract.allowance(
+    'bcrt1p68g4tlmzwgcaluhfjhfqar45a54tx53mhdehlklce4pywv92jamqct39nn',
+    ROUTER_ADDRESS_REGTEST,
+);
+
+console.log(res);
+
+/*
 const myWBTCBalance: BaseContractProperty = await contract.balanceOf(
     'tb1pvajdvghss0tc737z72sq02cga9hd7wvdua9vcqj357a6yqhlhy4seud439',
 );
