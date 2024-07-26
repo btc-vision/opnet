@@ -35,7 +35,7 @@ const routerContract: IMotoswapRouterContract = getContract<IMotoswapRouterContr
     ROUTER_ADDRESS_REGTEST,
     MOTOSWAP_ROUTER_ABI,
     provider,
-    SENDER,
+    //SENDER,
 );
 
 const getData = await routerContract.getAmountsOut(1000n, [
