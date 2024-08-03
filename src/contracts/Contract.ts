@@ -161,9 +161,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             switch (element.type) {
                 case BitcoinAbiTypes.Function: {
                     // @ts-ignore
-                    if (this[element.name]) {
-                        throw new Error(`Duplicate function found in the ABI: ${element.name}.`);
-                    }
+                    // We will allow overwrites.
+                    //if (this[element.name]) {
+                    //    throw new Error(`Duplicate function found in the ABI: ${element.name}.`);
+                    //}
 
                     Object.defineProperty(this, element.name, {
                         value: this.callFunction(element as FunctionBaseData).bind(this),
