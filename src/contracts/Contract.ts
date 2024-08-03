@@ -166,6 +166,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                     //    throw new Error(`Duplicate function found in the ABI: ${element.name}.`);
                     //}
 
+                    if (this[element.name]) {
+                        continue;
+                    }
+
                     Object.defineProperty(this, element.name, {
                         value: this.callFunction(element as FunctionBaseData).bind(this),
                     });
