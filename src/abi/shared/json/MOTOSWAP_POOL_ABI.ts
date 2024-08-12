@@ -93,9 +93,6 @@ export const MotoSwapPoolEvents: BitcoinInterfaceAbi = [
  * @category ABI
  */
 export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
-    // OP_20
-    ...OP_20_ABI,
-
     {
         name: 'initialize',
         inputs: [
@@ -293,6 +290,9 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
         ],
         type: BitcoinAbiTypes.Function,
     },
+
+    // OP_20
+    ...OP_20_ABI,
 
     // EVENTS
     ...MotoSwapPoolEvents,

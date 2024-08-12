@@ -10,7 +10,7 @@ import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';
 export class JSONRpcProvider extends AbstractRpcProvider {
     private readonly url: string;
 
-    constructor(url: string) {
+    constructor(url: string, private readonly timeout: number = 10_000) {
         super();
 
         this.url = this.providerUrl(url);
@@ -22,25 +22,47 @@ export class JSONRpcProvider extends AbstractRpcProvider {
      * @returns {Promise<JsonRpcCallResult>} - The result of the call
      */
     public async _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult> {
+        // Create an AbortController instance
+        const controller = new AbortController();
+        const { signal } = controller;
+
+        // Start a timer that will abort the fetch after the timeout period
+        const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
         const params = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(payload),
+            timeout: this.timeout,
+            signal: signal
         };
 
-        const resp: Response = await fetch(this.url, params);
-        if (!resp.ok) {
-            throw new Error(`Failed to fetch: ${resp.statusText}`);
+        try {
+            const resp: Response = await fetch(this.url, params);
+            if (!resp.ok) {
+                throw new Error(`Failed to fetch: ${resp.statusText}`);
+            }
+
+            clearTimeout(timeoutId);
+
+            const fetchedData = await resp.json();
+            if (!fetchedData) {
+                throw new Error('No data fetched');
+            }
+
+            return [fetchedData];
+        } catch (e) {
+            const error = e as Error;
+            if (error.name === 'AbortError') {
+                throw new Error(`Request timed out after ${this.timeout}ms`);
+            }
+
+            throw e;
         }
 
-        const fetchedData = await resp.json();
-        if (!fetchedData) {
-            throw new Error('No data fetched');
-        }
 
-        return [fetchedData];
     }
 
     protected providerUrl(url: string): string {
