@@ -25,7 +25,7 @@ export declare abstract class AbstractRpcProvider {
     getBlock(blockNumberOrHash: BlockTag, prefetchTxs?: boolean): Promise<Block>;
     getBlocks(blockNumbers: BlockTag[], prefetchTxs?: boolean): Promise<Block[]>;
     getBlockByHash(blockHash: string): Promise<Block>;
-    getBalance(addressLike: BitcoinAddressLike): Promise<bigint>;
+    getBalance(addressLike: BitcoinAddressLike, filterOrdinals?: boolean): Promise<bigint>;
     getUXTOs(address: BitcoinAddressLike, optimize?: boolean): Promise<unknown>;
     getTransaction(txHash: string): Promise<TransactionBase<OPNetTransactionTypes>>;
     getTransactionReceipt(txHash: string): Promise<TransactionReceipt>;

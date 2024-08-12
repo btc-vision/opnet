@@ -144,17 +144,19 @@ export abstract class AbstractRpcProvider {
     /**
      * Get the bitcoin balance of an address.
      * @param {BitcoinAddressLike} addressLike The address to get the balance of
+     * @param {boolean} filterOrdinals Whether to filter ordinals or not
      * @description This method is used to get the balance of a bitcoin address.
      * @returns {Promise<bigint>} The balance of the address
      * @example await getBalance('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq');
      */
-    public async getBalance(addressLike: BitcoinAddressLike): Promise<bigint> {
+    public async getBalance(addressLike: BitcoinAddressLike, filterOrdinals: boolean = true): Promise<bigint> {
         const address: string = addressLike.toString();
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_BALANCE, [
             address,
+            filterOrdinals
         ]);
-        const rawBalance: JsonRpcResult = await this.callPayloadSingle(payload);
 
+        const rawBalance: JsonRpcResult = await this.callPayloadSingle(payload);
         const result: string = rawBalance.result as string;
         if (!result || (result && !result.startsWith('0x'))) {
             throw new Error(`Invalid balance returned from provider: ${result}`);
