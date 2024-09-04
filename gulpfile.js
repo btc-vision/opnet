@@ -45,7 +45,7 @@ async function buildCJS() {
                 logger({
                     before: 'Starting...',
                     after: 'Project compiled!',
-                    extname: '.js',
+                    extname: '.cjs',
                     showChange: true,
                 }),
             )
