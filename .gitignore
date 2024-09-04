@@ -400,7 +400,5 @@ FodyWeavers.xsd
 
 package-lock.json
 
-cjs/*
-!cjs/package.json
-
 .idea
+yarn.lock
