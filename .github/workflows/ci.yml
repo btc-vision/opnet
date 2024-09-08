@@ -31,17 +31,18 @@ jobs:
             - name: Build browser assets
               run: yarn browserBuild
 
+            - name: Configure NPM authentication
+              run: npm set "//registry.npmjs.org/:_authToken" ${{ secrets.NPM_PUBLISH_TOKEN }}
+
             - name: Publish to npm
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
               run: npm publish --access public
 
             - name: Create GitHub Release
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               uses: actions/create-release@v1
               with:
                   tag_name: ${{ github.ref_name }}
                   release_name: Release ${{ github.ref_name }}
                   body: |
                       Automated release for OP_NET.
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
