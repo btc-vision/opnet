@@ -31,7 +31,6 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-[Bb]uild/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -399,8 +398,7 @@ FodyWeavers.xsd
 *.sln.iml
 
 package-lock.json
-
-cjs/*
-!cjs/package.json
+yarn.lock
 
 .idea
+build

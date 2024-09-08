@@ -1,139 +1,68 @@
-process.on('uncaughtException', function (err) {
-    console.log('Caught exception: ', err);
-});
-
 import gulp from 'gulp';
 import gulpcache from 'gulp-cached';
 import logger from 'gulp-logger';
 import ts from 'gulp-typescript';
 
-const tsProject = ts.createProject('tsconfig.json');
-const tsProjectCJS = ts.createProject('tsconfig.cjs.json');
+const tsProjectESM = ts.createProject('tsconfig.json');
 
 function onError(e) {
-    console.log('Errored', e);
+    console.error('Error:', e);
 }
 
-async function build() {
-    return new Promise(async (resolve) => {
-        tsProject
-            .src()
-            .pipe(gulpcache())
-            .pipe(
-                logger({
-                    before: 'Starting...',
-                    after: 'Project compiled!',
-                    extname: '.js',
-                    showChange: true,
-                }),
-            )
-            .pipe(tsProject())
-            .on('error', onError)
-            .pipe(gulp.dest('build'))
-            .on('end', async () => {
-                resolve();
-            });
-    });
+function buildESM() {
+    return tsProjectESM
+        .src()
+        .pipe(gulpcache('ts-esm'))
+        .pipe(
+            logger({
+                before: 'Starting ESM compilation...',
+                after: 'ESM compilation done!',
+                extname: '.js',
+                showChange: true,
+            }),
+        )
+        .pipe(tsProjectESM())
+        .on('error', onError)
+        .pipe(gulp.dest('build'));
 }
 
-async function buildCJS() {
-    return new Promise(async (resolve) => {
-        tsProject
-            .src()
-            .pipe(gulpcache())
-            .pipe(
-                logger({
-                    before: 'Starting...',
-                    after: 'Project compiled!',
-                    extname: '.cjs',
-                    showChange: true,
-                }),
-            )
-            .pipe(tsProjectCJS())
-            .on('error', onError)
-            .pipe(gulp.dest('cjs'))
-            .on('end', async () => {
-                resolve();
-            });
-    });
+function buildProtoYaml() {
+    return gulp
+        .src('./src/**/*.yaml')
+        .pipe(
+            logger({
+                before: 'Processing YAML files...',
+                after: 'YAML files processed!',
+                extname: '.yaml',
+                showChange: true,
+            }),
+        )
+        .pipe(gulpcache('yaml'))
+        .pipe(gulp.dest('./build/'))
+        .on('end', () => {
+            gulp.src('./src/**/*.proto')
+                .pipe(
+                    logger({
+                        before: 'Processing Proto files...',
+                        after: 'Proto files processed!',
+                        extname: '.proto',
+                        showChange: true,
+                    }),
+                )
+                .pipe(gulpcache('proto'))
+                .pipe(gulp.dest('./build/'));
+        });
 }
 
-async function buildProtoYaml() {
-    return new Promise(async (resolve) => {
-        gulp.src('./src/**/*.yaml')
-            .pipe(
-                logger({
-                    before: 'Starting...',
-                    after: 'Compiled yaml.',
-                    extname: '.yaml',
-                    showChange: true,
-                }),
-            )
-            .pipe(gulpcache())
-            .pipe(gulp.dest('./build/'))
-            .on('end', () => {
-                gulp.src('./src/**/*.proto')
-                    .pipe(
-                        logger({
-                            before: 'Starting...',
-                            after: 'Compiled protobuf.',
-                            extname: '.proto',
-                            showChange: true,
-                        }),
-                    )
-                    .pipe(gulp.dest('./build/'))
-                    .on('end', async () => {
-                        resolve();
-                    });
-            });
-    });
-}
+const build = gulp.series(buildESM, buildProtoYaml);
 
-gulp.task('default', async () => {
-    await build().catch((e) => {});
-    await buildProtoYaml();
-
-    return true;
-});
-
-gulp.task('cjs', async () => {
-    await buildCJS().catch((e) => {});
-    await buildProtoYaml();
-
-    return true;
-});
+gulp.task('build', build);
+gulp.task('default', build);
 
 gulp.task('watch', () => {
+    gulp.watch(['src/**/*.ts', 'src/**/*.js'], gulp.series(buildESM));
     gulp.watch(
-        ['src/**/**/*.ts', 'src/**/*.ts', 'src/**/*.js', 'src/*.ts', 'src/*.js'],
-        async (cb) => {
-            await build().catch((e) => {
-                console.log('Errored 2', e);
-            });
-
-            cb();
-        },
-    );
-
-    gulp.watch(
-        [
-            'src/components/*.yaml',
-            'src/**/*.yaml',
-            'src/src/*.yaml',
-            'src/*.proto',
-            'src/**/**/*.proto',
-            'src/**/*.proto',
-            '*.proto',
-            '*.yaml',
-            '*.conf',
-            'src/config/*.conf',
-        ],
-        async (cb) => {
-            await buildProtoYaml().catch((e) => {
-                console.log('Errored 2', e);
-            });
-
-            cb();
-        },
+        ['src/**/*.yaml', 'src/**/*.proto', '*.yaml', '*.proto', '*.conf', 'src/config/*.conf'],
+        buildProtoYaml,
     );
 });
