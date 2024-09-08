@@ -402,4 +402,4 @@ yarn.lock
 
 .idea
 build
-gitignore
+browser
