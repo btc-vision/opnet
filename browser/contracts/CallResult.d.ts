@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { BinaryReader, NetEvent } from '@btc-vision/bsi-binary';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';

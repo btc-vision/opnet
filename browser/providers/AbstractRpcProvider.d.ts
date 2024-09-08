@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import '../serialize/BigInt.js';
 import { WrappedGeneration } from '@btc-vision/transaction';
 import { Network } from 'bitcoinjs-lib';

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { InteractionType } from '../../../interfaces/opnet/OPNetTransactionTypes.js';
 import { ContractEvents } from '../ITransactionReceipt.js';
 import { ICommonTransaction } from './ICommonTransaction.js';

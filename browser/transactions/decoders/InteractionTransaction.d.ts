@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { Buffer } from 'buffer';
 import { InteractionType } from '../../interfaces/opnet/OPNetTransactionTypes.js';
 import { IInteractionTransaction } from '../interfaces/transactions/IInteractionTransaction.js';

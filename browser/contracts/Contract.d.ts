@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { Address, NetEvent } from '@btc-vision/bsi-binary';
 import { BaseContractProperty } from '../abi/BaseContractProperty.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';

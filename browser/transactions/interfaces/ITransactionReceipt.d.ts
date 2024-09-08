@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { NetEvent } from '@btc-vision/bsi-binary';
 export interface NetEventDocument {
     readonly contractAddress: string;

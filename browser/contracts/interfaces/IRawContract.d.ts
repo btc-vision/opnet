@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { Address } from '@btc-vision/bsi-binary';
 export interface IRawContract {
     readonly contractAddress: Address;

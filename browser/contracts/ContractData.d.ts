@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { Address } from '@btc-vision/bsi-binary';
 import { IRawContract } from './interfaces/IRawContract.js';
 export declare class ContractData implements IRawContract {

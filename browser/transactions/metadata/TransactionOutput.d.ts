@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { ScriptPubKey } from '@btc-vision/bsi-bitcoin-rpc';
 export interface ITransactionOutput {
     readonly index: number;

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { IStorageValue } from './interfaces/IStorageValue.js';
 export declare class StoredValue implements IStorageValue {
     readonly pointer: bigint;

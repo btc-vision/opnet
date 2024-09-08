@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { OPNetTransactionTypes } from '../../../interfaces/opnet/OPNetTransactionTypes.js';
 import { ICommonTransaction } from './ICommonTransaction.js';
 export interface IDeploymentTransaction extends ICommonTransaction<OPNetTransactionTypes.Deployment> {

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { BigNumberish, PointerLike } from '../../common/CommonTypes.js';
 export interface IStorageValue {
     readonly pointer: PointerLike;

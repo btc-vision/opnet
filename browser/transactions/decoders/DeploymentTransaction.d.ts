@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTypes.js';
 import { IDeploymentTransaction } from '../interfaces/transactions/IDeploymentTransaction.js';
 import { TransactionBase } from '../Transaction.js';

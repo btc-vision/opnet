@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { Network } from 'bitcoinjs-lib';
 import { ECPairInterface } from 'ecpair';
 import { BitcoinAddressLike } from '../common/CommonTypes.js';

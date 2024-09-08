@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { ContractEvents, ITransactionReceipt } from '../interfaces/ITransactionReceipt.js';
 export declare class TransactionReceipt implements ITransactionReceipt {
     readonly receipt?: Buffer;
