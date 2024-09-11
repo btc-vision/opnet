@@ -1,18 +1,19 @@
 {
+    "name": "opnet",
     "type": "module",
-    "version": "1.0.49",
+    "version": "1.0.50",
     "author": "BlobMaster41",
-    "description": "The perfect library for building Bitcoin based applications.",
+    "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
         "node": ">=16.0.0"
     },
     "exports": {
-        "node": {
+        ".": {
             "import": "./build/index.js",
-            "require": "./cjs/index.js",
+            "require": "./build/index.js",
             "types": "./build/index.d.ts"
         },
-        "browser": {
+        "./browser": {
             "import": "./browser/index.js",
             "require": "./browser/index.js",
             "types": "./browser/index.d.ts"
@@ -40,7 +41,6 @@
     "types": "build/index.d.ts",
     "typings": "build/index.d.ts",
     "module": "build/index.js",
-    "name": "opnet",
     "publishConfig": {
         "access": "public",
         "tag": "latest"
@@ -51,16 +51,17 @@
     },
     "scripts": {
         "watch": "gulp watch",
-        "build": "gulp && gulp cjs",
+        "build": "gulp build",
         "test": "jest --runInBand",
-        "setup": "npm npm i && npm run build",
+        "setup": "npm i && npm run build",
         "browserBuild": "webpack --mode production",
         "docs": "typedoc --out docs --tsconfig tsconfig.json --readme README.md --name OPNet --plugin typedoc-material-theme --themeColor '#cb9820' --exclude src/scripts/test.ts --exclude src/index.ts src"
     },
     "devDependencies": {
+        "@babel/core": "^7.25.2",
         "@babel/plugin-proposal-class-properties": "^7.18.6",
         "@babel/plugin-transform-runtime": "^7.24.3",
-        "@babel/preset-env": "^7.24.5",
+        "@babel/preset-env": "^7.25.4",
         "@babel/preset-flow": "^7.24.1",
         "@babel/preset-react": "^7.24.1",
         "@babel/preset-typescript": "^7.24.1",
@@ -70,6 +71,10 @@
         "@types/ws": "^8.5.10",
         "assert": "^2.1.0",
         "eslint": "^8.57.0",
+        "gulp": "^5.0.0",
+        "gulp-cached": "^1.1.1",
+        "gulp-logger": "^0.0.2",
+        "gulp-typescript": "^6.0.0-alpha.1",
         "https-browserify": "^1.0.0",
         "jest": "^29.7.0",
         "os-browserify": "^0.3.0",
@@ -79,7 +84,6 @@
         "ts-jest": "^29.1.2",
         "typedoc": "^0.25.13",
         "typedoc-material-theme": "^1.0.2",
-        "typescript": "^5.4.5",
         "typescript-eslint": "^7.4.0",
         "webpack": "^5.91.0",
         "webpack-cli": "^5.1.4"
@@ -97,13 +101,11 @@
         "bignumber.js": "^9.1.2",
         "bitcoinjs-lib": "github:btc-vision/bitcoinjs-lib",
         "buffer": "^6.0.3",
-        "gulp": "^5.0.0",
-        "gulp-cached": "^1.1.1",
-        "gulp-logger": "^0.0.2",
-        "gulp-typescript": "^6.0.0-alpha.1",
         "gulplog": "^2.2.0",
+        "process": "^0.11.10",
         "tiny-secp256k1": "^2.2.3",
         "ts-loader": "^9.5.1",
-        "ts-node": "^10.9.2"
+        "ts-node": "^10.9.2",
+        "typescript": "^5.5.4"
     }
 }

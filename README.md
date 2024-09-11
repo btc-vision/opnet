@@ -22,8 +22,8 @@ and other Bitcoin-related technologies.
 
 ### Prerequisites
 
-- Node.js version 16.x or higher
-- npm (Node Package Manager)
+-   Node.js version 16.x or higher
+-   npm (Node Package Manager)
 
 ### Installation
 
@@ -39,39 +39,42 @@ the `docs/` directory of the repository.
 #### Development
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/btc-vision/opnet.git
-   ```
+    ```bash
+    git clone https://github.com/btc-vision/opnet.git
+    ```
 2. Navigate to the repository directory:
-   ```bash
-   cd opnet
-   ```
+    ```bash
+    cd opnet
+    ```
 3. Install the required dependencies:
-   ```bash
-   npm i
-   ```
+    ```bash
+    npm i
+    ```
 
 ## Example
 
 Calling a contract function from typescript/javascript is as simple as the following code:
-```typescript
-import { getContract, JSONRpcProvider } from 'opnet';
 
-const senderAddress: string = 'tb1p823gdnqvk8a90f8cu30w8ywvk29uh8txtqqnsmk6f5ktd7hlyl0q3cyz4c';
-const provider: JSONRpcProvider = new JSONRpcProvider('https://testnet.opnet.org');
-const contract: IOP_20Contract = getContract<IOP_20Contract>(
+```typescript
+import { getContract, IOP_20Contract, JSONRpcProvider, OP_20_ABI } from 'opnet';
+
+async function main() {
+    const provider: JSONRpcProvider = new JSONRpcProvider('https://testnet.opnet.org');
+    const contract: IOP_20Contract = getContract<IOP_20Contract>(
         'tb1q4tyhf8hpu04qjj3qaag20knun0spctultxzakw', // MOTO Contract
         OP_20_ABI,
-        provider, 
-        sender
-);
+        provider,
+    );
 
-const balanceExample = await contract.balanceOf(
-    'tb1p823gdnqvk8a90f8cu30w8ywvk29uh8txtqqnsmk6f5ktd7hlyl0q3cyz4c', // Random address
-);
+    const balanceExample = await contract.balanceOf(
+        'tb1p823gdnqvk8a90f8cu30w8ywvk29uh8txtqqnsmk6f5ktd7hlyl0q3cyz4c', // Random address
+    );
 
-if ('error' in balanceExample) throw new Error('Error in fetching balance');
-console.log('MOTO Balance:', balanceExample.properties);
+    if ('error' in balanceExample) throw new Error('Error in fetching balance');
+    console.log('MOTO Balance:', balanceExample.decoded[0]);
+}
+
+main().catch(console.error);
 ```
 
 You can call any function of the contract by using the `contract` object. This object will encode the correct calldata based of your provided ABI and simulate the call.
