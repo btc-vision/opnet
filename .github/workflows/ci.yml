@@ -13,7 +13,7 @@ jobs:
         runs-on: ubuntu-latest
 
         permissions:
-            contents: write
+            contents: read
             id-token: write
 
         steps:
@@ -35,14 +35,10 @@ jobs:
             - name: Build browser assets
               run: yarn browserBuild
 
-            - name: Publish to node
-              run: |
-                  npm config set provenance true
-                  echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-                  npm publish --access public
+            - name: Publish to npm
+              run: npm publish --provenance --access public
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Create GitHub Release
               uses: actions/create-release@v1
