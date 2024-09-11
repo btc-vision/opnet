@@ -45,6 +45,10 @@
         "access": "public",
         "tag": "latest"
     },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/impredmet/opnet.git"
+    },
     "scripts": {
         "watch": "gulp watch",
         "build": "gulp build",
