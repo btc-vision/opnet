@@ -45,10 +45,6 @@
         "access": "public",
         "tag": "latest"
     },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/btc-vision/opnet.git"
-    },
     "scripts": {
         "watch": "gulp watch",
         "build": "gulp build",
