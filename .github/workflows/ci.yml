@@ -1,5 +1,9 @@
 name: CI for OP_NET
 
+permissions:
+    contents: write
+    id-token: write
+
 on:
     push:
         tags:
@@ -11,10 +15,6 @@ on:
 jobs:
     build_and_publish:
         runs-on: ubuntu-latest
-
-        permissions:
-            contents: read
-            id-token: write
 
         steps:
             - name: Checkout code
@@ -35,10 +35,14 @@ jobs:
             - name: Build browser assets
               run: yarn browserBuild
 
-            - name: Publish to npm
-              run: npm publish --provenance --access public
+            - name: Publish to node
+              run: |
+                  npm config set provenance true
+                  echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+                  npm publish --access public
               env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Create GitHub Release
               uses: actions/create-release@v1
