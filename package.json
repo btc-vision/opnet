@@ -1,5 +1,5 @@
 {
-    "name": "test90a9ds09",
+    "name": "opnet",
     "type": "module",
     "version": "1.0.50",
     "author": "BlobMaster41",
@@ -47,7 +47,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git://github.com/impredmet/opnet.git"
+        "url": "git://github.com/btc-vision/opnet.git"
     },
     "scripts": {
         "watch": "gulp watch",
