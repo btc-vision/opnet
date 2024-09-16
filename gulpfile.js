@@ -1,68 +1,42 @@
 import gulp from 'gulp';
 import gulpcache from 'gulp-cached';
+
+import gulpClean from 'gulp-clean';
+import gulpESLintNew from 'gulp-eslint-new';
 import logger from 'gulp-logger';
 import ts from 'gulp-typescript';
 
-const tsProjectESM = ts.createProject('tsconfig.json');
+process.on('uncaughtException', function (err) {
+    console.log('Caught exception: ', err);
+});
 
-function onError(e) {
-    console.error('Error:', e);
-}
+const tsProject = ts.createProject('tsconfig.json');
 
 function buildESM() {
-    return tsProjectESM
+    return tsProject
         .src()
         .pipe(gulpcache('ts-esm'))
         .pipe(
             logger({
-                before: 'Starting ESM compilation...',
-                after: 'ESM compilation done!',
+                before: 'Starting...',
+                after: 'Project compiled!',
                 extname: '.js',
                 showChange: true,
             }),
         )
-        .pipe(tsProjectESM())
-        .on('error', onError)
+        .pipe(gulpESLintNew())
+        .pipe(gulpESLintNew.format())
+        .pipe(tsProject())
         .pipe(gulp.dest('build'));
 }
 
-function buildProtoYaml() {
-    return gulp
-        .src('./src/**/*.yaml')
-        .pipe(
-            logger({
-                before: 'Processing YAML files...',
-                after: 'YAML files processed!',
-                extname: '.yaml',
-                showChange: true,
-            }),
-        )
-        .pipe(gulpcache('yaml'))
-        .pipe(gulp.dest('./build/'))
-        .on('end', () => {
-            gulp.src('./src/**/*.proto')
-                .pipe(
-                    logger({
-                        before: 'Processing Proto files...',
-                        after: 'Proto files processed!',
-                        extname: '.proto',
-                        showChange: true,
-                    }),
-                )
-                .pipe(gulpcache('proto'))
-                .pipe(gulp.dest('./build/'));
-        });
+export async function clean() {
+    return gulp.src('./build/src', { read: false }).pipe(gulpClean());
 }
 
-const build = gulp.series(buildESM, buildProtoYaml);
+export const build = buildESM;
+export default build;
 
-gulp.task('build', build);
-gulp.task('default', build);
-
-gulp.task('watch', () => {
+export function watch() {
     gulp.watch(['src/**/*.ts', 'src/**/*.js'], gulp.series(buildESM));
-    gulp.watch(
-        ['src/**/*.yaml', 'src/**/*.proto', '*.yaml', '*.proto', '*.conf', 'src/config/*.conf'],
-        buildProtoYaml,
-    );
-});
+}

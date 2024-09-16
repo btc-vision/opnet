@@ -13,7 +13,7 @@ export class GenericTransaction
     extends TransactionBase<OPNetTransactionTypes.Generic>
     implements IGenericTransaction
 {
-    constructor(transaction: IGenericTransaction) {
+    public constructor(transaction: IGenericTransaction) {
         super(transaction);
     }
 }

@@ -52,12 +52,12 @@ export class BitcoinInterface {
             }
 
             if (element.type === BitcoinAbiTypes.Function) {
-                if (element.inputs && element.inputs!.length) this.verifyAbiValues(element.inputs);
-                if (element.outputs && element.outputs!.length) {
+                if (element.inputs && element.inputs?.length) this.verifyAbiValues(element.inputs);
+                if (element.outputs && element.outputs?.length) {
                     this.verifyAbiValues(element.outputs);
                 }
             } else if (element.type === BitcoinAbiTypes.Event) {
-                if (element.values && element.values!.length) this.verifyAbiValues(element.values);
+                if (element.values && element.values?.length) this.verifyAbiValues(element.values);
             }
         }
     }

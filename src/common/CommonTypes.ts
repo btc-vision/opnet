@@ -20,4 +20,4 @@ export type DecodedCallResult =
 export type Numeric = number | bigint;
 
 export type BigNumberish = Numeric | string;
-export type BlockTag = BigNumberish | 'latest' | 'pending' | 'earliest';
+export type BlockTag = BigNumberish | string;

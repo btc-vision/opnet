@@ -149,11 +149,14 @@ export abstract class AbstractRpcProvider {
      * @returns {Promise<bigint>} The balance of the address
      * @example await getBalance('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq');
      */
-    public async getBalance(addressLike: BitcoinAddressLike, filterOrdinals: boolean = true): Promise<bigint> {
+    public async getBalance(
+        addressLike: BitcoinAddressLike,
+        filterOrdinals: boolean = true,
+    ): Promise<bigint> {
         const address: string = addressLike.toString();
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_BALANCE, [
             address,
-            filterOrdinals
+            filterOrdinals,
         ]);
 
         const rawBalance: JsonRpcResult = await this.callPayloadSingle(payload);
@@ -430,7 +433,7 @@ export abstract class AbstractRpcProvider {
             };
         }
 
-        return result as BroadcastedTransaction;
+        return result;
     }
 
     /**
@@ -445,12 +448,12 @@ export abstract class AbstractRpcProvider {
      * @throws {Error} If something went wrong while fetching the witnesses
      */
     public async getBlockWitness(
-        height: BigNumberish | -1 = -1,
+        height: BigNumberish = -1,
         trusted?: boolean,
         limit?: number,
         page?: number,
     ): Promise<BlockWitnesses> {
-        const params: [BigNumberish | -1, boolean?, number?, number?] = [height.toString()];
+        const params: [BigNumberish, boolean?, number?, number?] = [height.toString()];
 
         if (trusted !== undefined && trusted !== null) params.push(trusted);
         if (limit !== undefined && limit !== null) params.push(limit);
@@ -575,7 +578,7 @@ export abstract class AbstractRpcProvider {
             throw new Error('Block not found');
         }
 
-        return data as JsonRpcCallResult;
+        return data;
     }
 
     protected abstract providerUrl(url: string): string;

@@ -101,6 +101,10 @@ export class BitcoinAddress {
         return new BitcoinAddress(keyPair, network);
     }
 
+    public toString(): string {
+        return this.taprootAddress;
+    }
+
     public [Symbol.toStringTag](): string {
         return this.taprootAddress;
     }
@@ -120,7 +124,7 @@ export class BitcoinAddress {
             throw new Error('KeyPair not set');
         }
 
-        const myXOnlyPubkey = this.#keyPair.publicKey.slice(1, 33);
+        const myXOnlyPubkey = this.#keyPair.publicKey.subarray(1, 33);
         const output = Buffer.concat([
             // witness v1, PUSH_DATA 32 bytes
             Buffer.from([0x51, 0x20]),

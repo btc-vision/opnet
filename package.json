@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.0.51",
+    "version": "1.0.52",
     "author": "BlobMaster41",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -98,6 +98,8 @@
         "bignumber.js": "^9.1.2",
         "bitcoinjs-lib": "github:btc-vision/bitcoinjs-lib",
         "buffer": "^6.0.3",
+        "gulp-clean": "^0.4.0",
+        "gulp-eslint-new": "^2.3.0",
         "gulplog": "^2.2.0",
         "process": "^0.11.10",
         "tiny-secp256k1": "^2.2.3",

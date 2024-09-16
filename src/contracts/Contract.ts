@@ -97,7 +97,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             }
         }
 
-        for (let event of events) {
+        for (const event of events) {
             decodedEvents.push(this.decodeEvent(event));
         }
 
@@ -141,14 +141,19 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     }
 
     protected getFunction(
-        name: symbol,
-    ): BaseContractProperty | undefined | string | number | symbol {
+        name: symbol | string,
+    ):
+        | BaseContractProperty
+        | undefined
+        | string
+        | number
+        | symbol
+        | ((functionName: string, args: unknown[]) => Buffer) {
         const key = name as keyof Omit<
             IBaseContract<T>,
-            'address' | 'provider' | 'interface' | 'decodeEvents' | 'decodeEvent'
+            'address' | 'provider' | 'interface' | 'decodeEvents' | 'decodeEvent' | 'setSender'
         >;
 
-        // @ts-ignore
         return this[key];
     }
 
@@ -160,18 +165,17 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         for (const element of this.interface.abi) {
             switch (element.type) {
                 case BitcoinAbiTypes.Function: {
-                    // @ts-ignore
                     // We will allow overwrites.
                     //if (this[element.name]) {
                     //    throw new Error(`Duplicate function found in the ABI: ${element.name}.`);
                     //}
 
-                    if (this[element.name]) {
+                    if (this.getFunction(element.name)) {
                         continue;
                     }
 
                     Object.defineProperty(this, element.name, {
-                        value: this.callFunction(element as FunctionBaseData).bind(this),
+                        value: this.callFunction(element).bind(this),
                     });
 
                     break;
@@ -219,21 +223,21 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 if (typeof value !== 'bigint') {
                     throw new Error(`Expected value to be of type bigint (${name})`);
                 }
-                writer.writeU256(value as bigint);
+                writer.writeU256(value);
                 break;
             }
             case ABIDataTypes.BOOL: {
                 if (typeof value !== 'boolean') {
                     throw new Error(`Expected value to be of type boolean (${name})`);
                 }
-                writer.writeBoolean(value as boolean);
+                writer.writeBoolean(value);
                 break;
             }
             case ABIDataTypes.STRING: {
                 if (typeof value !== 'string') {
                     throw new Error(`Expected value to be of type string (${name})`);
                 }
-                writer.writeStringWithLength(value as string);
+                writer.writeStringWithLength(value);
                 break;
             }
             case ABIDataTypes.ADDRESS: {
@@ -253,28 +257,28 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 if (typeof value !== 'number') {
                     throw new Error(`Expected value to be of type number (${name})`);
                 }
-                writer.writeU8(value as number);
+                writer.writeU8(value);
                 break;
             }
             case ABIDataTypes.UINT16: {
                 if (typeof value !== 'number') {
                     throw new Error(`Expected value to be of type number (${name})`);
                 }
-                writer.writeU16(value as number);
+                writer.writeU16(value);
                 break;
             }
             case ABIDataTypes.UINT32: {
                 if (typeof value !== 'number') {
                     throw new Error(`Expected value to be of type number (${name})`);
                 }
-                writer.writeU32(value as number);
+                writer.writeU32(value);
                 break;
             }
             case ABIDataTypes.BYTES32: {
                 if (!(value instanceof Uint8Array)) {
                     throw new Error(`Expected value to be of type Uint8Array (${name})`);
                 }
-                writer.writeBytes(value as Uint8Array);
+                writer.writeBytes(value);
                 break;
             }
             case ABIDataTypes.ADDRESS_UINT256_TUPLE: {
@@ -290,7 +294,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                     throw new Error(`Expected value to be of type Uint8Array (${name})`);
                 }
 
-                writer.writeBytesWithLength(value as Uint8Array);
+                writer.writeBytesWithLength(value);
                 break;
             }
             case ABIDataTypes.UINT64: {
@@ -298,7 +302,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                     throw new Error(`Expected value to be of type bigint (${name})`);
                 }
 
-                writer.writeU64(value as bigint);
+                writer.writeU64(value);
                 break;
             }
             case ABIDataTypes.ARRAY_OF_ADDRESSES: {

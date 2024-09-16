@@ -1,6 +1,6 @@
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
-import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';
+import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSONRpcResult.js';
 
 /**
  * @description This class is used to provide a JSON RPC provider.
@@ -10,7 +10,10 @@ import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';
 export class JSONRpcProvider extends AbstractRpcProvider {
     private readonly url: string;
 
-    constructor(url: string, private readonly timeout: number = 10_000) {
+    constructor(
+        url: string,
+        private readonly timeout: number = 10_000,
+    ) {
         super();
 
         this.url = this.providerUrl(url);
@@ -36,7 +39,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             },
             body: JSON.stringify(payload),
             timeout: this.timeout,
-            signal: signal
+            signal: signal,
         };
 
         try {
@@ -47,7 +50,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
 
             clearTimeout(timeoutId);
 
-            const fetchedData = await resp.json();
+            const fetchedData = (await resp.json()) as JsonRpcResult | JsonRpcError;
             if (!fetchedData) {
                 throw new Error('No data fetched');
             }
@@ -61,8 +64,6 @@ export class JSONRpcProvider extends AbstractRpcProvider {
 
             throw e;
         }
-
-
     }
 
     protected providerUrl(url: string): string {

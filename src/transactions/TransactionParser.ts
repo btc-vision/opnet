@@ -24,7 +24,7 @@ export class TransactionParser {
         }
 
         const transactionArray: TransactionBase<OPNetTransactionTypes>[] = [];
-        for (let transaction of transactions) {
+        for (const transaction of transactions) {
             if (!transaction) throw new Error(`Something went wrong while parsing transactions`);
 
             transactionArray.push(this.parseTransaction(transaction));

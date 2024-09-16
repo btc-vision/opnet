@@ -16,7 +16,7 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         this.wsUrl = this.providerUrl(url);
     }
 
-    public async _send(payload: JsonRpcPayload): Promise<JsonRpcCallResult> {
+    public _send(payload: JsonRpcPayload): Promise<JsonRpcCallResult> {
         throw new Error('Method not implemented.');
     }
 

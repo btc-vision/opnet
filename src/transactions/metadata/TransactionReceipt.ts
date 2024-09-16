@@ -52,7 +52,7 @@ export class TransactionReceipt implements ITransactionReceipt {
 
         if (!Array.isArray(events)) {
             for (const [key, value] of Object.entries(events)) {
-                parsedEvents[key] = value.map((event: NetEventDocument) => {
+                parsedEvents[key] = (value as NetEventDocument[]).map((event: NetEventDocument) => {
                     return this.decodeEvent(event);
                 });
             }
