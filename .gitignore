@@ -403,3 +403,5 @@ yarn.lock
 .idea
 build
 browser
+docs
+cjs
