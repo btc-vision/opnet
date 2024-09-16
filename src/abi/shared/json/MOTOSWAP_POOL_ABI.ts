@@ -264,8 +264,8 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'liquidity',
-                type: ABIDataTypes.UINT256,
+                name: 'to',
+                type: ABIDataTypes.ADDRESS,
             },
         ],
         type: BitcoinAbiTypes.Function,

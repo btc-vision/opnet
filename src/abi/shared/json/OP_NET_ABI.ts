@@ -18,20 +18,4 @@ export const OP_NET_ABI: BitcoinInterfaceAbi = [
         ],
         type: BitcoinAbiTypes.Function,
     },
-    {
-        name: 'isAddressOwner',
-        inputs: [
-            {
-                name: 'address',
-                type: ABIDataTypes.ADDRESS,
-            },
-        ],
-        outputs: [
-            {
-                name: 'isOwner',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
-        type: BitcoinAbiTypes.Function,
-    },
 ];
