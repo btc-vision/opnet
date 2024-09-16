@@ -100,7 +100,6 @@
         "buffer": "^6.0.3",
         "gulplog": "^2.2.0",
         "process": "^0.11.10",
-        "stream": "^0.0.3",
         "tiny-secp256k1": "^2.2.3",
         "ts-loader": "^9.5.1",
         "ts-node": "^10.9.2",
