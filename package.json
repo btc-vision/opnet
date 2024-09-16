@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.0.50",
+    "version": "1.0.51",
     "author": "BlobMaster41",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -88,9 +88,9 @@
         "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
         "@bitcoinerlab/secp256k1": "^1.1.1",
         "@btc-vision/bsi-binary": "^1.0.39",
-        "@btc-vision/transaction": "^1.0.100",
+        "@btc-vision/transaction": "^1.0.101",
         "@eslint/js": "^9.10.0",
-        "@noble/hashes": "^1.5.0",
+        "@noble/hashes": "^1.4.0",
         "babel-loader": "^9.1.3",
         "babel-plugin-transform-import-meta": "^2.2.1",
         "babel-preset-react": "^6.24.1",
@@ -100,6 +100,7 @@
         "buffer": "^6.0.3",
         "gulplog": "^2.2.0",
         "process": "^0.11.10",
+        "stream": "^0.0.3",
         "tiny-secp256k1": "^2.2.3",
         "ts-loader": "^9.5.1",
         "ts-node": "^10.9.2",

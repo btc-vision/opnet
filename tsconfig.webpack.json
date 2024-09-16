@@ -12,6 +12,9 @@
         "paths": {
             "@btc-vision/transaction": [
                 "node_modules/@btc-vision/transaction"
+            ],
+            "stream": [
+                "node_modules/readable-stream"
             ]
         },
         "moduleResolution": "bundler"
