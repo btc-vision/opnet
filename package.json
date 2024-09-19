@@ -9,6 +9,7 @@
     },
     "exports": {
         ".": {
+            "browser": "./browser/index.js",
             "import": "./build/index.js",
             "require": "./build/index.js",
             "types": "./build/index.d.ts"
@@ -20,6 +21,8 @@
         }
     },
     "browser": {
+        "./build/index.js": "./browser/index.js",
+        "./build/index.d.ts": "./browser/index.d.ts",
         "Buffer": "buffer",
         "crypto": "./src/crypto/crypto-browser.js",
         "stream": "stream-browserify"
