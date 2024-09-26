@@ -34,21 +34,18 @@ export class UTXOsManager {
         filterSpentUTXOs?: boolean;
     }): Promise<UTXOs> {
         try {
-            const { confirmed, pending } = await this.fetchUTXOs(
-                address,
-                mergePendingUTXOs,
-                false,
-                optimize,
-            );
+            const fetchedData = await this.fetchUTXOs(address, optimize);
 
-            let combinedUTXOs = [...confirmed, ...pending];
+            let combinedUTXOs = [...fetchedData.confirmed];
+
+            if (mergePendingUTXOs) {
+                combinedUTXOs = [...combinedUTXOs, ...fetchedData.pending];
+            }
 
             if (filterSpentUTXOs) {
-                const spentUTXOs = (await this.fetchUTXOs(address, false, true, optimize))
-                    .spentTransactions;
                 combinedUTXOs = combinedUTXOs.filter(
                     (utxo) =>
-                        !spentUTXOs.some(
+                        !fetchedData.spentTransactions.some(
                             (spent) =>
                                 spent.transactionId === utxo.transactionId &&
                                 spent.outputIndex === utxo.outputIndex,
@@ -104,22 +101,15 @@ export class UTXOsManager {
     }
 
     /**
-     * Generic method to fetch UTXOs
+     * Generic method to fetch all UTXOs in one call (confirmed, pending, and spent)
      * @param {string} address The address to fetch UTXOs for
-     * @param {boolean} pending Include pending UTXOs
-     * @param {boolean} spent Include spent UTXOs
      * @param {boolean} optimize Optimize the UTXOs
-     * @returns {Promise<UTXOs>} The fetched UTXOs
+     * @returns {Promise<IUTXOsData>} The fetched UTXOs data
      * @throws {Error} If something goes wrong
      */
-    private async fetchUTXOs(
-        address: string,
-        pending: boolean = false,
-        spent: boolean = false,
-        optimize: boolean = false,
-    ): Promise<IUTXOsData> {
+    private async fetchUTXOs(address: string, optimize: boolean = false): Promise<IUTXOsData> {
         try {
-            const url = `${this.provider.url}/api/v1/address/utxos?address=${address}&optimize=${optimize}&pending=${pending}&spent=${spent}`;
+            const url = `${this.provider.url}/api/v1/address/utxos?address=${address}&optimize=${optimize}`;
             const res = await fetch(url);
 
             if (!res.ok) {
@@ -132,18 +122,10 @@ export class UTXOsManager {
                 throw new Error('Invalid response received for UTXOs');
             }
 
-            if (pending && !data.pending) {
-                throw new Error('Failed to get pending UTXOs');
-            }
-
-            if (spent && !data.spentTransactions) {
-                throw new Error('Failed to get spent UTXOs');
-            }
-
             return {
                 confirmed: data.confirmed || [],
-                pending: pending ? data.pending || [] : [],
-                spentTransactions: spent ? data.spentTransactions || [] : [],
+                pending: data.pending || [],
+                spentTransactions: data.spentTransactions || [],
             };
         } catch (e) {
             console.error(e);
