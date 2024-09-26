@@ -19,6 +19,7 @@ import { ITransaction } from '../transactions/interfaces/ITransaction.js';
 import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.js';
 import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
+import { UTXOsManager } from '../utxos/UTXOsManager';
 import { GenerateTarget } from './interfaces/Generate.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JSONRpcMethods } from './interfaces/JSONRpcMethods.js';
@@ -43,6 +44,15 @@ export abstract class AbstractRpcProvider {
     private chainId: bigint | undefined;
 
     protected constructor() {}
+
+    private _utxoManager: UTXOsManager = new UTXOsManager(this);
+
+    /**
+     * Get the UTXO manager.
+     */
+    public get utxoManager(): UTXOsManager {
+        return this._utxoManager;
+    }
 
     /**
      * Get the latest block number.
@@ -110,7 +120,6 @@ export abstract class AbstractRpcProvider {
         });
 
         const blocks: JsonRpcCallResult = await this.callMultiplePayloads(payloads);
-
         if ('error' in blocks) {
             const error = blocks.error as JSONRpcResultError<JSONRpcMethods.BLOCK_BY_NUMBER>;
 
@@ -552,17 +561,13 @@ export abstract class AbstractRpcProvider {
         return data;
     }
 
-    protected abstract providerUrl(url: string): string;
-
-    private bufferToHex(buffer: Buffer): string {
-        return buffer.toString('hex');
-    }
-
-    private bigintToBase64(bigint: bigint): string {
-        return Buffer.from(BufferHelper.pointerToUint8Array(bigint)).toString('base64');
-    }
-
-    private buildJsonRpcPayload<T extends JSONRpcMethods>(
+    /**
+     * Build a JSON RPC payload. This method is used to build a JSON RPC payload.
+     * @param {JSONRpcMethods} method The method to call
+     * @param {unknown[]} params The parameters to send
+     * @returns {JsonRpcPayload} The JSON RPC payload
+     */
+    public buildJsonRpcPayload<T extends JSONRpcMethods>(
         method: T,
         params: unknown[],
     ): JsonRpcPayload {
@@ -572,5 +577,15 @@ export abstract class AbstractRpcProvider {
             id: this.nextId++,
             jsonrpc: '2.0',
         };
+    }
+
+    protected abstract providerUrl(url: string): string;
+
+    private bufferToHex(buffer: Buffer): string {
+        return buffer.toString('hex');
+    }
+
+    private bigintToBase64(bigint: bigint): string {
+        return Buffer.from(BufferHelper.pointerToUint8Array(bigint)).toString('base64');
     }
 }

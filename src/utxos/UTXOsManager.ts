@@ -1,5 +1,10 @@
-import { JSONRpcProvider, RequestUTXOsParams, RequestUTXOsParamsWithAmount, UTXOs } from '../opnet.js';
-import { IUTXOsData } from './interfaces/IUTXOsManager.js';
+import { IUTXO } from '../bitcoin/interfaces/IUTXO';
+import { UTXO, UTXOs } from '../bitcoin/UTXOs';
+import { AbstractRpcProvider } from '../providers/AbstractRpcProvider';
+import { JsonRpcPayload } from '../providers/interfaces/JSONRpc';
+import { JSONRpcMethods } from '../providers/interfaces/JSONRpcMethods';
+import { JsonRpcResult } from '../providers/interfaces/JSONRpcResult';
+import { IUTXOsData, RequestUTXOsParams, RequestUTXOsParamsWithAmount } from './interfaces/IUTXOsManager.js';
 
 /**
  * Unspent Transaction Output Manager
@@ -9,7 +14,7 @@ export class UTXOsManager {
     private spentUTXOs: UTXOs = [];
     private pendingUTXOs: UTXOs = [];
 
-    public constructor(private readonly provider: JSONRpcProvider) {}
+    public constructor(private readonly provider: AbstractRpcProvider) {}
 
     /**
      * Mark UTXOs as spent and track new UTXOs created by the transaction
@@ -138,23 +143,33 @@ export class UTXOsManager {
      * @throws {Error} If something goes wrong
      */
     private async fetchUTXOs(address: string, optimize: boolean = false): Promise<IUTXOsData> {
-        const url = `${this.provider.url}/api/v1/address/utxos?address=${address}&optimize=${optimize}`;
-        const res = await fetch(url);
+        const addressStr: string = address.toString();
+        const payload: JsonRpcPayload = this.provider.buildJsonRpcPayload(
+            JSONRpcMethods.GET_UTXOS,
+            [addressStr, optimize],
+        );
 
-        if (!res.ok) {
-            throw new Error('Failed to fetch UTXOs, API response not OK');
+        const rawUXTOs: JsonRpcResult = await this.provider.callPayloadSingle(payload);
+        if ('error' in rawUXTOs) {
+            throw new Error(`Error fetching block: ${rawUXTOs.error}`);
         }
 
-        const data = (await res.json()) as IUTXOsData;
-
-        if (!data) {
-            throw new Error('Invalid response received for UTXOs');
-        }
-
+        const result: IUTXOsData = (rawUXTOs.result as IUTXOsData) || {
+            confirmed: [],
+            pending: [],
+            spentTransactions: [],
+        };
+        
         return {
-            confirmed: data.confirmed || [],
-            pending: data.pending || [],
-            spentTransactions: data.spentTransactions || [],
+            confirmed: result.confirmed.map((utxo: IUTXO) => {
+                return new UTXO(utxo);
+            }),
+            pending: result.pending.map((utxo: IUTXO) => {
+                return new UTXO(utxo);
+            }),
+            spentTransactions: result.spentTransactions.map((utxo: IUTXO) => {
+                return new UTXO(utxo);
+            }),
         };
     }
 }
