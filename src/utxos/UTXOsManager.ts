@@ -8,17 +8,48 @@ import { IUTXOsData } from './interfaces/IUTXOsManager.js';
 export class UTXOsManager {
     private readonly provider: JSONRpcProvider;
     private spentUTXOs: UTXOs = [];
+    private pendingUTXOs: UTXOs = [];
 
     constructor(provider: JSONRpcProvider) {
         this.provider = provider;
     }
 
     /**
-     * Mark UTXOs as spent
-     * @param {UTXOs} utxos - The UTXOs to mark as spent
+     * Mark UTXOs as spent and track new UTXOs created by the transaction
+     * @param {UTXOs} spent - The UTXOs that were spent
+     * @param {UTXOs} newUTXOs - The new UTXOs created by the transaction
      */
-    spentUTXO(utxos: UTXOs): void {
-        this.spentUTXOs.push(...utxos);
+    spentUTXO(spent: UTXOs, newUTXOs: UTXOs): void {
+        this.pendingUTXOs = this.pendingUTXOs.filter(
+            (utxo) =>
+                !newUTXOs.some(
+                    (newUtxo) =>
+                        newUtxo.transactionId === utxo.transactionId &&
+                        newUtxo.outputIndex === utxo.outputIndex,
+                ),
+        );
+
+        this.spentUTXOs.push(...spent);
+
+        newUTXOs.forEach((newUtxo) => {
+            if (
+                !this.spentUTXOs.some(
+                    (spentUtxo) =>
+                        spentUtxo.transactionId === newUtxo.transactionId &&
+                        spentUtxo.outputIndex === newUtxo.outputIndex,
+                )
+            ) {
+                this.pendingUTXOs.push(newUtxo);
+            }
+        });
+    }
+
+    /**
+     * Clean the spent and pending UTXOs, allowing reset after transactions are built.
+     */
+    clean(): void {
+        this.spentUTXOs = [];
+        this.pendingUTXOs = [];
     }
 
     /**
@@ -47,8 +78,8 @@ export class UTXOsManager {
 
             let combinedUTXOs = fetchedData.confirmed;
 
-            if (mergePendingUTXOs && fetchedData.pending.length > 0) {
-                combinedUTXOs.push(...fetchedData.pending);
+            if (mergePendingUTXOs) {
+                combinedUTXOs.push(...this.pendingUTXOs);
             }
 
             combinedUTXOs = combinedUTXOs.filter(
@@ -82,16 +113,24 @@ export class UTXOsManager {
      * Fetch UTXOs for the amount needed, merging from pending and confirmed UTXOs
      * @param {string} address The address to fetch UTXOs from
      * @param {bigint} amount The amount of UTXOs to retrieve
+     * @param {boolean} [mergePendingUTXOs=true] - Whether to merge pending UTXOs
+     * @param {boolean} [filterSpentUTXOs=true] - Whether to filter out spent UTXOs
      * @returns {Promise<UTXOs>} The fetched UTXOs
      * @throws {Error} If something goes wrong
      */
-    async getUTXOsForAmount(address: string, amount: bigint): Promise<UTXOs> {
+    async getUTXOsForAmount(
+        address: string,
+        amount: bigint,
+        optimize: boolean = true,
+        mergePendingUTXOs: boolean = true,
+        filterSpentUTXOs: boolean = true,
+    ): Promise<UTXOs> {
         try {
             const combinedUTXOs = await this.getUTXOs({
                 address,
-                optimize: true,
-                mergePendingUTXOs: true,
-                filterSpentUTXOs: true,
+                optimize,
+                mergePendingUTXOs,
+                filterSpentUTXOs,
             });
 
             let utxoUntilAmount: UTXOs = [];
@@ -110,8 +149,6 @@ export class UTXOsManager {
                     `Insufficient UTXOs to cover amount. Available: ${currentValue}, Needed: ${amount}`,
                 );
             }
-
-            this.spentUTXO(utxoUntilAmount);
 
             return utxoUntilAmount;
         } catch (e) {
@@ -153,3 +190,18 @@ export class UTXOsManager {
         }
     }
 }
+
+async function test() {
+    const provider = new JSONRpcProvider('https://regtest.opnet.org/');
+    const utxosManager = new UTXOsManager(provider);
+
+    const address = 'bcrt1p823gdnqvk8a90f8cu30w8ywvk29uh8txtqqnsmk6f5ktd7hlyl0qupwyqz';
+    const amount = 1000000n;
+    const utxos = await utxosManager.getUTXOsForAmount(address, amount);
+    console.log({ utxos });
+    utxosManager.spentUTXO(utxos, []);
+    const utxos2 = await utxosManager.getUTXOsForAmount(address, amount);
+    console.log({ utxos2 });
+}
+
+test();
