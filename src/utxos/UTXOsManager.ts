@@ -7,9 +7,18 @@ import { IUTXOsData } from './interfaces/IUTXOsManager.js';
  */
 export class UTXOsManager {
     private readonly provider: JSONRpcProvider;
+    private spentUTXOs: UTXOs = [];
 
     constructor(provider: JSONRpcProvider) {
         this.provider = provider;
+    }
+
+    /**
+     * Mark UTXOs as spent
+     * @param {UTXOs} utxos - The UTXOs to mark as spent
+     */
+    spentUTXO(utxos: UTXOs): void {
+        this.spentUTXOs.push(...utxos);
     }
 
     /**
@@ -42,6 +51,15 @@ export class UTXOsManager {
                 combinedUTXOs.push(...fetchedData.pending);
             }
 
+            combinedUTXOs = combinedUTXOs.filter(
+                (utxo) =>
+                    !this.spentUTXOs.some(
+                        (spent) =>
+                            spent.transactionId === utxo.transactionId &&
+                            spent.outputIndex === utxo.outputIndex,
+                    ),
+            );
+
             if (filterSpentUTXOs && fetchedData.spentTransactions.length > 0) {
                 combinedUTXOs = combinedUTXOs.filter(
                     (utxo) =>
@@ -61,34 +79,19 @@ export class UTXOsManager {
     }
 
     /**
-     * Fetch UTXOs for the amount needed
-     * @param {object} options - The UTXO fetch options
-     * @param {string} options.address - The address to get the UTXOs
-     * @param {boolean} [options.optimize=true] - Whether to optimize the UTXOs
-     * @param {boolean} [options.mergePendingUTXOs=true] - Whether to merge pending UTXOs
-     * @param {boolean} [options.filterSpentUTXOs=true] - Whether to filter out spent UTXOs
-     * @returns {Promise<UTXOs>} The UTXOs
+     * Fetch UTXOs for the amount needed, merging from pending and confirmed UTXOs
+     * @param {string} address The address to fetch UTXOs from
+     * @param {bigint} amount The amount of UTXOs to retrieve
+     * @returns {Promise<UTXOs>} The fetched UTXOs
      * @throws {Error} If something goes wrong
      */
-    async getUTXOsForAmount({
-        address,
-        amount,
-        optimize = true,
-        mergePendingUTXOs = true,
-        filterSpentUTXOs = true,
-    }: {
-        address: string;
-        amount: bigint;
-        optimize?: boolean;
-        mergePendingUTXOs?: boolean;
-        filterSpentUTXOs?: boolean;
-    }): Promise<UTXOs> {
+    async getUTXOsForAmount(address: string, amount: bigint): Promise<UTXOs> {
         try {
             const combinedUTXOs = await this.getUTXOs({
                 address,
-                optimize,
-                mergePendingUTXOs,
-                filterSpentUTXOs,
+                optimize: true,
+                mergePendingUTXOs: true,
+                filterSpentUTXOs: true,
             });
 
             let utxoUntilAmount: UTXOs = [];
@@ -107,6 +110,8 @@ export class UTXOsManager {
                     `Insufficient UTXOs to cover amount. Available: ${currentValue}, Needed: ${amount}`,
                 );
             }
+
+            this.spentUTXO(utxoUntilAmount);
 
             return utxoUntilAmount;
         } catch (e) {
