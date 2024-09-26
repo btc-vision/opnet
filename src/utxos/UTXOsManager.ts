@@ -36,13 +36,13 @@ export class UTXOsManager {
         try {
             const fetchedData = await this.fetchUTXOs(address, optimize);
 
-            let combinedUTXOs = [...fetchedData.confirmed];
+            let combinedUTXOs = fetchedData.confirmed;
 
-            if (mergePendingUTXOs) {
-                combinedUTXOs = [...combinedUTXOs, ...fetchedData.pending];
+            if (mergePendingUTXOs && fetchedData.pending.length > 0) {
+                combinedUTXOs.push(...fetchedData.pending);
             }
 
-            if (filterSpentUTXOs) {
+            if (filterSpentUTXOs && fetchedData.spentTransactions.length > 0) {
                 combinedUTXOs = combinedUTXOs.filter(
                     (utxo) =>
                         !fetchedData.spentTransactions.some(
@@ -61,30 +61,45 @@ export class UTXOsManager {
     }
 
     /**
-     * Fetch UTXOs for the amount needed, merging from pending and confirmed UTXOs
-     * @param {string} address The address to fetch UTXOs from
-     * @param {bigint} amount The amount of UTXOs to retrieve
-     * @returns {Promise<UTXOs>} The fetched UTXOs
+     * Fetch UTXOs for the amount needed
+     * @param {object} options - The UTXO fetch options
+     * @param {string} options.address - The address to get the UTXOs
+     * @param {boolean} [options.optimize=true] - Whether to optimize the UTXOs
+     * @param {boolean} [options.mergePendingUTXOs=true] - Whether to merge pending UTXOs
+     * @param {boolean} [options.filterSpentUTXOs=true] - Whether to filter out spent UTXOs
+     * @returns {Promise<UTXOs>} The UTXOs
      * @throws {Error} If something goes wrong
      */
-    async getUTXOsForAmount(address: string, amount: bigint): Promise<UTXOs> {
+    async getUTXOsForAmount({
+        address,
+        amount,
+        optimize = true,
+        mergePendingUTXOs = true,
+        filterSpentUTXOs = true,
+    }: {
+        address: string;
+        amount: bigint;
+        optimize?: boolean;
+        mergePendingUTXOs?: boolean;
+        filterSpentUTXOs?: boolean;
+    }): Promise<UTXOs> {
         try {
             const combinedUTXOs = await this.getUTXOs({
                 address,
-                optimize: true,
-                mergePendingUTXOs: true,
-                filterSpentUTXOs: true,
+                optimize,
+                mergePendingUTXOs,
+                filterSpentUTXOs,
             });
 
             let utxoUntilAmount: UTXOs = [];
             let currentValue = 0n;
 
             for (const utxo of combinedUTXOs) {
+                currentValue += utxo.value;
+                utxoUntilAmount.push(utxo);
                 if (currentValue >= amount) {
                     break;
                 }
-                currentValue += utxo.value;
-                utxoUntilAmount.push(utxo);
             }
 
             if (currentValue < amount) {
