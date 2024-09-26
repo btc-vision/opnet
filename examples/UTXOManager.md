@@ -156,8 +156,6 @@ Make sure to clean the utxo manager everytime you are done with building
 transactions! Otherwise, you might end up with unexpected results like utxo
 conflicts.
 
-```typescript
-
 ### Fetching All UTXOs with Optional Properties
 
 ```typescript
