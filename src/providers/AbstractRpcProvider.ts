@@ -1,10 +1,8 @@
-import '../serialize/BigInt.js';
 import { BufferHelper } from '@btc-vision/bsi-binary';
 import { WrappedGeneration, WrappedGenerationParameters } from '@btc-vision/transaction';
 import { Network, networks } from 'bitcoinjs-lib';
-import { IUTXO } from '../bitcoin/interfaces/IUTXO.js';
+import '../serialize/BigInt.js';
 
-import { UTXO, UTXOs } from '../bitcoin/UTXOs.js';
 import { Block } from '../block/Block.js';
 import { BlockWitnesses } from '../block/interfaces/BlockWitness.js';
 import { IBlock } from '../block/interfaces/IBlock.js';
@@ -166,33 +164,6 @@ export abstract class AbstractRpcProvider {
         }
 
         return BigInt(result);
-    }
-
-    /**
-     * Get the UTXOs (Unspent Transaction Outputs) of an address.
-     * @description This method is used to get the UTXOs of a bitcoin address.
-     * @param {BitcoinAddressLike} address The address to get the UTXOs of
-     * @param {boolean} optimize Whether to optimize the UTXOs
-     * @returns {Promise<UTXOs>} The UTXOs of the address
-     * @example await getUXTOs('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq');
-     * @throws {Error} If something went wrong while fetching the UTXOs
-     */
-    public async getUXTOs(
-        address: BitcoinAddressLike,
-        optimize: boolean = false,
-    ): Promise<unknown> {
-        const addressStr: string = address.toString();
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_UTXOS, [
-            addressStr,
-            optimize,
-        ]);
-
-        const rawUXTOs: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: UTXOs = (rawUXTOs.result as UTXOs) || [];
-
-        return result.map((utxo: IUTXO) => {
-            return new UTXO(utxo);
-        });
     }
 
     /**
