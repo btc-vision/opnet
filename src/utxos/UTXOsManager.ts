@@ -7,9 +7,38 @@ import { IUTXOsData } from './interfaces/IUTXOsManager.js';
  */
 export class UTXOsManager {
     private readonly provider: JSONRpcProvider;
+    private spentUTXOs: UTXOs = [];
+    private pendingUTXOs: UTXOs = [];
 
     constructor(provider: JSONRpcProvider) {
         this.provider = provider;
+    }
+
+    /**
+     * Mark UTXOs as spent and track new UTXOs created by the transaction
+     * @param {UTXOs} spent - The UTXOs that were spent
+     * @param {UTXOs} newUTXOs - The new UTXOs created by the transaction
+     */
+    spentUTXO(spent: UTXOs, newUTXOs: UTXOs): void {
+        this.pendingUTXOs = this.pendingUTXOs.filter(
+            (utxo) =>
+                !spent.some(
+                    (spentUtxo) =>
+                        spentUtxo.transactionId === utxo.transactionId &&
+                        spentUtxo.outputIndex === utxo.outputIndex,
+                ),
+        );
+
+        this.spentUTXOs.push(...spent);
+        this.pendingUTXOs.push(...newUTXOs);
+    }
+
+    /**
+     * Clean the spent and pending UTXOs, allowing reset after transactions are built.
+     */
+    clean(): void {
+        this.spentUTXOs = [];
+        this.pendingUTXOs = [];
     }
 
     /**
@@ -38,9 +67,18 @@ export class UTXOsManager {
 
             let combinedUTXOs = fetchedData.confirmed;
 
-            if (mergePendingUTXOs && fetchedData.pending.length > 0) {
-                combinedUTXOs.push(...fetchedData.pending);
+            if (mergePendingUTXOs) {
+                combinedUTXOs.push(...this.pendingUTXOs);
             }
+
+            combinedUTXOs = combinedUTXOs.filter(
+                (utxo) =>
+                    !this.spentUTXOs.some(
+                        (spent) =>
+                            spent.transactionId === utxo.transactionId &&
+                            spent.outputIndex === utxo.outputIndex,
+                    ),
+            );
 
             if (filterSpentUTXOs && fetchedData.spentTransactions.length > 0) {
                 combinedUTXOs = combinedUTXOs.filter(
@@ -61,28 +99,21 @@ export class UTXOsManager {
     }
 
     /**
-     * Fetch UTXOs for the amount needed
-     * @param {object} options - The UTXO fetch options
-     * @param {string} options.address - The address to get the UTXOs
-     * @param {boolean} [options.optimize=true] - Whether to optimize the UTXOs
-     * @param {boolean} [options.mergePendingUTXOs=true] - Whether to merge pending UTXOs
-     * @param {boolean} [options.filterSpentUTXOs=true] - Whether to filter out spent UTXOs
-     * @returns {Promise<UTXOs>} The UTXOs
+     * Fetch UTXOs for the amount needed, merging from pending and confirmed UTXOs
+     * @param {string} address The address to fetch UTXOs from
+     * @param {bigint} amount The amount of UTXOs to retrieve
+     * @param {boolean} [mergePendingUTXOs=true] - Whether to merge pending UTXOs
+     * @param {boolean} [filterSpentUTXOs=true] - Whether to filter out spent UTXOs
+     * @returns {Promise<UTXOs>} The fetched UTXOs
      * @throws {Error} If something goes wrong
      */
-    async getUTXOsForAmount({
-        address,
-        amount,
-        optimize = true,
-        mergePendingUTXOs = true,
-        filterSpentUTXOs = true,
-    }: {
-        address: string;
-        amount: bigint;
-        optimize?: boolean;
-        mergePendingUTXOs?: boolean;
-        filterSpentUTXOs?: boolean;
-    }): Promise<UTXOs> {
+    async getUTXOsForAmount(
+        address: string,
+        amount: bigint,
+        optimize: boolean = true,
+        mergePendingUTXOs: boolean = true,
+        filterSpentUTXOs: boolean = true,
+    ): Promise<UTXOs> {
         try {
             const combinedUTXOs = await this.getUTXOs({
                 address,
