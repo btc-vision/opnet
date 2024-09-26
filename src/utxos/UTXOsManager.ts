@@ -1,10 +1,14 @@
-import { IUTXO } from '../bitcoin/interfaces/IUTXO';
-import { UTXO, UTXOs } from '../bitcoin/UTXOs';
-import { AbstractRpcProvider } from '../providers/AbstractRpcProvider';
-import { JsonRpcPayload } from '../providers/interfaces/JSONRpc';
-import { JSONRpcMethods } from '../providers/interfaces/JSONRpcMethods';
-import { JsonRpcResult } from '../providers/interfaces/JSONRpcResult';
-import { IUTXOsData, RequestUTXOsParams, RequestUTXOsParamsWithAmount } from './interfaces/IUTXOsManager.js';
+import { IUTXO } from '../bitcoin/interfaces/IUTXO.js';
+import { UTXO, UTXOs } from '../bitcoin/UTXOs.js';
+import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
+import { JsonRpcPayload } from '../providers/interfaces/JSONRpc.js';
+import { JSONRpcMethods } from '../providers/interfaces/JSONRpcMethods.js';
+import { JsonRpcResult } from '../providers/interfaces/JSONRpcResult.js';
+import {
+    IUTXOsData,
+    RequestUTXOsParams,
+    RequestUTXOsParamsWithAmount,
+} from './interfaces/IUTXOsManager.js';
 
 /**
  * Unspent Transaction Output Manager
@@ -159,7 +163,7 @@ export class UTXOsManager {
             pending: [],
             spentTransactions: [],
         };
-        
+
         return {
             confirmed: result.confirmed.map((utxo: IUTXO) => {
                 return new UTXO(utxo);
