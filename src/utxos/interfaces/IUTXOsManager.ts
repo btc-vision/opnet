@@ -1,4 +1,4 @@
-import { UTXOs } from '../../bitcoin/UTXOs';
+import { UTXOs } from '../../bitcoin/UTXOs.js';
 
 /**
  * Unspent Transaction Output Manager

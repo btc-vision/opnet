@@ -19,7 +19,7 @@ import { ITransaction } from '../transactions/interfaces/ITransaction.js';
 import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.js';
 import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
-import { UTXOsManager } from '../utxos/UTXOsManager';
+import { UTXOsManager } from '../utxos/UTXOsManager.js';
 import { GenerateTarget } from './interfaces/Generate.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JSONRpcMethods } from './interfaces/JSONRpcMethods.js';
