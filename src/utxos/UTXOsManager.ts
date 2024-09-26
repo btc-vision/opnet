@@ -34,14 +34,14 @@ export class UTXOsManager {
         filterSpentUTXOs?: boolean;
     }): Promise<UTXOs> {
         try {
-            const confirmedUTXOs = (await this.fetchUTXOs(address, false, false, optimize))
-                .confirmed;
+            const { confirmed, pending } = await this.fetchUTXOs(
+                address,
+                mergePendingUTXOs,
+                false,
+                optimize,
+            );
 
-            const pendingUTXOs = mergePendingUTXOs
-                ? (await this.fetchUTXOs(address, true, false, optimize)).pending
-                : [];
-
-            let combinedUTXOs = [...confirmedUTXOs, ...pendingUTXOs];
+            let combinedUTXOs = [...confirmed, ...pending];
 
             if (filterSpentUTXOs) {
                 const spentUTXOs = (await this.fetchUTXOs(address, false, true, optimize))
