@@ -22,26 +22,15 @@ export class UTXOsManager {
     spentUTXO(spent: UTXOs, newUTXOs: UTXOs): void {
         this.pendingUTXOs = this.pendingUTXOs.filter(
             (utxo) =>
-                !newUTXOs.some(
-                    (newUtxo) =>
-                        newUtxo.transactionId === utxo.transactionId &&
-                        newUtxo.outputIndex === utxo.outputIndex,
+                !spent.some(
+                    (spentUtxo) =>
+                        spentUtxo.transactionId === utxo.transactionId &&
+                        spentUtxo.outputIndex === utxo.outputIndex,
                 ),
         );
 
         this.spentUTXOs.push(...spent);
-
-        newUTXOs.forEach((newUtxo) => {
-            if (
-                !this.spentUTXOs.some(
-                    (spentUtxo) =>
-                        spentUtxo.transactionId === newUtxo.transactionId &&
-                        spentUtxo.outputIndex === newUtxo.outputIndex,
-                )
-            ) {
-                this.pendingUTXOs.push(newUtxo);
-            }
-        });
+        this.pendingUTXOs.push(...newUTXOs);
     }
 
     /**
