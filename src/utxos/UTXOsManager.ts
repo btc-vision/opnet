@@ -133,14 +133,3 @@ export class UTXOsManager {
         }
     }
 }
-
-async function test() {
-    const provider = new JSONRpcProvider('https://regtest.opnet.org/');
-    const utxosManager = new UTXOsManager(provider);
-
-    const address = 'bcrt1p823gdnqvk8a90f8cu30w8ywvk29uh8txtqqnsmk6f5ktd7hlyl0qupwyqz';
-    const utxos = await utxosManager.getUTXOsForAmount(address, 1000n);
-    console.log(utxos);
-}
-
-test();
