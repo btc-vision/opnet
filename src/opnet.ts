@@ -32,6 +32,10 @@ export * from './block/Block.js';
 export * from './block/interfaces/IBlock.js';
 export * from './block/interfaces/BlockWitness.js';
 
+/** UTXOs */
+export * from './utxos/UTXOsManager.js';
+export * from './utxos/interfaces/IUTXOsManager.js';
+
 /** Parsers */
 export * from './transactions/TransactionParser.js';
 
