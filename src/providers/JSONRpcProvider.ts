@@ -8,7 +8,7 @@ import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSO
  * @category Providers
  */
 export class JSONRpcProvider extends AbstractRpcProvider {
-    private readonly url: string;
+    public readonly url: string;
 
     constructor(
         url: string,
