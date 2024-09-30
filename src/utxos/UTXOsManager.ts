@@ -102,6 +102,7 @@ export class UTXOsManager {
      * @param {boolean} [options.optimize=true] Optimize the UTXOs, removes small UTXOs
      * @param {boolean} [options.mergePendingUTXOs=true] - Whether to merge pending UTXOs
      * @param {boolean} [options.filterSpentUTXOs=true] - Whether to filter out spent UTXOs
+     * @param {boolean} [options.throwErrors=false] - Whether to throw errors if UTXOs are insufficient
      * @returns {Promise<UTXOs>} The fetched UTXOs
      * @throws {Error} If something goes wrong
      */
@@ -111,6 +112,7 @@ export class UTXOsManager {
         optimize = true,
         mergePendingUTXOs = true,
         filterSpentUTXOs = true,
+        throwErrors = false,
     }: RequestUTXOsParamsWithAmount): Promise<UTXOs> {
         const combinedUTXOs = await this.getUTXOs({
             address,
@@ -130,7 +132,7 @@ export class UTXOsManager {
             }
         }
 
-        if (currentValue < amount) {
+        if (currentValue < amount && throwErrors) {
             throw new Error(
                 `Insufficient UTXOs to cover amount. Available: ${currentValue}, Needed: ${amount}`,
             );

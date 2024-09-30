@@ -28,4 +28,5 @@ export interface RequestUTXOsParams {
 
 export interface RequestUTXOsParamsWithAmount extends RequestUTXOsParams {
     readonly amount: bigint;
+    readonly throwErrors?: boolean;
 }
