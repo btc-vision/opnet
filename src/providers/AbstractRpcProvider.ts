@@ -381,6 +381,12 @@ export abstract class AbstractRpcProvider {
             return result;
         }
 
+        if (result.revert) {
+            return {
+                error: result.revert,
+            };
+        }
+
         return new CallResult(result);
     }
 

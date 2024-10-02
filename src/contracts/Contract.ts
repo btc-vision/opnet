@@ -483,7 +483,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             const buffer = Buffer.from(data.getBuffer());
             const response = await this.provider.call(this.address, buffer, this.from);
 
-            if ('error' in response) {
+            if ('error' in response || response.revert) {
                 return response;
             }
 

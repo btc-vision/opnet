@@ -14,8 +14,10 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
     public readonly result: BinaryReader;
     public readonly events: NetEvent[];
     public readonly accessList: IAccessList;
-    public calldata: Buffer | undefined;
+    public readonly revert: string | undefined;
     
+    public calldata: Buffer | undefined;
+
     public readonly estimatedGas: bigint | undefined;
 
     public readonly decoded: Array<DecodedCallResult> = [];
@@ -28,6 +30,8 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
         if (callResult.estimatedGas) {
             this.estimatedGas = BigInt(callResult.estimatedGas);
         }
+
+        this.revert = callResult.revert;
 
         this.result =
             typeof callResult.result === 'string'
