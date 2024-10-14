@@ -4,7 +4,7 @@ import { Network, networks } from 'bitcoinjs-lib';
 import '../serialize/BigInt.js';
 
 import { Block } from '../block/Block.js';
-import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters';
+import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters.js';
 import { BlockWitnesses } from '../block/interfaces/BlockWitness.js';
 import { IBlock } from '../block/interfaces/IBlock.js';
 import { BigNumberish, BitcoinAddressLike, BlockTag } from '../common/CommonTypes.js';
