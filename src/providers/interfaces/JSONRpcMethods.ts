@@ -9,6 +9,7 @@ export enum JSONRpcMethods {
     /** Blocks */
     GET_BLOCK_BY_HASH = 'btc_getBlockByHash',
     GET_BLOCK_BY_NUMBER = 'btc_getBlockByNumber',
+    GAS = 'btc_gas',
 
     /** Transactions */
     GET_TRANSACTION_BY_HASH = 'btc_getTransactionByHash',
@@ -28,5 +29,7 @@ export enum JSONRpcMethods {
     GET_CODE = 'btc_getCode',
     GET_STORAGE_AT = 'btc_getStorageAt',
     GET_BALANCE = 'btc_getBalance',
+
     CALL = 'btc_call',
+    SIMULATE = 'btc_simulate',
 }

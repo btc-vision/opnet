@@ -4,6 +4,7 @@ import { Network, networks } from 'bitcoinjs-lib';
 import '../serialize/BigInt.js';
 
 import { Block } from '../block/Block.js';
+import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters';
 import { BlockWitnesses } from '../block/interfaces/BlockWitness.js';
 import { IBlock } from '../block/interfaces/IBlock.js';
 import { BigNumberish, BitcoinAddressLike, BlockTag } from '../common/CommonTypes.js';
@@ -388,6 +389,25 @@ export abstract class AbstractRpcProvider {
         }
 
         return new CallResult(result);
+    }
+
+    /**
+     * Get the next block gas parameters.
+     * @description This method is used to get the next block gas parameters. Such as base gas, gas limit, and gas price.
+     * @returns {Promise<BlockGasParameters>} The gas parameters of the next block
+     * @example await provider.gasParameters();
+     * @throws {Error} If something went wrong while calling the contract
+     */
+    public async gasParameters(): Promise<BlockGasParameters> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GAS, []);
+        const rawCall: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        if ('error' in rawCall) {
+            throw new Error(`Error fetching gas parameters: ${rawCall.error}`);
+        }
+
+        const result: IBlockGasParametersInput = rawCall.result as IBlockGasParametersInput;
+        return new BlockGasParameters(result);
     }
 
     /**

@@ -31,6 +31,7 @@ export * from './providers/interfaces/ReorgInformation.js';
 export * from './block/Block.js';
 export * from './block/interfaces/IBlock.js';
 export * from './block/interfaces/BlockWitness.js';
+export * from './block/BlockGasParameters.js';
 
 /** UTXOs */
 export * from './utxos/UTXOsManager.js';
