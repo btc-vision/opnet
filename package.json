@@ -2,7 +2,7 @@
     "name": "opnet",
     "type": "module",
     "version": "1.0.61",
-    "author": "BlobMaster41",
+    "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
         "node": ">=16.0.0"
