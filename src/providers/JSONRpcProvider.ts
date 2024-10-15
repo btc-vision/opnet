@@ -50,6 +50,9 @@ export class JSONRpcProvider extends AbstractRpcProvider {
 
             clearTimeout(timeoutId);
 
+            //const str = await resp.text();
+            //fs.writeFileSync('response.json', str);
+
             const fetchedData = (await resp.json()) as JsonRpcResult | JsonRpcError;
             if (!fetchedData) {
                 throw new Error('No data fetched');
