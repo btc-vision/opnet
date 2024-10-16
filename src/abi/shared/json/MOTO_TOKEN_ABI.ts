@@ -11,7 +11,7 @@ export const MOTO_TOKEN_ABI: BitcoinInterfaceAbi = [
         name: 'airdrop',
         inputs: [
             {
-                name: 'amount',
+                name: 'map_of_recipients_and_amounts',
                 type: ABIDataTypes.ADDRESS_UINT256_TUPLE,
             },
         ],

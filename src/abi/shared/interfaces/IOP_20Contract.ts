@@ -30,7 +30,7 @@ import { IOP_NETContract } from './IOP_NETContract.js';
  * console.log('Balance:', balanceExample.decoded);
  */
 export interface IOP_20Contract extends IOP_NETContract {
-    balanceOf(address: BitcoinAddressLike): Promise<BaseContractProperty>;
+    balanceOf(account: BitcoinAddressLike): Promise<BaseContractProperty>;
 
     name(): Promise<BaseContractProperty>;
 
@@ -40,22 +40,20 @@ export interface IOP_20Contract extends IOP_NETContract {
 
     decimals(): Promise<BaseContractProperty>;
 
-    transfer(to: BitcoinAddressLike, value: bigint): Promise<BaseContractProperty>;
+    transfer(recipient: BitcoinAddressLike, amount: bigint): Promise<BaseContractProperty>;
 
     transferFrom(
-        from: BitcoinAddressLike,
-        to: BitcoinAddressLike,
-        value: bigint,
+        sender: BitcoinAddressLike,
+        recipient: BitcoinAddressLike,
+        amount: bigint,
     ): Promise<BaseContractProperty>;
 
-    approve(spender: BitcoinAddressLike, value: bigint): Promise<BaseContractProperty>;
+    approve(spender: BitcoinAddressLike, amount: bigint): Promise<BaseContractProperty>;
 
     allowance(
         owner: BitcoinAddressLike,
         spender: BitcoinAddressLike,
     ): Promise<BaseContractProperty>;
 
-    mint(to: BitcoinAddressLike, value: bigint): Promise<BaseContractProperty>;
-
-    burn(to: BitcoinAddressLike, value: bigint): Promise<BaseContractProperty>;
+    burn(value: bigint): Promise<BaseContractProperty>;
 }

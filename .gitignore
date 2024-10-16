@@ -405,3 +405,4 @@ build
 browser
 docs
 cjs
+.yarn
