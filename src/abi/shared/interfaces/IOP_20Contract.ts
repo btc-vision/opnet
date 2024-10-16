@@ -38,6 +38,8 @@ export interface IOP_20Contract extends IOP_NETContract {
 
     totalSupply(): Promise<BaseContractProperty>;
 
+    maxSupply(): Promise<BaseContractProperty>;
+
     decimals(): Promise<BaseContractProperty>;
 
     transfer(recipient: BitcoinAddressLike, amount: bigint): Promise<BaseContractProperty>;
