@@ -10,7 +10,7 @@ import { BlockHeaderChecksumProof, IBlock } from './interfaces/IBlock.js';
  * @class Block
  * @category Block
  */
-export class Block implements IBlock {
+export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas'> {
     public readonly height: BigNumberish;
 
     public readonly hash: string;
@@ -34,6 +34,10 @@ export class Block implements IBlock {
     public readonly storageRoot: string;
     public readonly receiptRoot: string;
 
+    public readonly ema: bigint;
+    public readonly baseGas: bigint;
+    public readonly gasUsed: bigint;
+
     public readonly checksumProofs: BlockHeaderChecksumProof;
 
     public readonly transactions: TransactionBase<OPNetTransactionTypes>[] = [];
@@ -50,6 +54,10 @@ export class Block implements IBlock {
         this.version = block.version;
         this.size = block.size;
         this.txCount = block.txCount;
+
+        this.ema = BigInt(block.ema);
+        this.baseGas = BigInt(block.baseGas);
+        this.gasUsed = BigInt(block.gasUsed);
 
         this.weight = block.weight;
         this.strippedSize = block.strippedSize;
