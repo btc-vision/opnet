@@ -34,6 +34,10 @@ export interface IBlockCommon {
     storageRoot: string;
     receiptRoot: string;
 
+    ema: string;
+    baseGas: string;
+    gasUsed: string;
+
     checksumProofs: BlockHeaderChecksumProof;
 }
 
