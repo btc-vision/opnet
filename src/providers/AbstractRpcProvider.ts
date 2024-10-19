@@ -1,5 +1,9 @@
 import { BufferHelper } from '@btc-vision/bsi-binary';
-import { WrappedGeneration, WrappedGenerationParameters } from '@btc-vision/transaction';
+import {
+    AddressVerificator,
+    WrappedGeneration,
+    WrappedGenerationParameters,
+} from '@btc-vision/transaction';
 import { Network, networks } from 'bitcoinjs-lib';
 import '../serialize/BigInt.js';
 
@@ -30,6 +34,7 @@ import {
     JsonRpcResult,
     JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
+import { IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
 /**
@@ -53,6 +58,37 @@ export abstract class AbstractRpcProvider {
      */
     public get utxoManager(): UTXOsManager {
         return this._utxoManager;
+    }
+
+    /**
+     * Get the public key information.
+     * @description This method is used to get the public key information.
+     * @param {string | string[]} address The address to get the public key information of (or multiple addresses), can be a public key or address
+     * @param {Network} network The network to check if the address is valid
+     * @returns {Promise<IPublicKeyInfoResult | JsonRpcResult>} The public key information
+     * @example await getPublicKeyInfo('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq', networks.bitcoin);
+     * @throws {Error} If the address is invalid
+     */
+    public async getPublicKeyInfo(
+        address: string | string[],
+        network: Network,
+    ): Promise<IPublicKeyInfoResult | JsonRpcResult> {
+        if (Array.isArray(address)) {
+            for (const addr of address) {
+                const isValid = AddressVerificator.validateBitcoinAddress(addr, network);
+
+                if (!isValid) throw new Error(`Invalid address: ${addr}`);
+            }
+        }
+
+        const method = JSONRpcMethods.PUBLIC_KEY_INFO;
+
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [address]);
+        const data: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        if ('error' in data) return data;
+
+        return data.result as IPublicKeyInfoResult;
     }
 
     /**
