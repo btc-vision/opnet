@@ -1,4 +1,4 @@
-import { Address } from '@btc-vision/bsi-binary';
+import { Address } from '@btc-vision/transaction';
 import { BaseContractProperties } from '../../interfaces/BaseContractProperties.js';
 
 /**

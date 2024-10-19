@@ -1,4 +1,4 @@
-import { Address } from '@btc-vision/bsi-binary';
+import { Address } from '@btc-vision/transaction';
 import { IRawContract } from './interfaces/IRawContract.js';
 
 /**

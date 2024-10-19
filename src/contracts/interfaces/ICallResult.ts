@@ -1,4 +1,4 @@
-import { BinaryReader, NetEvent } from '@btc-vision/bsi-binary';
+import { BinaryReader, NetEvent } from '@btc-vision/transaction';
 import { IAccessList } from './IAccessList.js';
 
 /**

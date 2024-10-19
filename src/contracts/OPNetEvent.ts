@@ -1,4 +1,4 @@
-import { NetEvent } from '@btc-vision/bsi-binary';
+import { NetEvent } from '@btc-vision/transaction';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';
 
@@ -22,7 +22,7 @@ export class OPNetEvent<T extends ContractDecodedObjectResult = {}>
         public readonly eventDataSelector: bigint,
         public readonly eventData: Uint8Array,
     ) {
-        super(eventType, eventDataSelector, eventData);
+        super(eventType, eventData);
     }
 
     public setDecoded(decoded: DecodedOutput): void {

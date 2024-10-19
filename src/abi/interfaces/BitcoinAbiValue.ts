@@ -1,4 +1,4 @@
-import { ABIDataTypes } from '@btc-vision/bsi-binary';
+import { ABIDataTypes } from '@btc-vision/transaction';
 
 /**
  * The Bitcoin ABI value.

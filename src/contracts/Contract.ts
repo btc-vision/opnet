@@ -5,7 +5,7 @@ import {
     BinaryReader,
     BinaryWriter,
     NetEvent,
-} from '@btc-vision/bsi-binary';
+} from '@btc-vision/bsi-binary'; // TODO: Update path to '@btc-vision/transaction' (there is a lot of changes to be made)
 import { BaseContractProperty } from '../abi/BaseContractProperty.js';
 import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';

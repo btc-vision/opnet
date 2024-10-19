@@ -1,4 +1,4 @@
-import { BinaryReader, BufferHelper, NetEvent } from '@btc-vision/bsi-binary';
+import { BinaryReader, BufferHelper, NetEvent } from '@btc-vision/transaction';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';
 import { IAccessList } from './interfaces/IAccessList.js';
@@ -15,7 +15,7 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
     public readonly events: NetEvent[];
     public readonly accessList: IAccessList;
     public readonly revert: string | undefined;
-    
+
     public calldata: Buffer | undefined;
 
     public readonly estimatedGas: bigint | undefined;

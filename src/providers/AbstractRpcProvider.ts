@@ -1,6 +1,8 @@
-import { BufferHelper } from '@btc-vision/bsi-binary';
 import {
+    Address,
+    AddressTypes,
     AddressVerificator,
+    BufferHelper,
     WrappedGeneration,
     WrappedGenerationParameters,
 } from '@btc-vision/transaction';
@@ -63,32 +65,44 @@ export abstract class AbstractRpcProvider {
     /**
      * Get the public key information.
      * @description This method is used to get the public key information.
-     * @param {string | string[]} address The address to get the public key information of (or multiple addresses), can be a public key or address
+     * @param {string | string[] | Address | Address[]} address The address to get the public key information of
      * @param {Network} network The network to check if the address is valid
      * @returns {Promise<IPublicKeyInfoResult | JsonRpcResult>} The public key information
-     * @example await getPublicKeyInfo('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq', networks.bitcoin);
+     * @example await getPublicKeyInfo('bcrt1qfqsr3m7vjxheghcvw4ks0fryqxfq8qzjf8fxes', networks.regtest);
      * @throws {Error} If the address is invalid
      */
     public async getPublicKeyInfo(
-        address: string | string[],
+        address: string | string[] | Address | Address[],
         network: Network,
     ): Promise<IPublicKeyInfoResult | JsonRpcResult> {
-        if (Array.isArray(address)) {
-            for (const addr of address) {
-                const isValid = AddressVerificator.validateBitcoinAddress(addr, network);
+        const validateAddress = (addr: string | Address): AddressTypes => {
+            let validationResult: AddressTypes | null = null;
 
-                if (!isValid) throw new Error(`Invalid address: ${addr}`);
+            if (addr instanceof Address) {
+                validationResult = AddressVerificator.validateBitcoinAddress(addr.toHex(), network);
+            } else if (typeof addr === 'string') {
+                validationResult = AddressVerificator.validateBitcoinAddress(addr, network);
+            } else {
+                throw new Error(`Invalid type: ${typeof addr} for address: ${addr}`);
             }
-        }
+
+            if (!validationResult) {
+                throw new Error(`Invalid address: ${addr}`);
+            }
+
+            return validationResult;
+        };
+
+        const addressArray = Array.isArray(address) ? address : [address];
+
+        addressArray.forEach(validateAddress);
 
         const method = JSONRpcMethods.PUBLIC_KEY_INFO;
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [addressArray]);
 
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [address]);
         const data: JsonRpcResult = await this.callPayloadSingle(payload);
 
-        if ('error' in data) return data;
-
-        return data.result as IPublicKeyInfoResult;
+        return 'error' in data ? data : (data.result as IPublicKeyInfoResult);
     }
 
     /**

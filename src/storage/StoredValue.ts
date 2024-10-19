@@ -1,4 +1,4 @@
-import { BufferHelper } from '@btc-vision/bsi-binary';
+import { BufferHelper } from '@btc-vision/transaction';
 import { IStorageValue } from './interfaces/IStorageValue.js';
 
 /**

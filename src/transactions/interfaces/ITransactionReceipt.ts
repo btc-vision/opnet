@@ -1,4 +1,4 @@
-import { NetEvent } from '@btc-vision/bsi-binary';
+import { NetEvent } from '@btc-vision/transaction';
 
 /**
  * Raw event data.

@@ -1,4 +1,4 @@
-import { NetEvent } from '@btc-vision/bsi-binary';
+import { NetEvent } from '@btc-vision/transaction';
 import {
     ContractEvents,
     ITransactionReceipt,
@@ -88,6 +88,6 @@ export class TransactionReceipt implements ITransactionReceipt {
             eventDataSelector = event.eventDataSelector;
         }
 
-        return new NetEvent(event.eventType, eventDataSelector, eventData);
+        return new NetEvent(event.eventType, eventData);
     }
 }
