@@ -65,7 +65,7 @@ export abstract class AbstractRpcProvider {
     /**
      * Get the public key information.
      * @description This method is used to get the public key information.
-     * @param {string | string[] | Address | Address[]} address The address to get the public key information of
+     * @param {string | string[] | Address | Address[]} address The address or addresses to get the public key information of
      * @param {Network} network The network to check if the address is valid
      * @returns {Promise<IPublicKeyInfoResult | JsonRpcResult>} The public key information
      * @example await getPublicKeyInfo('bcrt1qfqsr3m7vjxheghcvw4ks0fryqxfq8qzjf8fxes', networks.regtest);
