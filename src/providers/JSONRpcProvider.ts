@@ -20,6 +20,37 @@ export class JSONRpcProvider extends AbstractRpcProvider {
     }
 
     /**
+     * @description Fetches the public key info for a given address.
+     * @param {string} address - The public key or address to fetch the info for
+     * @returns {Promise<IPublicKeyInfo | null>} - The public key info for the address
+     * @throws {Error} - If the fetch fails
+     * @example
+     * ```typescript
+     * const provider = new JSONRpcProvider('https://regtest.opnet.org');
+     * const publicKeyInfo = await provider.getPublicKeyInfo('bcrt1pa0y4fd0sxma50kv9vgqtgll7fd9g3jrsveu4syrnu5s50eurw06sjk54s2');
+     * console.log(publicKeyInfo);
+     * ```
+     */
+    public async getPublicKeyInfo(address: string): Promise<IPublicKeyInfo | null> {
+        const res = await fetch(
+            `${this.url.replace('/api/v1/json-rpc', '')}/api/v1/address/public-key-info`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ address }),
+            },
+        );
+        if (!res.ok) throw new Error(`Failed to fetch: ${res.statusText}`);
+
+        const data = (await res.json()) as IPublicKeyInfoData | null;
+        if (!data) throw new Error('No data fetched');
+
+        return data[address];
+    }
+
+    /**
      * @description Sends a JSON RPC payload to the provider.
      * @param {JsonRpcPayload | JsonRpcPayload[]} payload - The payload to send
      * @returns {Promise<JsonRpcCallResult>} - The result of the call

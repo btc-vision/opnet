@@ -101,7 +101,7 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
             {
-                name: 'value',
+                name: 'amount',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -117,7 +117,7 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         name: 'balanceOf',
         inputs: [
             {
-                name: 'owner',
+                name: 'account',
                 type: ABIDataTypes.ADDRESS,
             },
         ],
@@ -132,30 +132,6 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     {
         name: 'burn',
         inputs: [
-            {
-                name: 'to',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'value',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
-        type: BitcoinAbiTypes.Function,
-    },
-    {
-        name: 'mint',
-        inputs: [
-            {
-                name: 'to',
-                type: ABIDataTypes.ADDRESS,
-            },
             {
                 name: 'value',
                 type: ABIDataTypes.UINT256,
@@ -173,11 +149,11 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         name: 'transfer',
         inputs: [
             {
-                name: 'to',
+                name: 'recipient',
                 type: ABIDataTypes.ADDRESS,
             },
             {
-                name: 'value',
+                name: 'amount',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -193,15 +169,15 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         name: 'transferFrom',
         inputs: [
             {
-                name: 'from',
+                name: 'sender',
                 type: ABIDataTypes.ADDRESS,
             },
             {
-                name: 'to',
+                name: 'recipient',
                 type: ABIDataTypes.ADDRESS,
             },
             {
-                name: 'value',
+                name: 'amount',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -218,7 +194,6 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     {
         name: 'decimals',
         constant: true,
-        inputs: [],
         outputs: [
             {
                 name: 'decimals',
@@ -230,7 +205,6 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     {
         name: 'name',
         constant: true,
-        inputs: [],
         outputs: [
             {
                 name: 'name',
@@ -242,7 +216,6 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     {
         name: 'symbol',
         constant: true,
-        inputs: [],
         outputs: [
             {
                 name: 'symbol',
@@ -253,7 +226,6 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'totalSupply',
-        inputs: [],
         outputs: [
             {
                 name: 'totalSupply',
@@ -263,11 +235,10 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
     },
     {
-        name: 'maximumSupply',
-        inputs: [],
+        name: 'maxSupply',
         outputs: [
             {
-                name: 'maximumSupply',
+                name: 'maxSupply',
                 type: ABIDataTypes.UINT256,
             },
         ],
