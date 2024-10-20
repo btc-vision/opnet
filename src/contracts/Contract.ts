@@ -9,7 +9,6 @@ import {
     NetEvent,
 } from '@btc-vision/transaction';
 import { Network } from 'bitcoinjs-lib';
-import { BaseContractProperty } from '../abi/BaseContractProperty.js';
 import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
 import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties.js';
@@ -19,9 +18,11 @@ import {
     EventBaseData,
     FunctionBaseData,
 } from '../abi/interfaces/BitcoinInterfaceAbi.js';
+import { BlockGasParameters } from '../block/BlockGasParameters.js';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { ContractEvents } from '../transactions/interfaces/ITransactionReceipt.js';
+import { CallResult } from './CallResult.js';
 import { IContract } from './interfaces/IContract.js';
 import { OPNetEvent } from './OPNetEvent.js';
 
@@ -69,6 +70,14 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     readonly [internal]: keyof T | undefined;
 
     private events: Map<string, EventBaseData> = new Map();
+    private gasParameters:
+        | {
+              cachedAt: number;
+              params: Promise<BlockGasParameters>;
+          }
+        | undefined;
+
+    private readonly fetchGasParametersAfter: number = 1000 * 10;
 
     protected constructor(
         address: string | Address,
@@ -176,16 +185,33 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         throw new Error(`Function not found: ${functionName}`);
     }
 
+    public async currentGasParameters(): Promise<BlockGasParameters> {
+        if (
+            this.gasParameters &&
+            this.gasParameters.cachedAt + this.fetchGasParametersAfter > Date.now()
+        ) {
+            return this.gasParameters.params;
+        }
+
+        this.gasParameters = {
+            cachedAt: Date.now(),
+            params: this.provider.gasParameters(),
+        };
+
+        return await this.gasParameters.params;
+    }
+
     protected getFunction(
         name: symbol | string,
     ):
-        | BaseContractProperty
+        | CallResult
         | undefined
         | string
         | number
         | symbol
         | Address
         | Network
+        | (() => Promise<BlockGasParameters>)
         | ((functionName: string, args: unknown[]) => Buffer) {
         const key = name as keyof Omit<
             IBaseContract<T>,
@@ -515,10 +541,24 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         };
     }
 
-    private callFunction(
-        element: FunctionBaseData,
-    ): (...args: unknown[]) => Promise<BaseContractProperty> {
-        return async (...args: unknown[]): Promise<BaseContractProperty> => {
+    private async estimateGas(gas: bigint): Promise<bigint> {
+        const gasParameters = await this.currentGasParameters();
+
+        const gasPerSat = gasParameters.gasPerSat;
+        const exactGas = gas / gasPerSat;
+
+        // Add 15% extra gas
+        const extraGas = (exactGas * 15n) / 100n;
+
+        return this.max(exactGas + extraGas, 330n);
+    }
+
+    private max(a: bigint, b: bigint): bigint {
+        return a > b ? a : b;
+    }
+
+    private callFunction(element: FunctionBaseData): (...args: unknown[]) => Promise<CallResult> {
+        return async (...args: unknown[]): Promise<CallResult> => {
             const data = this.encodeFunctionData(element, args);
             const buffer = Buffer.from(data.getBuffer());
             const response = await this.provider.call(this.p2trOrTweaked, buffer, this.from);
@@ -535,8 +575,12 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 ? this.decodeOutput(element.outputs, response.result)
                 : { values: [], obj: {} };
 
+            response.setTo(this.p2trOrTweaked);
             response.setDecoded(decoded);
             response.setCalldata(buffer);
+            if (response.estimatedGas) {
+                response.setGasEstimation(await this.estimateGas(response.estimatedGas));
+            }
             response.events = this.decodeEvents(response.rawEvents);
 
             return response;

@@ -1,5 +1,5 @@
 import { Address } from '@btc-vision/transaction';
-import { BaseContractProperty } from '../../BaseContractProperty.js';
+import { CallResult } from '../../../contracts/CallResult.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
 
 /**
@@ -11,7 +11,7 @@ import { IOP_NETContract } from './IOP_NETContract.js';
 export interface IMotoswapRouterContract extends IOP_NETContract {
     /**
      * @description Add liquidity to the pool.
-     * @returns {Promise<BaseContractProperty>} - Returns (amountA) u256, (amountB) u256, (liquidity) u256
+     * @returns {Promise<CallResult>} - Returns (amountA) u256, (amountB) u256, (liquidity) u256
      */
     addLiquidity(
         tokenA: Address,
@@ -22,11 +22,11 @@ export interface IMotoswapRouterContract extends IOP_NETContract {
         amountBMin: bigint,
         to: Address,
         deadline: bigint,
-    ): Promise<BaseContractProperty>;
+    ): Promise<CallResult>;
 
     /**
      * @description Remove liquidity from the pool.
-     * @returns {Promise<BaseContractProperty>} - Returns (amountA) u256, (amountB) u256
+     * @returns {Promise<CallResult>} - Returns (amountA) u256, (amountB) u256
      */
     removeLiquidity(
         tokenA: Address,
@@ -36,49 +36,41 @@ export interface IMotoswapRouterContract extends IOP_NETContract {
         amountBMin: bigint,
         to: Address,
         deadline: bigint,
-    ): Promise<BaseContractProperty>;
+    ): Promise<CallResult>;
 
     /**
      * @description Get a quote for the desired parameters.
-     * @returns {Promise<BaseContractProperty>} - Return the quote for the desired parameters.
+     * @returns {Promise<CallResult>} - Return the quote for the desired parameters.
      */
-    quote(amountA: bigint, reserveA: bigint, reserveB: bigint): Promise<BaseContractProperty>;
+    quote(amountA: bigint, reserveA: bigint, reserveB: bigint): Promise<CallResult>;
 
     /**
      * @description Get the amount out for the desired parameters.
-     * @returns {Promise<BaseContractProperty>} - Return the amount out for the desired parameters.
+     * @returns {Promise<CallResult>} - Return the amount out for the desired parameters.
      */
-    getAmountOut(
-        amountIn: bigint,
-        reserveIn: bigint,
-        reserveOut: bigint,
-    ): Promise<BaseContractProperty>;
+    getAmountOut(amountIn: bigint, reserveIn: bigint, reserveOut: bigint): Promise<CallResult>;
 
     /**
      * @description Get the amount in for the desired parameters.
-     * @returns {Promise<BaseContractProperty>} - Return the amount in for the desired parameters.
+     * @returns {Promise<CallResult>} - Return the amount in for the desired parameters.
      */
-    getAmountIn(
-        amountOut: bigint,
-        reserveIn: bigint,
-        reserveOut: bigint,
-    ): Promise<BaseContractProperty>;
+    getAmountIn(amountOut: bigint, reserveIn: bigint, reserveOut: bigint): Promise<CallResult>;
 
     /**
      * @description Get the amounts out for the desired parameters.
-     * @returns {Promise<BaseContractProperty>} - Return the amounts out for the desired parameters.
+     * @returns {Promise<CallResult>} - Return the amounts out for the desired parameters.
      */
-    getAmountsOut(amountIn: bigint, path: Address[]): Promise<BaseContractProperty>;
+    getAmountsOut(amountIn: bigint, path: Address[]): Promise<CallResult>;
 
     /**
      * @description Get the amounts in for the desired parameters.
-     * @returns {Promise<BaseContractProperty>} - Return the amounts in for the desired parameters.
+     * @returns {Promise<CallResult>} - Return the amounts in for the desired parameters.
      */
-    getAmountsIn(amountOut: bigint, path: Address[]): Promise<BaseContractProperty>;
+    getAmountsIn(amountOut: bigint, path: Address[]): Promise<CallResult>;
 
     /**
      * @description Swap exact tokens for tokens supporting fee on transfer tokens.
-     * @returns {Promise<BaseContractProperty>} - Return the swap exact tokens for tokens supporting fee on transfer tokens.
+     * @returns {Promise<CallResult>} - Return the swap exact tokens for tokens supporting fee on transfer tokens.
      */
     swapExactTokensForTokensSupportingFeeOnTransferTokens(
         amountIn: bigint,
@@ -86,15 +78,15 @@ export interface IMotoswapRouterContract extends IOP_NETContract {
         path: Address[],
         to: Address,
         deadline: bigint,
-    ): Promise<BaseContractProperty>;
+    ): Promise<CallResult>;
 
     /**
      * @description Get the factory address.
      */
-    factory(): Promise<BaseContractProperty>;
+    factory(): Promise<CallResult>;
 
     /**
      * @description Get the WBTC address.
      */
-    WBTC(): Promise<BaseContractProperty>;
+    WBTC(): Promise<CallResult>;
 }

@@ -1,5 +1,5 @@
 import { Address } from '@btc-vision/transaction';
-import { BaseContractProperty } from '../../BaseContractProperty.js';
+import { CallResult } from '../../../contracts/CallResult.js';
 import { BaseContractProperties } from '../../interfaces/BaseContractProperties.js';
 
 /**
@@ -9,7 +9,7 @@ import { BaseContractProperties } from '../../interfaces/BaseContractProperties.
  * @cathegory Contracts
  */
 export interface IOP_NETContract extends BaseContractProperties {
-    owner(): Promise<BaseContractProperty>;
+    owner(): Promise<CallResult>;
 
-    isAddressOwner(address: Address): Promise<BaseContractProperty>;
+    isAddressOwner(address: Address): Promise<CallResult>;
 }

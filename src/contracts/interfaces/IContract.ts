@@ -1,4 +1,5 @@
 import { Address, NetEvent } from '@btc-vision/transaction';
+import { BlockGasParameters } from '../../block/BlockGasParameters.js';
 import { ContractEvents } from '../../transactions/interfaces/ITransactionReceipt.js';
 import { OPNetEvent } from '../OPNetEvent.js';
 
@@ -11,7 +12,9 @@ export interface IContract {
     readonly address: Address | string;
 
     get p2trOrTweaked(): string;
-    
+
+    currentGasParameters(): Promise<BlockGasParameters>;
+
     setSender(sender: Address): void;
 
     decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[];

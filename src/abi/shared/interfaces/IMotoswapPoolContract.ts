@@ -1,5 +1,5 @@
 import { Address } from '@btc-vision/transaction';
-import { BaseContractProperty } from '../../BaseContractProperty.js';
+import { CallResult } from '../../../contracts/CallResult.js';
 import { IOP_20Contract } from './IOP_20Contract.js';
 
 /**
@@ -11,21 +11,21 @@ import { IOP_20Contract } from './IOP_20Contract.js';
 export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mint'> {
     /**
      * @description This method returns the token0 address.
-     * @returns {Promise<BaseContractProperty>}
+     * @returns {Promise<CallResult>}
      */
-    token0(): Promise<BaseContractProperty>;
+    token0(): Promise<CallResult>;
 
     /**
      * @description This method returns the token1 address.
-     * @returns {Promise<BaseContractProperty>}
+     * @returns {Promise<CallResult>}
      */
-    token1(): Promise<BaseContractProperty>;
+    token1(): Promise<CallResult>;
 
     /**
      * @description This method returns the reserves.
-     * @returns {Promise<BaseContractProperty>}
+     * @returns {Promise<CallResult>}
      */
-    getReserves(): Promise<BaseContractProperty>;
+    getReserves(): Promise<CallResult>;
 
     /**
      * @description This method swaps tokens.
@@ -33,39 +33,34 @@ export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mi
      * @param {bigint} amount1Out
      * @param {string} to
      * @param {Uint8Array} data
-     * @returns {Promise<BaseContractProperty>}
+     * @returns {Promise<CallResult>}
      */
-    swap(
-        amount0Out: bigint,
-        amount1Out: bigint,
-        to: string,
-        data: Uint8Array,
-    ): Promise<BaseContractProperty>;
+    swap(amount0Out: bigint, amount1Out: bigint, to: string, data: Uint8Array): Promise<CallResult>;
 
     /**
      * @description This method burns liquidity.
      * @param {Address} to
-     * @returns {Promise<BaseContractProperty>}
+     * @returns {Promise<CallResult>}
      */
-    burn(to: Address): Promise<BaseContractProperty>;
+    burn(to: Address): Promise<CallResult>;
 
     /**
      * @description This method syncs the pool.
-     * @returns {Promise<BaseContractProperty>}
+     * @returns {Promise<CallResult>}
      */
-    sync(): Promise<BaseContractProperty>;
+    sync(): Promise<CallResult>;
 
     /**
      * @description This method returns the price0 cumulative last.
      * @returns {bigint}
-     * @returns {Promise<BaseContractProperty>}
+     * @returns {Promise<CallResult>}
      */
-    price0CumulativeLast(): Promise<BaseContractProperty>;
+    price0CumulativeLast(): Promise<CallResult>;
 
     /**
      * @description This method returns the price1 cumulative last.
      * @returns {bigint}
-     * @returns {Promise<BaseContractProperty>}
+     * @returns {Promise<CallResult>}
      */
-    price1CumulativeLast(): Promise<BaseContractProperty>;
+    price1CumulativeLast(): Promise<CallResult>;
 }

@@ -444,7 +444,7 @@ export abstract class AbstractRpcProvider {
             };
         }
 
-        return new CallResult(result);
+        return new CallResult(result, this);
     }
 
     /**

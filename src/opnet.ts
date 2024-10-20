@@ -50,7 +50,6 @@ export * from './contracts/interfaces/IContract.js';
 export * from './contracts/OPNetEvent.js';
 
 /** Abi */
-export * from './abi/BaseContractProperty.js';
 export * from './abi/BitcoinAbiTypes.js';
 export * from './abi/BitcoinInterface.js';
 export * from './abi/interfaces/BaseContractProperties.js';
