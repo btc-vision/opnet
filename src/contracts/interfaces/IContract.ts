@@ -10,6 +10,8 @@ import { OPNetEvent } from '../OPNetEvent.js';
 export interface IContract {
     readonly address: Address | string;
 
+    get p2trOrTweaked(): string;
+    
     setSender(sender: Address): void;
 
     decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[];
