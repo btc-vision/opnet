@@ -1,3 +1,4 @@
+import { Address } from '@btc-vision/transaction';
 import { Buffer } from 'buffer';
 import { InteractionType } from '../../interfaces/opnet/OPNetTransactionTypes.js';
 import { IInteractionTransaction } from '../interfaces/transactions/IInteractionTransaction.js';
@@ -39,7 +40,7 @@ export class InteractionTransaction
     /**
      * @description The from address of the transaction. (ALWAYS TAPROOT. *This address is generated from the P2TR of the pubkey of the deployer.*)
      */
-    public readonly from: string;
+    public readonly from: Address;
 
     /**
      * @description The contract address where the transaction was sent. (AKA "to").
@@ -55,7 +56,7 @@ export class InteractionTransaction
         this.interactionPubKey = Buffer.from(transaction.interactionPubKey as string, 'base64');
 
         this.wasCompressed = transaction.wasCompressed;
-        this.from = transaction.from;
+        this.from = new Address(Buffer.from(transaction.from as string, 'base64'));
         this.contractAddress = transaction.contractAddress;
     }
 }

@@ -537,6 +537,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
             response.setDecoded(decoded);
             response.setCalldata(buffer);
+            response.events = this.decodeEvents(response.rawEvents);
 
             return response;
         };

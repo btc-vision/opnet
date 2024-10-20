@@ -67,7 +67,6 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
 
         this.id = transaction.id;
         this.hash = transaction.hash;
-
         this.index = transaction.index;
 
         this.burnedBitcoin = BigInt(transaction.burnedBitcoin) || 0n;

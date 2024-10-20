@@ -1,7 +1,22 @@
-import { Address } from '@btc-vision/transaction';
-import { AddressMap } from '@btc-vision/transaction/src/deterministic/AddressMap.js';
+import { Address, AddressMap } from '@btc-vision/transaction';
 import { CallResult } from '../../../contracts/CallResult.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
+
+export type Name = CallResult<{ name: string }>;
+export type BalanceOf = CallResult<{ balance: bigint }>;
+export type SymbolOf = CallResult<{ symbol: string }>;
+export type TotalSupply = CallResult<{ totalSupply: bigint }>;
+export type MaxSupply = CallResult<{ maxSupply: bigint }>;
+export type Decimals = CallResult<{ decimals: bigint }>;
+
+export type Transfer = CallResult<{ success: boolean }>;
+export type TransferFrom = CallResult<{ success: boolean }>;
+export type Approve = CallResult<{ success: boolean }>;
+export type Allowance = CallResult<{ allowance: bigint }>;
+export type Burn = CallResult<{ success: boolean }>;
+export type Mint = CallResult<{ success: boolean }>;
+export type Airdrop = CallResult<{ success: boolean }>;
+export type AirdropWithAmount = CallResult<{ success: boolean }>;
 
 /**
  * @description This interface represents the OP_20 base contract.
@@ -37,23 +52,6 @@ import { IOP_NETContract } from './IOP_NETContract.js';
  * if ('error' in balanceExample) throw new Error('Error in fetching balance');
  * console.log('Balance:', balanceExample.decoded);
  */
-
-type Name = CallResult<{ name: string }>;
-type BalanceOf = CallResult<{ balance: bigint }>;
-type SymbolOf = CallResult<{ symbol: string }>;
-type TotalSupply = CallResult<{ totalSupply: bigint }>;
-type MaxSupply = CallResult<{ maxSupply: bigint }>;
-type Decimals = CallResult<{ decimals: bigint }>;
-
-type Transfer = CallResult<{ success: boolean }>;
-type TransferFrom = CallResult<{ success: boolean }>;
-type Approve = CallResult<{ success: boolean }>;
-type Allowance = CallResult<{ allowance: bigint }>;
-type Burn = CallResult<{ success: boolean }>;
-type Mint = CallResult<{ success: boolean }>;
-type Airdrop = CallResult<{ success: boolean }>;
-type AirdropWithAmount = CallResult<{ success: boolean }>;
-
 export interface IOP_20Contract extends IOP_NETContract {
     balanceOf(account: Address): Promise<BalanceOf>;
 

@@ -10,6 +10,19 @@ export interface ICallRequestError {
     readonly error: string;
 }
 
+export interface RawNetEvent {
+    readonly eventType: string;
+    readonly eventData: string;
+}
+
+export interface RawEventList {
+    readonly [key: string]: RawNetEvent[];
+}
+
+export interface EventList {
+    [key: string]: NetEvent[];
+}
+
 /**
  * @description This interface is used to define the call result data.
  * @interface ICallResultData
@@ -17,7 +30,7 @@ export interface ICallRequestError {
  */
 export interface ICallResultData {
     readonly result: string | BinaryReader;
-    readonly events: NetEvent[];
+    readonly events: RawEventList;
     readonly accessList: IAccessList;
     readonly revert?: string;
     readonly estimatedGas?: string;

@@ -2,29 +2,32 @@ import { BinaryReader, BufferHelper, NetEvent } from '@btc-vision/transaction';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';
 import { IAccessList } from './interfaces/IAccessList.js';
-import { ICallResultData } from './interfaces/ICallResult.js';
+import { EventList, ICallResultData, RawEventList } from './interfaces/ICallResult.js';
+import { OPNetEvent } from './OPNetEvent.js';
 
 /**
  * Represents the result of a contract call.
  * @category Contracts
  */
 export class CallResult<T extends ContractDecodedObjectResult = {}>
-    implements Omit<ICallResultData, 'estimatedGas'>
+    implements Omit<ICallResultData, 'estimatedGas' | 'events'>
 {
     public readonly result: BinaryReader;
-    public readonly events: NetEvent[];
     public readonly accessList: IAccessList;
     public readonly revert: string | undefined;
 
     public calldata: Buffer | undefined;
-
     public readonly estimatedGas: bigint | undefined;
 
     public readonly decoded: Array<DecodedCallResult> = [];
     public properties: T = {} as T;
 
+    public events: OPNetEvent[] = [];
+
+    readonly #rawEvents: EventList;
+
     constructor(callResult: ICallResultData) {
-        this.events = callResult.events;
+        this.#rawEvents = this.parseEvents(callResult.events);
         this.accessList = callResult.accessList;
 
         if (callResult.estimatedGas) {
@@ -39,6 +42,10 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
                 : callResult.result;
     }
 
+    public get rawEvents(): EventList {
+        return this.#rawEvents;
+    }
+
     public setDecoded(decoded: DecodedOutput): void {
         this.properties = Object.freeze(decoded.obj) as T;
 
@@ -47,6 +54,27 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
 
     public setCalldata(calldata: Buffer): void {
         this.calldata = calldata;
+    }
+
+    private parseEvents(events: RawEventList): EventList {
+        const eventsList: EventList = {};
+
+        for (const [contract, value] of Object.entries(events)) {
+            const events: NetEvent[] = [];
+
+            for (const event of value) {
+                const eventData = new NetEvent(
+                    event.eventType,
+                    Buffer.from(event.eventData, 'base64'),
+                );
+
+                events.push(eventData);
+            }
+
+            eventsList[contract] = events;
+        }
+
+        return eventsList;
     }
 
     private base64ToUint8Array(base64: string): Uint8Array {

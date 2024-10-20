@@ -1,3 +1,4 @@
+import { Address } from '@btc-vision/transaction';
 import { InteractionType } from '../../../interfaces/opnet/OPNetTransactionTypes.js';
 import { ContractEvents } from '../ITransactionReceipt.js';
 import { ICommonTransaction } from './ICommonTransaction.js';
@@ -31,7 +32,7 @@ export interface IInteractionTransaction extends ICommonTransaction<InteractionT
     /**
      * @description Who sent the transaction. (ALWAYS TAPROOT. *This address is generated from the P2TR of the pubkey of the deployer.*)
      */
-    readonly from: string;
+    readonly from: Address | string;
 
     /**
      * @description If the interaction returned events, they will be stored here.
