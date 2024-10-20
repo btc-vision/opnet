@@ -100,7 +100,6 @@ export * from './abi/shared/json/STAKING_ABI.js';
 export * from './abi/shared/json/WBTC_ABI.js';
 
 /** ABI Interfaces */
-export * from './abi/shared/interfaces/IMotoContract.js';
 export * from './abi/shared/interfaces/IMotoswapFactoryContract.js';
 export * from './abi/shared/interfaces/IMotoswapPoolContract.js';
 export * from './abi/shared/interfaces/IMotoswapRouterContract.js';

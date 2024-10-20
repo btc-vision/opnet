@@ -1,7 +1,6 @@
 import { Address } from '@btc-vision/transaction';
 import { AddressMap } from '@btc-vision/transaction/src/deterministic/AddressMap.js';
 import { CallResult } from '../../../contracts/CallResult.js';
-import { BaseContractProperty } from '../../BaseContractProperty.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
 
 /**
@@ -39,21 +38,21 @@ import { IOP_NETContract } from './IOP_NETContract.js';
  * console.log('Balance:', balanceExample.decoded);
  */
 
-type Name = BaseContractProperty & CallResult<{ name: string }>;
-type BalanceOf = BaseContractProperty & CallResult<{ balance: bigint }>;
-type SymbolOf = BaseContractProperty & CallResult<{ symbol: string }>;
-type TotalSupply = BaseContractProperty & CallResult<{ totalSupply: bigint }>;
-type MaxSupply = BaseContractProperty & CallResult<{ maxSupply: bigint }>;
-type Decimals = BaseContractProperty & CallResult<{ decimals: bigint }>;
+type Name = CallResult<{ name: string }>;
+type BalanceOf = CallResult<{ balance: bigint }>;
+type SymbolOf = CallResult<{ symbol: string }>;
+type TotalSupply = CallResult<{ totalSupply: bigint }>;
+type MaxSupply = CallResult<{ maxSupply: bigint }>;
+type Decimals = CallResult<{ decimals: bigint }>;
 
-type Transfer = BaseContractProperty & CallResult<{ success: boolean }>;
-type TransferFrom = BaseContractProperty & CallResult<{ success: boolean }>;
-type Approve = BaseContractProperty & CallResult<{ success: boolean }>;
-type Allowance = BaseContractProperty & CallResult<{ allowance: bigint }>;
-type Burn = BaseContractProperty & CallResult<{ success: boolean }>;
-type Mint = BaseContractProperty & CallResult<{ success: boolean }>;
-type Airdrop = BaseContractProperty & CallResult<{ success: boolean }>;
-type AirdropWithAmount = BaseContractProperty & CallResult<{ success: boolean }>;
+type Transfer = CallResult<{ success: boolean }>;
+type TransferFrom = CallResult<{ success: boolean }>;
+type Approve = CallResult<{ success: boolean }>;
+type Allowance = CallResult<{ allowance: bigint }>;
+type Burn = CallResult<{ success: boolean }>;
+type Mint = CallResult<{ success: boolean }>;
+type Airdrop = CallResult<{ success: boolean }>;
+type AirdropWithAmount = CallResult<{ success: boolean }>;
 
 export interface IOP_20Contract extends IOP_NETContract {
     balanceOf(account: Address): Promise<BalanceOf>;

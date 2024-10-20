@@ -1,3 +1,4 @@
+import { Address } from '@btc-vision/transaction';
 import { OPNetTransactionTypes } from '../../../interfaces/opnet/OPNetTransactionTypes.js';
 import { ICommonTransaction } from './ICommonTransaction.js';
 
@@ -14,14 +15,9 @@ export interface IDeploymentTransaction
     readonly contractAddress: string;
 
     /**
-     * @description The P2TR address of the contract. (COULD BE EXPLOITABLE)
-     */
-    readonly p2trAddress: string;
-
-    /**
      * @description The virtual address of the contract.
      */
-    readonly virtualAddress: string;
+    readonly tweakedPublicKey: Address | string;
 
     /**
      * @description The bytecode of the contract.
@@ -32,11 +28,6 @@ export interface IDeploymentTransaction
      * @description The public key of the deployer.
      */
     readonly deployerPubKey: Buffer | string;
-
-    /**
-     * @description The address of the deployer. (ALWAYS TAPROOT. *This address is generated from the P2TR of the pubkey of the deployer.*)
-     */
-    readonly deployerAddress: string;
 
     /**
      * @description The seed of the contract.

@@ -500,8 +500,9 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                     decodedResult = reader.readU16Array();
                     break;
                 }
-                default:
+                default: {
                     throw new Error(`Unsupported type: ${type} (${name})`);
+                }
             }
 
             result.push(decodedResult);
@@ -522,8 +523,12 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             const buffer = Buffer.from(data.getBuffer());
             const response = await this.provider.call(this.p2trOrTweaked, buffer, this.from);
 
-            if ('error' in response || response.revert) {
-                return response;
+            if ('error' in response) {
+                throw new Error(`Error in calling function: ${response.error}`);
+            }
+
+            if (response.revert) {
+                throw new Error(`Execution Reverted: ${response.revert}`);
             }
 
             const decoded: DecodedOutput = element.outputs
