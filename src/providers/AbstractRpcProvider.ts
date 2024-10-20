@@ -36,7 +36,7 @@ import {
     JsonRpcResult,
     JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
-import { IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
+import { AddressesInfo, IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
 /**
@@ -67,14 +67,14 @@ export abstract class AbstractRpcProvider {
      * @description This method is used to get the public key information.
      * @param {string | string[] | Address | Address[]} address The address or addresses to get the public key information of
      * @param {Network} network The network to check if the address is valid
-     * @returns {Promise<IPublicKeyInfoResult | JsonRpcResult>} The public key information
+     * @returns {Promise<AddressesInfo>} The public keys information
      * @example await getPublicKeyInfo('bcrt1qfqsr3m7vjxheghcvw4ks0fryqxfq8qzjf8fxes', networks.regtest);
      * @throws {Error} If the address is invalid
      */
     public async getPublicKeyInfo(
         address: string | string[] | Address | Address[],
         network: Network,
-    ): Promise<IPublicKeyInfoResult> {
+    ): Promise<AddressesInfo> {
         const addressArray = Array.isArray(address) ? address : [address];
 
         addressArray.forEach((addr) => {
@@ -91,7 +91,22 @@ export abstract class AbstractRpcProvider {
             throw new Error(`Error fetching public key info: ${data.error}`);
         }
 
-        return data.result as IPublicKeyInfoResult;
+        const response: AddressesInfo = {};
+
+        const result = data.result as IPublicKeyInfoResult;
+        const keys = Object.keys(result);
+        for (const pubKey of keys) {
+            const pubKeyValue = result[pubKey];
+            if ('error' in pubKeyValue) {
+                throw new Error(`Error fetching public key info: ${pubKeyValue.error}`);
+            }
+
+            response[pubKey] = pubKeyValue.originalPubKey
+                ? Address.fromString(pubKeyValue.originalPubKey)
+                : Address.fromString(pubKeyValue.tweakedPubkey);
+        }
+
+        return response;
     }
 
     /**

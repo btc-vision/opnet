@@ -1,3 +1,5 @@
+import { Address } from '@btc-vision/transaction';
+
 export interface PublicKeyInfo {
     readonly originalPubKey?: string;
     readonly tweakedPubkey: string;
@@ -17,4 +19,8 @@ export interface IPubKeyNotFoundError {
 
 export interface IPublicKeyInfoResult {
     [key: string]: PublicKeyInfo | IPubKeyNotFoundError;
+}
+
+export interface AddressesInfo {
+    [key: string]: Address;
 }

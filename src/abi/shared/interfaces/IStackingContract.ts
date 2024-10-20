@@ -1,24 +1,24 @@
 import { Address } from '@btc-vision/transaction';
-import { BaseContractProperties } from '../../interfaces/BaseContractProperties.js';
+import { CallResult } from '../../../contracts/CallResult.js';
 
 /**
  * @description This interface represents the WBTC contract.
  * @interface IWBTCContract
- * @extends {BaseContractProperties}
+ * @extends {CallResult}
  * @cathegory Contracts
  */
 export interface IStackingContract {
-    stake(amount: bigint): Promise<BaseContractProperties>;
+    stake(amount: bigint): Promise<CallResult<{ success: boolean }>>;
 
-    unstake(): Promise<BaseContractProperties>;
+    unstake(): Promise<CallResult<{ success: boolean }>>;
 
-    stakedAmount(address: Address): Promise<BaseContractProperties>;
+    stakedAmount(address: Address): Promise<CallResult<{ amount: bigint }>>;
 
-    stakedReward(address: Address): Promise<BaseContractProperties>;
+    stakedReward(address: Address): Promise<CallResult<{ amount: bigint }>>;
 
-    claim(): Promise<BaseContractProperties>;
+    claim(): Promise<CallResult<{ success: boolean }>>;
 
-    rewardPool(): Promise<BaseContractProperties>;
+    rewardPool(): Promise<CallResult<{ reward: bigint }>>;
 
-    totalStaked(): Promise<BaseContractProperties>;
+    totalStaked(): Promise<CallResult<{ total: bigint }>>;
 }

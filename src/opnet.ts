@@ -89,7 +89,6 @@ export * from './bitcoin/UTXOs.js';
 export { ABIDataTypes } from '@btc-vision/transaction';
 
 /** ABI JSON */
-export * from './abi/shared/json/MOTO_TOKEN_ABI.js';
 export * from './abi/shared/json/MOTOSWAP_FACTORY_ABI.js';
 export * from './abi/shared/json/MOTOSWAP_POOL_ABI.js';
 export * from './abi/shared/json/MOTOSWAP_ROUTER_ABI.js';

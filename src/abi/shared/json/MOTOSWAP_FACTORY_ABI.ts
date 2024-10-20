@@ -49,7 +49,7 @@ export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
             {
-                name: 'poolAddr',
+                name: 'address',
                 type: ABIDataTypes.ADDRESS,
             },
         ],
