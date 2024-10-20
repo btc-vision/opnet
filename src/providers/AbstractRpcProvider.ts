@@ -6,7 +6,7 @@ import {
     WrappedGeneration,
     WrappedGenerationParameters,
 } from '@btc-vision/transaction';
-import { Network, networks } from 'bitcoinjs-lib';
+import { Network } from 'bitcoinjs-lib';
 import '../serialize/BigInt.js';
 
 import { Block } from '../block/Block.js';
@@ -282,12 +282,12 @@ export abstract class AbstractRpcProvider {
      * @returns {Promise<Network>} The current connected network type
      * @throws {Error} If the chain id is invalid
      */
-    public async getNetwork(): Promise<Network> {
+    public getNetwork(): Promise<Network> {
         if (this.network) {
-            return this.network;
+            return Promise.resolve(this.network);
         }
 
-        const network = await this.getChainId();
+        /*const network = await this.getChainId();
         switch (network) {
             case 1n:
                 return networks.bitcoin;
@@ -298,7 +298,9 @@ export abstract class AbstractRpcProvider {
 
             default:
                 throw new Error(`Invalid chain id: ${network}`);
-        }
+        }*/
+
+        throw new Error('Not implemented');
     }
 
     /**

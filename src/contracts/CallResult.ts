@@ -6,7 +6,7 @@ import {
     TransactionFactory,
     UTXO,
 } from '@btc-vision/transaction';
-import { Signer } from 'bitcoinjs-lib';
+import { Network, Signer } from 'bitcoinjs-lib';
 import { ECPairInterface } from 'ecpair';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
@@ -24,12 +24,14 @@ export interface TransactionParameters {
     readonly priorityFee?: bigint;
     readonly feeRate?: number;
     readonly utxos?: UTXO[];
-    readonly estimatedBitcoinMiningFee: bigint;
+    readonly maximumAllowedSatToSpend: bigint;
+    readonly network: Network;
 }
 
 export interface InteractionTransactionReceipt {
     readonly transactionId: string;
     readonly newUTXOs: UTXO[];
+    readonly peerAcknowledgements: number;
 }
 
 /**
@@ -102,7 +104,7 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
         const UTXOs: UTXO[] =
             interactionParams.utxos ||
             (await this.#fetchUTXOs(
-                priorityFee + interactionParams.estimatedBitcoinMiningFee,
+                priorityFee + interactionParams.maximumAllowedSatToSpend,
                 interactionParams,
             ));
 
@@ -114,14 +116,29 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
             signer: interactionParams.signer,
             utxos: UTXOs,
             to: this.to,
-            network: await this.#provider.getNetwork(),
+            network: interactionParams.network,
         };
 
         const transaction = await factory.signInteraction(params);
         this.#provider.utxoManager.spentUTXO(UTXOs, transaction[2]);
 
+        const tx1 = await this.#provider.sendRawTransaction(transaction[0], false);
+        if (!tx1 || tx1.error) {
+            throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
+        }
+
+        const tx2 = await this.#provider.sendRawTransaction(transaction[1], false);
+        if (!tx2 || tx2.error) {
+            throw new Error(`Error sending transaction: ${tx2?.error || 'Unknown error'}`);
+        }
+
+        if (!tx2.result) {
+            throw new Error('No transaction ID returned');
+        }
+
         return {
-            transactionId: transaction[1],
+            transactionId: tx2.result,
+            peerAcknowledgements: tx2.peers || 0,
             newUTXOs: transaction[2],
         };
     }
