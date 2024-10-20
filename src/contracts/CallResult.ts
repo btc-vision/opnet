@@ -101,46 +101,53 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
         }
 
         const priorityFee = this.estimatedSatGas + (interactionParams.priorityFee || 0n);
-        const UTXOs: UTXO[] =
-            interactionParams.utxos ||
-            (await this.#fetchUTXOs(
-                priorityFee + interactionParams.maximumAllowedSatToSpend,
-                interactionParams,
-            ));
+        try {
+            const UTXOs: UTXO[] =
+                interactionParams.utxos ||
+                (await this.#fetchUTXOs(
+                    priorityFee + interactionParams.maximumAllowedSatToSpend,
+                    interactionParams,
+                ));
 
-        const params: IInteractionParameters = {
-            calldata: this.calldata,
-            priorityFee: priorityFee,
-            feeRate: interactionParams.feeRate || 10,
-            from: interactionParams.refundTo,
-            signer: interactionParams.signer,
-            utxos: UTXOs,
-            to: this.to,
-            network: interactionParams.network,
-        };
+            const params: IInteractionParameters = {
+                calldata: this.calldata,
+                priorityFee: priorityFee,
+                feeRate: interactionParams.feeRate || 10,
+                from: interactionParams.refundTo,
+                signer: interactionParams.signer,
+                utxos: UTXOs,
+                to: this.to,
+                network: interactionParams.network,
+            };
 
-        const transaction = await factory.signInteraction(params);
-        this.#provider.utxoManager.spentUTXO(UTXOs, transaction[2]);
+            const transaction = await factory.signInteraction(params);
+            const tx1 = await this.#provider.sendRawTransaction(transaction[0], false);
+            if (!tx1 || tx1.error) {
+                throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
+            }
 
-        const tx1 = await this.#provider.sendRawTransaction(transaction[0], false);
-        if (!tx1 || tx1.error) {
-            throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
+            this.#provider.utxoManager.spentUTXO(UTXOs, transaction[2]);
+
+            const tx2 = await this.#provider.sendRawTransaction(transaction[1], false);
+            if (!tx2 || tx2.error) {
+                throw new Error(`Error sending transaction: ${tx2?.error || 'Unknown error'}`);
+            }
+
+            if (!tx2.result) {
+                throw new Error('No transaction ID returned');
+            }
+
+            return {
+                transactionId: tx2.result,
+                peerAcknowledgements: tx2.peers || 0,
+                newUTXOs: transaction[2],
+            };
+        } catch (e) {
+            // We need to clean up the UTXOs if the transaction fails
+            this.#provider.utxoManager.clean();
+
+            throw e;
         }
-
-        const tx2 = await this.#provider.sendRawTransaction(transaction[1], false);
-        if (!tx2 || tx2.error) {
-            throw new Error(`Error sending transaction: ${tx2?.error || 'Unknown error'}`);
-        }
-
-        if (!tx2.result) {
-            throw new Error('No transaction ID returned');
-        }
-
-        return {
-            transactionId: tx2.result,
-            peerAcknowledgements: tx2.peers || 0,
-            newUTXOs: transaction[2],
-        };
     }
 
     public setGasEstimation(estimatedGas: bigint): void {

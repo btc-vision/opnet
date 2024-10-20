@@ -10,6 +10,8 @@ import {
     RequestUTXOsParamsWithAmount,
 } from './interfaces/IUTXOsManager.js';
 
+const AUTO_PURGE_AFTER: number = 1000 * 60; // 1 minutes
+
 /**
  * Unspent Transaction Output Manager
  * @category Bitcoin
@@ -17,6 +19,8 @@ import {
 export class UTXOsManager {
     private spentUTXOs: UTXOs = [];
     private pendingUTXOs: UTXOs = [];
+
+    private lastCleanup: number = Date.now();
 
     public constructor(private readonly provider: AbstractRpcProvider) {}
 
@@ -45,6 +49,7 @@ export class UTXOsManager {
     public clean(): void {
         this.spentUTXOs = [];
         this.pendingUTXOs = [];
+        this.lastCleanup = Date.now();
     }
 
     /**
@@ -149,6 +154,10 @@ export class UTXOsManager {
      * @throws {Error} If something goes wrong
      */
     private async fetchUTXOs(address: string, optimize: boolean = false): Promise<IUTXOsData> {
+        if (Date.now() - this.lastCleanup > AUTO_PURGE_AFTER) {
+            this.clean();
+        }
+
         const addressStr: string = address.toString();
         const payload: JsonRpcPayload = this.provider.buildJsonRpcPayload(
             JSONRpcMethods.GET_UTXOS,
