@@ -545,10 +545,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const gasParameters = await this.currentGasParameters();
 
         const gasPerSat = gasParameters.gasPerSat;
-        const exactGas = gas / gasPerSat;
+        const exactGas = ((gas / 1000000n) * gasPerSat) / 1000000n;
 
         // Add 15% extra gas
-        const extraGas = (exactGas * 15n) / 100n;
+        const extraGas = (exactGas * 50n) / 100n;
 
         return this.max(exactGas + extraGas, 330n);
     }
@@ -579,8 +579,11 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             response.setDecoded(decoded);
             response.setCalldata(buffer);
             if (response.estimatedGas) {
-                response.setGasEstimation(await this.estimateGas(response.estimatedGas));
+                const gas = await this.estimateGas(response.estimatedGas);
+
+                response.setGasEstimation(gas);
             }
+
             response.events = this.decodeEvents(response.rawEvents);
 
             return response;
