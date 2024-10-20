@@ -77,7 +77,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         network: Network,
         from?: Address,
     ) {
-        if (!(address instanceof Address)) {
+        if (typeof address === 'string') {
             if (!AddressVerificator.validateBitcoinAddress(address, network)) {
                 throw new Error(
                     `It seems that the address ${address} is not a valid Bitcoin address.`,
@@ -279,11 +279,13 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 break;
             }
             case ABIDataTypes.ADDRESS: {
-                if (!(value instanceof Address)) {
-                    throw new Error(`Expected value to be of type Address (${name})`);
+                if (!('equals' in (value as Address))) {
+                    throw new Error(
+                        `Expected value to be of type Address (${name}) was ${typeof value}`,
+                    );
                 }
 
-                writer.writeAddress(value);
+                writer.writeAddress(value as Address);
                 break;
             }
             case ABIDataTypes.TUPLE: {
@@ -323,10 +325,6 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 break;
             }
             case ABIDataTypes.ADDRESS_UINT256_TUPLE: {
-                if (!(value instanceof AddressMap)) {
-                    throw new Error(`Expected AddressMap (${name})`);
-                }
-
                 writer.writeAddressValueTupleMap(value as AddressMap<bigint>);
                 break;
             }

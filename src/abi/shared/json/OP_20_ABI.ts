@@ -189,6 +189,63 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         ],
         type: BitcoinAbiTypes.Function,
     },
+    {
+        name: 'mint',
+        inputs: [
+            {
+                name: 'recipient',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        outputs: [
+            {
+                name: 'success',
+                type: ABIDataTypes.BOOL,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
+        name: 'airdrop',
+        inputs: [
+            {
+                name: 'tuple',
+                type: ABIDataTypes.ADDRESS_UINT256_TUPLE,
+            },
+        ],
+        outputs: [
+            {
+                name: 'success',
+                type: ABIDataTypes.BOOL,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+
+    {
+        name: 'airdropWithAmount',
+        inputs: [
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'addresses',
+                type: ABIDataTypes.ARRAY_OF_ADDRESSES,
+            },
+        ],
+        outputs: [
+            {
+                name: 'success',
+                type: ABIDataTypes.BOOL,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
 
     // Properties
     {

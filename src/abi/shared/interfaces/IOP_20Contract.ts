@@ -1,4 +1,6 @@
 import { Address } from '@btc-vision/transaction';
+import { AddressMap } from '@btc-vision/transaction/src/deterministic/AddressMap.js';
+import { CallResult } from '../../../contracts/CallResult.js';
 import { BaseContractProperty } from '../../BaseContractProperty.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
 
@@ -36,30 +38,49 @@ import { IOP_NETContract } from './IOP_NETContract.js';
  * if ('error' in balanceExample) throw new Error('Error in fetching balance');
  * console.log('Balance:', balanceExample.decoded);
  */
+
+type Name = BaseContractProperty & CallResult<{ name: string }>;
+type BalanceOf = BaseContractProperty & CallResult<{ balance: bigint }>;
+type SymbolOf = BaseContractProperty & CallResult<{ symbol: string }>;
+type TotalSupply = BaseContractProperty & CallResult<{ totalSupply: bigint }>;
+type MaxSupply = BaseContractProperty & CallResult<{ maxSupply: bigint }>;
+type Decimals = BaseContractProperty & CallResult<{ decimals: bigint }>;
+
+type Transfer = BaseContractProperty & CallResult<{ success: boolean }>;
+type TransferFrom = BaseContractProperty & CallResult<{ success: boolean }>;
+type Approve = BaseContractProperty & CallResult<{ success: boolean }>;
+type Allowance = BaseContractProperty & CallResult<{ allowance: bigint }>;
+type Burn = BaseContractProperty & CallResult<{ success: boolean }>;
+type Mint = BaseContractProperty & CallResult<{ success: boolean }>;
+type Airdrop = BaseContractProperty & CallResult<{ success: boolean }>;
+type AirdropWithAmount = BaseContractProperty & CallResult<{ success: boolean }>;
+
 export interface IOP_20Contract extends IOP_NETContract {
-    balanceOf(account: Address): Promise<BaseContractProperty>;
+    balanceOf(account: Address): Promise<BalanceOf>;
 
-    name(): Promise<BaseContractProperty>;
+    name(): Promise<Name>;
 
-    symbol(): Promise<BaseContractProperty>;
+    symbol(): Promise<SymbolOf>;
 
-    totalSupply(): Promise<BaseContractProperty>;
+    totalSupply(): Promise<TotalSupply>;
 
-    maxSupply(): Promise<BaseContractProperty>;
+    maxSupply(): Promise<MaxSupply>;
 
-    decimals(): Promise<BaseContractProperty>;
+    decimals(): Promise<Decimals>;
 
-    transfer(recipient: Address, amount: bigint): Promise<BaseContractProperty>;
+    transfer(recipient: Address, amount: bigint): Promise<Transfer>;
 
-    transferFrom(
-        sender: Address,
-        recipient: Address,
-        amount: bigint,
-    ): Promise<BaseContractProperty>;
+    transferFrom(sender: Address, recipient: Address, amount: bigint): Promise<TransferFrom>;
 
-    approve(spender: Address, amount: bigint): Promise<BaseContractProperty>;
+    approve(spender: Address, amount: bigint): Promise<Approve>;
 
-    allowance(owner: Address, spender: Address): Promise<BaseContractProperty>;
+    allowance(owner: Address, spender: Address): Promise<Allowance>;
 
-    burn(value: bigint): Promise<BaseContractProperty>;
+    burn(value: bigint): Promise<Burn>;
+
+    mint(value: bigint): Promise<Mint>;
+
+    airdrop(tuple: AddressMap<bigint>): Promise<Airdrop>;
+
+    airdropWithAmount(amount: bigint, addresses: Address[]): Promise<AirdropWithAmount>;
 }
