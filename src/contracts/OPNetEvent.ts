@@ -19,7 +19,6 @@ export class OPNetEvent<T extends ContractDecodedObjectResult = {}>
 
     constructor(
         public readonly eventType: string,
-        public readonly eventDataSelector: bigint,
         public readonly eventData: Uint8Array,
     ) {
         super(eventType, eventData);

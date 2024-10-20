@@ -2,10 +2,13 @@ import {
     ABICoder,
     ABIDataTypes,
     Address,
+    AddressMap,
+    AddressVerificator,
     BinaryReader,
     BinaryWriter,
     NetEvent,
-} from '@btc-vision/bsi-binary'; // TODO: Update path to '@btc-vision/transaction' (there is a lot of changes to be made)
+} from '@btc-vision/transaction';
+import { Network } from 'bitcoinjs-lib';
 import { BaseContractProperty } from '../abi/BaseContractProperty.js';
 import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
@@ -16,7 +19,7 @@ import {
     EventBaseData,
     FunctionBaseData,
 } from '../abi/interfaces/BitcoinInterfaceAbi.js';
-import { BitcoinAddressLike, DecodedCallResult } from '../common/CommonTypes.js';
+import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { ContractEvents } from '../transactions/interfaces/ITransactionReceipt.js';
 import { IContract } from './interfaces/IContract.js';
@@ -37,7 +40,12 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     /**
      * The address of the contract.
      */
-    public readonly address: BitcoinAddressLike;
+    public readonly address: string | Address;
+
+    /**
+     * The address of the contract.
+     */
+    public readonly network: Network;
 
     /**
      * The interface of the contract.
@@ -63,19 +71,41 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     private events: Map<string, EventBaseData> = new Map();
 
     protected constructor(
-        address: BitcoinAddressLike,
+        address: string | Address,
         abi: BitcoinInterface | BitcoinInterfaceAbi,
         provider: AbstractRpcProvider,
+        network: Network,
         from?: Address,
     ) {
+        if (!(address instanceof Address)) {
+            if (!AddressVerificator.validateBitcoinAddress(address, network)) {
+                throw new Error(
+                    `It seems that the address ${address} is not a valid Bitcoin address.`,
+                );
+            }
+        }
+
         this.address = address;
         this.provider = provider;
         this.interface = BitcoinInterface.from(abi);
+        this.network = network;
         this.from = from;
 
         Object.defineProperty(this, internal, { value: {} });
 
         this.defineInternalFunctions();
+    }
+
+    /**
+     * The P2TR address of the contract.
+     * @returns {string} The P2TR address of the contract.
+     */
+    public get p2trOrTweaked(): string {
+        if (this.address instanceof Address) {
+            return this.address.p2tr(this.network);
+        }
+
+        return this.address;
     }
 
     /**
@@ -86,11 +116,16 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         this.from = sender;
     }
 
+    /**
+     * Decodes the events from the contract.
+     * @param {NetEvent[] | ContractEvents} events The events to decode.
+     * @returns {OPNetEvent[]} The decoded events.
+     */
     public decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[] {
         const decodedEvents: OPNetEvent[] = [];
 
         if (!Array.isArray(events)) {
-            events = events[this.address.toString()];
+            events = events[this.p2trOrTweaked];
 
             if (!events) {
                 return [];
@@ -104,19 +139,20 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         return decodedEvents;
     }
 
+    /**
+     * Decodes a single event.
+     * @param {NetEvent} event The event to decode.
+     * @returns {OPNetEvent} The decoded event.
+     */
     public decodeEvent(event: NetEvent): OPNetEvent {
         const eventData = this.events.get(event.eventType);
         if (!eventData || eventData.values.length === 0) {
-            return new OPNetEvent(event.eventType, event.eventDataSelector, event.eventData);
+            return new OPNetEvent(event.eventType, event.eventData);
         }
 
         const binaryReader: BinaryReader = new BinaryReader(event.eventData);
         const out: DecodedOutput = this.decodeOutput(eventData.values, binaryReader);
-        const decodedEvent = new OPNetEvent(
-            event.eventType,
-            event.eventDataSelector,
-            event.eventData,
-        );
+        const decodedEvent = new OPNetEvent(event.eventType, event.eventData);
 
         decodedEvent.setDecoded(out);
 
@@ -148,6 +184,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         | string
         | number
         | symbol
+        | Address
+        | Network
         | ((functionName: string, args: unknown[]) => Buffer) {
         const key = name as keyof Omit<
             IBaseContract<T>,
@@ -241,8 +279,11 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 break;
             }
             case ABIDataTypes.ADDRESS: {
-                const address = value as BitcoinAddressLike;
-                writer.writeAddress(address.toString());
+                if (!(value instanceof Address)) {
+                    throw new Error(`Expected value to be of type Address (${name})`);
+                }
+
+                writer.writeAddress(value);
                 break;
             }
             case ABIDataTypes.TUPLE: {
@@ -282,11 +323,11 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 break;
             }
             case ABIDataTypes.ADDRESS_UINT256_TUPLE: {
-                if (!(value instanceof Map)) {
-                    throw new Error(`Expected value to be of type Array (${name})`);
+                if (!(value instanceof AddressMap)) {
+                    throw new Error(`Expected AddressMap (${name})`);
                 }
 
-                writer.writeAddressValueTupleMap(value as Map<Address, bigint>);
+                writer.writeAddressValueTupleMap(value as AddressMap<bigint>);
                 break;
             }
             case ABIDataTypes.BYTES: {
@@ -481,7 +522,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         return async (...args: unknown[]): Promise<BaseContractProperty> => {
             const data = this.encodeFunctionData(element, args);
             const buffer = Buffer.from(data.getBuffer());
-            const response = await this.provider.call(this.address, buffer, this.from);
+            const response = await this.provider.call(this.p2trOrTweaked, buffer, this.from);
 
             if ('error' in response || response.revert) {
                 return response;
@@ -505,12 +546,13 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
  */
 export class BaseContract<T extends BaseContractProperties> extends IBaseContract<T> {
     constructor(
-        address: BitcoinAddressLike,
+        address: string | Address,
         abi: BitcoinInterface | BitcoinInterfaceAbi,
         provider: AbstractRpcProvider,
+        network: Network,
         sender?: Address,
     ) {
-        super(address, abi, provider, sender);
+        super(address, abi, provider, network, sender);
 
         return this.proxify();
     }
@@ -554,51 +596,62 @@ export class BaseContract<T extends BaseContractProperties> extends IBaseContrac
  * Creates a new contract class.
  */
 function contractBase<T extends BaseContractProperties>(): new (
-    address: BitcoinAddressLike,
+    address: string | Address,
     abi: BitcoinInterface | BitcoinInterfaceAbi,
     provider: AbstractRpcProvider,
+    network: Network,
     sender?: Address,
 ) => BaseContract<T> & Omit<T, keyof BaseContract<T>> {
     return BaseContract as new (
-        address: BitcoinAddressLike,
+        address: string | Address,
         abi: BitcoinInterface | BitcoinInterfaceAbi,
         provider: AbstractRpcProvider,
+        network: Network,
         sender?: Address,
     ) => BaseContract<T> & Omit<T, keyof BaseContract<T>>;
 }
 
 /**
  * Creates a new contract instance.
- * @param {BitcoinAddressLike} address The address of the contract.
+ * @param {string | Address} address The address of the contract.
  * @param {BitcoinInterface | BitcoinInterfaceAbi} abi The ABI of the contract.
  * @param {AbstractRpcProvider} provider The provider for the contract.
  * @param {Address} [sender] Who is sending the transaction.
+ * @param {Network} [network] The network of the contract.
  * @returns {BaseContract<T> & Omit<T, keyof BaseContract<T>>} The contract instance.
  * @template T The properties of the contract.
  * @category Contracts
  *
  * @example
+ * const contractAddress: string | Address = 'bcrt1p9p97ftxmx25ehgltlfn2j8wmgxnm0gwjlm6p2wveytxc5pzgtspqx93dy5';
+ * const senderAddress: Address = new Address([
+ *    40, 11, 228, 172, 219, 50, 169, 155, 163, 235, 250, 102, 169, 29, 219, 65, 167, 183, 161, 210,
+ *    254, 244, 21, 57, 153, 34, 205, 138, 4, 72, 92, 2,
+ * ]);
  * const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.org');
  * const contract: IOP_20Contract = getContract<IOP_20Contract>(
- *     'bcrt1qxeyh0pacdtkqmlna9n254fztp3ptadkkfu6efl',
+ *     contractAddress,
  *     OP_20_ABI,
  *     provider,
+ *     networks.regtest,
+ *     senderAddress,
  * );
  *
  * const balanceExample = await contract.balanceOf(
- *     'bcrt1pyrs3eqwnrmd4ql3nwvx66yzp0wc24xd2t9pf8699ln340pjs7f3sar3tum',
+ *     senderAddress
  * );
  *
  * if ('error' in balanceExample) throw new Error('Error in fetching balance');
  * console.log('Balance:', balanceExample.decoded);
  */
 export function getContract<T extends BaseContractProperties>(
-    address: BitcoinAddressLike,
+    address: string | Address,
     abi: BitcoinInterface | BitcoinInterfaceAbi,
     provider: AbstractRpcProvider,
+    network: Network,
     sender?: Address,
 ): BaseContract<T> & Omit<T, keyof BaseContract<T>> {
     const base = contractBase<T>();
 
-    return new base(address, abi, provider, sender);
+    return new base(address, abi, provider, network, sender);
 }

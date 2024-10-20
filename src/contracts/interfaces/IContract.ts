@@ -1,5 +1,4 @@
-import { NetEvent } from '@btc-vision/transaction';
-import { BitcoinAddressLike } from '../../common/CommonTypes.js';
+import { Address, NetEvent } from '@btc-vision/transaction';
 import { ContractEvents } from '../../transactions/interfaces/ITransactionReceipt.js';
 import { OPNetEvent } from '../OPNetEvent.js';
 
@@ -9,9 +8,9 @@ import { OPNetEvent } from '../OPNetEvent.js';
  * @category Contracts
  */
 export interface IContract {
-    readonly address: BitcoinAddressLike;
+    readonly address: Address | string;
 
-    setSender(sender: BitcoinAddressLike): void;
+    setSender(sender: Address): void;
 
     decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[];
 

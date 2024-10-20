@@ -1,4 +1,4 @@
-import { BitcoinAddressLike } from '../../../common/CommonTypes.js';
+import { Address } from '@btc-vision/transaction';
 import { BaseContractProperty } from '../../BaseContractProperty.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
 
@@ -9,6 +9,7 @@ import { IOP_NETContract } from './IOP_NETContract.js';
  * @cathegory Contracts
  *
  * @example
+ * import { Address } from '@btc-vision/transaction';
  * import { IOP_20Contract } from '../abi/shared/interfaces/IOP_20Contract.js';
  * import { OP_20_ABI } from '../abi/shared/json/OP_20_ABI.js';
  * import { CallResult } from '../contracts/CallResult.js';
@@ -17,20 +18,26 @@ import { IOP_NETContract } from './IOP_NETContract.js';
  *
  * const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.org');
  * const contract: IOP_20Contract = getContract<IOP_20Contract>(
- *     'bcrt1qxeyh0pacdtkqmlna9n254fztp3ptadkkfu6efl',
+ *     'bcrt1pyrs3eqwnrmd4ql3nwvx66yzp0wc24xd2t9pf8699ln340pjs7f3sar3tum',
  *     OP_20_ABI,
  *     provider,
+ *     networks.regtest,
  * );
  *
+ * const address: Address = new Address([
+ *    40, 11, 228, 172, 219, 50, 169, 155, 163, 235, 250, 102, 169, 29, 219, 65, 167, 183, 161, 210,
+ *    254, 244, 21, 57, 153, 34, 205, 138, 4, 72, 92, 2,
+ * ]);
+ *
  * const balanceExample = await contract.balanceOf(
- *     'bcrt1pyrs3eqwnrmd4ql3nwvx66yzp0wc24xd2t9pf8699ln340pjs7f3sar3tum',
+ *     address
  * );
  *
  * if ('error' in balanceExample) throw new Error('Error in fetching balance');
  * console.log('Balance:', balanceExample.decoded);
  */
 export interface IOP_20Contract extends IOP_NETContract {
-    balanceOf(account: BitcoinAddressLike): Promise<BaseContractProperty>;
+    balanceOf(account: Address): Promise<BaseContractProperty>;
 
     name(): Promise<BaseContractProperty>;
 
@@ -42,20 +49,17 @@ export interface IOP_20Contract extends IOP_NETContract {
 
     decimals(): Promise<BaseContractProperty>;
 
-    transfer(recipient: BitcoinAddressLike, amount: bigint): Promise<BaseContractProperty>;
+    transfer(recipient: Address, amount: bigint): Promise<BaseContractProperty>;
 
     transferFrom(
-        sender: BitcoinAddressLike,
-        recipient: BitcoinAddressLike,
+        sender: Address,
+        recipient: Address,
         amount: bigint,
     ): Promise<BaseContractProperty>;
 
-    approve(spender: BitcoinAddressLike, amount: bigint): Promise<BaseContractProperty>;
+    approve(spender: Address, amount: bigint): Promise<BaseContractProperty>;
 
-    allowance(
-        owner: BitcoinAddressLike,
-        spender: BitcoinAddressLike,
-    ): Promise<BaseContractProperty>;
+    allowance(owner: Address, spender: Address): Promise<BaseContractProperty>;
 
     burn(value: bigint): Promise<BaseContractProperty>;
 }

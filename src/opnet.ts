@@ -83,7 +83,6 @@ export * from './transactions/interfaces/transactions/IUnwrapTransaction.js';
 export * from './common/CommonTypes.js';
 
 /** Bitcoin */
-export * from './bitcoin/BitcoinAddress.js';
 export * from './bitcoin/interfaces/IUTXO.js';
 export * from './bitcoin/UTXOs.js';
 

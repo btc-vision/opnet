@@ -1,7 +1,5 @@
-import { Address } from '@btc-vision/transaction';
-import { BitcoinAddress } from '../bitcoin/BitcoinAddress.js';
+import { Address, AddressMap } from '@btc-vision/transaction';
 
-export type BitcoinAddressLike = string | BitcoinAddress;
 export type PointerLike = bigint | string;
 
 export type DecodedCallResult =
@@ -9,13 +7,14 @@ export type DecodedCallResult =
     | string
     | boolean
     | number
+    | Address
     | Uint8Array
     | Array<bigint>
     | Array<string>
     | Array<boolean>
     | Array<number>
     | Array<Uint8Array>
-    | Map<Address, bigint>;
+    | AddressMap<bigint>;
 
 export type Numeric = number | bigint;
 

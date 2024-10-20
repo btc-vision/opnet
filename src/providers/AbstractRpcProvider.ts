@@ -13,7 +13,7 @@ import { Block } from '../block/Block.js';
 import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters.js';
 import { BlockWitnesses } from '../block/interfaces/BlockWitness.js';
 import { IBlock } from '../block/interfaces/IBlock.js';
-import { BigNumberish, BitcoinAddressLike, BlockTag } from '../common/CommonTypes.js';
+import { BigNumberish, BlockTag } from '../common/CommonTypes.js';
 import { CallResult } from '../contracts/CallResult.js';
 import { ContractData } from '../contracts/ContractData.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
@@ -74,35 +74,44 @@ export abstract class AbstractRpcProvider {
     public async getPublicKeyInfo(
         address: string | string[] | Address | Address[],
         network: Network,
-    ): Promise<IPublicKeyInfoResult | JsonRpcResult> {
-        const validateAddress = (addr: string | Address): AddressTypes => {
-            let validationResult: AddressTypes | null = null;
-
-            if (addr instanceof Address) {
-                validationResult = AddressVerificator.validateBitcoinAddress(addr.toHex(), network);
-            } else if (typeof addr === 'string') {
-                validationResult = AddressVerificator.validateBitcoinAddress(addr, network);
-            } else {
-                throw new Error(`Invalid type: ${typeof addr} for address: ${addr}`);
-            }
-
-            if (!validationResult) {
-                throw new Error(`Invalid address: ${addr}`);
-            }
-
-            return validationResult;
-        };
-
+    ): Promise<IPublicKeyInfoResult> {
         const addressArray = Array.isArray(address) ? address : [address];
 
-        addressArray.forEach(validateAddress);
+        addressArray.forEach((addr) => {
+            if (this.validateAddress(addr, network) === null) {
+                throw new Error(`Invalid address: ${addr}`);
+            }
+        });
 
         const method = JSONRpcMethods.PUBLIC_KEY_INFO;
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [addressArray]);
-
         const data: JsonRpcResult = await this.callPayloadSingle(payload);
 
-        return 'error' in data ? data : (data.result as IPublicKeyInfoResult);
+        if ('error' in data) {
+            throw new Error(`Error fetching public key info: ${data.error}`);
+        }
+
+        return data.result as IPublicKeyInfoResult;
+    }
+
+    /**
+     * Verify an address.
+     * @param {string | Address} addr The address to verify
+     * @param {Network} network The network to verify the address against
+     * @returns {AddressTypes} The address type, return null if the address is invalid
+     */
+    public validateAddress(addr: string | Address, network: Network): AddressTypes | null {
+        let validationResult: AddressTypes | null = null;
+
+        if (addr instanceof Address) {
+            validationResult = AddressVerificator.validateBitcoinAddress(addr.toHex(), network);
+        } else if (typeof addr === 'string') {
+            validationResult = AddressVerificator.validateBitcoinAddress(addr, network);
+        } else {
+            throw new Error(`Invalid type: ${typeof addr} for address: ${addr}`);
+        }
+
+        return validationResult;
     }
 
     /**
@@ -201,16 +210,13 @@ export abstract class AbstractRpcProvider {
 
     /**
      * Get the bitcoin balance of an address.
-     * @param {BitcoinAddressLike} addressLike The address to get the balance of
+     * @param {string} addressLike The address to get the balance of
      * @param {boolean} filterOrdinals Whether to filter ordinals or not
      * @description This method is used to get the balance of a bitcoin address.
      * @returns {Promise<bigint>} The balance of the address
      * @example await getBalance('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq');
      */
-    public async getBalance(
-        addressLike: BitcoinAddressLike,
-        filterOrdinals: boolean = true,
-    ): Promise<bigint> {
+    public async getBalance(addressLike: string, filterOrdinals: boolean = true): Promise<bigint> {
         const address: string = addressLike.toString();
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_BALANCE, [
             address,
@@ -319,14 +325,14 @@ export abstract class AbstractRpcProvider {
     /**
      * Get the contract code of an address.
      * @description This method is used to get the contract code of an address.
-     * @param {BitcoinAddressLike} address The address of the contract
+     * @param {string | Address} address The address of the contract
      * @param {boolean} [onlyBytecode] Whether to return only the bytecode
      * @returns {Promise<ContractData | Buffer>} The contract data or bytecode
      * @example await getCode('tb1pth90usc4f528aqphpjrfkkdm4vy8hxnt5gps6aau2nva6pxeshtqqzlt3a');
      * @throws {Error} If something went wrong while fetching the contract code
      */
     public async getCode(
-        address: BitcoinAddressLike,
+        address: string | Address,
         onlyBytecode: boolean = false,
     ): Promise<ContractData | Buffer> {
         const addressStr: string = address.toString();
@@ -356,7 +362,7 @@ export abstract class AbstractRpcProvider {
     /**
      * Get the storage at a specific address and pointer.
      * @description This method is used to get the storage at a specific address and pointer.
-     * @param {BitcoinAddressLike} address The address to get the storage from
+     * @param {string | Address} address The address to get the storage from
      * @param {BigNumberish} rawPointer The pointer to get the storage from as base64 or bigint
      * @param {boolean} proofs Whether to send proofs or not
      * @param {BigNumberish} [height] The height to get the storage from
@@ -365,7 +371,7 @@ export abstract class AbstractRpcProvider {
      * @throws {Error} If something went wrong while fetching the storage
      */
     public async getStorageAt(
-        address: BitcoinAddressLike,
+        address: string | Address,
         rawPointer: bigint | string,
         proofs: boolean = true,
         height?: BigNumberish,
@@ -402,9 +408,9 @@ export abstract class AbstractRpcProvider {
      * @throws {Error} If something went wrong while calling the contract
      */
     public async call(
-        to: BitcoinAddressLike,
+        to: string | Address,
         data: Buffer | string,
-        from?: BitcoinAddressLike,
+        from?: Address,
         height?: BigNumberish,
     ): Promise<CallResult | ICallRequestError> {
         const toStr: string = to.toString();
