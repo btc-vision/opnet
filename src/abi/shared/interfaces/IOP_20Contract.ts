@@ -7,7 +7,7 @@ export type BalanceOf = CallResult<{ balance: bigint }>;
 export type SymbolOf = CallResult<{ symbol: string }>;
 export type TotalSupply = CallResult<{ totalSupply: bigint }>;
 export type MaxSupply = CallResult<{ maxSupply: bigint }>;
-export type Decimals = CallResult<{ decimals: bigint }>;
+export type Decimals = CallResult<{ decimals: number }>;
 
 export type Transfer = CallResult<{ success: boolean }>;
 export type TransferFrom = CallResult<{ success: boolean }>;
