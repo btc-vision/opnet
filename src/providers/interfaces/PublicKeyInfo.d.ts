@@ -1,21 +1,20 @@
-interface IPublicKeyInfoData {
-    [key: string]: {
-        lowByte?: number;
-        originalPubKey?: string;
-        tweakedPubkey?: string;
-        p2pkh?: string;
-        p2shp2wpkh?: string;
-        p2tr?: string;
-        p2wpkh?: string;
-    };
+export interface PublicKeyInfo {
+    readonly originalPubKey?: string;
+    readonly tweakedPubkey: string;
+
+    readonly p2tr: string;
+
+    readonly lowByte?: number;
+
+    readonly p2pkh?: string;
+    readonly p2shp2wpkh?: string;
+    readonly p2wpkh?: string;
 }
 
-interface IPublicKeyInfo {
-    lowByte?: number;
-    originalPubKey?: string;
-    tweakedPubkey?: string;
-    p2pkh?: string;
-    p2shp2wpkh?: string;
-    p2tr?: string;
-    p2wpkh?: string;
+export interface IPubKeyNotFoundError {
+    readonly error: string;
+}
+
+export interface IPublicKeyInfoResult {
+    [key: string]: PublicKeyInfo | IPubKeyNotFoundError;
 }

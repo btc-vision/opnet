@@ -32,4 +32,7 @@ export enum JSONRpcMethods {
 
     CALL = 'btc_call',
     SIMULATE = 'btc_simulate',
+
+    /** Account */
+    PUBLIC_KEY_INFO = 'btc_publicKeyInfo',
 }

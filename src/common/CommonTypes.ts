@@ -1,4 +1,4 @@
-import { Address } from '@btc-vision/bsi-binary';
+import { Address } from '@btc-vision/transaction';
 import { BitcoinAddress } from '../bitcoin/BitcoinAddress.js';
 
 export type BitcoinAddressLike = string | BitcoinAddress;

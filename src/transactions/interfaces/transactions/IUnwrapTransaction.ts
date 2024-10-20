@@ -1,4 +1,4 @@
-import { Address } from '@btc-vision/bsi-binary';
+import { Address } from '@btc-vision/transaction';
 import { IInteractionTransaction } from './IInteractionTransaction.js';
 
 export interface UsedUTXO {

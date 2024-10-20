@@ -1,5 +1,11 @@
-import { BufferHelper } from '@btc-vision/bsi-binary';
-import { WrappedGeneration, WrappedGenerationParameters } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    AddressVerificator,
+    BufferHelper,
+    WrappedGeneration,
+    WrappedGenerationParameters,
+} from '@btc-vision/transaction';
 import { Network, networks } from 'bitcoinjs-lib';
 import '../serialize/BigInt.js';
 
@@ -30,6 +36,7 @@ import {
     JsonRpcResult,
     JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
+import { IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
 /**
@@ -53,6 +60,49 @@ export abstract class AbstractRpcProvider {
      */
     public get utxoManager(): UTXOsManager {
         return this._utxoManager;
+    }
+
+    /**
+     * Get the public key information.
+     * @description This method is used to get the public key information.
+     * @param {string | string[] | Address | Address[]} address The address or addresses to get the public key information of
+     * @param {Network} network The network to check if the address is valid
+     * @returns {Promise<IPublicKeyInfoResult | JsonRpcResult>} The public key information
+     * @example await getPublicKeyInfo('bcrt1qfqsr3m7vjxheghcvw4ks0fryqxfq8qzjf8fxes', networks.regtest);
+     * @throws {Error} If the address is invalid
+     */
+    public async getPublicKeyInfo(
+        address: string | string[] | Address | Address[],
+        network: Network,
+    ): Promise<IPublicKeyInfoResult | JsonRpcResult> {
+        const validateAddress = (addr: string | Address): AddressTypes => {
+            let validationResult: AddressTypes | null = null;
+
+            if (addr instanceof Address) {
+                validationResult = AddressVerificator.validateBitcoinAddress(addr.toHex(), network);
+            } else if (typeof addr === 'string') {
+                validationResult = AddressVerificator.validateBitcoinAddress(addr, network);
+            } else {
+                throw new Error(`Invalid type: ${typeof addr} for address: ${addr}`);
+            }
+
+            if (!validationResult) {
+                throw new Error(`Invalid address: ${addr}`);
+            }
+
+            return validationResult;
+        };
+
+        const addressArray = Array.isArray(address) ? address : [address];
+
+        addressArray.forEach(validateAddress);
+
+        const method = JSONRpcMethods.PUBLIC_KEY_INFO;
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [addressArray]);
+
+        const data: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        return 'error' in data ? data : (data.result as IPublicKeyInfoResult);
     }
 
     /**

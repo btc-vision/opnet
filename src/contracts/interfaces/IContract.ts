@@ -1,4 +1,4 @@
-import { NetEvent } from '@btc-vision/bsi-binary';
+import { NetEvent } from '@btc-vision/transaction';
 import { BitcoinAddressLike } from '../../common/CommonTypes.js';
 import { ContractEvents } from '../../transactions/interfaces/ITransactionReceipt.js';
 import { OPNetEvent } from '../OPNetEvent.js';
