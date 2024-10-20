@@ -1,3 +1,4 @@
+import { Network } from 'bitcoinjs-lib';
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSONRpcResult.js';
@@ -12,9 +13,10 @@ export class JSONRpcProvider extends AbstractRpcProvider {
 
     constructor(
         url: string,
+        network: Network,
         private readonly timeout: number = 10_000,
     ) {
-        super();
+        super(network);
 
         this.url = this.providerUrl(url);
     }

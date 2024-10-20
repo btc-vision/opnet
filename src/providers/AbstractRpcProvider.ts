@@ -47,11 +47,9 @@ import { ReorgInformation } from './interfaces/ReorgInformation.js';
  */
 export abstract class AbstractRpcProvider {
     private nextId: number = 0;
-
-    private network: Network | undefined;
     private chainId: bigint | undefined;
 
-    protected constructor() {}
+    protected constructor(private readonly network: Network) {}
 
     private _utxoManager: UTXOsManager = new UTXOsManager(this);
 
@@ -65,48 +63,15 @@ export abstract class AbstractRpcProvider {
     /**
      * Get the public key information.
      * @description This method is used to get the public key information.
-     * @param {string | string[] | Address | Address[]} address The address or addresses to get the public key information of
-     * @param {Network} network The network to check if the address is valid
-     * @returns {Promise<AddressesInfo>} The public keys information
-     * @example await getPublicKeyInfo('bcrt1qfqsr3m7vjxheghcvw4ks0fryqxfq8qzjf8fxes', networks.regtest);
+     * @param {string} address The address or addresses to get the public key information of
+     * @returns {Promise<Address>} The public keys information
+     * @example await getPublicKeyInfo('bcrt1qfqsr3m7vjxheghcvw4ks0fryqxfq8qzjf8fxes');
      * @throws {Error} If the address is invalid
      */
-    public async getPublicKeyInfo(
-        address: string | string[] | Address | Address[],
-        network: Network,
-    ): Promise<AddressesInfo> {
-        const addressArray = Array.isArray(address) ? address : [address];
+    public async getPublicKeyInfo(address: string): Promise<Address> {
+        const pubKeyInfo = await this.getPublicKeysInfo(address);
 
-        addressArray.forEach((addr) => {
-            if (this.validateAddress(addr, network) === null) {
-                throw new Error(`Invalid address: ${addr}`);
-            }
-        });
-
-        const method = JSONRpcMethods.PUBLIC_KEY_INFO;
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [addressArray]);
-        const data: JsonRpcResult = await this.callPayloadSingle(payload);
-
-        if ('error' in data) {
-            throw new Error(`Error fetching public key info: ${data.error}`);
-        }
-
-        const response: AddressesInfo = {};
-
-        const result = data.result as IPublicKeyInfoResult;
-        const keys = Object.keys(result);
-        for (const pubKey of keys) {
-            const pubKeyValue = result[pubKey];
-            if ('error' in pubKeyValue) {
-                throw new Error(`Error fetching public key info: ${pubKeyValue.error}`);
-            }
-
-            response[pubKey] = pubKeyValue.originalPubKey
-                ? Address.fromString(pubKeyValue.originalPubKey)
-                : Address.fromString(pubKeyValue.tweakedPubkey);
-        }
-
-        return response;
+        return pubKeyInfo[address];
     }
 
     /**
@@ -294,28 +259,11 @@ export abstract class AbstractRpcProvider {
     /**
      * Get the current connected network type.
      * @description This method is used to get the current connected network type.
-     * @returns {Promise<Network>} The current connected network type
+     * @returns {Network} The current connected network type
      * @throws {Error} If the chain id is invalid
      */
-    public getNetwork(): Promise<Network> {
-        if (this.network) {
-            return Promise.resolve(this.network);
-        }
-
-        /*const network = await this.getChainId();
-        switch (network) {
-            case 1n:
-                return networks.bitcoin;
-            case 2n:
-                return networks.testnet;
-            case 3n:
-                return networks.regtest;
-
-            default:
-                throw new Error(`Invalid chain id: ${network}`);
-        }*/
-
-        throw new Error('Not implemented');
+    public getNetwork(): Network {
+        return this.network;
     }
 
     /**
@@ -676,6 +624,51 @@ export abstract class AbstractRpcProvider {
             id: this.nextId++,
             jsonrpc: '2.0',
         };
+    }
+
+    /**
+     * Get the public key information.
+     * @description This method is used to get the public key information.
+     * @param {string | string[] | Address | Address[]} addresses The address or addresses to get the public key information of
+     * @returns {Promise<AddressesInfo>} The public keys information
+     * @example await getPublicKeysInfo(['addressA', 'addressB']);
+     * @throws {Error} If the address is invalid
+     */
+    public async getPublicKeysInfo(
+        addresses: string | string[] | Address | Address[],
+    ): Promise<AddressesInfo> {
+        const addressArray = Array.isArray(addresses) ? addresses : [addresses];
+
+        addressArray.forEach((addr) => {
+            if (this.validateAddress(addr, this.network) === null) {
+                throw new Error(`Invalid address: ${addr}`);
+            }
+        });
+
+        const method = JSONRpcMethods.PUBLIC_KEY_INFO;
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [addressArray]);
+        const data: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        if ('error' in data) {
+            throw new Error(`Error fetching public key info: ${data.error}`);
+        }
+
+        const response: AddressesInfo = {};
+
+        const result = data.result as IPublicKeyInfoResult;
+        const keys = Object.keys(result);
+        for (const pubKey of keys) {
+            const pubKeyValue = result[pubKey];
+            if ('error' in pubKeyValue) {
+                throw new Error(`Error fetching public key info: ${pubKeyValue.error}`);
+            }
+
+            response[pubKey] = pubKeyValue.originalPubKey
+                ? Address.fromString(pubKeyValue.originalPubKey)
+                : Address.fromString(pubKeyValue.tweakedPubkey);
+        }
+
+        return response;
     }
 
     protected abstract providerUrl(url: string): string;

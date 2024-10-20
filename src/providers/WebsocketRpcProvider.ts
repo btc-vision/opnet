@@ -1,3 +1,4 @@
+import { Network } from 'bitcoinjs-lib';
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';
@@ -10,8 +11,8 @@ import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';
 export class WebSocketRpcProvider extends AbstractRpcProvider {
     private readonly wsUrl: string;
 
-    constructor(url: string) {
-        super();
+    constructor(url: string, network: Network) {
+        super(network);
 
         this.wsUrl = this.providerUrl(url);
     }
