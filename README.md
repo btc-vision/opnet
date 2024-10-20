@@ -68,10 +68,11 @@ import { Configs } from '../configs/Configs.js';
 import { Address, Wallet } from '@btc-vision/transaction';
 import { Network } from 'bitcoinjs-lib';
 
-const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.org');
+const network: Network = Configs.NETWORK;
+const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.
+org', network);
 const wallet: Wallet = Configs.WALLET;
 const yourAddress: Address = new Address(wallet.keypair.publicKey);
-const network: Network = Configs.NETWORK;
 
 const example: IOP_20Contract = getContract<IOP_20Contract>(
     'bcrt1plz0svv3wl05qrrv0dx8hvh5mgqc7jf3mhqgtw8jnj3l3d3cs6lzsfc3mxh',
