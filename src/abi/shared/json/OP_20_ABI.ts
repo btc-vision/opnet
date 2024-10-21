@@ -292,10 +292,10 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
     },
     {
-        name: 'maxSupply',
+        name: 'maximumSupply',
         outputs: [
             {
-                name: 'maxSupply',
+                name: 'maximumSupply',
                 type: ABIDataTypes.UINT256,
             },
         ],

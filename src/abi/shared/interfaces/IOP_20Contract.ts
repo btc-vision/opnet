@@ -61,7 +61,7 @@ export interface IOP_20Contract extends IOP_NETContract {
 
     totalSupply(): Promise<TotalSupply>;
 
-    maxSupply(): Promise<MaxSupply>;
+    maximumSupply(): Promise<MaxSupply>;
 
     decimals(): Promise<Decimals>;
 
