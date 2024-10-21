@@ -75,7 +75,7 @@ export interface IOP_20Contract extends IOP_NETContract {
 
     burn(value: bigint): Promise<Burn>;
 
-    mint(value: bigint): Promise<Mint>;
+    mint(address: Address, value: bigint): Promise<Mint>;
 
     airdrop(tuple: AddressMap<bigint>): Promise<Airdrop>;
 
