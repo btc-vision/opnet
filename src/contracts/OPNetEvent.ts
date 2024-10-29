@@ -18,10 +18,10 @@ export class OPNetEvent<T extends ContractDecodedObjectResult = {}>
     public values: Array<DecodedCallResult> = [];
 
     constructor(
-        public readonly eventType: string,
-        public readonly eventData: Uint8Array,
+        public readonly type: string,
+        public readonly data: Uint8Array,
     ) {
-        super(eventType, eventData);
+        super(type, data);
     }
 
     public setDecoded(decoded: DecodedOutput): void {

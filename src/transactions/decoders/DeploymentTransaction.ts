@@ -6,14 +6,14 @@ import { TransactionBase } from '../Transaction.js';
 /**
  * @description This class is used to provide a deployment transaction.
  * @class DeploymentTransaction
- * @category Transactions<>
+ * @category Transactions
  */
 export class DeploymentTransaction
     extends TransactionBase<OPNetTransactionTypes.Deployment>
     implements IDeploymentTransaction
 {
     public readonly contractAddress: string;
-    public readonly tweakedPublicKey: Address;
+    public readonly contractTweakedPublicKey: Address;
 
     public readonly bytecode: Buffer;
     public readonly wasCompressed: boolean;
@@ -32,8 +32,8 @@ export class DeploymentTransaction
         this.from = new Address(Buffer.from(transaction.from as string, 'base64'));
 
         this.contractAddress = transaction.contractAddress;
-        this.tweakedPublicKey = new Address(
-            Buffer.from(transaction.tweakedPublicKey as string, 'base64'),
+        this.contractTweakedPublicKey = new Address(
+            Buffer.from(transaction.contractTweakedPublicKey as string, 'base64'),
         );
 
         this.bytecode = Buffer.from(transaction.bytecode as string, 'base64');

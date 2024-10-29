@@ -47,8 +47,17 @@ export class InteractionTransaction
      */
     public readonly contractAddress: string;
 
+    /**
+     * @description The contract tweaked public key.
+     */
+    public readonly contractTweakedPublicKey: Address;
+
     constructor(transaction: IInteractionTransaction) {
         super(transaction);
+
+        this.contractTweakedPublicKey = new Address(
+            Buffer.from(transaction.contractTweakedPublicKey as string, 'base64'),
+        );
 
         this.calldata = Buffer.from(transaction.calldata as string, 'base64');
         this.senderPubKeyHash = Buffer.from(transaction.senderPubKeyHash as string, 'base64');

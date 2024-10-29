@@ -10,14 +10,14 @@ import { ICommonTransaction } from './ICommonTransaction.js';
 export interface IDeploymentTransaction
     extends ICommonTransaction<OPNetTransactionTypes.Deployment> {
     /**
-     * @description The sewgit generated address of the contract. (SAFE)
+     * @description The p2tr contract address. (SAFE)
      */
     readonly contractAddress: string;
 
     /**
-     * @description The virtual address of the contract.
+     * @description The contract tweaked public key.
      */
-    readonly tweakedPublicKey: Address | string;
+    readonly contractTweakedPublicKey: Address | string;
 
     /**
      * @description The bytecode of the contract.
@@ -38,4 +38,9 @@ export interface IDeploymentTransaction
      * @description The salt verification hash of the contract.
      */
     readonly contractSaltHash: Buffer | string;
+
+    /**
+     * @description The deployer address.
+     */
+    readonly deployerAddress: Address | string;
 }

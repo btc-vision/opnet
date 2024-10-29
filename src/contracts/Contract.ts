@@ -87,7 +87,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         from?: Address,
     ) {
         if (typeof address === 'string') {
-            if (!AddressVerificator.validateBitcoinAddress(address, network)) {
+            if (!AddressVerificator.detectAddressType(address, network)) {
                 throw new Error(
                     `It seems that the address ${address} is not a valid Bitcoin address.`,
                 );
@@ -154,14 +154,14 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
      * @returns {OPNetEvent} The decoded event.
      */
     public decodeEvent(event: NetEvent): OPNetEvent {
-        const eventData = this.events.get(event.eventType);
+        const eventData = this.events.get(event.type);
         if (!eventData || eventData.values.length === 0) {
-            return new OPNetEvent(event.eventType, event.eventData);
+            return new OPNetEvent(event.type, event.data);
         }
 
-        const binaryReader: BinaryReader = new BinaryReader(event.eventData);
+        const binaryReader: BinaryReader = new BinaryReader(event.data);
         const out: DecodedOutput = this.decodeOutput(eventData.values, binaryReader);
-        const decodedEvent = new OPNetEvent(event.eventType, event.eventData);
+        const decodedEvent = new OPNetEvent(event.type, event.data);
 
         decodedEvent.setDecoded(out);
 

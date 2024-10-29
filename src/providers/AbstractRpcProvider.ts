@@ -84,9 +84,9 @@ export abstract class AbstractRpcProvider {
         let validationResult: AddressTypes | null = null;
 
         if (addr instanceof Address) {
-            validationResult = AddressVerificator.validateBitcoinAddress(addr.toHex(), network);
+            validationResult = AddressVerificator.detectAddressType(addr.toHex(), network);
         } else if (typeof addr === 'string') {
-            validationResult = AddressVerificator.validateBitcoinAddress(addr, network);
+            validationResult = AddressVerificator.detectAddressType(addr, network);
         } else {
             throw new Error(`Invalid type: ${typeof addr} for address: ${addr}`);
         }
