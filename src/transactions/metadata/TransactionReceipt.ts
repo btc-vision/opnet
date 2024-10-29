@@ -74,20 +74,13 @@ export class TransactionReceipt implements ITransactionReceipt {
 
     private decodeEvent(event: NetEventDocument): NetEvent {
         let eventData: Uint8Array;
-        let eventDataSelector: bigint;
 
-        if (typeof event.eventData === 'string') {
-            eventData = new Uint8Array(Buffer.from(event.eventData, 'base64'));
+        if (typeof event.data === 'string') {
+            eventData = new Uint8Array(Buffer.from(event.data, 'base64'));
         } else {
-            eventData = event.eventData;
+            eventData = event.data;
         }
 
-        if (typeof event.eventDataSelector === 'string') {
-            eventDataSelector = BigInt(event.eventDataSelector);
-        } else {
-            eventDataSelector = event.eventDataSelector;
-        }
-
-        return new NetEvent(event.eventType, eventData);
+        return new NetEvent(event.type, eventData);
     }
 }

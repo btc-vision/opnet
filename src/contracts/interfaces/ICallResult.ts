@@ -11,8 +11,8 @@ export interface ICallRequestError {
 }
 
 export interface RawNetEvent {
-    readonly eventType: string;
-    readonly eventData: string;
+    readonly type: string;
+    readonly data: string;
 }
 
 export interface RawEventList {

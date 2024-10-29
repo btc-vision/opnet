@@ -189,10 +189,7 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
             const events: NetEvent[] = [];
 
             for (const event of value) {
-                const eventData = new NetEvent(
-                    event.eventType,
-                    Buffer.from(event.eventData, 'base64'),
-                );
+                const eventData = new NetEvent(event.type, Buffer.from(event.data, 'base64'));
 
                 events.push(eventData);
             }

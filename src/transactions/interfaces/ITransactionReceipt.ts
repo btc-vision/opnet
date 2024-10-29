@@ -8,13 +8,10 @@ export interface NetEventDocument {
     readonly contractAddress: string;
 
     /** @description The event type */
-    readonly eventType: string;
-
-    /** @description The event data selector */
-    readonly eventDataSelector: string;
+    readonly type: string;
 
     /** @description The event data */
-    readonly eventData: string;
+    readonly data: string;
 }
 
 export interface IRawContractEvents {
