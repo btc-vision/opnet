@@ -12,7 +12,7 @@ export interface IInteractionTransaction extends ICommonTransaction<InteractionT
     /**
      * @description The calldata of the transaction.
      */
-    readonly calldata: string | Buffer;
+    readonly calldata?: string | Buffer;
 
     /**
      * @description The sender's public key hash.
@@ -32,7 +32,7 @@ export interface IInteractionTransaction extends ICommonTransaction<InteractionT
     /**
      * @description Who sent the transaction. (ALWAYS TAPROOT. *This address is generated from the P2TR of the pubkey of the deployer.*)
      */
-    readonly from: Address | string;
+    readonly from?: Address | string;
 
     /**
      * @description If the interaction returned events, they will be stored here.

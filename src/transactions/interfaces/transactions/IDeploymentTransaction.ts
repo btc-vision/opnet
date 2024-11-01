@@ -12,35 +12,35 @@ export interface IDeploymentTransaction
     /**
      * @description The p2tr contract address. (SAFE)
      */
-    readonly contractAddress: string;
+    readonly contractAddress?: string;
 
     /**
      * @description The contract tweaked public key.
      */
-    readonly contractTweakedPublicKey: Address | string;
+    readonly contractTweakedPublicKey?: Address | string;
 
     /**
      * @description The bytecode of the contract.
      */
-    readonly bytecode: Buffer | string;
+    readonly bytecode?: Buffer | string;
 
     /**
      * @description The public key of the deployer.
      */
-    readonly deployerPubKey: Buffer | string;
+    readonly deployerPubKey?: Buffer | string;
 
     /**
      * @description The seed of the contract.
      */
-    readonly contractSeed: Buffer | string;
+    readonly contractSeed?: Buffer | string;
 
     /**
      * @description The salt verification hash of the contract.
      */
-    readonly contractSaltHash: Buffer | string;
+    readonly contractSaltHash?: Buffer | string;
 
     /**
      * @description The deployer address.
      */
-    readonly deployerAddress: Address | string;
+    readonly deployerAddress?: Address | string;
 }

@@ -5,7 +5,7 @@ import { IInteractionTransaction } from '../interfaces/transactions/IInteraction
 import { TransactionBase } from '../Transaction.js';
 
 /**
- * Interaction transaction.
+ * Interaction transaction. Properties could be null if reverted.
  * @category Transactions
  */
 export class InteractionTransaction
@@ -15,7 +15,7 @@ export class InteractionTransaction
     /**
      * @description The calldata of the transaction.
      */
-    public readonly calldata: Buffer;
+    public readonly calldata?: Buffer;
 
     /**
      * @description The sender's public key hash.
@@ -40,12 +40,12 @@ export class InteractionTransaction
     /**
      * @description The from address of the transaction. (ALWAYS TAPROOT. *This address is generated from the P2TR of the pubkey of the deployer.*)
      */
-    public readonly from: Address;
+    public readonly from?: Address;
 
     /**
      * @description The contract address where the transaction was sent. (AKA "to").
      */
-    public readonly contractAddress: string;
+    public readonly contractAddress?: string;
 
     /**
      * @description The contract tweaked public key.
@@ -59,13 +59,21 @@ export class InteractionTransaction
             Buffer.from(transaction.contractTweakedPublicKey as string, 'base64'),
         );
 
-        this.calldata = Buffer.from(transaction.calldata as string, 'base64');
+        if (transaction.calldata) {
+            this.calldata = Buffer.from(transaction.calldata as string, 'base64');
+        }
+
         this.senderPubKeyHash = Buffer.from(transaction.senderPubKeyHash as string, 'base64');
         this.contractSecret = Buffer.from(transaction.contractSecret as string, 'base64');
         this.interactionPubKey = Buffer.from(transaction.interactionPubKey as string, 'base64');
 
-        this.wasCompressed = transaction.wasCompressed;
-        this.from = new Address(Buffer.from(transaction.from as string, 'base64'));
+        this.wasCompressed = transaction.wasCompressed || false;
         this.contractAddress = transaction.contractAddress;
+
+        try {
+            if (transaction.from) {
+                this.from = new Address(Buffer.from(transaction.from as string, 'base64'));
+            }
+        } catch {}
     }
 }

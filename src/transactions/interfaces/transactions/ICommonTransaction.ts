@@ -6,20 +6,20 @@ export interface ICommonTransaction<T extends OPNetTransactionTypes> extends ITr
     /**
      * @description The p2tr contract address. (SAFE)
      */
-    readonly contractAddress: string;
+    readonly contractAddress?: string;
 
     /**
      * @description The contract tweaked public key.
      */
-    readonly contractTweakedPublicKey: Address | string;
+    readonly contractTweakedPublicKey?: Address | string;
 
     /**
      * @description This indicates who sent the transaction.
      */
-    readonly from: Address | string;
+    readonly from?: Address | string;
 
     /**
      * @description Was the binary data compressed?
      */
-    readonly wasCompressed: boolean;
+    readonly wasCompressed?: boolean;
 }
