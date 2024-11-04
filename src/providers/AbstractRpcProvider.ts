@@ -1,3 +1,5 @@
+import { Network } from '@btc-vision/bitcoin';
+import '../serialize/BigInt.js';
 import {
     Address,
     AddressTypes,
@@ -6,8 +8,6 @@ import {
     WrappedGeneration,
     WrappedGenerationParameters,
 } from '@btc-vision/transaction';
-import { Network } from 'bitcoinjs-lib';
-import '../serialize/BigInt.js';
 
 import { Block } from '../block/Block.js';
 import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters.js';

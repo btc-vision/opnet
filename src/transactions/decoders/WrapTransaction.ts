@@ -1,5 +1,5 @@
+import { Network } from '@btc-vision/bitcoin';
 import { EcKeyPair } from '@btc-vision/transaction';
-import { Network } from 'bitcoinjs-lib';
 import { IWrapTransaction } from '../interfaces/transactions/IWrapTransaction.js';
 import { InteractionTransaction } from './InteractionTransaction.js';
 
@@ -27,7 +27,7 @@ export class WrapTransaction extends InteractionTransaction implements IWrapTran
      * @description The address where the deposit was made.
      */
     public readonly depositAddress: string;
-    
+
     /**
      * @description The vault used to store the Bitcoin.
      */

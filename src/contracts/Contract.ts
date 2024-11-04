@@ -1,3 +1,4 @@
+import { Network } from '@btc-vision/bitcoin';
 import {
     ABICoder,
     ABIDataTypes,
@@ -8,7 +9,6 @@ import {
     BinaryWriter,
     NetEvent,
 } from '@btc-vision/transaction';
-import { Network } from 'bitcoinjs-lib';
 import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
 import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties.js';

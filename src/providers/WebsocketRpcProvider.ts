@@ -1,4 +1,4 @@
-import { Network } from 'bitcoinjs-lib';
+import { Network } from '@btc-vision/bitcoin';
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';

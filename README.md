@@ -66,7 +66,7 @@ import {
 } from 'opnet';
 import { Configs } from '../configs/Configs.js';
 import { Address, Wallet } from '@btc-vision/transaction';
-import { Network } from 'bitcoinjs-lib';
+import { Network } from '@btc-vision/bitcoin';
 
 const network: Network = Configs.NETWORK;
 const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.

@@ -1,3 +1,4 @@
+import { Network, Signer } from '@btc-vision/bitcoin';
 import {
     BinaryReader,
     BufferHelper,
@@ -6,7 +7,6 @@ import {
     TransactionFactory,
     UTXO,
 } from '@btc-vision/transaction';
-import { Network, Signer } from 'bitcoinjs-lib';
 import { ECPairInterface } from 'ecpair';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
