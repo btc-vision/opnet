@@ -24,9 +24,9 @@ export class BitcoinUtils {
      * Convert number or string to BigInt
      * @param {number | string} n
      * @param {number | string} decimals
-     * @returns {BigInt}
+     * @returns {bigint}
      */
-    public expandToDecimals(n: number | string, decimals: number | string) {
+    public static expandToDecimals(n: number | string, decimals: number | string): bigint {
         const amount = new BigNumber(n)
             .multipliedBy(new BigNumber(10).pow(decimals))
             .decimalPlaces(0);
