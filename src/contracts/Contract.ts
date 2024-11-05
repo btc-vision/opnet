@@ -578,9 +578,9 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             response.setTo(this.p2trOrTweaked);
             response.setDecoded(decoded);
             response.setCalldata(buffer);
+
             if (response.estimatedGas) {
                 const gas = await this.estimateGas(response.estimatedGas);
-
                 response.setGasEstimation(gas);
             }
 

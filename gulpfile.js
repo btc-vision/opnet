@@ -3,7 +3,7 @@ import gulpcache from 'gulp-cached';
 
 import gulpClean from 'gulp-clean';
 import gulpESLintNew from 'gulp-eslint-new';
-import logger from 'gulp-logger';
+import logger from 'gulp-logger-new';
 import ts from 'gulp-typescript';
 
 process.on('uncaughtException', function (err) {
