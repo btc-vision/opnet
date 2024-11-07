@@ -1,13 +1,6 @@
 import { Network } from '@btc-vision/bitcoin';
 import '../serialize/BigInt.js';
-import {
-    Address,
-    AddressTypes,
-    AddressVerificator,
-    BufferHelper,
-    WrappedGeneration,
-    WrappedGenerationParameters,
-} from '@btc-vision/transaction';
+import { Address, AddressTypes, AddressVerificator, BufferHelper } from '@btc-vision/transaction';
 
 import { Block } from '../block/Block.js';
 import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters.js';
@@ -27,7 +20,6 @@ import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.
 import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
 import { UTXOsManager } from '../utxos/UTXOsManager.js';
-import { GenerateTarget } from './interfaces/Generate.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JSONRpcMethods } from './interfaces/JSONRpcMethods.js';
 import {
@@ -535,7 +527,7 @@ export abstract class AbstractRpcProvider {
         return result;
     }
 
-    /**
+    /*
      * Generate parameters needed to wrap bitcoin.
      * @description This method is used to generate the parameters needed to wrap bitcoin.
      * @param {BigNumberish} amount The amount to wrap
@@ -543,7 +535,8 @@ export abstract class AbstractRpcProvider {
      * @example await requestTrustedPublicKeyForBitcoinWrapping(100000000n);
      * @throws {Error} If something went wrong while generating the parameters
      */
-    public async requestTrustedPublicKeyForBitcoinWrapping(
+
+    /*public async requestTrustedPublicKeyForBitcoinWrapping(
         amount: BigNumberish,
     ): Promise<WrappedGeneration> {
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GENERATE, [
@@ -556,7 +549,7 @@ export abstract class AbstractRpcProvider {
             rawPublicKey.result as WrappedGenerationParameters;
 
         return new WrappedGeneration(result);
-    }
+    }*/
 
     /**
      * Requests to the OPNET node

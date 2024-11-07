@@ -5,7 +5,6 @@ import { ITransactionOutput, TransactionOutput } from '../metadata/TransactionOu
 import { ITransactionReceipt } from './ITransactionReceipt.js';
 import { IDeploymentTransaction } from './transactions/IDeploymentTransaction.js';
 import { IInteractionTransaction } from './transactions/IInteractionTransaction.js';
-import { IWrapTransaction } from './transactions/IWrapTransaction.js';
 
 /**
  * @description This interface represents the base of a transaction.
@@ -72,8 +71,4 @@ export interface IGenericTransaction extends ITransactionBase<OPNetTransactionTy
  * @type ITransaction
  * @category ITransactions
  */
-export type ITransaction =
-    | IDeploymentTransaction
-    | IInteractionTransaction
-    | IGenericTransaction
-    | IWrapTransaction;
+export type ITransaction = IDeploymentTransaction | IInteractionTransaction | IGenericTransaction;

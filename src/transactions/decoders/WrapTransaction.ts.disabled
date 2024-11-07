@@ -1,13 +1,13 @@
 import { Network } from '@btc-vision/bitcoin';
 import { EcKeyPair } from '@btc-vision/transaction';
-import { IWrapTransaction } from '../interfaces/transactions/IWrapTransaction.js';
+import { IWrapTransactionTs } from '../interfaces/transactions/IWrapTransactionTs.js';
 import { InteractionTransaction } from './InteractionTransaction.js';
 
 /**
  * Defines a wrap transaction.
  * @category Transactions
  */
-export class WrapTransaction extends InteractionTransaction implements IWrapTransaction {
+export class WrapTransaction extends InteractionTransaction implements IWrapTransactionTs {
     /**
      * @description Was the wrapping transaction penalized due to invalid calldata?
      */
@@ -43,7 +43,7 @@ export class WrapTransaction extends InteractionTransaction implements IWrapTran
      */
     public readonly minimumSignatures: number;
 
-    constructor(transaction: IWrapTransaction) {
+    constructor(transaction: IWrapTransactionTs) {
         super(transaction);
 
         this.penalized = transaction.penalized;

@@ -1,16 +1,16 @@
 import {
-    IUnwrapTransaction,
+    IUnwrapTransactionTs,
     ParsedPartialWBTCUTXODocument,
     PartialWBTCUTXODocument,
     UsedUTXO,
-} from '../interfaces/transactions/IUnwrapTransaction.js';
+} from '../interfaces/transactions/IUnwrapTransactionTs.js';
 import { InteractionTransaction } from './InteractionTransaction.js';
 
 /**
  * Defines a wrap transaction.
  * @category Transactions
  */
-export class UnwrapTransaction extends InteractionTransaction implements IUnwrapTransaction {
+export class UnwrapTransaction extends InteractionTransaction implements IUnwrapTransactionTs {
     /**
      * @description The trusted indexers that authorized this transaction.
      */
@@ -36,7 +36,7 @@ export class UnwrapTransaction extends InteractionTransaction implements IUnwrap
      */
     public readonly requestedAmount: bigint;
 
-    constructor(transaction: IUnwrapTransaction) {
+    constructor(transaction: IUnwrapTransactionTs) {
         super(transaction);
 
         this.authorizedBy = transaction.authorizedBy;
