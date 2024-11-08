@@ -8,7 +8,6 @@ import {
     UTXO,
 } from '@btc-vision/transaction';
 import { ECPairInterface } from 'ecpair';
-import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { RequestUTXOsParamsWithAmount } from '../utxos/interfaces/IUTXOsManager.js';
 import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';
@@ -48,7 +47,6 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
     public calldata: Buffer | undefined;
     public readonly estimatedGas: bigint | undefined;
 
-    public readonly decoded: Array<DecodedCallResult> = [];
     public properties: T = {} as T;
 
     public estimatedSatGas: bigint = 0n;
@@ -58,6 +56,8 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
 
     readonly #rawEvents: EventList;
     readonly #provider: AbstractRpcProvider;
+
+    //private readonly decoded: Array<DecodedCallResult> = [];
 
     constructor(callResult: ICallResultData, provider: AbstractRpcProvider) {
         this.#rawEvents = this.parseEvents(callResult.events);
@@ -98,6 +98,10 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
 
         if (!this.to) {
             throw new Error('To address not set');
+        }
+
+        if (this.revert) {
+            throw new Error(`Can not send transaction! Simulation reverted: ${this.revert}`);
         }
 
         const priorityFee = this.estimatedSatGas + (interactionParams.priorityFee || 0n);
@@ -157,7 +161,7 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
     public setDecoded(decoded: DecodedOutput): void {
         this.properties = Object.freeze(decoded.obj) as T;
 
-        this.decoded.push(...decoded.values);
+        //this.decoded.push(...decoded.values);
     }
 
     public setCalldata(calldata: Buffer): void {
