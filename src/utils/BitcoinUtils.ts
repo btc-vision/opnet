@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { BigNumberish } from '../common/CommonTypes.js';
 
 BigNumber.config({
-    EXPONENTIAL_AT: 256,
+    EXPONENTIAL_AT: 1e9,
     DECIMAL_PLACES: 18,
 });
 
