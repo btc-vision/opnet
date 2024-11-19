@@ -1,6 +1,11 @@
 import BigNumber from 'bignumber.js';
 import { BigNumberish } from '../common/CommonTypes.js';
 
+BigNumber.config({
+    EXPONENTIAL_AT: 256,
+    DECIMAL_PLACES: 18,
+});
+
 /**
  * Bitcoin Utilities
  * @description This class is used to provide utility functions for Bitcoin.
