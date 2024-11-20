@@ -61,9 +61,17 @@ export abstract class AbstractRpcProvider {
      * @throws {Error} If the address is invalid
      */
     public async getPublicKeyInfo(address: string): Promise<Address> {
-        const pubKeyInfo = await this.getPublicKeysInfo(address);
+        try {
+            const pubKeyInfo = await this.getPublicKeysInfo(address);
 
-        return pubKeyInfo[address];
+            return pubKeyInfo[address];
+        } catch (e) {
+            if (AddressVerificator.isValidPublicKey(address, this.network)) {
+                return Address.fromString(address);
+            }
+
+            throw e;
+        }
     }
 
     /**
