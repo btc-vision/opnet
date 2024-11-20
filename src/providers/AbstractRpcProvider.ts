@@ -364,9 +364,9 @@ export abstract class AbstractRpcProvider {
     /**
      * Call a contract function with a given calldata.
      * @description This method is used to call a contract function with a given calldata.
-     * @param {BitcoinAddressLike} to The address of the contract
+     * @param {string | Address} to The address of the contract
      * @param {Buffer} data The calldata of the contract function
-     * @param {BitcoinAddressLike} [from] The address to call the contract from
+     * @param {string | Address} [from] The address to call the contract from
      * @param {BigNumberish} [height] The height to call the contract from
      * @returns {Promise<CallResult>} The result of the contract function call
      * @example await call('tb1pth90usc4f528aqphpjrfkkdm4vy8hxnt5gps6aau2nva6pxeshtqqzlt3a', Buffer.from('0x12345678'));
