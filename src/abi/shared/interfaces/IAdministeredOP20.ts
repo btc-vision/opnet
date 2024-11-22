@@ -18,10 +18,6 @@ export type AdminBurn = CallResult<{
     success: boolean;
 }>;
 
-export type Mint = CallResult<{
-    success: boolean;
-}>;
-
 /**
  * @description This interface represents the IAdministeredOP20Contract contract. It extends the IOP_20Contract and adds the ability to have an admin address that can mint and burn tokens.
  * @interface IMotoChefContract
