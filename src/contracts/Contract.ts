@@ -305,6 +305,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 break;
             }
             case ABIDataTypes.ADDRESS: {
+                if (!value) throw new Error(`Expected value to be of type Address (${name})`);
                 if (!('equals' in (value as Address))) {
                     throw new Error(
                         `Expected value to be of type Address (${name}) was ${typeof value}`,

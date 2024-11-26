@@ -64,7 +64,7 @@ export abstract class AbstractRpcProvider {
         try {
             const pubKeyInfo = await this.getPublicKeysInfo(address);
 
-            return pubKeyInfo[address];
+            return pubKeyInfo[address] || pubKeyInfo[address.replace('0x', '')];
         } catch (e) {
             if (AddressVerificator.isValidPublicKey(address, this.network)) {
                 return Address.fromString(address);
@@ -664,7 +664,7 @@ export abstract class AbstractRpcProvider {
                 throw new Error(`Error fetching public key info: ${pubKeyValue.error}`);
             }
 
-            response[pubKey] = pubKeyValue.originalPubKey
+            response[pubKey] = !!pubKeyValue.originalPubKey
                 ? Address.fromString(pubKeyValue.originalPubKey)
                 : Address.fromString(pubKeyValue.tweakedPubkey);
         }
