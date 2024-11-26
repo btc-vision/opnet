@@ -664,7 +664,7 @@ export abstract class AbstractRpcProvider {
                 throw new Error(`Error fetching public key info: ${pubKeyValue.error}`);
             }
 
-            response[pubKey] = !!pubKeyValue.originalPubKey
+            response[pubKey] = pubKeyValue.originalPubKey
                 ? Address.fromString(pubKeyValue.originalPubKey)
                 : Address.fromString(pubKeyValue.tweakedPubkey);
         }
