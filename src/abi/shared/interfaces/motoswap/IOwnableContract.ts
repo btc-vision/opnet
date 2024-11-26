@@ -1,5 +1,5 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult, IOP_NETContract } from '../../../opnet';
+import { CallResult, IOP_NETContract } from '../../../../opnet';
 
 export type Admin = CallResult<{
     adminAddress: Address;

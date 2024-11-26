@@ -1,5 +1,4 @@
-import { CallResult } from '../../../opnet';
-import { IOP_NETContract } from './IOP_NETContract';
+import { CallResult, IOP_NETContract } from '../../../../opnet';
 
 export type Status = CallResult<{ status: bigint }>;
 

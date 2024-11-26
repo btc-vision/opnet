@@ -1,6 +1,6 @@
 import { ABIDataTypes } from '@btc-vision/transaction';
-import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi';
-import { BitcoinAbiTypes } from '../../BitcoinAbiTypes';
+import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes';
+import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi';
 
 const OWNABLE_ABI: BitcoinInterfaceAbi = [
     {

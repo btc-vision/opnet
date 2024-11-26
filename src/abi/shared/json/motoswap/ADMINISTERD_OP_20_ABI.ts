@@ -1,7 +1,7 @@
 import { ABIDataTypes } from '@btc-vision/transaction';
-import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi';
-import { BitcoinAbiTypes } from '../../BitcoinAbiTypes';
-import { OP_20_ABI } from './OP_20_ABI';
+import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi';
+import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes';
+import { OP_20_ABI } from '../opnet/OP_20_ABI';
 
 const ADMINISTERED_OP_20_ABI: BitcoinInterfaceAbi = [
     {
