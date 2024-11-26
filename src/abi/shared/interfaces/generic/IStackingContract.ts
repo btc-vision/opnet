@@ -1,5 +1,5 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../contracts/CallResult.js';
+import { CallResult } from '../../../../contracts/CallResult.js';
 
 /**
  * @description This interface represents the WBTC contract.

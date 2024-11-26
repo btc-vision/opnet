@@ -1,5 +1,5 @@
 import { Address, AddressMap } from '@btc-vision/transaction';
-import { CallResult } from '../../../contracts/CallResult.js';
+import { CallResult } from '../../../../contracts/CallResult.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
 
 export type Name = CallResult<{ name: string }>;
@@ -49,8 +49,7 @@ export type AirdropWithAmount = CallResult<{ success: boolean }>;
  *     address
  * );
  *
- * if ('error' in balanceExample) throw new Error('Error in fetching balance');
- * console.log('Balance:', balanceExample.decoded);
+ * console.log('Balance:', balanceExample.properties.balance);
  */
 export interface IOP_20Contract extends IOP_NETContract {
     balanceOf(account: Address): Promise<BalanceOf>;

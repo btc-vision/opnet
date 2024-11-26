@@ -7,7 +7,6 @@ export * from './interfaces/opnet/OPNetTransactionTypes.js';
 export * from './transactions/decoders/DeploymentTransaction.js';
 export * from './transactions/decoders/GenericTransaction.js';
 export * from './transactions/decoders/InteractionTransaction.js';
-//export * from './transactions/decoders/WrapTransaction.js';
 
 export * from './transactions/metadata/TransactionInput.js';
 export * from './transactions/metadata/TransactionOutput.js';
@@ -16,7 +15,6 @@ export * from './transactions/Transaction.js';
 export * from './transactions/interfaces/transactions/ICommonTransaction.js';
 export * from './transactions/interfaces/transactions/IDeploymentTransaction.js';
 export * from './transactions/interfaces/transactions/IInteractionTransaction.js';
-//export * from './transactions/interfaces/transactions/IWrapTransaction.js';
 
 /** Providers */
 export * from './providers/AbstractRpcProvider.js';
@@ -24,7 +22,6 @@ export * from './providers/JSONRpcProvider.js';
 export * from './providers/WebsocketRpcProvider.js';
 
 /** Providers interfaces */
-//export * from './providers/interfaces/Generate.js';
 export * from './providers/interfaces/ReorgInformation.js';
 
 /** Block */
@@ -75,9 +72,6 @@ export * from './providers/interfaces/JSONRpcMethods.js';
 export * from './providers/interfaces/JSONRpcParams.js';
 export * from './providers/interfaces/JSONRpcResult.js';
 
-//export * from './transactions/decoders/UnwrapTransaction.js';
-//export * from './transactions/interfaces/transactions/IUnwrapTransaction.js';
-
 /** Common */
 export * from './common/CommonTypes.js';
 
@@ -89,19 +83,21 @@ export * from './bitcoin/UTXOs.js';
 export { ABIDataTypes } from '@btc-vision/transaction';
 
 /** ABI JSON */
-export * from './abi/shared/json/MOTOSWAP_FACTORY_ABI.js';
-export * from './abi/shared/json/MOTOSWAP_POOL_ABI.js';
-export * from './abi/shared/json/MOTOSWAP_ROUTER_ABI.js';
-export * from './abi/shared/json/OP_20_ABI.js';
-export * from './abi/shared/json/OP_NET_ABI.js';
-export * from './abi/shared/json/STAKING_ABI.js';
-export * from './abi/shared/json/WBTC_ABI.js';
+export * from './abi/shared/json/motoswap/MOTOSWAP_FACTORY_ABI.js';
+export * from './abi/shared/json/motoswap/MOTOSWAP_POOL_ABI.js';
+export * from './abi/shared/json/motoswap/MOTOSWAP_ROUTER_ABI.js';
+export * from './abi/shared/json/opnet/OP_20_ABI.js';
+export * from './abi/shared/json/opnet/OP_NET_ABI.js';
+export * from './abi/shared/json/generic/STAKING_ABI.js';
+export * from './abi/shared/json/tests/WBTC_ABI.js';
+export * from './abi/shared/json/motoswap/EWMA_ABI.js';
 
 /** ABI Interfaces */
-export * from './abi/shared/interfaces/IMotoswapFactoryContract.js';
-export * from './abi/shared/interfaces/IMotoswapPoolContract.js';
-export * from './abi/shared/interfaces/IMotoswapRouterContract.js';
-export * from './abi/shared/interfaces/IOP_20Contract.js';
-export * from './abi/shared/interfaces/IOP_NETContract.js';
-export * from './abi/shared/interfaces/IStackingContract.js';
-export * from './abi/shared/interfaces/IWBTCContract.js';
+export * from './abi/shared/interfaces/motoswap/IMotoswapFactoryContract.js';
+export * from './abi/shared/interfaces/motoswap/IMotoswapPoolContract.js';
+export * from './abi/shared/interfaces/motoswap/IMotoswapRouterContract.js';
+export * from './abi/shared/interfaces/opnet/IOP_20Contract.js';
+export * from './abi/shared/interfaces/opnet/IOP_NETContract.js';
+export * from './abi/shared/interfaces/generic/IStackingContract.js';
+export * from './abi/shared/interfaces/tests/IWBTCContract.js';
+export * from './abi/shared/interfaces/motoswap/IEwmaContract.js';

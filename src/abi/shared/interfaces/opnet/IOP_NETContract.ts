@@ -1,6 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../contracts/CallResult.js';
-import { BaseContractProperties } from '../../interfaces/BaseContractProperties.js';
+import { CallResult } from '../../../../contracts/CallResult.js';
+import { BaseContractProperties } from '../../../interfaces/BaseContractProperties.js';
 
 /**
  * @description This interface represents the OP_NET base contract.

@@ -1,10 +1,10 @@
 import { ABIDataTypes } from '@btc-vision/transaction';
-import { BitcoinAbiTypes } from '../../BitcoinAbiTypes.js';
-import { BitcoinInterfaceAbi } from '../../interfaces/BitcoinInterfaceAbi.js';
+import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes.js';
+import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi.js';
+import { OP20Events } from '../opnet/OP_20_ABI.js';
+import { OP_NET_ABI } from '../opnet/OP_NET_ABI.js';
 import { MotoSwapFactoryEvents } from './MOTOSWAP_FACTORY_ABI.js';
 import { MotoSwapPoolEvents } from './MOTOSWAP_POOL_ABI.js';
-import { OP20Events } from './OP_20_ABI.js';
-import { OP_NET_ABI } from './OP_NET_ABI.js';
 
 /**
  * @category ABI
