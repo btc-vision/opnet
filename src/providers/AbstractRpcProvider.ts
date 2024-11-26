@@ -379,7 +379,7 @@ export abstract class AbstractRpcProvider {
         height?: BigNumberish,
     ): Promise<CallResult | ICallRequestError> {
         const toStr: string = to.toString();
-        const fromStr: string | null = from ? from.toString() : null;
+        const fromStr: string | null = from ? from.toHex() : null;
 
         let dataStr: string = Buffer.isBuffer(data) ? this.bufferToHex(data) : data;
         if (dataStr.startsWith('0x')) {

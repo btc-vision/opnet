@@ -110,7 +110,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
      * @returns {string} The P2TR address of the contract.
      */
     public get p2trOrTweaked(): string {
-        if (this.address instanceof Address) {
+        if (typeof this.address !== 'string') {
             return this.address.p2tr(this.network);
         }
 
@@ -440,6 +440,24 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 break;
             }
 
+            case ABIDataTypes.UINT128: {
+                if (typeof value !== 'bigint') {
+                    throw new Error(`Expected value to be of type bigint (${name})`);
+                }
+
+                writer.writeU128(value);
+                break;
+            }
+
+            case ABIDataTypes.ARRAY_OF_UINT128: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeU128Array(value as bigint[]);
+                break;
+            }
+
             default: {
                 throw new Error(`Unsupported type: ${type} (${name})`);
             }
@@ -526,6 +544,14 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                     decodedResult = reader.readU16Array();
                     break;
                 }
+                case ABIDataTypes.UINT128: {
+                    decodedResult = reader.readU128();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_UINT128: {
+                    decodedResult = reader.readU128Array();
+                    break;
+                }
                 default: {
                     throw new Error(`Unsupported type: ${type} (${name})`);
                 }
@@ -561,7 +587,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         return async (...args: unknown[]): Promise<CallResult> => {
             const data = this.encodeFunctionData(element, args);
             const buffer = Buffer.from(data.getBuffer());
-            const response = await this.provider.call(this.p2trOrTweaked, buffer, this.from);
+            const response = await this.provider.call(this.address, buffer, this.from);
 
             if ('error' in response) {
                 throw new Error(`Error in calling function: ${response.error}`);
