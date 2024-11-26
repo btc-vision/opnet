@@ -7,7 +7,6 @@ export * from './interfaces/opnet/OPNetTransactionTypes.js';
 export * from './transactions/decoders/DeploymentTransaction.js';
 export * from './transactions/decoders/GenericTransaction.js';
 export * from './transactions/decoders/InteractionTransaction.js';
-//export * from './transactions/decoders/WrapTransaction.js';
 
 export * from './transactions/metadata/TransactionInput.js';
 export * from './transactions/metadata/TransactionOutput.js';
@@ -16,7 +15,6 @@ export * from './transactions/Transaction.js';
 export * from './transactions/interfaces/transactions/ICommonTransaction.js';
 export * from './transactions/interfaces/transactions/IDeploymentTransaction.js';
 export * from './transactions/interfaces/transactions/IInteractionTransaction.js';
-//export * from './transactions/interfaces/transactions/IWrapTransaction.js';
 
 /** Providers */
 export * from './providers/AbstractRpcProvider.js';
@@ -24,7 +22,6 @@ export * from './providers/JSONRpcProvider.js';
 export * from './providers/WebsocketRpcProvider.js';
 
 /** Providers interfaces */
-//export * from './providers/interfaces/Generate.js';
 export * from './providers/interfaces/ReorgInformation.js';
 
 /** Block */
@@ -74,9 +71,6 @@ export * from './providers/interfaces/JSONRpc.js';
 export * from './providers/interfaces/JSONRpcMethods.js';
 export * from './providers/interfaces/JSONRpcParams.js';
 export * from './providers/interfaces/JSONRpcResult.js';
-
-//export * from './transactions/decoders/UnwrapTransaction.js';
-//export * from './transactions/interfaces/transactions/IUnwrapTransaction.js';
 
 /** Common */
 export * from './common/CommonTypes.js';

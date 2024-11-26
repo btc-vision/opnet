@@ -1,6 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../contracts/CallResult.js';
-import { IOP_NETContract } from './IOP_NETContract.js';
+import { CallResult } from '../../../../contracts/CallResult.js';
+import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
 /**
  * @description This is the interface that represent the MotoSwap Factory contract.

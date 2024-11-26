@@ -1,6 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../contracts/CallResult.js';
-import { IOP_20Contract } from './IOP_20Contract.js';
+import { CallResult } from '../../../../contracts/CallResult.js';
+import { IOP_20Contract } from '../opnet/IOP_20Contract.js';
 
 export type Reserves = {
     readonly reserve0: bigint;
