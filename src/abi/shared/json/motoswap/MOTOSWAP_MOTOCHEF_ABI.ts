@@ -355,7 +355,10 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
         constant: false,
         payable: false,
-        inputs: [{ name: 'pid', type: ABIDataTypes.UINT32 }],
+        inputs: [
+            { name: 'length', type: ABIDataTypes.UINT32 },
+            { name: 'pids', type: ABIDataTypes.ARRAY_OF_UINT32 },
+        ],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
     },
     {
@@ -363,10 +366,7 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
         constant: false,
         payable: false,
-        inputs: [
-            { name: 'length', type: ABIDataTypes.UINT32 },
-            { name: 'pids', type: ABIDataTypes.ARRAY_OF_UINT32 },
-        ],
+        inputs: [{ name: 'pid', type: ABIDataTypes.UINT32 }],
         outputs: [
             { name: 'allocPoint', type: ABIDataTypes.UINT64 },
             { name: 'lastRewardBlock', type: ABIDataTypes.UINT64 },
