@@ -3,35 +3,35 @@ import { CallResult } from '../../../../contracts/CallResult.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
 /**
- * @description Represents the result of the `reserve` function call.
+ * @description Represents the result of the reserve function call.
  */
 export type ReserveEWMA = CallResult<{
     reserved: bigint;
 }>;
 
 /**
- * @description Represents the result of the `addLiquidity` function call.
+ * @description Represents the result of the addLiquidity function call.
  */
 export type AddLiquidity = CallResult<{
     ok: boolean;
 }>;
 
 /**
- * @description Represents the result of the `removeLiquidity` function call.
+ * @description Represents the result of the removeLiquidity function call.
  */
 export type RemoveLiquidity = CallResult<{
     totalTokensReturned: bigint;
 }>;
 
 /**
- * @description Represents the result of the `swap` function call.
+ * @description Represents the result of the swap function call.
  */
 export type Swap = CallResult<{
     ok: boolean;
 }>;
 
 /**
- * @description Represents the result of the `getReserve` function call.
+ * @description Represents the result of the getReserve function call.
  */
 export type GetReserve = CallResult<{
     liquidity: bigint;
@@ -39,7 +39,7 @@ export type GetReserve = CallResult<{
 }>;
 
 /**
- * @description Represents the result of the `getQuote` function call.
+ * @description Represents the result of the getQuote function call.
  */
 export type GetQuote = CallResult<{
     tokensOut: bigint;
@@ -48,10 +48,26 @@ export type GetQuote = CallResult<{
 }>;
 
 /**
- * @description Represents the result of the `setQuote` function call.
+ * @description Represents the result of the setQuote function call.
  */
 export type SetQuote = CallResult<{
     ok: boolean;
+}>;
+
+/**
+ * @description Represents the result of the priorityQueueCost function call.
+ */
+export type PriorityQueueCost = CallResult<{
+    cost: bigint;
+}>;
+
+/**
+ * @description Represents the result of the getProviderDetails function call.
+ */
+export type GetProviderDetails = CallResult<{
+    liquidity: bigint;
+    reserved: bigint;
+    btcReceiver: string;
 }>;
 
 /**
@@ -108,9 +124,15 @@ export interface IEwmaContract extends IOP_NETContract {
      * @param token - The address of the token to add liquidity for.
      * @param receiver - The receiver of the liquidity.
      * @param amountIn - The amount of tokens to add.
+     * @param priority - Whether to prioritize the liquidity addition.
      * @returns {Promise<AddLiquidity>}
      */
-    addLiquidity(token: Address, receiver: string, amountIn: bigint): Promise<AddLiquidity>;
+    addLiquidity(
+        token: Address,
+        receiver: string,
+        amountIn: bigint,
+        priority: boolean,
+    ): Promise<AddLiquidity>;
 
     /**
      * @description Removes liquidity from the contract.
@@ -122,11 +144,10 @@ export interface IEwmaContract extends IOP_NETContract {
     /**
      * @description Executes a swap operation.
      * @param token - The address of the token to swap.
-     * @param reservationId - The reservation ID for the swap.
      * @param isSimulation - Whether the swap is a simulation.
      * @returns {Promise<Swap>}
      */
-    swap(token: Address, reservationId: bigint, isSimulation: boolean): Promise<Swap>;
+    swap(token: Address, isSimulation: boolean): Promise<Swap>;
 
     /**
      * @description Retrieves the reserve information for a token.
@@ -150,4 +171,18 @@ export interface IEwmaContract extends IOP_NETContract {
      * @returns {Promise<SetQuote>}
      */
     setQuote(token: Address, p0: bigint): Promise<SetQuote>;
+
+    /**
+     * @description Retrieves the cost of the priority queue for a token.
+     * @param token - The address of the token.
+     * @returns {Promise<PriorityQueueCost>}
+     */
+    priorityQueueCost(token: Address): Promise<PriorityQueueCost>;
+
+    /**
+     * @description Retrieves the provider details for a token.
+     * @param token - The address of the token.
+     * @returns {Promise<GetProviderDetails>}
+     */
+    getProviderDetails(token: Address): Promise<GetProviderDetails>;
 }

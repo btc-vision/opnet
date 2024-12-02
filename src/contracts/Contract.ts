@@ -24,6 +24,7 @@ import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { ContractEvents } from '../transactions/interfaces/ITransactionReceipt.js';
 import { CallResult } from './CallResult.js';
 import { IContract } from './interfaces/IContract.js';
+import { ParsedSimulatedTransaction } from './interfaces/SimulatedTransaction.js';
 import { OPNetEvent } from './OPNetEvent.js';
 
 const internal = Symbol.for('_btc_internal');
@@ -78,6 +79,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         | undefined;
 
     private readonly fetchGasParametersAfter: number = 1000 * 10;
+    private currentTxDetails: ParsedSimulatedTransaction | undefined;
+    private simulatedHeight: bigint | undefined = 0n;
 
     protected constructor(
         address: string | Address,
@@ -201,6 +204,14 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         return await this.gasParameters.params;
     }
 
+    public setTransactionDetails(tx: ParsedSimulatedTransaction): void {
+        this.currentTxDetails = tx;
+    }
+
+    public setSimulatedHeight(height: bigint | undefined): void {
+        this.simulatedHeight = height;
+    }
+
     protected getFunction(
         name: symbol | string,
     ):
@@ -215,7 +226,14 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         | ((functionName: string, args: unknown[]) => Buffer) {
         const key = name as keyof Omit<
             IBaseContract<T>,
-            'address' | 'provider' | 'interface' | 'decodeEvents' | 'decodeEvent' | 'setSender'
+            | 'address'
+            | 'provider'
+            | 'interface'
+            | 'decodeEvents'
+            | 'decodeEvent'
+            | 'setSender'
+            | 'setSimulatedHeight'
+            | 'setTransactionDetails'
         >;
 
         return this[key];
@@ -586,9 +604,18 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
     private callFunction(element: FunctionBaseData): (...args: unknown[]) => Promise<CallResult> {
         return async (...args: unknown[]): Promise<CallResult> => {
+            const txDetails: ParsedSimulatedTransaction | undefined = this.currentTxDetails;
+            this.currentTxDetails = undefined;
+
             const data = this.encodeFunctionData(element, args);
             const buffer = Buffer.from(data.getBuffer());
-            const response = await this.provider.call(this.address, buffer, this.from);
+            const response = await this.provider.call(
+                this.address,
+                buffer,
+                this.from,
+                this.simulatedHeight,
+                txDetails,
+            );
 
             if ('error' in response) {
                 throw new Error(`Error in calling function: ${response.error}`);

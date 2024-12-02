@@ -11,6 +11,7 @@ import { CallResult } from '../contracts/CallResult.js';
 import { ContractData } from '../contracts/ContractData.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
+import { ParsedSimulatedTransaction, SimulatedTransaction } from '../contracts/interfaces/SimulatedTransaction.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
@@ -368,6 +369,7 @@ export abstract class AbstractRpcProvider {
      * @param {Buffer} data The calldata of the contract function
      * @param {string | Address} [from] The address to call the contract from
      * @param {BigNumberish} [height] The height to call the contract from
+     * @param {ParsedSimulatedTransaction} [simulatedTransaction] UTXOs to simulate the transaction
      * @returns {Promise<CallResult>} The result of the contract function call
      * @example await call('tb1pth90usc4f528aqphpjrfkkdm4vy8hxnt5gps6aau2nva6pxeshtqqzlt3a', Buffer.from('0x12345678'));
      * @throws {Error} If something went wrong while calling the contract
@@ -377,6 +379,7 @@ export abstract class AbstractRpcProvider {
         data: Buffer | string,
         from?: Address,
         height?: BigNumberish,
+        simulatedTransaction?: ParsedSimulatedTransaction,
     ): Promise<CallResult | ICallRequestError> {
         const toStr: string = to.toString();
         const fromStr: string | null = from ? from.toHex() : null;
@@ -386,13 +389,17 @@ export abstract class AbstractRpcProvider {
             dataStr = dataStr.slice(2);
         }
 
-        const params: [string, string, string?, string?] = [toStr, dataStr];
+        const params: [string, string, string?, string?, SimulatedTransaction?] = [toStr, dataStr];
         if (fromStr) {
             params.push(fromStr);
         }
 
         if (height) {
             params.push(height.toString());
+        }
+
+        if (simulatedTransaction) {
+            params.push(this.parseSimulatedTransaction(simulatedTransaction));
         }
 
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.CALL, params);
@@ -535,6 +542,13 @@ export abstract class AbstractRpcProvider {
         return result;
     }
 
+    /**
+     * Requests to the OPNET node
+     * @param {JsonRpcPayload | JsonRpcPayload[]} payload The method to call
+     * @returns {Promise<JSONRpc2Result<T extends JSONRpcMethods>>} The result of the request
+     */
+    public abstract _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult>;
+
     /*
      * Generate parameters needed to wrap bitcoin.
      * @description This method is used to generate the parameters needed to wrap bitcoin.
@@ -558,13 +572,6 @@ export abstract class AbstractRpcProvider {
 
         return new WrappedGeneration(result);
     }*/
-
-    /**
-     * Requests to the OPNET node
-     * @param {JsonRpcPayload | JsonRpcPayload[]} payload The method to call
-     * @returns {Promise<JSONRpc2Result<T extends JSONRpcMethods>>} The result of the request
-     */
-    public abstract _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult>;
 
     /**
      * Send a single payload. This method is used to send a single payload.
@@ -673,6 +680,27 @@ export abstract class AbstractRpcProvider {
     }
 
     protected abstract providerUrl(url: string): string;
+
+    private parseSimulatedTransaction(
+        transaction: ParsedSimulatedTransaction,
+    ): SimulatedTransaction {
+        return {
+            inputs: transaction.inputs.map((input) => {
+                return {
+                    txId: input.txId.toString('base64'),
+                    outputIndex: input.outputIndex,
+                    scriptSig: input.scriptSig.toString('base64'),
+                };
+            }),
+            outputs: transaction.outputs.map((output) => {
+                return {
+                    index: output.index,
+                    to: output.to,
+                    value: output.value.toString(),
+                };
+            }),
+        };
+    }
 
     private bufferToHex(buffer: Buffer): string {
         return buffer.toString('hex');

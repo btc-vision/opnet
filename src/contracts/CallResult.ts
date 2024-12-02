@@ -1,4 +1,4 @@
-import { Network, Signer } from '@btc-vision/bitcoin';
+import { Network, PsbtOutputExtended, Signer } from '@btc-vision/bitcoin';
 import {
     BinaryReader,
     BufferHelper,
@@ -25,6 +25,8 @@ export interface TransactionParameters {
     readonly utxos?: UTXO[];
     readonly maximumAllowedSatToSpend: bigint;
     readonly network: Network;
+
+    readonly extraOutputs: PsbtOutputExtended[];
 }
 
 export interface InteractionTransactionReceipt {
@@ -122,6 +124,7 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
                 utxos: UTXOs,
                 to: this.to,
                 network: interactionParams.network,
+                optionalOutputs: interactionParams.extraOutputs || [],
             };
 
             const transaction = await factory.signInteraction(params);

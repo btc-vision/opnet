@@ -15,7 +15,7 @@ export const EwmaEvents: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT128,
             },
             {
-                name: 'receiver',
+                name: 'provider',
                 type: ABIDataTypes.STRING,
             },
         ],
@@ -25,16 +25,12 @@ export const EwmaEvents: BitcoinInterfaceAbi = [
         name: 'ReservationCreated',
         values: [
             {
-                name: 'reservationId',
-                type: ABIDataTypes.UINT256,
-            },
-            {
                 name: 'expectedAmountOut',
                 type: ABIDataTypes.UINT256,
             },
             {
-                name: 'buyer',
-                type: ABIDataTypes.ADDRESS,
+                name: 'totalSatoshis',
+                type: ABIDataTypes.UINT256,
             },
         ],
         type: BitcoinAbiTypes.Event,
@@ -47,21 +43,11 @@ export const EwmaEvents: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
             {
-                name: 'removedAmount',
-                type: ABIDataTypes.UINT128,
-            },
-            {
-                name: 'liquidityAmount',
+                name: 'amount',
                 type: ABIDataTypes.UINT256,
             },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'LiquidityRemovalBlocked',
-        values: [
             {
-                name: 'tickId',
+                name: 'remainingLiquidity',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -86,29 +72,15 @@ export const EwmaEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'TickUpdated',
-        values: [
-            {
-                name: 'liquidityAmount',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'acquiredAmount',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
         name: 'LiquidityReserved',
         values: [
             {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
+                name: 'depositAddress',
+                type: ABIDataTypes.STRING,
             },
             {
-                name: 'index',
-                type: ABIDataTypes.UINT64,
+                name: 'amount',
+                type: ABIDataTypes.UINT128,
             },
         ],
         type: BitcoinAbiTypes.Event,
@@ -159,6 +131,10 @@ export const EwmaAbi: BitcoinInterfaceAbi = [
                 name: 'amountIn',
                 type: ABIDataTypes.UINT128,
             },
+            {
+                name: 'priority',
+                type: ABIDataTypes.BOOL,
+            },
         ],
         outputs: [
             {
@@ -192,10 +168,6 @@ export const EwmaAbi: BitcoinInterfaceAbi = [
             {
                 name: 'token',
                 type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'reservationId',
-                type: ABIDataTypes.UINT256,
             },
             {
                 name: 'isSimulation',
@@ -277,6 +249,48 @@ export const EwmaAbi: BitcoinInterfaceAbi = [
             {
                 name: 'ok',
                 type: ABIDataTypes.BOOL,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+
+    {
+        name: 'priorityQueueCost',
+        inputs: [
+            {
+                name: 'token',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        outputs: [
+            {
+                name: 'cost',
+                type: ABIDataTypes.UINT128,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+
+    {
+        name: 'getProviderDetails',
+        inputs: [
+            {
+                name: 'token',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        outputs: [
+            {
+                name: 'liquidity',
+                type: ABIDataTypes.UINT128,
+            },
+            {
+                name: 'reserved',
+                type: ABIDataTypes.UINT128,
+            },
+            {
+                name: 'btcReceiver',
+                type: ABIDataTypes.STRING,
             },
         ],
         type: BitcoinAbiTypes.Function,
