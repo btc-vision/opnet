@@ -26,7 +26,7 @@ export interface TransactionParameters {
     readonly maximumAllowedSatToSpend: bigint;
     readonly network: Network;
 
-    readonly extraOutputs: PsbtOutputExtended[];
+    readonly extraOutputs?: PsbtOutputExtended[];
 }
 
 export interface InteractionTransactionReceipt {
