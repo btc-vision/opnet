@@ -396,6 +396,8 @@ export abstract class AbstractRpcProvider {
 
         if (height) {
             params.push(height.toString());
+        } else {
+            params.push(undefined);
         }
 
         if (simulatedTransaction) {
@@ -405,7 +407,13 @@ export abstract class AbstractRpcProvider {
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.CALL, params);
         const rawCall: JsonRpcResult = await this.callPayloadSingle(payload);
 
-        const result: ICallResult = rawCall.result as ICallResult;
+        const result: ICallResult = (rawCall.result as ICallResult) || rawCall;
+        if (!rawCall.result) {
+            return {
+                error: (result as unknown as { error: { message: string } }).error.message,
+            };
+        }
+
         if ('error' in result) {
             return result;
         }
