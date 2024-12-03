@@ -80,7 +80,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
     private readonly fetchGasParametersAfter: number = 1000 * 10;
     private currentTxDetails: ParsedSimulatedTransaction | undefined;
-    private simulatedHeight: bigint | undefined = 0n;
+    private simulatedHeight: bigint | undefined = undefined;
 
     protected constructor(
         address: string | Address,
