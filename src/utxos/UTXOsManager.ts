@@ -71,9 +71,18 @@ export class UTXOsManager {
         const fetchedData = await this.fetchUTXOs(address, optimize);
 
         let combinedUTXOs = fetchedData.confirmed;
-
         if (mergePendingUTXOs) {
             combinedUTXOs.push(...this.pendingUTXOs);
+            combinedUTXOs.push(
+                ...fetchedData.pending.filter(
+                    (utxo) =>
+                        !combinedUTXOs.some(
+                            (pending) =>
+                                pending.transactionId === utxo.transactionId &&
+                                pending.outputIndex === utxo.outputIndex,
+                        ),
+                ),
+            );
         }
 
         combinedUTXOs = combinedUTXOs.filter(

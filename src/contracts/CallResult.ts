@@ -106,7 +106,7 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
             throw new Error(`Can not send transaction! Simulation reverted: ${this.revert}`);
         }
 
-        const priorityFee = this.estimatedSatGas + (interactionParams.priorityFee || 0n);
+        const priorityFee: bigint = this.estimatedSatGas + (interactionParams.priorityFee || 0n);
         try {
             const UTXOs: UTXO[] =
                 interactionParams.utxos ||
@@ -114,6 +114,10 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
                     priorityFee + interactionParams.maximumAllowedSatToSpend,
                     interactionParams,
                 ));
+
+            if (!UTXOs || UTXOs.length === 0) {
+                throw new Error('No UTXOs found');
+            }
 
             const params: IInteractionParameters = {
                 calldata: this.calldata,
@@ -179,6 +183,7 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
         const utxoSetting: RequestUTXOsParamsWithAmount = {
             address: interactionParams.refundTo,
             amount: 10000n + amount,
+            throwErrors: true,
         };
 
         const utxos: UTXO[] = await this.#provider.utxoManager.getUTXOsForAmount(utxoSetting);
