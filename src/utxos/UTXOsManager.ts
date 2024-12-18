@@ -70,42 +70,57 @@ export class UTXOsManager {
     }: RequestUTXOsParams): Promise<UTXOs> {
         const fetchedData = await this.fetchUTXOs(address, optimize);
 
-        let combinedUTXOs = fetchedData.confirmed;
+        // Helper function to create a unique key for UTXOs
+        const utxoKey = (utxo: UTXO) => `${utxo.transactionId}:${utxo.outputIndex}`;
+
+        // Prepare sets for quick lookups
+        const pendingUTXOKeys = new Set(this.pendingUTXOs.map(utxoKey));
+        const spentUTXOKeys = new Set(this.spentUTXOs.map(utxoKey));
+        const fetchedSpentKeys = new Set(fetchedData.spentTransactions.map(utxoKey));
+
+        // Start with confirmed UTXOs
+        const combinedUTXOs: UTXO[] = [];
+        const combinedKeysSet = new Set<string>();
+
+        // Add confirmed UTXOs without duplicates
+        for (const utxo of fetchedData.confirmed) {
+            const key = utxoKey(utxo);
+            if (!combinedKeysSet.has(key)) {
+                combinedUTXOs.push(utxo);
+                combinedKeysSet.add(key);
+            }
+        }
+
+        // Merge pending UTXOs if requested
         if (mergePendingUTXOs) {
-            combinedUTXOs.push(...this.pendingUTXOs);
-            combinedUTXOs.push(
-                ...fetchedData.pending.filter(
-                    (utxo) =>
-                        !combinedUTXOs.some(
-                            (pending) =>
-                                pending.transactionId === utxo.transactionId &&
-                                pending.outputIndex === utxo.outputIndex,
-                        ),
-                ),
-            );
+            // Add currently pending UTXOs without duplicates
+            for (const utxo of this.pendingUTXOs) {
+                const key = utxoKey(utxo);
+                if (!combinedKeysSet.has(key)) {
+                    combinedUTXOs.push(utxo);
+                    combinedKeysSet.add(key);
+                }
+            }
+
+            // Add fetched pending UTXOs that aren't already in pending or combined
+            for (const utxo of fetchedData.pending) {
+                const key = utxoKey(utxo);
+                if (!pendingUTXOKeys.has(key) && !combinedKeysSet.has(key)) {
+                    combinedUTXOs.push(utxo);
+                    combinedKeysSet.add(key);
+                }
+            }
         }
 
-        combinedUTXOs = combinedUTXOs.filter(
-            (utxo) =>
-                !this.spentUTXOs.some(
-                    (spent) =>
-                        spent.transactionId === utxo.transactionId &&
-                        spent.outputIndex === utxo.outputIndex,
-                ),
-        );
+        // Filter out UTXOs spent locally
+        let finalUTXOs = combinedUTXOs.filter((utxo) => !spentUTXOKeys.has(utxoKey(utxo)));
 
-        if (filterSpentUTXOs && fetchedData.spentTransactions.length > 0) {
-            combinedUTXOs = combinedUTXOs.filter(
-                (utxo) =>
-                    !fetchedData.spentTransactions.some(
-                        (spent) =>
-                            spent.transactionId === utxo.transactionId &&
-                            spent.outputIndex === utxo.outputIndex,
-                    ),
-            );
+        // Optionally filter out UTXOs spent in fetched data
+        if (filterSpentUTXOs && fetchedSpentKeys.size > 0) {
+            finalUTXOs = finalUTXOs.filter((utxo) => !fetchedSpentKeys.has(utxoKey(utxo)));
         }
 
-        return combinedUTXOs;
+        return finalUTXOs;
     }
 
     /**
