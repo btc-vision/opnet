@@ -9,4 +9,5 @@ export interface IUTXO {
     readonly outputIndex: number;
     readonly value: bigint | string;
     readonly scriptPubKey: ScriptPubKey;
+    readonly raw: string;
 }

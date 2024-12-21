@@ -6,6 +6,7 @@ import { JSONRpcMethods } from '../providers/interfaces/JSONRpcMethods.js';
 import { JsonRpcResult } from '../providers/interfaces/JSONRpcResult.js';
 import {
     IUTXOsData,
+    RawIUTXOsData,
     RequestUTXOsParams,
     RequestUTXOsParamsWithAmount,
 } from './interfaces/IUTXOsManager.js';
@@ -193,7 +194,7 @@ export class UTXOsManager {
             throw new Error(`Error fetching block: ${rawUXTOs.error}`);
         }
 
-        const result: IUTXOsData = (rawUXTOs.result as IUTXOsData) || {
+        const result: RawIUTXOsData = (rawUXTOs.result as RawIUTXOsData) || {
             confirmed: [],
             pending: [],
             spentTransactions: [],

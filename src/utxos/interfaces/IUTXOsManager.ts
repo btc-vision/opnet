@@ -1,3 +1,4 @@
+import { IUTXO } from '../../bitcoin/interfaces/IUTXO.js';
 import { UTXOs } from '../../bitcoin/UTXOs.js';
 
 /**
@@ -13,6 +14,12 @@ export interface IUTXOsData {
     readonly pending: UTXOs;
     readonly spentTransactions: UTXOs;
     readonly confirmed: UTXOs;
+}
+
+export interface RawIUTXOsData {
+    readonly pending: IUTXO[];
+    readonly spentTransactions: IUTXO[];
+    readonly confirmed: IUTXO[];
 }
 
 /**
