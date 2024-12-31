@@ -19,10 +19,13 @@ export class StoredValue implements IStorageValue {
                 ? this.base64ToBigInt(iStoredValue.pointer)
                 : iStoredValue.pointer;
 
-        if (iStoredValue.value instanceof Buffer) {
+        if (typeof iStoredValue.value !== 'string') {
             this.value = iStoredValue.value;
         } else {
-            this.value = Buffer.from(iStoredValue.value, 'base64');
+            this.value = Buffer.from(
+                iStoredValue.value,
+                iStoredValue.value.startsWith('0x') ? 'hex' : 'base64',
+            );
         }
 
         this.height = BigInt(iStoredValue.height);
