@@ -76,7 +76,8 @@ export class TransactionReceipt implements ITransactionReceipt {
         let eventData: Uint8Array;
 
         if (typeof event.data === 'string') {
-            eventData = new Uint8Array(Buffer.from(event.data, 'base64'));
+            const buf = Buffer.from(event.data, 'base64');
+            eventData = new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
         } else {
             eventData = event.data;
         }
