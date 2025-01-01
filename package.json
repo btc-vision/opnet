@@ -101,7 +101,7 @@
         "@bitcoinerlab/secp256k1": "^1.1.1",
         "@btc-vision/bitcoin": "^6.3.2",
         "@btc-vision/bsi-bitcoin-rpc": ">=1.0.29",
-        "@btc-vision/transaction": "^1.2.1",
+        "@btc-vision/transaction": "^1.2.2",
         "@noble/hashes": "^1.6.1",
         "bignumber.js": "^9.1.2",
         "buffer": "^6.0.3",
