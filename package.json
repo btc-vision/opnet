@@ -1,11 +1,11 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
-        "node": ">=16.0.0"
+        "node": ">=21.0.0"
     },
     "exports": {
         ".": {
@@ -101,7 +101,7 @@
         "@bitcoinerlab/secp256k1": "^1.1.1",
         "@btc-vision/bitcoin": "^6.3.2",
         "@btc-vision/bsi-bitcoin-rpc": ">=1.0.29",
-        "@btc-vision/transaction": "^1.2.0",
+        "@btc-vision/transaction": "^1.2.1",
         "@noble/hashes": "^1.6.1",
         "bignumber.js": "^9.1.2",
         "buffer": "^6.0.3",
