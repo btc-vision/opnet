@@ -1,5 +1,5 @@
 import { script } from '@btc-vision/bitcoin';
-import { ScriptPubKey } from '@btc-vision/bsi-bitcoin-rpc';
+import { ScriptPubKey } from '@btc-vision/bitcoin-rpc';
 
 /**
  * Transaction output interface

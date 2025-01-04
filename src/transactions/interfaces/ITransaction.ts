@@ -3,6 +3,7 @@ import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTy
 import { ITransactionInput, TransactionInput } from '../metadata/TransactionInput.js';
 import { ITransactionOutput, TransactionOutput } from '../metadata/TransactionOutput.js';
 import { ITransactionReceipt } from './ITransactionReceipt.js';
+import { ProofOfWorkChallenge, RawProofOfWorkChallenge } from './ProofOfWorkChallenge.js';
 import { IDeploymentTransaction } from './transactions/IDeploymentTransaction.js';
 import { IInteractionTransaction } from './transactions/IInteractionTransaction.js';
 
@@ -57,6 +58,11 @@ export interface ITransactionBase<T extends OPNetTransactionTypes> extends ITran
      * @description The amount of gas used by the transaction.
      */
     readonly gasUsed: string | bigint;
+
+    /**
+     * @description The raw proof of work challenge.
+     */
+    readonly pow?: RawProofOfWorkChallenge | ProofOfWorkChallenge;
 }
 
 /**

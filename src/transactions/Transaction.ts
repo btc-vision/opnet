@@ -1,6 +1,7 @@
 import { BigNumberish } from '../common/CommonTypes.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { ITransactionBase } from './interfaces/ITransaction.js';
+import { ProofOfWorkChallenge, RawProofOfWorkChallenge } from './interfaces/ProofOfWorkChallenge.js';
 import { TransactionInput } from './metadata/TransactionInput.js';
 import { ITransactionOutput, TransactionOutput } from './metadata/TransactionOutput.js';
 import { TransactionReceipt } from './metadata/TransactionReceipt.js';
@@ -57,6 +58,11 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
      */
     public readonly gasUsed: bigint;
 
+    /**
+     * @description The proof of work challenge.
+     */
+    public readonly pow?: ProofOfWorkChallenge;
+
     protected constructor(transaction: ITransactionBase<T>) {
         super({
             receipt: transaction.receipt,
@@ -77,7 +83,19 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
         );
 
         this.OPNetType = transaction.OPNetType;
-
         this.gasUsed = BigInt(transaction.gasUsed || '0x00') || 0n;
+
+        if (transaction.pow) {
+            this.pow = this.decodeProofOfWorkChallenge(transaction.pow as RawProofOfWorkChallenge);
+        }
+    }
+
+    private decodeProofOfWorkChallenge(challenge: RawProofOfWorkChallenge): ProofOfWorkChallenge {
+        return {
+            preimage: Buffer.from(challenge.preimage, 'base64'),
+            reward: BigInt(challenge.reward) || 0n,
+            difficulty: BigInt(challenge.difficulty || '0'),
+            version: challenge.version || 1,
+        };
     }
 }

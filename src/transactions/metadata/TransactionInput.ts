@@ -1,4 +1,4 @@
-import { ScriptSig } from '@btc-vision/bsi-bitcoin-rpc';
+import { ScriptSig } from '@btc-vision/bitcoin-rpc';
 
 /**
  * Transaction input interface

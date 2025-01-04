@@ -74,7 +74,6 @@ export class TransactionReceipt implements ITransactionReceipt {
 
     private decodeEvent(event: NetEventDocument): NetEvent {
         let eventData: Uint8Array;
-
         if (typeof event.data === 'string') {
             const buf = Buffer.from(event.data, 'base64');
             eventData = new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);

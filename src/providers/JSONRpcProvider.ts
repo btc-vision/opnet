@@ -49,7 +49,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             if (!resp.ok) {
                 throw new Error(`Failed to fetch: ${resp.statusText}`);
             }
-
+            
             clearTimeout(timeoutId);
 
             //const str = await resp.text();

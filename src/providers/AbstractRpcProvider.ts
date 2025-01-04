@@ -42,7 +42,7 @@ export abstract class AbstractRpcProvider {
     private nextId: number = 0;
     private chainId: bigint | undefined;
 
-    protected constructor(private readonly network: Network) {}
+    protected constructor(public readonly network: Network) {}
 
     private _utxoManager: UTXOsManager = new UTXOsManager(this);
 

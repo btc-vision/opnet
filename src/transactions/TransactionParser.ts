@@ -43,10 +43,6 @@ export class TransactionParser {
                 return new InteractionTransaction(transaction as IInteractionTransaction);
             case OPNetTransactionTypes.Deployment:
                 return new DeploymentTransaction(transaction as IDeploymentTransaction);
-            //case OPNetTransactionTypes.WrapInteraction:
-            //    return new WrapTransaction(transaction as IWrapTransaction);
-            //case OPNetTransactionTypes.UnwrapInteraction:
-            //    return new UnwrapTransaction(transaction as IUnwrapTransaction);
             default:
                 throw new Error('Unknown transaction type');
         }

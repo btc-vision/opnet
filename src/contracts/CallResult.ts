@@ -1,5 +1,6 @@
 import { Network, PsbtOutputExtended, Signer } from '@btc-vision/bitcoin';
 import {
+    Address,
     BinaryReader,
     BufferHelper,
     IInteractionParameters,
@@ -59,12 +60,10 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
     readonly #rawEvents: EventList;
     readonly #provider: AbstractRpcProvider;
 
-    //private readonly decoded: Array<DecodedCallResult> = [];
-
     constructor(callResult: ICallResultData, provider: AbstractRpcProvider) {
+        this.#provider = provider;
         this.#rawEvents = this.parseEvents(callResult.events);
         this.accessList = callResult.accessList;
-        this.#provider = provider;
 
         if (callResult.estimatedGas) {
             this.estimatedGas = BigInt(callResult.estimatedGas);
@@ -167,8 +166,6 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
 
     public setDecoded(decoded: DecodedOutput): void {
         this.properties = Object.freeze(decoded.obj) as T;
-
-        //this.decoded.push(...decoded.values);
     }
 
     public setCalldata(calldata: Buffer): void {
@@ -194,6 +191,12 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
         return utxos;
     }
 
+    private contractToString(contract: string): string {
+        const addressCa = Address.fromString(contract);
+
+        return addressCa.p2tr(this.#provider.network);
+    }
+
     private parseEvents(events: RawEventList): EventList {
         const eventsList: EventList = {};
 
@@ -206,7 +209,7 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
                 events.push(eventData);
             }
 
-            eventsList[contract] = events;
+            eventsList[this.contractToString(contract)] = events;
         }
 
         return eventsList;

@@ -1,4 +1,4 @@
-import { ScriptPubKey } from '@btc-vision/bsi-bitcoin-rpc';
+import { ScriptPubKey } from '@btc-vision/bitcoin-rpc';
 import { IUTXO } from './interfaces/IUTXO.js';
 
 /**
@@ -22,7 +22,7 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
         if (!iUTXO.raw) {
             throw new Error('Missing nonWitnessUtxo field in UTXO');
         }
-        
+
         this.nonWitnessUtxo = Buffer.from(iUTXO.raw, 'base64');
     }
 }

@@ -1,4 +1,4 @@
-import { ScriptPubKey } from '@btc-vision/bsi-bitcoin-rpc';
+import { ScriptPubKey } from '@btc-vision/bitcoin-rpc';
 
 /**
  * Unspent Transaction Output

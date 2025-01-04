@@ -15,6 +15,7 @@ export * from './transactions/Transaction.js';
 export * from './transactions/interfaces/transactions/ICommonTransaction.js';
 export * from './transactions/interfaces/transactions/IDeploymentTransaction.js';
 export * from './transactions/interfaces/transactions/IInteractionTransaction.js';
+export * from './transactions/interfaces/ProofOfWorkChallenge.js';
 
 /** Providers */
 export * from './providers/AbstractRpcProvider.js';
@@ -93,7 +94,7 @@ export * from './abi/shared/json/opnet/OP_20_ABI.js';
 export * from './abi/shared/json/opnet/OP_NET_ABI.js';
 export * from './abi/shared/json/generic/STAKING_ABI.js';
 export * from './abi/shared/json/tests/WBTC_ABI.js';
-export * from './abi/shared/json/motoswap/EWMA_ABI.js';
+export * from './abi/shared/json/motoswap/NATIVE_SWAP_ABI.js';
 
 /** ABI Interfaces */
 export * from './abi/shared/interfaces/motoswap/IMotoswapFactoryContract.js';
@@ -105,4 +106,4 @@ export * from './abi/shared/interfaces/opnet/IOP_20Contract.js';
 export * from './abi/shared/interfaces/opnet/IOP_NETContract.js';
 export * from './abi/shared/interfaces/generic/IStackingContract.js';
 export * from './abi/shared/interfaces/tests/IWBTCContract.js';
-export * from './abi/shared/interfaces/motoswap/IEwmaContract.js';
+export * from './abi/shared/interfaces/motoswap/INativeSwapContract.js';
