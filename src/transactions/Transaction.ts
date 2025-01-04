@@ -1,3 +1,4 @@
+import { Network } from '@btc-vision/bitcoin';
 import { BigNumberish } from '../common/CommonTypes.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { ITransactionBase } from './interfaces/ITransaction.js';
@@ -63,13 +64,16 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
      */
     public readonly pow?: ProofOfWorkChallenge;
 
-    protected constructor(transaction: ITransactionBase<T>) {
-        super({
-            receipt: transaction.receipt,
-            receiptProofs: transaction.receiptProofs,
-            events: transaction.events,
-            revert: transaction.revert,
-        });
+    protected constructor(transaction: ITransactionBase<T>, network: Network) {
+        super(
+            {
+                receipt: transaction.receipt,
+                receiptProofs: transaction.receiptProofs,
+                events: transaction.events,
+                revert: transaction.revert,
+            },
+            network,
+        );
 
         this.id = transaction.id;
         this.hash = transaction.hash;

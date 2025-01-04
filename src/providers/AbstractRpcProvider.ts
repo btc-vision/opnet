@@ -139,7 +139,7 @@ export abstract class AbstractRpcProvider {
         const block: JsonRpcResult = await this.callPayloadSingle(payload);
 
         const result: IBlock = block.result as IBlock;
-        return new Block(result);
+        return new Block(result, this.network);
     }
 
     /**
@@ -174,7 +174,7 @@ export abstract class AbstractRpcProvider {
 
             const result: IBlock = block.result as IBlock;
 
-            return new Block(result);
+            return new Block(result, this.network);
         });
     }
 
@@ -236,7 +236,7 @@ export abstract class AbstractRpcProvider {
             );
         }
 
-        return TransactionParser.parseTransaction(result);
+        return TransactionParser.parseTransaction(result, this.network);
     }
 
     /**
@@ -254,7 +254,7 @@ export abstract class AbstractRpcProvider {
         );
 
         const rawTransaction: JsonRpcResult = await this.callPayloadSingle(payload);
-        return new TransactionReceipt(rawTransaction.result);
+        return new TransactionReceipt(rawTransaction.result, this.network);
     }
 
     /**

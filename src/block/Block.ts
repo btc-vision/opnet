@@ -1,3 +1,4 @@
+import { Network } from '@btc-vision/bitcoin';
 import { BigNumberish } from '../common/CommonTypes.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { ITransaction } from '../transactions/interfaces/ITransaction.js';
@@ -42,7 +43,7 @@ export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas'> {
 
     public readonly transactions: TransactionBase<OPNetTransactionTypes>[] = [];
 
-    constructor(block: IBlock) {
+    constructor(block: IBlock, network: Network) {
         this.height = BigInt(block.height.toString());
 
         this.hash = block.hash;
@@ -74,6 +75,7 @@ export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas'> {
 
         this.transactions = TransactionParser.parseTransactions(
             block.transactions as ITransaction[],
+            network
         );
     }
 }

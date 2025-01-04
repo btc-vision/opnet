@@ -1,3 +1,4 @@
+import { Network } from '@btc-vision/bitcoin';
 import { Address } from '@btc-vision/transaction';
 import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTypes.js';
 import { IDeploymentTransaction } from '../interfaces/transactions/IDeploymentTransaction.js';
@@ -26,8 +27,8 @@ export class DeploymentTransaction
 
     public readonly from?: Address;
 
-    constructor(transaction: IDeploymentTransaction) {
-        super(transaction);
+    constructor(transaction: IDeploymentTransaction, network: Network) {
+        super(transaction, network);
 
         try {
             this.from = new Address(Buffer.from(transaction.from as string, 'base64'));

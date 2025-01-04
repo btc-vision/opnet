@@ -1,3 +1,4 @@
+import { Network } from '@btc-vision/bitcoin';
 import { Address } from '@btc-vision/transaction';
 import { Buffer } from 'buffer';
 import { InteractionType } from '../../interfaces/opnet/OPNetTransactionTypes.js';
@@ -52,8 +53,8 @@ export class InteractionTransaction
      */
     public readonly contractTweakedPublicKey: Address;
 
-    constructor(transaction: IInteractionTransaction) {
-        super(transaction);
+    constructor(transaction: IInteractionTransaction, network: Network) {
+        super(transaction, network);
 
         this.contractTweakedPublicKey = new Address(
             Buffer.from(transaction.contractTweakedPublicKey as string, 'base64'),

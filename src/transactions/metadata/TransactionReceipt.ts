@@ -1,4 +1,5 @@
-import { NetEvent } from '@btc-vision/transaction';
+import { Network } from '@btc-vision/bitcoin';
+import { Address, NetEvent } from '@btc-vision/transaction';
 import {
     ContractEvents,
     ITransactionReceipt,
@@ -31,41 +32,53 @@ export class TransactionReceipt implements ITransactionReceipt {
      */
     public readonly revert?: Buffer;
 
-    constructor(receipt: ITransactionReceipt) {
+    constructor(receipt: ITransactionReceipt, network: Network) {
         this.receipt = receipt.receipt
             ? Buffer.from(receipt.receipt as string, 'base64')
             : undefined;
 
         this.receiptProofs = receipt.receiptProofs || [];
 
-        this.events = receipt.events ? this.parseEvents(receipt.events) : {};
+        this.events = receipt.events ? this.parseEvents(receipt.events, network) : {};
         this.revert = receipt.revert ? Buffer.from(receipt.revert as string, 'base64') : undefined;
     }
 
     /**
      * @description Parse transaction events.
      * @param events - The events to parse.
+     * @param network - The network to use.
      * @private
      */
-    private parseEvents(events: RawContractEvents | ContractEvents): ContractEvents {
+    private parseEvents(
+        events: RawContractEvents | ContractEvents,
+        network: Network,
+    ): ContractEvents {
         const parsedEvents: ContractEvents = {};
 
         if (!Array.isArray(events)) {
             for (const [key, value] of Object.entries(events)) {
-                parsedEvents[key] = (value as NetEventDocument[]).map((event: NetEventDocument) => {
-                    return this.decodeEvent(event);
-                });
+                const ca = Address.fromString(key);
+                const caP2tr = ca.p2tr(network);
+                parsedEvents[caP2tr] = (value as NetEventDocument[]).map(
+                    (event: NetEventDocument) => {
+                        return this.decodeEvent(event);
+                    },
+                );
             }
         } else {
             for (const event of events) {
                 const parsedEvent = this.decodeEvent(event);
                 const contractAddress = event.contractAddress;
 
-                if (!parsedEvents[contractAddress]) {
-                    parsedEvents[contractAddress] = [];
+                // TODO: Add a weak cache to avoid parsing the same address multiple times?
+                const ca = Address.fromString(contractAddress);
+                const caP2tr = ca.p2tr(network);
+
+                if (!parsedEvents[caP2tr]) {
+                    parsedEvents[caP2tr] = [];
                 }
 
-                parsedEvents[contractAddress].push(parsedEvent);
+                parsedEvents[caP2tr].push(parsedEvent);
             }
         }
 
