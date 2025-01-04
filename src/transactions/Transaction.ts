@@ -95,7 +95,7 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
             preimage: Buffer.from(challenge.preimage, 'base64'),
             reward: BigInt(challenge.reward) || 0n,
             difficulty: BigInt(challenge.difficulty || '0'),
-            version: challenge.version || 1,
+            version: challenge.version || 0,
         };
     }
 }
