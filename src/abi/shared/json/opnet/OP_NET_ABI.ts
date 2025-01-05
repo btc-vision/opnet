@@ -20,6 +20,18 @@ export const OP_NET_ABI: BitcoinInterfaceAbi = [
     },
 
     {
+        name: 'deployer',
+        constant: true,
+        outputs: [
+            {
+                name: 'deployer',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+
+    {
         name: 'address',
         constant: true,
         outputs: [

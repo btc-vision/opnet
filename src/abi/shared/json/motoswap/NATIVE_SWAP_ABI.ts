@@ -348,6 +348,10 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
                 name: 'token',
                 type: ABIDataTypes.ADDRESS,
             },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
         ],
         outputs: [
             {
@@ -465,27 +469,6 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             {
                 name: 'btcReceiver',
                 type: ABIDataTypes.STRING,
-            },
-        ],
-        type: BitcoinAbiTypes.Function,
-    },
-
-    {
-        name: 'getVirtualReserves',
-        inputs: [
-            {
-                name: 'token',
-                type: ABIDataTypes.ADDRESS,
-            },
-        ],
-        outputs: [
-            {
-                name: 'virtualBTCReserve',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'virtualTokenReserve',
-                type: ABIDataTypes.UINT256,
             },
         ],
         type: BitcoinAbiTypes.Function,

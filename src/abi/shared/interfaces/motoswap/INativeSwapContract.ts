@@ -105,14 +105,6 @@ export type GetPriorityQueueCost = CallResult<{
 }>;
 
 /**
- * @description Represents the result of retrieving the virtual reserves
- */
-export type VirtualReserves = CallResult<{
-    virtualBTCReserve: bigint;
-    virtualTokenReserve: bigint;
-}>;
-
-/**
  * @description This interface represents the NativeSwap contract,
  * including all new/updated methods and type definitions.
  *
@@ -216,17 +208,17 @@ export interface INativeSwapContract extends IOP_NETContract {
     /**
      * @description Removes liquidity from the contract.
      * @param token - The address of the token to remove liquidity for.
+     * @param amount
      * @returns {Promise<RemoveLiquidity>}
      */
-    removeLiquidity(token: Address): Promise<RemoveLiquidity>;
+    removeLiquidity(token: Address, amount: bigint): Promise<RemoveLiquidity>;
 
     /**
      * @description Executes a swap operation.
      * @param token - The address of the token to swap.
-     * @param isSimulation - Whether this is just a simulation.
      * @returns {Promise<Swap>}
      */
-    swap(token: Address, isSimulation: boolean): Promise<Swap>;
+    swap(token: Address): Promise<Swap>;
 
     /**
      * @description Retrieves the reserve information for a token.
@@ -250,13 +242,6 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @returns {Promise<GetProviderDetails>}
      */
     getProviderDetails(token: Address): Promise<GetProviderDetails>;
-
-    /**
-     * @description Retrieves the virtual reserves (akin to EWMA).
-     * @param token - The address of the token.
-     * @returns {Promise<VirtualReserves>}
-     */
-    getVirtualReserves(token: Address): Promise<VirtualReserves>;
 
     /**
      * @description Retrieves the cost for using the priority queue (new).
