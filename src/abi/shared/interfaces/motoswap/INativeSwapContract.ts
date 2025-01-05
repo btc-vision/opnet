@@ -5,7 +5,7 @@ import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 /**
  * @description Represents the result of the reserve function call.
  */
-export type ReserveEWMA = CallResult<{
+export type ReserveNativeSwap = CallResult<{
     reserved: bigint;
 }>;
 
@@ -119,14 +119,14 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @param maximumAmountIn - The maximum amount of tokens to reserve.
      * @param minimumAmountOut - The minimum amount of tokens expected out.
      * @param forLP - Whether this reservation is for LP or not.
-     * @returns {Promise<ReserveEWMA>}
+     * @returns {Promise<ReserveNativeSwap>}
      */
     reserve(
         token: Address,
         maximumAmountIn: bigint,
         minimumAmountOut: bigint,
         forLP: boolean,
-    ): Promise<ReserveEWMA>;
+    ): Promise<ReserveNativeSwap>;
 
     /**
      * @description Lists liquidity for sale (new).
