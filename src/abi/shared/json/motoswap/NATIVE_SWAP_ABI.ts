@@ -255,6 +255,55 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
     },
 
+    {
+        name: 'createPoolWithSignature',
+        inputs: [
+            {
+                name: 'signature',
+                type: ABIDataTypes.BYTES,
+            },
+            {
+                name: 'approveAmount',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'token',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'floorPrice',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'initialLiquidity',
+                type: ABIDataTypes.UINT128,
+            },
+            {
+                name: 'receiver',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'antiBotEnabledFor',
+                type: ABIDataTypes.UINT16,
+            },
+            {
+                name: 'antiBotMaximumTokensPerReservation',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'maxReservesIn5BlocksPercent',
+                type: ABIDataTypes.UINT16,
+            },
+        ],
+        outputs: [
+            {
+                name: 'ok',
+                type: ABIDataTypes.BOOL,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+
     //=================================================
     // SET FEES
     //=================================================

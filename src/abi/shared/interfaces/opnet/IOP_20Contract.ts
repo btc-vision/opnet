@@ -70,6 +70,8 @@ export interface IOP_20Contract extends IOP_NETContract {
 
     approve(spender: Address, amount: bigint): Promise<Approve>;
 
+    approveFrom(spender: Address, amount: bigint, signature: Uint8Array): Promise<Approve>;
+
     allowance(owner: Address, spender: Address): Promise<Allowance>;
 
     burn(value: bigint): Promise<Burn>;

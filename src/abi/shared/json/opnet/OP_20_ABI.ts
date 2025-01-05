@@ -114,6 +114,30 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
     },
     {
+        name: 'approveFrom',
+        inputs: [
+            {
+                name: 'spender',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'signature',
+                type: ABIDataTypes.BYTES,
+            },
+        ],
+        outputs: [
+            {
+                name: 'success',
+                type: ABIDataTypes.BOOL,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
         name: 'balanceOf',
         inputs: [
             {

@@ -171,6 +171,18 @@ export interface INativeSwapContract extends IOP_NETContract {
         maxReservesIn5BlocksPercent: number,
     ): Promise<CreatePool>;
 
+    createPoolWithSignature(
+        signature: Buffer,
+        approveAmount: bigint,
+        token: Address,
+        floorPrice: bigint,
+        initialLiquidity: bigint,
+        receiver: string,
+        antiBotEnabledFor: number,
+        antiBotMaximumTokensPerReservation: bigint,
+        maxReservesIn5BlocksPercent: number,
+    ): Promise<CreatePool>;
+
     /**
      * @description Sets the global fee parameters (new).
      * @param reservationBaseFee - Base fee for a reservation.
