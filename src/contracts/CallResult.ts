@@ -4,6 +4,7 @@ import {
     BinaryReader,
     BufferHelper,
     IInteractionParameters,
+    InteractionParametersWithoutSigner,
     NetEvent,
     TransactionFactory,
     UTXO,
@@ -19,7 +20,7 @@ import { OPNetEvent } from './OPNetEvent.js';
 const factory = new TransactionFactory();
 
 export interface TransactionParameters {
-    readonly signer: Signer | ECPairInterface;
+    readonly signer?: Signer | ECPairInterface;
     readonly refundTo: string;
     readonly priorityFee?: bigint;
     readonly feeRate?: number;
@@ -34,6 +35,8 @@ export interface InteractionTransactionReceipt {
     readonly transactionId: string;
     readonly newUTXOs: UTXO[];
     readonly peerAcknowledgements: number;
+    readonly estimatedFees: bigint;
+    readonly preimage: string;
 }
 
 /**
@@ -118,7 +121,7 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
                 throw new Error('No UTXOs found');
             }
 
-            const params: IInteractionParameters = {
+            const params: IInteractionParameters | InteractionParametersWithoutSigner = {
                 calldata: this.calldata,
                 priorityFee: priorityFee,
                 feeRate: interactionParams.feeRate || 10,
@@ -131,14 +134,19 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
             };
 
             const transaction = await factory.signInteraction(params);
-            const tx1 = await this.#provider.sendRawTransaction(transaction[0], false);
+            const tx1 = await this.#provider.sendRawTransaction(
+                transaction.fundingTransaction,
+                false,
+            );
             if (!tx1 || tx1.error) {
                 throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
             }
 
-            this.#provider.utxoManager.spentUTXO(UTXOs, transaction[2]);
+            const tx2 = await this.#provider.sendRawTransaction(
+                transaction.interactionTransaction,
+                false,
+            );
 
-            const tx2 = await this.#provider.sendRawTransaction(transaction[1], false);
             if (!tx2 || tx2.error) {
                 throw new Error(`Error sending transaction: ${tx2?.error || 'Unknown error'}`);
             }
@@ -147,10 +155,14 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
                 throw new Error('No transaction ID returned');
             }
 
+            this.#provider.utxoManager.spentUTXO(UTXOs, transaction.nextUTXOs);
+
             return {
                 transactionId: tx2.result,
                 peerAcknowledgements: tx2.peers || 0,
-                newUTXOs: transaction[2],
+                newUTXOs: transaction.nextUTXOs,
+                estimatedFees: transaction.estimatedFees,
+                preimage: transaction.preimage,
             };
         } catch (e) {
             // We need to clean up the UTXOs if the transaction fails
