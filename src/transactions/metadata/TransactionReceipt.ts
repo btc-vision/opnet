@@ -27,6 +27,8 @@ export class TransactionReceipt implements ITransactionReceipt {
      */
     public readonly events: ContractEvents;
 
+    public readonly rawEvents: ContractEvents = {};
+
     /**
      * @description If the transaction was reverted, this field will contain the revert message.
      */
@@ -54,16 +56,17 @@ export class TransactionReceipt implements ITransactionReceipt {
         network: Network,
     ): ContractEvents {
         const parsedEvents: ContractEvents = {};
-
         if (!Array.isArray(events)) {
             for (const [key, value] of Object.entries(events)) {
                 const ca = Address.fromString(key);
                 const caP2tr = ca.p2tr(network);
-                parsedEvents[caP2tr] = (value as NetEventDocument[]).map(
-                    (event: NetEventDocument) => {
-                        return this.decodeEvent(event);
-                    },
-                );
+                const v = (value as NetEventDocument[]).map((event: NetEventDocument) => {
+                    return this.decodeEvent(event);
+                });
+
+                parsedEvents[caP2tr] = v;
+
+                this.rawEvents[key] = v;
             }
         } else {
             for (const event of events) {
@@ -78,7 +81,17 @@ export class TransactionReceipt implements ITransactionReceipt {
                     parsedEvents[caP2tr] = [];
                 }
 
+                if (!parsedEvents[caP2tr]) {
+                    parsedEvents[caP2tr] = [];
+                }
+
                 parsedEvents[caP2tr].push(parsedEvent);
+
+                if (!this.rawEvents[contractAddress]) {
+                    this.rawEvents[contractAddress] = [];
+                }
+
+                this.rawEvents[contractAddress].push(parsedEvent);
             }
         }
 
