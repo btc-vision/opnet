@@ -399,6 +399,7 @@ export abstract class AbstractRpcProvider {
             toStr,
             dataStr,
         ];
+
         if (fromStr) {
             params.push(fromStr);
         }
@@ -411,10 +412,14 @@ export abstract class AbstractRpcProvider {
 
         if (simulatedTransaction) {
             params.push(this.parseSimulatedTransaction(simulatedTransaction));
+        } else {
+            params.push(undefined);
         }
 
         if (accessList) {
             params.push(accessList);
+        } else {
+            params.push(undefined);
         }
 
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.CALL, params);
