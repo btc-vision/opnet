@@ -50,6 +50,9 @@ export abstract class AbstractRpcProvider {
 
     private _utxoManager: UTXOsManager = new UTXOsManager(this);
 
+    private gasCache: BlockGasParameters | undefined;
+    private lastFetchedGas: number = 0;
+
     /**
      * Get the UTXO manager.
      */
@@ -453,6 +456,15 @@ export abstract class AbstractRpcProvider {
      * @throws {Error} If something went wrong while calling the contract
      */
     public async gasParameters(): Promise<BlockGasParameters> {
+        if (!this.gasCache || Date.now() - this.lastFetchedGas > 10000) {
+            this.lastFetchedGas = Date.now();
+            this.gasCache = await this._gasParameters();
+        }
+
+        return this.gasCache;
+    }
+
+    private async _gasParameters(): Promise<BlockGasParameters> {
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GAS, []);
         const rawCall: JsonRpcResult = await this.callPayloadSingle(payload);
 
