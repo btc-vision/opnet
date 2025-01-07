@@ -152,8 +152,8 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'reserved',
-                type: ABIDataTypes.UINT256,
+                name: 'ok',
+                type: ABIDataTypes.BOOL,
             },
         ],
         type: BitcoinAbiTypes.Function,
@@ -204,8 +204,8 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'totalTokensReturned',
-                type: ABIDataTypes.UINT128,
+                name: 'ok',
+                type: ABIDataTypes.BOOL,
             },
         ],
         type: BitcoinAbiTypes.Function,

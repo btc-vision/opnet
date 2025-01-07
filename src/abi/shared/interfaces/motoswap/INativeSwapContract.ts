@@ -6,7 +6,7 @@ import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
  * @description Represents the result of the reserve function call.
  */
 export type ReserveNativeSwap = CallResult<{
-    reserved: bigint;
+    ok: boolean;
 }>;
 
 /**
@@ -34,7 +34,7 @@ export type ListLiquidity = CallResult<{
  * @description Represents the result of canceling a listing (new).
  */
 export type CancelListing = CallResult<{
-    totalTokensReturned: bigint;
+    ok: boolean;
 }>;
 
 /**
