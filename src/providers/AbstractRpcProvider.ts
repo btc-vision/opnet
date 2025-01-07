@@ -9,9 +9,13 @@ import { IBlock } from '../block/interfaces/IBlock.js';
 import { BigNumberish, BlockTag } from '../common/CommonTypes.js';
 import { CallResult } from '../contracts/CallResult.js';
 import { ContractData } from '../contracts/ContractData.js';
+import { IAccessList } from '../contracts/interfaces/IAccessList.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
-import { ParsedSimulatedTransaction, SimulatedTransaction } from '../contracts/interfaces/SimulatedTransaction.js';
+import {
+    ParsedSimulatedTransaction,
+    SimulatedTransaction,
+} from '../contracts/interfaces/SimulatedTransaction.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
@@ -370,6 +374,7 @@ export abstract class AbstractRpcProvider {
      * @param {string | Address} [from] The address to call the contract from
      * @param {BigNumberish} [height] The height to call the contract from
      * @param {ParsedSimulatedTransaction} [simulatedTransaction] UTXOs to simulate the transaction
+     * @param {IAccessList} [accessList] The access list of previous simulation to use for this call
      * @returns {Promise<CallResult>} The result of the contract function call
      * @example await call('tb1pth90usc4f528aqphpjrfkkdm4vy8hxnt5gps6aau2nva6pxeshtqqzlt3a', Buffer.from('0x12345678'));
      * @throws {Error} If something went wrong while calling the contract
@@ -380,6 +385,7 @@ export abstract class AbstractRpcProvider {
         from?: Address,
         height?: BigNumberish,
         simulatedTransaction?: ParsedSimulatedTransaction,
+        accessList?: IAccessList,
     ): Promise<CallResult | ICallRequestError> {
         const toStr: string = to.toString();
         const fromStr: string | null = from ? from.toHex() : null;
@@ -389,7 +395,10 @@ export abstract class AbstractRpcProvider {
             dataStr = dataStr.slice(2);
         }
 
-        const params: [string, string, string?, string?, SimulatedTransaction?] = [toStr, dataStr];
+        const params: [string, string, string?, string?, SimulatedTransaction?, IAccessList?] = [
+            toStr,
+            dataStr,
+        ];
         if (fromStr) {
             params.push(fromStr);
         }
@@ -402,6 +411,10 @@ export abstract class AbstractRpcProvider {
 
         if (simulatedTransaction) {
             params.push(this.parseSimulatedTransaction(simulatedTransaction));
+        }
+
+        if (accessList) {
+            params.push(accessList);
         }
 
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.CALL, params);

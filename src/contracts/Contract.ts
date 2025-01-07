@@ -23,6 +23,7 @@ import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { ContractEvents } from '../transactions/interfaces/ITransactionReceipt.js';
 import { CallResult } from './CallResult.js';
+import { IAccessList } from './interfaces/IAccessList.js';
 import { IContract } from './interfaces/IContract.js';
 import { ParsedSimulatedTransaction } from './interfaces/SimulatedTransaction.js';
 import { OPNetEvent } from './OPNetEvent.js';
@@ -79,8 +80,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         | undefined;
 
     private readonly fetchGasParametersAfter: number = 1000 * 10;
+
     private currentTxDetails: ParsedSimulatedTransaction | undefined;
     private simulatedHeight: bigint | undefined = undefined;
+    private accessList: IAccessList | undefined;
 
     protected constructor(
         address: string | Address,
@@ -208,6 +211,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         this.currentTxDetails = tx;
     }
 
+    public setAccessList(accessList: IAccessList): void {
+        this.accessList = accessList;
+    }
+
     public setSimulatedHeight(height: bigint | undefined): void {
         this.simulatedHeight = height;
     }
@@ -234,6 +241,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             | 'setSender'
             | 'setSimulatedHeight'
             | 'setTransactionDetails'
+            | 'setAccessList'
         >;
 
         return this[key];
@@ -605,7 +613,9 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     private callFunction(element: FunctionBaseData): (...args: unknown[]) => Promise<CallResult> {
         return async (...args: unknown[]): Promise<CallResult> => {
             const txDetails: ParsedSimulatedTransaction | undefined = this.currentTxDetails;
+            const accessList: IAccessList | undefined = this.accessList;
             this.currentTxDetails = undefined;
+            this.accessList = undefined;
 
             const data = this.encodeFunctionData(element, args);
             const buffer = Buffer.from(data.getBuffer());
@@ -615,6 +625,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 this.from,
                 this.simulatedHeight,
                 txDetails,
+                accessList,
             );
 
             if ('error' in response) {
