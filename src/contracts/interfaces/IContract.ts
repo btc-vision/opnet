@@ -2,6 +2,7 @@ import { Address, NetEvent } from '@btc-vision/transaction';
 import { BlockGasParameters } from '../../block/BlockGasParameters.js';
 import { ContractEvents } from '../../transactions/interfaces/ITransactionReceipt.js';
 import { OPNetEvent } from '../OPNetEvent.js';
+import { IAccessList } from './IAccessList.js';
 import { ParsedSimulatedTransaction } from './SimulatedTransaction.js';
 
 /**
@@ -27,4 +28,6 @@ export interface IContract {
     setSimulatedHeight(height: bigint | undefined): void;
 
     setTransactionDetails(tx: ParsedSimulatedTransaction): void;
+
+    setAccessList(accessList: IAccessList): void;
 }
