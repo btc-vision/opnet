@@ -369,14 +369,6 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
                 name: 'receiver',
                 type: ABIDataTypes.STRING,
             },
-            {
-                name: 'amountIn',
-                type: ABIDataTypes.UINT128,
-            },
-            {
-                name: 'priority',
-                type: ABIDataTypes.BOOL,
-            },
         ],
         outputs: [
             {

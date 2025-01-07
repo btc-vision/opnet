@@ -206,16 +206,9 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @description Adds liquidity to the contract.
      * @param token - The address of the token to add liquidity for.
      * @param receiver - The receiver of the liquidity (Bitcoin address).
-     * @param amountIn - The amount of tokens to add.
-     * @param priority - Whether to prioritize the liquidity addition.
      * @returns {Promise<AddLiquidity>}
      */
-    addLiquidity(
-        token: Address,
-        receiver: string,
-        amountIn: bigint,
-        priority: boolean,
-    ): Promise<AddLiquidity>;
+    addLiquidity(token: Address, receiver: string): Promise<AddLiquidity>;
 
     /**
      * @description Removes liquidity from the contract.
