@@ -1,9 +1,9 @@
 import { ABIDataTypes } from '@btc-vision/transaction';
-import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi';
-import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes';
-import { OP_NET_ABI } from '../opnet/OP_NET_ABI';
-import { REENTRANCY_GUARD_ABI } from './REENTRANCY_GUARD_ABI';
-import OWNABLE_ABI from './OWNABLE_ABI';
+import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes.js';
+import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi.js';
+import { OP_NET_ABI } from '../opnet/OP_NET_ABI.js';
+import OWNABLE_ABI from './OWNABLE_ABI.js';
+import { REENTRANCY_GUARD_ABI } from './REENTRANCY_GUARD_ABI.js';
 
 export const MotoChefEvents: BitcoinInterfaceAbi = [
     {

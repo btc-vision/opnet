@@ -1,6 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../../opnet';
-import { IOwnableReentrancyGuardContract } from './IOwnableReentrancyGuardContract';
+import { CallResult } from '../../../../opnet.js';
+import { IOwnableReentrancyGuardContract } from './IOwnableReentrancyGuardContract.js';
 
 export type PoolInfo = {
     allocPoint: number;

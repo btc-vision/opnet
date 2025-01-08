@@ -1,6 +1,6 @@
 import { ABIDataTypes } from '@btc-vision/transaction';
-import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes';
-import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi';
+import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes.js';
+import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi.js';
 
 /**
  * @category ABI

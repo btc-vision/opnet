@@ -1,6 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../../opnet';
-import { IReentrancyGuard } from './IReentrancyGuardContract';
+import { CallResult } from '../../../../opnet.js';
+import { IReentrancyGuard } from './IReentrancyGuardContract.js';
 
 export type Admin = CallResult<{
     adminAddress: Address;
