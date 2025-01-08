@@ -1,11 +1,39 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
+import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { IOP_20Contract } from '../opnet/IOP_20Contract.js';
 
 export type Reserves = {
     readonly reserve0: bigint;
     readonly reserve1: bigint;
     readonly blockTimestampLast: bigint;
+};
+
+// Events
+export type PoolBurnEvent = {
+    readonly sender: Address;
+    readonly amount0: bigint;
+    readonly amount1: bigint;
+};
+
+export type PoolMintEvent = {
+    readonly sender: Address;
+    readonly amount0: bigint;
+    readonly amount1: bigint;
+};
+
+export type SwapEvent = {
+    readonly sender: Address;
+    readonly amount0In: bigint;
+    readonly amount1In: bigint;
+    readonly amount0Out: bigint;
+    readonly amount1Out: bigint;
+    readonly to: Address;
+};
+
+export type SyncEvent = {
+    readonly reserve0: bigint;
+    readonly reserve1: bigint;
 };
 
 /**
@@ -47,9 +75,12 @@ export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mi
         to: string,
         data: Uint8Array,
     ): Promise<
-        CallResult<{
-            success: boolean;
-        }>
+        CallResult<
+            {
+                success: boolean;
+            },
+            [OPNetEvent<SwapEvent>]
+        >
     >;
 
     /**

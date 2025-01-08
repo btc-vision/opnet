@@ -1,6 +1,13 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
+import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
+
+export type PoolCreatedEvent = {
+    readonly token0: Address;
+    readonly token1: Address;
+    readonly pool: bigint;
+};
 
 /**
  * @description This is the interface that represent the MotoSwap Factory contract.
@@ -26,5 +33,5 @@ export interface IMotoswapFactoryContract extends IOP_NETContract {
     createPool(
         token0: Address,
         token1: Address,
-    ): Promise<CallResult<{ pool: bigint; address: Address }>>;
+    ): Promise<CallResult<{ pool: bigint; address: Address }, [OPNetEvent<PoolCreatedEvent>]>>;
 }

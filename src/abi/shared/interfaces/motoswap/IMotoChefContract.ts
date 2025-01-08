@@ -1,6 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { IOwnableReentrancyGuardContract } from './IOwnableReentrancyGuardContract';
 import { CallResult } from '../../../../opnet';
+import { IOwnableReentrancyGuardContract } from './IOwnableReentrancyGuardContract';
 
 export type PoolInfo = {
     allocPoint: number;
@@ -119,6 +119,57 @@ export type SetBonusMultiplier = CallResult<{
 export type EmergencyWithdraw = CallResult<{
     success: boolean;
 }>;
+
+// EVENTS
+export type LogPoolAdditionEvent = {
+    readonly pid: number; // uint32
+    readonly allocPoint: bigint; // uint256
+    readonly lpToken: Address;
+    readonly rewarder: Address;
+};
+
+export type LogSetPoolEvent = {
+    readonly pid: number; // uint32
+    readonly allocPoint: bigint; // uint256
+    readonly rewarder: Address;
+    readonly overwrite: boolean; // bool
+};
+
+export type LogUpdatePoolEvent = {
+    readonly pid: number; // uint32
+    readonly lastRewardBlock: bigint; // uint64
+    readonly lpSupply: bigint; // uint256
+    readonly accMotoPerShare: bigint; // uint256
+};
+
+export type DepositEvent = {
+    readonly user: Address;
+    readonly pid: number; // uint32
+    readonly amount: bigint; // uint256
+    readonly to: Address;
+};
+
+export type WithdrawEvent = {
+    readonly user: Address;
+    readonly pid: number; // uint32
+    readonly amount: bigint; // uint256
+    readonly to: Address;
+};
+
+export type HarvestEvent = {
+    readonly user: Address;
+    readonly pid: number; // uint32
+    readonly amount: bigint; // uint256
+};
+
+export type EmergencyWithdrawEvent = {
+    readonly user: Address;
+    readonly pid: number; // uint32
+    readonly amount: bigint; // uint256
+    readonly to: Address;
+};
+
+// TODO: Add events to results.
 
 /**
  * @description This interface represents the MotoChef contract.

@@ -3,26 +3,26 @@ import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
 
-export type MintEvent = OPNetEvent<{
+export type MintEvent = {
     to: Address;
     amount: bigint;
-}>;
+};
 
-export type TransferEvent = OPNetEvent<{
+export type TransferEvent = {
     from: Address;
     to: Address;
     amount: bigint;
-}>;
+};
 
-export type BurnEvent = OPNetEvent<{
+export type BurnEvent = {
     amount: bigint;
-}>;
+};
 
-export type ApproveEvent = OPNetEvent<{
+export type ApproveEvent = {
     owner: Address;
     spender: Address;
     value: bigint;
-}>;
+};
 
 export type Name = CallResult<{ name: string }, []>;
 export type BalanceOf = CallResult<{ balance: bigint }, []>;
@@ -35,16 +35,16 @@ export type Transfer = CallResult<
     {
         success: boolean;
     },
-    [TransferEvent]
+    [OPNetEvent<TransferEvent>]
 >;
 
-export type TransferFrom = CallResult<{ success: boolean }, [TransferEvent]>;
-export type Approve = CallResult<{ success: boolean }, [ApproveEvent]>;
+export type TransferFrom = CallResult<{ success: boolean }, [OPNetEvent<TransferEvent>]>;
+export type Approve = CallResult<{ success: boolean }, [OPNetEvent<ApproveEvent>]>;
 export type Allowance = CallResult<{ remaining: bigint }, []>;
-export type Burn = CallResult<{ success: boolean }, [BurnEvent]>;
-export type Mint = CallResult<{ success: boolean }, [MintEvent]>;
-export type Airdrop = CallResult<{ success: boolean }, MintEvent[]>;
-export type AirdropWithAmount = CallResult<{ success: boolean }, MintEvent[]>;
+export type Burn = CallResult<{ success: boolean }, [OPNetEvent<BurnEvent>]>;
+export type Mint = CallResult<{ success: boolean }, [OPNetEvent<MintEvent>]>;
+export type Airdrop = CallResult<{ success: boolean }, OPNetEvent<MintEvent>[]>;
+export type AirdropWithAmount = CallResult<{ success: boolean }, OPNetEvent<MintEvent>[]>;
 
 /**
  * @description This interface represents the OP_20 base contract.

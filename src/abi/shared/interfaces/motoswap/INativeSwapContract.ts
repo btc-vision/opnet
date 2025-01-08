@@ -1,108 +1,188 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
+import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
+import { TransferEvent } from '../opnet/IOP_20Contract.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
+
+export type LiquidityAddedEvent = {
+    readonly totalTokensContributed: bigint;
+    readonly virtualTokenExchanged: bigint;
+    readonly totalSatoshisSpent: bigint;
+};
+
+export type LiquidityListedEvent = {
+    readonly totalLiquidity: bigint;
+    readonly provider: string;
+};
+
+export type LiquidityRemovedEvent = {
+    readonly providerId: bigint;
+    readonly btcOwed: bigint;
+    readonly tokenAmount: bigint;
+};
+
+export type ReservationCreatedEvent = {
+    readonly expectedAmountOut: bigint;
+    readonly totalSatoshis: bigint;
+};
+
+export type SwapExecutedEvent = {
+    readonly buyer: Address;
+    readonly amountIn: bigint;
+    readonly amountOut: bigint;
+};
+
+export type UnlistEvent = {
+    readonly token: Address;
+    readonly amount: bigint;
+    readonly remainingLiquidity: bigint;
+};
+
+export type LiquidityReservedEvent = {
+    readonly depositAddress: string;
+    readonly amount: bigint;
+};
 
 /**
  * @description Represents the result of the reserve function call.
  */
-export type ReserveNativeSwap = CallResult<{
-    ok: boolean;
-}>;
+export type ReserveNativeSwap = CallResult<
+    {
+        ok: boolean;
+    },
+    OPNetEvent<LiquidityReservedEvent | ReservationCreatedEvent | TransferEvent>[]
+>;
 
 /**
  * @description Represents the result of adding liquidity.
  */
-export type AddLiquidity = CallResult<{
-    ok: boolean;
-}>;
+export type AddLiquidity = CallResult<
+    {
+        ok: boolean;
+    },
+    OPNetEvent<LiquidityAddedEvent | TransferEvent>[]
+>;
 
 /**
  * @description Represents the result of removing liquidity.
  */
-export type RemoveLiquidity = CallResult<{
-    ok: boolean;
-}>;
+export type RemoveLiquidity = CallResult<
+    {
+        ok: boolean;
+    },
+    OPNetEvent<LiquidityRemovedEvent | TransferEvent>[]
+>;
 
 /**
  * @description Represents the result of listing liquidity (new).
  */
-export type ListLiquidity = CallResult<{
-    ok: boolean;
-}>;
+export type ListLiquidity = CallResult<
+    {
+        ok: boolean;
+    },
+    OPNetEvent<LiquidityListedEvent>[]
+>;
 
 /**
  * @description Represents the result of canceling a listing (new).
  */
-export type CancelListing = CallResult<{
-    ok: boolean;
-}>;
+export type CancelListing = CallResult<
+    {
+        ok: boolean;
+    },
+    OPNetEvent<UnlistEvent | TransferEvent>[]
+>;
 
 /**
  * @description Represents the result of creating a new pool (new).
  */
-export type CreatePool = CallResult<{
-    ok: boolean;
-}>;
+export type CreatePool = CallResult<
+    {
+        ok: boolean;
+    },
+    OPNetEvent<TransferEvent | LiquidityAddedEvent>[]
+>;
 
 /**
  * @description Represents the result of setting fees (new).
  */
-export type SetFees = CallResult<{
-    ok: boolean;
-}>;
+export type SetFees = CallResult<
+    {
+        ok: boolean;
+    },
+    []
+>;
 
 /**
  * @description Represents the result of retrieving the fees (new).
  */
-export type GetFees = CallResult<{
-    reservationBaseFee: bigint;
-    priorityQueueBaseFee: bigint;
-    pricePerUserInPriorityQueueBTC: bigint;
-}>;
+export type GetFees = CallResult<
+    {
+        reservationBaseFee: bigint;
+        priorityQueueBaseFee: bigint;
+        pricePerUserInPriorityQueueBTC: bigint;
+    },
+    []
+>;
 
 /**
  * @description Represents the result of a swap operation.
  */
-export type Swap = CallResult<{
-    ok: boolean;
-}>;
+export type Swap = CallResult<
+    {
+        ok: boolean;
+    },
+    OPNetEvent<SwapExecutedEvent | TransferEvent>[]
+>;
 
 /**
  * @description Represents the result of the getReserve function call.
  * Now includes virtualBTCReserve and virtualTokenReserve.
  */
-export type GetReserve = CallResult<{
-    liquidity: bigint;
-    reservedLiquidity: bigint;
-    virtualBTCReserve: bigint;
-    virtualTokenReserve: bigint;
-}>;
+export type GetReserve = CallResult<
+    {
+        liquidity: bigint;
+        reservedLiquidity: bigint;
+        virtualBTCReserve: bigint;
+        virtualTokenReserve: bigint;
+    },
+    []
+>;
 
 /**
  * @description Represents the result of the getQuote function call.
  * Renamed currentPrice -> price.
  */
-export type GetQuote = CallResult<{
-    tokensOut: bigint;
-    requiredSatoshis: bigint;
-    price: bigint;
-}>;
+export type GetQuote = CallResult<
+    {
+        tokensOut: bigint;
+        requiredSatoshis: bigint;
+        price: bigint;
+    },
+    []
+>;
 
 /**
  * @description Represents the result of retrieving provider details.
  */
-export type GetProviderDetails = CallResult<{
-    liquidity: bigint;
-    reserved: bigint;
-    btcReceiver: string;
-}>;
+export type GetProviderDetails = CallResult<
+    {
+        liquidity: bigint;
+        reserved: bigint;
+        btcReceiver: string;
+    },
+    []
+>;
 
 /**
  * @description Represents the result of retrieving the priority queue cost.
  */
-export type GetPriorityQueueCost = CallResult<{
-    cost: bigint;
-}>;
+export type GetPriorityQueueCost = CallResult<
+    {
+        cost: bigint;
+    },
+    []
+>;
 
 /**
  * @description This interface represents the NativeSwap contract,
