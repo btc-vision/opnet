@@ -136,8 +136,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
      * @param {NetEvent[] | ContractEvents} events The events to decode.
      * @returns {OPNetEvent[]} The decoded events.
      */
-    public decodeEvents(events: NetEvent[] | ContractEvents): OPNetEvent[] {
-        const decodedEvents: OPNetEvent[] = [];
+    public decodeEvents(
+        events: NetEvent[] | ContractEvents,
+    ): OPNetEvent<ContractDecodedObjectResult>[] {
+        const decodedEvents: OPNetEvent<ContractDecodedObjectResult>[] = [];
 
         if (!Array.isArray(events)) {
             events = events[this.p2trOrTweaked];
@@ -649,7 +651,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 response.setGasEstimation(gas);
             }
 
-            response.events = this.decodeEvents(response.rawEvents);
+            response.setEvents(this.decodeEvents(response.rawEvents));
 
             return response;
         };

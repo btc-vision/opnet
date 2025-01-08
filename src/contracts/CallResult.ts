@@ -43,8 +43,10 @@ export interface InteractionTransactionReceipt {
  * Represents the result of a contract call.
  * @category Contracts
  */
-export class CallResult<T extends ContractDecodedObjectResult = {}>
-    implements Omit<ICallResultData, 'estimatedGas' | 'events'>
+export class CallResult<
+    T extends ContractDecodedObjectResult = {},
+    U extends OPNetEvent<ContractDecodedObjectResult>[] = OPNetEvent<ContractDecodedObjectResult>[],
+> implements Omit<ICallResultData, 'estimatedGas' | 'events'>
 {
     public readonly result: BinaryReader;
     public readonly accessList: IAccessList;
@@ -56,7 +58,7 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
     public properties: T = {} as T;
 
     public estimatedSatGas: bigint = 0n;
-    public events: OPNetEvent[] = [];
+    public events: U = [] as unknown as U;
 
     public to: string | undefined;
 
@@ -178,6 +180,10 @@ export class CallResult<T extends ContractDecodedObjectResult = {}>
 
     public setDecoded(decoded: DecodedOutput): void {
         this.properties = Object.freeze(decoded.obj) as T;
+    }
+
+    public setEvents(events: U): void {
+        this.events = events;
     }
 
     public setCalldata(calldata: Buffer): void {

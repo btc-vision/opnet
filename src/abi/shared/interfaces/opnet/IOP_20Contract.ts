@@ -1,22 +1,50 @@
 import { Address, AddressMap } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
+import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
 
-export type Name = CallResult<{ name: string }>;
-export type BalanceOf = CallResult<{ balance: bigint }>;
-export type SymbolOf = CallResult<{ symbol: string }>;
-export type TotalSupply = CallResult<{ totalSupply: bigint }>;
-export type MaxSupply = CallResult<{ maximumSupply: bigint }>;
-export type Decimals = CallResult<{ decimals: number }>;
+export type MintEvent = OPNetEvent<{
+    to: Address;
+    amount: bigint;
+}>;
 
-export type Transfer = CallResult<{ success: boolean }>;
-export type TransferFrom = CallResult<{ success: boolean }>;
-export type Approve = CallResult<{ success: boolean }>;
-export type Allowance = CallResult<{ remaining: bigint }>;
-export type Burn = CallResult<{ success: boolean }>;
-export type Mint = CallResult<{ success: boolean }>;
-export type Airdrop = CallResult<{ success: boolean }>;
-export type AirdropWithAmount = CallResult<{ success: boolean }>;
+export type TransferEvent = OPNetEvent<{
+    from: Address;
+    to: Address;
+    amount: bigint;
+}>;
+
+export type BurnEvent = OPNetEvent<{
+    amount: bigint;
+}>;
+
+export type ApproveEvent = OPNetEvent<{
+    owner: Address;
+    spender: Address;
+    value: bigint;
+}>;
+
+export type Name = CallResult<{ name: string }, []>;
+export type BalanceOf = CallResult<{ balance: bigint }, []>;
+export type SymbolOf = CallResult<{ symbol: string }, []>;
+export type TotalSupply = CallResult<{ totalSupply: bigint }, []>;
+export type MaxSupply = CallResult<{ maximumSupply: bigint }, []>;
+export type Decimals = CallResult<{ decimals: number }, []>;
+
+export type Transfer = CallResult<
+    {
+        success: boolean;
+    },
+    [TransferEvent]
+>;
+
+export type TransferFrom = CallResult<{ success: boolean }, [TransferEvent]>;
+export type Approve = CallResult<{ success: boolean }, [ApproveEvent]>;
+export type Allowance = CallResult<{ remaining: bigint }, []>;
+export type Burn = CallResult<{ success: boolean }, [BurnEvent]>;
+export type Mint = CallResult<{ success: boolean }, [MintEvent]>;
+export type Airdrop = CallResult<{ success: boolean }, MintEvent[]>;
+export type AirdropWithAmount = CallResult<{ success: boolean }, MintEvent[]>;
 
 /**
  * @description This interface represents the OP_20 base contract.
