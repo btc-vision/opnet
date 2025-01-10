@@ -292,11 +292,16 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
         if (element.inputs && element.inputs.length) {
             name += '(';
-            for (const input of element.inputs) {
+            for (let i = 0; i < element.inputs.length; i++) {
+                const input = element.inputs[i];
                 const str = AbiTypeToStr[input.type];
 
                 if (!str) {
                     throw new Error(`Unsupported type: ${input.type}`);
+                }
+
+                if (i > 0) {
+                    name += ',';
                 }
 
                 name += str;
@@ -311,7 +316,6 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const writer = new BinaryWriter();
 
         const selectorStr = this.getSelector(element);
-        console.log('Selector:', selectorStr);
         const selector = Number('0x' + bitcoinAbiCoder.encodeSelector(selectorStr));
         writer.writeSelector(selector);
 

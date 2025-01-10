@@ -1,4 +1,4 @@
-import { ABIDataTypes } from '@btc-vision/transaction/src/abi/ABICoder.js';
+import { ABIDataTypes } from '@btc-vision/transaction';
 
 export const AbiTypeToStr: { [key in ABIDataTypes]: string } = {
     [ABIDataTypes.ADDRESS]: 'address',
