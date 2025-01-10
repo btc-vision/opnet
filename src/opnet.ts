@@ -47,6 +47,7 @@ export * from './contracts/interfaces/ICallResult.js';
 export * from './contracts/interfaces/IContract.js';
 export * from './contracts/OPNetEvent.js';
 export * from './contracts/interfaces/SimulatedTransaction.js';
+export * from './contracts/TypeToStr.js';
 
 /** Abi */
 export * from './abi/BitcoinAbiTypes.js';

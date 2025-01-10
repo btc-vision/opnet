@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.2.17",
+    "version": "1.2.18",
     "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -70,6 +70,7 @@
         "@babel/preset-typescript": "^7.26.0",
         "@eslint/js": "^9.17.0",
         "@types/node": "^22.10.5",
+        "@types/sha.js": "^2.4.4",
         "@types/ws": "^8.5.13",
         "assert": "^2.1.0",
         "babel-loader": "^9.2.1",

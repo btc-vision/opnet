@@ -27,6 +27,7 @@ import { IAccessList } from './interfaces/IAccessList.js';
 import { IContract } from './interfaces/IContract.js';
 import { ParsedSimulatedTransaction } from './interfaces/SimulatedTransaction.js';
 import { OPNetEvent } from './OPNetEvent.js';
+import { AbiTypeToStr } from './TypeToStr.js';
 
 const internal = Symbol.for('_btc_internal');
 const bitcoinAbiCoder = new ABICoder();
@@ -286,9 +287,32 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         }
     }
 
+    private getSelector(element: FunctionBaseData): string {
+        let name = element.name;
+
+        if (element.inputs && element.inputs.length) {
+            name += '(';
+            for (const input of element.inputs) {
+                const str = AbiTypeToStr[input.type];
+
+                if (!str) {
+                    throw new Error(`Unsupported type: ${input.type}`);
+                }
+
+                name += str;
+            }
+            name += ')';
+        }
+
+        return name;
+    }
+
     private encodeFunctionData(element: FunctionBaseData, args: unknown[]): BinaryWriter {
         const writer = new BinaryWriter();
-        const selector = Number('0x' + bitcoinAbiCoder.encodeSelector(element.name));
+
+        const selectorStr = this.getSelector(element);
+        console.log('Selector:', selectorStr);
+        const selector = Number('0x' + bitcoinAbiCoder.encodeSelector(selectorStr));
         writer.writeSelector(selector);
 
         if (args.length !== (element.inputs?.length ?? 0)) {
