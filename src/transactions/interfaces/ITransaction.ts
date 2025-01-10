@@ -35,6 +35,11 @@ export interface ITransactionBase<T extends OPNetTransactionTypes> extends ITran
     readonly burnedBitcoin: string | BigNumberish;
 
     /**
+     * @description The priority fee of the transaction.
+     */
+    readonly priorityFee: string | BigNumberish;
+
+    /**
      * @description If the transaction was reverted, this field will contain the revert message.
      */
     readonly revert?: string | Buffer;

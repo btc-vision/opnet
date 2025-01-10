@@ -40,6 +40,11 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
     public readonly burnedBitcoin: BigNumberish;
 
     /**
+     * @description The priority fee of the transaction.
+     */
+    public readonly priorityFee: BigNumberish;
+
+    /**
      * @description The inputs of the transaction.
      */
     public readonly inputs: TransactionInput[];
@@ -80,6 +85,7 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
         this.index = transaction.index;
 
         this.burnedBitcoin = BigInt(transaction.burnedBitcoin) || 0n;
+        this.priorityFee = BigInt(transaction.priorityFee) || 0n;
 
         this.inputs = transaction.inputs.map((input) => new TransactionInput(input));
         this.outputs = transaction.outputs.map(

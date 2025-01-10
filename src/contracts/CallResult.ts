@@ -110,12 +110,13 @@ export class CallResult<
             throw new Error(`Can not send transaction! Simulation reverted: ${this.revert}`);
         }
 
-        const priorityFee: bigint = this.estimatedSatGas + (interactionParams.priorityFee || 0n);
+        const priorityFee = interactionParams.priorityFee || 0n;
+        const totalFee: bigint = this.estimatedSatGas + priorityFee;
         try {
             const UTXOs: UTXO[] =
                 interactionParams.utxos ||
                 (await this.#fetchUTXOs(
-                    priorityFee + interactionParams.maximumAllowedSatToSpend,
+                    totalFee + interactionParams.maximumAllowedSatToSpend,
                     interactionParams,
                 ));
 
@@ -126,6 +127,7 @@ export class CallResult<
             const params: IInteractionParameters | InteractionParametersWithoutSigner = {
                 calldata: this.calldata,
                 priorityFee: priorityFee,
+                gasSatFee: this.estimatedSatGas,
                 feeRate: interactionParams.feeRate || 10,
                 from: interactionParams.refundTo,
                 signer: interactionParams.signer,
