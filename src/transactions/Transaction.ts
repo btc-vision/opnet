@@ -45,6 +45,11 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
     public readonly priorityFee: BigNumberish;
 
     /**
+     * @description The maximum amount of gas that can be spent by the transaction.
+     */
+    public readonly maxGasSat: BigNumberish;
+
+    /**
      * @description The inputs of the transaction.
      */
     public readonly inputs: TransactionInput[];
@@ -98,6 +103,8 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
         if (transaction.pow) {
             this.pow = this.decodeProofOfWorkChallenge(transaction.pow as RawProofOfWorkChallenge);
         }
+
+        this.maxGasSat = this.burnedBitcoin + (this.pow?.reward || 0n) - this.priorityFee;
     }
 
     private decodeProofOfWorkChallenge(challenge: RawProofOfWorkChallenge): ProofOfWorkChallenge {
