@@ -45,13 +45,12 @@ import { ReorgInformation } from './interfaces/ReorgInformation.js';
 export abstract class AbstractRpcProvider {
     private nextId: number = 0;
     private chainId: bigint | undefined;
+    private gasCache: BlockGasParameters | undefined;
+    private lastFetchedGas: number = 0;
 
     protected constructor(public readonly network: Network) {}
 
     private _utxoManager: UTXOsManager = new UTXOsManager(this);
-
-    private gasCache: BlockGasParameters | undefined;
-    private lastFetchedGas: number = 0;
 
     /**
      * Get the UTXO manager.
@@ -218,6 +217,51 @@ export abstract class AbstractRpcProvider {
         }
 
         return BigInt(result);
+    }
+
+    /**
+     * Get the bitcoin balances of multiple addresses.
+     * @param {string[]} addressesLike The addresses to get the balances of
+     * @param {boolean} filterOrdinals Whether to filter ordinals or not
+     * @description This method is used to get the balance of a bitcoin address.
+     * @returns {Record<string, bigint>} The balance of the address
+     * @example await getBalances(['bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq']);
+     */
+    public async getBalances(
+        addressesLike: string[],
+        filterOrdinals: boolean = true,
+    ): Promise<Record<string, bigint>> {
+        const payloads: JsonRpcPayload[] = addressesLike.map((address: string) => {
+            return this.buildJsonRpcPayload(JSONRpcMethods.GET_BALANCE, [address, filterOrdinals]);
+        });
+
+        const balances: JsonRpcCallResult = await this.callMultiplePayloads(payloads);
+        if ('error' in balances) {
+            const error = balances.error as JSONRpcResultError<JSONRpcMethods.GET_BALANCE>;
+
+            throw new Error(`Error fetching block: ${error.message}`);
+        }
+
+        const resultBalance: Record<string, bigint> = {};
+        for (let i = 0; i < balances.length; i++) {
+            const balance = balances[i];
+            const address = addressesLike[i];
+
+            if (!address) throw new Error('Impossible index.');
+
+            if ('error' in balance) {
+                throw new Error(`Error fetching block: ${balance.error}`);
+            }
+
+            const result = balance.result as string;
+            if (!result || (result && !result.startsWith('0x'))) {
+                throw new Error(`Invalid balance returned from provider: ${result}`);
+            }
+
+            resultBalance[address] = BigInt(result);
+        }
+
+        return resultBalance;
     }
 
     /**
@@ -464,18 +508,6 @@ export abstract class AbstractRpcProvider {
         return this.gasCache;
     }
 
-    private async _gasParameters(): Promise<BlockGasParameters> {
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GAS, []);
-        const rawCall: JsonRpcResult = await this.callPayloadSingle(payload);
-
-        if ('error' in rawCall) {
-            throw new Error(`Error fetching gas parameters: ${rawCall.error}`);
-        }
-
-        const result: IBlockGasParametersInput = rawCall.result as IBlockGasParametersInput;
-        return new BlockGasParameters(result);
-    }
-
     /**
      * Send a raw transaction.
      * @description This method is used to send a raw transaction.
@@ -587,6 +619,27 @@ export abstract class AbstractRpcProvider {
      */
     public abstract _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult>;
 
+    /**
+     * Send a single payload. This method is used to send a single payload.
+     * @param {JsonRpcPayload} payload The payload to send
+     * @returns {Promise<JsonRpcResult>} The result of the payload
+     * @throws {Error} If no data is returned
+     * @private
+     */
+    public async callPayloadSingle(payload: JsonRpcPayload): Promise<JsonRpcResult> {
+        const rawData: JsonRpcCallResult = await this._send(payload);
+        if (!rawData.length) {
+            throw new Error('No data returned');
+        }
+
+        const data = rawData.shift();
+        if (!data) {
+            throw new Error('Block not found');
+        }
+
+        return data as JSONRpc2ResponseResult<JSONRpcMethods>;
+    }
+
     /*
      * Generate parameters needed to wrap bitcoin.
      * @description This method is used to generate the parameters needed to wrap bitcoin.
@@ -610,27 +663,6 @@ export abstract class AbstractRpcProvider {
 
         return new WrappedGeneration(result);
     }*/
-
-    /**
-     * Send a single payload. This method is used to send a single payload.
-     * @param {JsonRpcPayload} payload The payload to send
-     * @returns {Promise<JsonRpcResult>} The result of the payload
-     * @throws {Error} If no data is returned
-     * @private
-     */
-    public async callPayloadSingle(payload: JsonRpcPayload): Promise<JsonRpcResult> {
-        const rawData: JsonRpcCallResult = await this._send(payload);
-        if (!rawData.length) {
-            throw new Error('No data returned');
-        }
-
-        const data = rawData.shift();
-        if (!data) {
-            throw new Error('Block not found');
-        }
-
-        return data as JSONRpc2ResponseResult<JSONRpcMethods>;
-    }
 
     /**
      * Send multiple payloads. This method is used to send multiple payloads.
@@ -718,6 +750,18 @@ export abstract class AbstractRpcProvider {
     }
 
     protected abstract providerUrl(url: string): string;
+
+    private async _gasParameters(): Promise<BlockGasParameters> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GAS, []);
+        const rawCall: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        if ('error' in rawCall) {
+            throw new Error(`Error fetching gas parameters: ${rawCall.error}`);
+        }
+
+        const result: IBlockGasParametersInput = rawCall.result as IBlockGasParametersInput;
+        return new BlockGasParameters(result);
+    }
 
     private parseSimulatedTransaction(
         transaction: ParsedSimulatedTransaction,
