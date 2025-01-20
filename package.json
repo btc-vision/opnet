@@ -100,7 +100,7 @@
     },
     "dependencies": {
         "@bitcoinerlab/secp256k1": "^1.2.0",
-        "@btc-vision/bitcoin": "^6.3.4",
+        "@btc-vision/bitcoin": "^6.3.5",
         "@btc-vision/bitcoin-rpc": "^1.0.0",
         "@btc-vision/transaction": "^1.2.9",
         "@noble/hashes": "^1.7.0",
