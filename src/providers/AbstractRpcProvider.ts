@@ -12,10 +12,7 @@ import { ContractData } from '../contracts/ContractData.js';
 import { IAccessList } from '../contracts/interfaces/IAccessList.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
-import {
-    ParsedSimulatedTransaction,
-    SimulatedTransaction,
-} from '../contracts/interfaces/SimulatedTransaction.js';
+import { ParsedSimulatedTransaction, SimulatedTransaction } from '../contracts/interfaces/SimulatedTransaction.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
@@ -538,6 +535,36 @@ export abstract class AbstractRpcProvider {
         }
 
         return result;
+    }
+
+    /**
+     * Bulk send transactions.
+     * @description This method is used to send multiple transactions at the same time.
+     * @param {string[]} txs The raw transactions to send as hex string
+     * @returns {Promise<BroadcastedTransaction[]>} The result of the transaction
+     * @throws {Error} If something went wrong while sending the transaction
+     */
+    public async sendRawTransactions(txs: string[]): Promise<BroadcastedTransaction[]> {
+        const payloads: JsonRpcPayload[] = txs.map((tx) => {
+            return this.buildJsonRpcPayload(JSONRpcMethods.BROADCAST_TRANSACTION, [tx, false]);
+        });
+
+        const rawTxs: JsonRpcCallResult = await this.callMultiplePayloads(payloads);
+        if ('error' in rawTxs) {
+            throw new Error(`Error sending transactions: ${rawTxs.error}`);
+        }
+
+        return rawTxs.map((rawTx) => {
+            const result: BroadcastedTransaction = rawTx.result as BroadcastedTransaction;
+            if (result && result.identifier) {
+                return {
+                    ...result,
+                    identifier: BigInt(result.identifier),
+                };
+            }
+
+            return result;
+        });
     }
 
     /**

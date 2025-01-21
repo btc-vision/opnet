@@ -30,6 +30,7 @@ export default tseslint.config(
             'prefer-spread': 'off',
             '@typescript-eslint/no-empty-object-type': 'off',
             '@typescript-eslint/no-base-to-string': 'off',
+            '@typescript-eslint/no-dynamic-delete': 'off',
         },
     },
     {
