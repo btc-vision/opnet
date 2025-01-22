@@ -14,7 +14,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
     constructor(
         url: string,
         network: Network,
-        private readonly timeout: number = 10_000,
+        private readonly timeout: number = 20_000,
     ) {
         super(network);
 
@@ -49,7 +49,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             if (!resp.ok) {
                 throw new Error(`Failed to fetch: ${resp.statusText}`);
             }
-            
+
             clearTimeout(timeoutId);
 
             //const str = await resp.text();
