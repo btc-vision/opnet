@@ -158,6 +158,7 @@ export type GetQuote = CallResult<
         tokensOut: bigint;
         requiredSatoshis: bigint;
         price: bigint;
+        scale: bigint;
     },
     []
 >;
@@ -254,6 +255,7 @@ export interface INativeSwapContract extends IOP_NETContract {
     createPoolWithSignature(
         signature: Buffer,
         approveAmount: bigint,
+        nonce: bigint,
         token: Address,
         floorPrice: bigint,
         initialLiquidity: bigint,

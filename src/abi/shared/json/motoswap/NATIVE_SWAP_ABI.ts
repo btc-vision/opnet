@@ -267,6 +267,10 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
             {
+                name: 'nonce',
+                type: ABIDataTypes.UINT256,
+            },
+            {
                 name: 'token',
                 type: ABIDataTypes.ADDRESS,
             },
@@ -482,6 +486,10 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             {
                 name: 'price',
                 type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'scale',
+                type: ABIDataTypes.UINT64,
             },
         ],
         type: BitcoinAbiTypes.Function,
