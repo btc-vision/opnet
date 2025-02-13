@@ -339,6 +339,13 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const name = abi.name;
 
         switch (type) {
+            case ABIDataTypes.INT128: {
+                if (typeof value !== 'bigint') {
+                    throw new Error(`Expected value to be of type bigint (${name})`);
+                }
+                writer.writeI128(value);
+                break;
+            }
             case ABIDataTypes.UINT256: {
                 if (typeof value !== 'bigint') {
                     throw new Error(`Expected value to be of type bigint (${name})`);
