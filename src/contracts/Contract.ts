@@ -538,6 +538,9 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
             let decodedResult: DecodedCallResult;
             switch (type) {
+                case ABIDataTypes.INT128:
+                    decodedResult = reader.readI128();
+                    break;
                 case ABIDataTypes.UINT256:
                     decodedResult = reader.readU256();
                     break;
