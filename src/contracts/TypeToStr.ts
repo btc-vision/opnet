@@ -7,6 +7,7 @@ export const AbiTypeToStr: { [key in ABIDataTypes]: string } = {
     [ABIDataTypes.UINT256]: 'uint256',
     [ABIDataTypes.UINT128]: 'uint128',
     [ABIDataTypes.UINT64]: 'uint64',
+    [ABIDataTypes.INT128]: 'int128',
     [ABIDataTypes.UINT32]: 'uint32',
     [ABIDataTypes.UINT16]: 'uint16',
     [ABIDataTypes.UINT8]: 'uint8',
