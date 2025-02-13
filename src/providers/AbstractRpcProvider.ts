@@ -1,6 +1,6 @@
 import { Network } from '@btc-vision/bitcoin';
-import '../serialize/BigInt.js';
 import { Address, AddressTypes, AddressVerificator, BufferHelper } from '@btc-vision/transaction';
+import '../serialize/BigInt.js';
 
 import { Block } from '../block/Block.js';
 import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters.js';
@@ -12,7 +12,10 @@ import { ContractData } from '../contracts/ContractData.js';
 import { IAccessList } from '../contracts/interfaces/IAccessList.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
-import { ParsedSimulatedTransaction, SimulatedTransaction } from '../contracts/interfaces/SimulatedTransaction.js';
+import {
+    ParsedSimulatedTransaction,
+    SimulatedTransaction,
+} from '../contracts/interfaces/SimulatedTransaction.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
@@ -599,7 +602,7 @@ export abstract class AbstractRpcProvider {
         const result: BlockWitnesses = rawWitnesses.result as BlockWitnesses;
 
         for (let i = 0; i < result.length; i++) {
-            result[i].blockNumber = BigInt('0x' + result[i].blockNumber);
+            result[i].blockNumber = BigInt('0x' + result[i].blockNumber.toString());
         }
 
         return result;
@@ -631,8 +634,8 @@ export abstract class AbstractRpcProvider {
             for (let i = 0; i < result.length; i++) {
                 const res = result[i];
 
-                res.fromBlock = BigInt('0x' + res.fromBlock);
-                res.toBlock = BigInt('0x' + res.toBlock);
+                res.fromBlock = BigInt('0x' + res.fromBlock.toString());
+                res.toBlock = BigInt('0x' + res.toBlock.toString());
             }
         }
 
