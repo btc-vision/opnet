@@ -14,25 +14,22 @@ export enum JSONRpcMethods {
     /** Transactions */
     GET_TRANSACTION_BY_HASH = 'btc_getTransactionByHash',
     BROADCAST_TRANSACTION = 'btc_sendRawTransaction',
+    TRANSACTION_PREIMAGE = 'btc_preimage',
 
-    /** Opnet */
-    GENERATE = 'btc_generate',
-
-    /** Historical */
+    /** Addresses */
+    PUBLIC_KEY_INFO = 'btc_publicKeyInfo',
     GET_UTXOS = 'btc_getUTXOs',
+    GET_BALANCE = 'btc_getBalance',
 
-    /** PoA */
+    /** PoC */
     BLOCK_WITNESS = 'btc_blockWitness',
 
     /** State Methods */
     GET_TRANSACTION_RECEIPT = 'btc_getTransactionReceipt',
     GET_CODE = 'btc_getCode',
     GET_STORAGE_AT = 'btc_getStorageAt',
-    GET_BALANCE = 'btc_getBalance',
 
+    /** Simulation */
     CALL = 'btc_call',
     SIMULATE = 'btc_simulate',
-
-    /** Account */
-    PUBLIC_KEY_INFO = 'btc_publicKeyInfo',
 }

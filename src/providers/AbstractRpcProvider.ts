@@ -36,6 +36,11 @@ import {
 import { AddressesInfo, IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
+interface PreimageCache {
+    readonly preimage: Buffer;
+    readonly expireAt: number;
+}
+
 /**
  * @description This class is used to provide an abstract RPC provider.
  * @abstract
@@ -47,6 +52,8 @@ export abstract class AbstractRpcProvider {
     private chainId: bigint | undefined;
     private gasCache: BlockGasParameters | undefined;
     private lastFetchedGas: number = 0;
+
+    private preimageCache: PreimageCache | undefined;
 
     protected constructor(public readonly network: Network) {}
 
@@ -117,6 +124,39 @@ export abstract class AbstractRpcProvider {
         const result: string = rawBlockNumber.result as string;
 
         return BigInt(result);
+    }
+
+    /**
+     * Get the latest preimage to use in a transaction.
+     * @description This method is used to get the latest preimage to use in a transaction.
+     * @returns {Promise<Buffer>} The preimage
+     */
+    public async getPreimage(): Promise<Buffer> {
+        if(this.preimageCache) {
+            if(this.preimageCache.expireAt > Date.now()) {
+                return this.preimageCache.preimage;
+            }
+        }
+
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.TRANSACTION_PREIMAGE,
+            [],
+        );
+
+        const rawBlockNumber: JsonRpcResult = await this.callPayloadSingle(payload);
+        const result: { preimage: string } = rawBlockNumber.result as {preimage: string};
+
+        if(!result || result.preimage === '0000000000000000000000000000000000000000000000000000000000000000') {
+            throw new Error('No preimage found. OPNet is probably not active yet on this blockchain.');
+        }
+
+        const preimage = Buffer.from(result.preimage, 'hex');
+        this.preimageCache = {
+            preimage: preimage,
+            expireAt: Date.now() + 10_000
+        }
+
+        return preimage;
     }
 
     /**

@@ -127,17 +127,19 @@ export class CallResult<
                 throw new Error('No UTXOs found');
             }
 
+            const preimage = await this.#provider.getPreimage();
             const params: IInteractionParameters | InteractionParametersWithoutSigner = {
                 calldata: this.calldata,
                 priorityFee: priorityFee,
                 gasSatFee: this.estimatedSatGas,
                 feeRate: interactionParams.feeRate || 10,
                 from: interactionParams.refundTo,
-                signer: interactionParams.signer,
                 utxos: UTXOs,
                 to: this.to,
                 network: interactionParams.network,
                 optionalOutputs: interactionParams.extraOutputs || [],
+                signer: interactionParams.signer,
+                preimage: preimage,
             };
 
             const transaction = await factory.signInteraction(params);
