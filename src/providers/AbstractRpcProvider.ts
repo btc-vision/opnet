@@ -132,8 +132,8 @@ export abstract class AbstractRpcProvider {
      * @returns {Promise<Buffer>} The preimage
      */
     public async getPreimage(): Promise<Buffer> {
-        if(this.preimageCache) {
-            if(this.preimageCache.expireAt > Date.now()) {
+        if (this.preimageCache) {
+            if (this.preimageCache.expireAt > Date.now()) {
                 return this.preimageCache.preimage;
             }
         }
@@ -144,17 +144,22 @@ export abstract class AbstractRpcProvider {
         );
 
         const rawBlockNumber: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: { preimage: string } = rawBlockNumber.result as {preimage: string};
+        const result: { preimage: string } = rawBlockNumber.result as { preimage: string };
 
-        if(!result || result.preimage === '0000000000000000000000000000000000000000000000000000000000000000') {
-            throw new Error('No preimage found. OPNet is probably not active yet on this blockchain.');
+        if (
+            !result ||
+            result.preimage === '0000000000000000000000000000000000000000000000000000000000000000'
+        ) {
+            throw new Error(
+                'No preimage found. OPNet is probably not active yet on this blockchain.',
+            );
         }
 
         const preimage = Buffer.from(result.preimage, 'hex');
         this.preimageCache = {
             preimage: preimage,
-            expireAt: Date.now() + 10_000
-        }
+            expireAt: Date.now() + 10_000,
+        };
 
         return preimage;
     }
@@ -778,12 +783,14 @@ export abstract class AbstractRpcProvider {
      * Get the public key information.
      * @description This method is used to get the public key information.
      * @param {string | string[] | Address | Address[]} addresses The address or addresses to get the public key information of
+     * @param logErrors
      * @returns {Promise<AddressesInfo>} The public keys information
      * @example await getPublicKeysInfo(['addressA', 'addressB']);
      * @throws {Error} If the address is invalid
      */
     public async getPublicKeysInfo(
         addresses: string | string[] | Address | Address[],
+        logErrors: boolean = false,
     ): Promise<AddressesInfo> {
         const addressArray = Array.isArray(addresses) ? addresses : [addresses];
 
@@ -808,7 +815,13 @@ export abstract class AbstractRpcProvider {
         for (const pubKey of keys) {
             const pubKeyValue = result[pubKey];
             if ('error' in pubKeyValue) {
-                throw new Error(`Error fetching public key info: ${pubKeyValue.error}`);
+                if (logErrors) {
+                    console.error(
+                        `Error fetching public key info for ${pubKey}: ${pubKeyValue.error}`,
+                    );
+                }
+
+                continue;
             }
 
             response[pubKey] = pubKeyValue.originalPubKey
