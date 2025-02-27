@@ -255,8 +255,7 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             { name: 'amount', type: ABIDataTypes.UINT256 },
-            // FIXME: NEEDS TO BE INT128
-            { name: 'rewardDebt', type: ABIDataTypes.UINT128 },
+            { name: 'rewardDebt', type: ABIDataTypes.INT128 },
         ],
     },
     {
