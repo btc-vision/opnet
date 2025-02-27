@@ -83,12 +83,6 @@ export type RewardTokenRemovedEvent = {
  */
 export interface IMotoswapStakingContract extends IOwnableReentrancyGuardContract {
     /**
-     * @description Gets the Moto token address the staking contract uses for deposits
-     * @returns {GetMotoAddress}
-     */
-    getMotoAddress(): Promise<GetMotoAddress>;
-
-    /**
      * @description Gets the stake of a given user
      * @param address {Address} the address of the staker
      * @returns {BalanceOf}

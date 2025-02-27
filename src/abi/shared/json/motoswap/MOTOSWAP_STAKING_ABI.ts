@@ -30,13 +30,6 @@ export const MotoswapStakingEvents: BitcoinInterfaceAbi = [
 
 export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
     {
-        name: 'getMotoAddress',
-        type: BitcoinAbiTypes.Function,
-        constant: true,
-        inputs: [],
-        outputs: [{ name: 'motoAddress', type: ABIDataTypes.ADDRESS }],
-    },
-    {
         name: 'balanceOf',
         type: BitcoinAbiTypes.Function,
         constant: true,
@@ -154,6 +147,15 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
     },
+    {
+        name: 'adminEnableEmergencyWithdrawals',
+        type: BitcoinAbiTypes.Function,
+        constant: false,
+        payable: false,
+        inputs: [],
+        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+    },
+
     // Events
     ...MotoswapStakingEvents,
 

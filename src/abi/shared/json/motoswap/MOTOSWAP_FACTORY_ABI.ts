@@ -75,6 +75,33 @@ export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
         ],
         type: BitcoinAbiTypes.Function,
     },
+    {
+        name: 'setStakingContractAddress',
+        inputs: [
+            {
+                name: 'stakingContractAddress',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        outputs: [
+            {
+                name: 'success',
+                type: ABIDataTypes.BOOL,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
+        name: 'getStakingContractAddress',
+        inputs: [],
+        outputs: [
+            {
+                name: 'stakingContractAddress',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
 
     ...MotoSwapFactoryEvents,
 

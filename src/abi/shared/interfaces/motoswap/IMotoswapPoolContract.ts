@@ -98,7 +98,9 @@ export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mi
      * @param {Address} to
      * @returns {Promise<CallResult>}
      */
-    burn(to: Address): Promise<CallResult>;
+    burn(
+        to: Address,
+    ): Promise<CallResult<{ amount0: bigint; amount1: bigint }, [OPNetEvent<PoolBurnEvent>]>>;
 
     /**
      * Get block timestamp last
@@ -124,4 +126,10 @@ export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mi
      * @returns {Promise<CallResult>}
      */
     price1CumulativeLast(): Promise<CallResult<{ price1CumulativeLast: bigint }>>;
+
+    MINIMUM_LIQUIDITY(): Promise<CallResult<{ MINIMUM_LIQUIDITY: bigint }>>;
+
+    mint(to: Address): Promise<CallResult<{ liquidity: bigint }, [OPNetEvent<PoolMintEvent>]>>;
+
+    initialize(token0: Address, token1: Address): Promise<CallResult<{ success: boolean }>>;
 }

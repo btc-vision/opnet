@@ -17,7 +17,7 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
         values: [
             {
                 name: 'pid',
-                type: ABIDataTypes.UINT32,
+                type: ABIDataTypes.UINT64,
             },
             {
                 name: 'allocPoint',
@@ -25,10 +25,6 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'lpToken',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'rewarder',
                 type: ABIDataTypes.ADDRESS,
             },
         ],
@@ -39,19 +35,11 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
         values: [
             {
                 name: 'pid',
-                type: ABIDataTypes.UINT32,
+                type: ABIDataTypes.UINT64,
             },
             {
                 name: 'allocPoint',
                 type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'rewarder',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'overwrite',
-                type: ABIDataTypes.BOOL,
             },
         ],
     },
@@ -61,7 +49,7 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
         values: [
             {
                 name: 'pid',
-                type: ABIDataTypes.UINT32,
+                type: ABIDataTypes.UINT64,
             },
             {
                 name: 'lastRewardBlock',
@@ -87,7 +75,7 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'pid',
-                type: ABIDataTypes.UINT32,
+                type: ABIDataTypes.UINT64,
             },
             {
                 name: 'amount',
@@ -109,7 +97,7 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'pid',
-                type: ABIDataTypes.UINT32,
+                type: ABIDataTypes.UINT64,
             },
             {
                 name: 'amount',
@@ -131,7 +119,7 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'pid',
-                type: ABIDataTypes.UINT32,
+                type: ABIDataTypes.UINT64,
             },
             {
                 name: 'amount',
@@ -149,7 +137,7 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'pid',
-                type: ABIDataTypes.UINT32,
+                type: ABIDataTypes.UINT64,
             },
             {
                 name: 'amount',
@@ -158,6 +146,50 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
             {
                 name: 'to',
                 type: ABIDataTypes.ADDRESS,
+            },
+        ],
+    },
+    {
+        name: 'StakeBTC',
+        type: BitcoinAbiTypes.Event,
+        values: [
+            {
+                name: 'user',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'stakingTxId',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'stakingIndex',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+    },
+    {
+        name: 'UnstakeBTC',
+        type: BitcoinAbiTypes.Event,
+        values: [
+            {
+                name: 'user',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'stakingTxId',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'stakingIndex',
+                type: ABIDataTypes.UINT256,
             },
         ],
     },
@@ -176,6 +208,8 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
             { name: 'motoPerBlock', type: ABIDataTypes.UINT256 },
             { name: 'bonusEndBlock', type: ABIDataTypes.UINT256 },
             { name: 'bonusMultiplier', type: ABIDataTypes.UINT256 },
+            { name: 'treasuryAddress', type: ABIDataTypes.STRING },
+            { name: 'btcAllocPoint', type: ABIDataTypes.UINT256 },
         ],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
     },
@@ -183,49 +217,45 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         name: 'getLpToken',
         type: BitcoinAbiTypes.Function,
         constant: true,
-        inputs: [{ name: 'pid', type: ABIDataTypes.UINT32 }],
+        inputs: [{ name: 'pid', type: ABIDataTypes.UINT64 }],
         outputs: [{ name: 'lpTokenAddress', type: ABIDataTypes.ADDRESS }],
     },
     {
-        name: 'getRewarder',
+        name: 'getLpTokens',
         type: BitcoinAbiTypes.Function,
         constant: true,
-        inputs: [{ name: 'pid', type: ABIDataTypes.UINT32 }],
-        outputs: [{ name: 'rewarderAddress', type: ABIDataTypes.ADDRESS }],
+        inputs: [],
+        outputs: [{ name: 'lpTokens', type: ABIDataTypes.ARRAY_OF_ADDRESSES }],
     },
     {
         name: 'getPoolInfo',
         type: BitcoinAbiTypes.Function,
         constant: true,
-        inputs: [{ name: 'pid', type: ABIDataTypes.UINT32 }],
+        inputs: [{ name: 'pid', type: ABIDataTypes.UINT64 }],
         outputs: [
-            { name: 'allocPoint', type: ABIDataTypes.UINT64 },
-            { name: 'lastRewardBlock', type: ABIDataTypes.UINT64 },
             { name: 'accMotoPerShare', type: ABIDataTypes.UINT256 },
+            { name: 'lastRewardBlock', type: ABIDataTypes.UINT64 },
+            { name: 'allocPoint', type: ABIDataTypes.UINT64 },
         ],
     },
     {
-        name: 'pools',
+        name: 'getPoolsLength',
         type: BitcoinAbiTypes.Function,
         constant: true,
         inputs: [],
-        outputs: [
-            { name: 'poolLength', type: ABIDataTypes.UINT32 },
-            { name: 'poolsData', type: ABIDataTypes.BYTES },
-        ],
+        outputs: [{ name: 'poolLength', type: ABIDataTypes.UINT64 }],
     },
     {
         name: 'getUserInfo',
         type: BitcoinAbiTypes.Function,
         constant: true,
         inputs: [
-            { name: 'pid', type: ABIDataTypes.UINT32 },
+            { name: 'pid', type: ABIDataTypes.UINT64 },
             { name: 'user', type: ABIDataTypes.ADDRESS },
         ],
         outputs: [
             { name: 'amount', type: ABIDataTypes.UINT256 },
-            // FIXME: NEEDS TO BE INT256
-            { name: 'rewardDebt', type: ABIDataTypes.UINT256 },
+            { name: 'rewardDebt', type: ABIDataTypes.INT128 },
         ],
     },
     {
@@ -257,11 +287,32 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         outputs: [{ name: 'bonusEndBlock', type: ABIDataTypes.UINT256 }],
     },
     {
-        name: 'getBonusMultiplier',
+        name: 'totalBtcStaked',
         type: BitcoinAbiTypes.Function,
         constant: true,
         inputs: [],
-        outputs: [{ name: 'bonusMultiplier', type: ABIDataTypes.UINT256 }],
+        outputs: [{ name: 'totalBtcStaked', type: ABIDataTypes.UINT256 }],
+    },
+    {
+        name: 'treasuryAddress',
+        type: BitcoinAbiTypes.Function,
+        constant: true,
+        inputs: [],
+        outputs: [{ name: 'treasuryAddress', type: ABIDataTypes.STRING }],
+    },
+    {
+        name: 'getStakingTxId',
+        type: BitcoinAbiTypes.Function,
+        constant: true,
+        inputs: [],
+        outputs: [{ name: 'stakingTxId', type: ABIDataTypes.UINT256 }],
+    },
+    {
+        name: 'getStakingIndex',
+        type: BitcoinAbiTypes.Function,
+        constant: true,
+        inputs: [],
+        outputs: [{ name: 'stakingIndex', type: ABIDataTypes.UINT256 }],
     },
     {
         name: 'setMotoPerBlock',
@@ -295,7 +346,6 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             { name: 'allocPoint', type: ABIDataTypes.UINT256 },
             { name: 'lpToken', type: ABIDataTypes.ADDRESS },
-            { name: 'rewarder', type: ABIDataTypes.ADDRESS },
         ],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
     },
@@ -305,10 +355,8 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [
-            { name: 'pid', type: ABIDataTypes.UINT32 },
+            { name: 'pid', type: ABIDataTypes.UINT64 },
             { name: 'allocPoint', type: ABIDataTypes.UINT256 },
-            { name: 'rewarder', type: ABIDataTypes.ADDRESS },
-            { name: 'overwrite', type: ABIDataTypes.BOOL },
         ],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
     },
@@ -325,7 +373,7 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
         constant: false,
         payable: false,
-        inputs: [{ name: 'pid', type: ABIDataTypes.UINT32 }],
+        inputs: [{ name: 'pid', type: ABIDataTypes.UINT64 }],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
     },
     {
@@ -345,7 +393,7 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [
-            { name: 'pid', type: ABIDataTypes.UINT32 },
+            { name: 'pid', type: ABIDataTypes.UINT64 },
             { name: 'user', type: ABIDataTypes.ADDRESS },
         ],
         outputs: [{ name: 'pendingMoto', type: ABIDataTypes.UINT256 }],
@@ -357,7 +405,7 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         payable: false,
         inputs: [
             { name: 'length', type: ABIDataTypes.UINT32 },
-            { name: 'pids', type: ABIDataTypes.ARRAY_OF_UINT32 },
+            { name: 'pids', type: ABIDataTypes.ARRAY_OF_UINT64 },
         ],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
     },
@@ -366,11 +414,11 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
         constant: false,
         payable: false,
-        inputs: [{ name: 'pid', type: ABIDataTypes.UINT32 }],
+        inputs: [{ name: 'pid', type: ABIDataTypes.UINT64 }],
         outputs: [
-            { name: 'allocPoint', type: ABIDataTypes.UINT64 },
-            { name: 'lastRewardBlock', type: ABIDataTypes.UINT64 },
             { name: 'accMotoPerShare', type: ABIDataTypes.UINT256 },
+            { name: 'lastRewardBlock', type: ABIDataTypes.UINT64 },
+            { name: 'allocPoint', type: ABIDataTypes.UINT64 },
         ],
     },
     {
@@ -379,7 +427,7 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [
-            { name: 'pid', type: ABIDataTypes.UINT32 },
+            { name: 'pid', type: ABIDataTypes.UINT64 },
             { name: 'amount', type: ABIDataTypes.UINT256 },
             { name: 'to', type: ABIDataTypes.ADDRESS },
         ],
@@ -391,7 +439,7 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [
-            { name: 'pid', type: ABIDataTypes.UINT32 },
+            { name: 'pid', type: ABIDataTypes.UINT64 },
             { name: 'amount', type: ABIDataTypes.UINT256 },
             { name: 'to', type: ABIDataTypes.ADDRESS },
         ],
@@ -403,7 +451,7 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [
-            { name: 'pid', type: ABIDataTypes.UINT32 },
+            { name: 'pid', type: ABIDataTypes.UINT64 },
             { name: 'to', type: ABIDataTypes.ADDRESS },
         ],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
@@ -414,7 +462,7 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [
-            { name: 'pid', type: ABIDataTypes.UINT32 },
+            { name: 'pid', type: ABIDataTypes.UINT64 },
             { name: 'amount', type: ABIDataTypes.UINT256 },
             { name: 'to', type: ABIDataTypes.ADDRESS },
         ],
@@ -426,7 +474,7 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [
-            { name: 'pid', type: ABIDataTypes.UINT32 },
+            { name: 'pid', type: ABIDataTypes.UINT64 },
             { name: 'to', type: ABIDataTypes.ADDRESS },
         ],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
@@ -439,6 +487,23 @@ const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [{ name: 'devaddr', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
     },
+    {
+        name: 'stakeBtc',
+        type: BitcoinAbiTypes.Function,
+        constant: false,
+        payable: false,
+        inputs: [{ name: 'stakeAmount', type: ABIDataTypes.UINT256 }],
+        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+    },
+    {
+        name: 'unstakeBtc',
+        type: BitcoinAbiTypes.Function,
+        constant: false,
+        payable: false,
+        inputs: [],
+        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+    },
+
     // Events
     ...MotoChefEvents,
 
