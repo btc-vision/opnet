@@ -241,7 +241,7 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'blockTimestampLast',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT256,
             },
         ],
         type: BitcoinAbiTypes.Function,
@@ -253,6 +253,17 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
             {
                 name: 'success',
                 type: ABIDataTypes.BOOL,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
+        name: 'MINIMUM_LIQUIDITY',
+        inputs: [],
+        outputs: [
+            {
+                name: 'MINIMUM_LIQUIDITY',
+                type: ABIDataTypes.UINT256,
             },
         ],
         type: BitcoinAbiTypes.Function,

@@ -1,5 +1,5 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../../opnet.js';
+import { CallResult, OPNetEvent } from '../../../../opnet.js';
 import { IOwnableReentrancyGuardContract } from './IOwnableReentrancyGuardContract.js';
 
 export type PoolInfo = {
@@ -13,12 +13,19 @@ export type UserInfo = {
     rewardDebt: bigint;
 };
 
-export type Initialize = CallResult<{
-    success: boolean;
-}>;
+export type Initialize = CallResult<
+    {
+        success: boolean;
+    },
+    [OPNetEvent<LogPoolAdditionEvent>, OPNetEvent<LogInitEvent>]
+>;
 
 export type GetLpToken = CallResult<{
     lpTokenAddress: Address;
+}>;
+
+export type GetLpTokens = CallResult<{
+    lpTokens: Address[];
 }>;
 
 export type GetRewarder = CallResult<{
@@ -26,6 +33,10 @@ export type GetRewarder = CallResult<{
 }>;
 
 export type GetPoolInfo = CallResult<PoolInfo>;
+
+export type GetPoolsLength = CallResult<{
+    poolLength: bigint;
+}>;
 
 export type GetUserInfo = CallResult<UserInfo>;
 
@@ -54,13 +65,35 @@ export type BonusMultiplier = CallResult<{
     bonusMultiplier: bigint;
 }>;
 
-export type Add = CallResult<{
-    success: boolean;
+export type TotalBtcStaked = CallResult<{
+    totalBtcStaked: bigint;
 }>;
 
-export type Set = CallResult<{
-    success: boolean;
+export type TreasuryAddress = CallResult<{
+    TreasuryAddress: string;
 }>;
+
+export type GetStakingTxId = CallResult<{
+    stakingTxId: bigint;
+}>;
+
+export type GetStakingIndex = CallResult<{
+    stakingIndex: bigint;
+}>;
+
+export type Add = CallResult<
+    {
+        success: boolean;
+    },
+    [OPNetEvent<LogPoolAdditionEvent>]
+>;
+
+export type Set = CallResult<
+    {
+        success: boolean;
+    },
+    [OPNetEvent<LogSetPoolEvent>]
+>;
 
 export type SetMigrator = CallResult<{
     success: boolean;
@@ -82,23 +115,35 @@ export type MassUpdatePools = CallResult<{
     success: boolean;
 }>;
 
-export type UpdatePool = CallResult<PoolInfo>;
+export type UpdatePool = CallResult<PoolInfo, [OPNetEvent<LogUpdatePoolEvent>]>;
 
-export type Deposit = CallResult<{
-    success: boolean;
-}>;
+export type Deposit = CallResult<
+    {
+        success: boolean;
+    },
+    [OPNetEvent<DepositEvent>]
+>;
 
-export type Withdraw = CallResult<{
-    success: boolean;
-}>;
+export type Withdraw = CallResult<
+    {
+        success: boolean;
+    },
+    [OPNetEvent<WithdrawEvent>]
+>;
 
-export type Harvest = CallResult<{
-    success: boolean;
-}>;
+export type Harvest = CallResult<
+    {
+        success: boolean;
+    },
+    [OPNetEvent<HarvestEvent>]
+>;
 
-export type WithdrawAndHarvest = CallResult<{
-    success: boolean;
-}>;
+export type WithdrawAndHarvest = CallResult<
+    {
+        success: boolean;
+    },
+    [OPNetEvent<WithdrawEvent>, OPNetEvent<HarvestEvent>]
+>;
 
 export type SetDev = CallResult<{
     success: boolean;
@@ -116,27 +161,48 @@ export type SetBonusMultiplier = CallResult<{
     success: boolean;
 }>;
 
-export type EmergencyWithdraw = CallResult<{
-    success: boolean;
-}>;
+export type EmergencyWithdraw = CallResult<
+    {
+        success: boolean;
+    },
+    [OPNetEvent<EmergencyWithdrawEvent>]
+>;
+
+export type StakeBtc = CallResult<
+    {
+        success: boolean;
+    },
+    [OPNetEvent<StakeBTCEvent>]
+>;
+
+export type UnstakeBtc = CallResult<
+    {
+        success: boolean;
+    },
+    [OPNetEvent<UnstakeBTCEvent>]
+>;
 
 // EVENTS
+export type LogInitEvent = {
+    success: boolean;
+};
+
 export type LogPoolAdditionEvent = {
-    readonly pid: number; // uint32
+    readonly pid: bigint; // uint256
     readonly allocPoint: bigint; // uint256
     readonly lpToken: Address;
     readonly rewarder: Address;
 };
 
 export type LogSetPoolEvent = {
-    readonly pid: number; // uint32
+    readonly pid: bigint; // uint256
     readonly allocPoint: bigint; // uint256
     readonly rewarder: Address;
     readonly overwrite: boolean; // bool
 };
 
 export type LogUpdatePoolEvent = {
-    readonly pid: number; // uint32
+    readonly pid: bigint; // uint256
     readonly lastRewardBlock: bigint; // uint64
     readonly lpSupply: bigint; // uint256
     readonly accMotoPerShare: bigint; // uint256
@@ -144,32 +210,44 @@ export type LogUpdatePoolEvent = {
 
 export type DepositEvent = {
     readonly user: Address;
-    readonly pid: number; // uint32
+    readonly pid: bigint; // uint32
     readonly amount: bigint; // uint256
     readonly to: Address;
 };
 
 export type WithdrawEvent = {
     readonly user: Address;
-    readonly pid: number; // uint32
+    readonly pid: bigint; // uint256
     readonly amount: bigint; // uint256
     readonly to: Address;
 };
 
 export type HarvestEvent = {
     readonly user: Address;
-    readonly pid: number; // uint32
+    readonly pid: bigint; // uint256
     readonly amount: bigint; // uint256
 };
 
 export type EmergencyWithdrawEvent = {
     readonly user: Address;
-    readonly pid: number; // uint32
+    readonly pid: bigint; // uint256
     readonly amount: bigint; // uint256
     readonly to: Address;
 };
 
-// TODO: Add events to results.
+export type StakeBTCEvent = {
+    readonly user: Address;
+    readonly amount: bigint;
+    readonly stakingTxId: bigint;
+    readonly stakingIndex: bigint;
+};
+
+export type UnstakeBTCEvent = {
+    readonly user: Address;
+    readonly amount: bigint;
+    readonly stakingTxId: bigint;
+    readonly stakingIndex: bigint;
+};
 
 /**
  * @description This interface represents the MotoChef contract.
@@ -186,6 +264,8 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {bigint} motoPerBlock The amount of MOTOs created per block.
      * @param {bigint} bonusEndBlock The block number when the bonus MOTO period ends.
      * @param {bigint} bonusMultiplier The bonus muliplier for early moto makers.
+     * @param treasuryAddress The treasury address for btc
+     * @param btcAllocPoint The alloc point for the BTC pool
      * @returns {Initialize}
      */
     initialize(
@@ -195,6 +275,8 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
         motoPerBlock: bigint,
         bonusEndBlock: bigint,
         bonusMultiplier: bigint,
+        treasuryAddress: string,
+        btcAllocPoint: bigint,
     ): Promise<Initialize>;
 
     /**
@@ -202,21 +284,18 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {number} pid The index of the pool
      * @returns {GetLpToken}
      */
-    getLpToken(pid: number): Promise<GetLpToken>;
+    getLpToken(pid: bigint): Promise<GetLpToken>;
 
-    /**
-     * @description Gets the rewarder address of a pool
-     * @param {number} pid The index of the pool
-     * @returns {GetRewarder}
-     */
-    getRewarder(pid: number): Promise<GetRewarder>;
+    getLpTokens(): Promise<GetLpTokens>;
 
     /**
      * @description Gets the pool info of a pool
      * @param {number} pid The index of the pool
      * @returns {GetPoolInfo}
      */
-    getPoolInfo(pid: number): Promise<GetPoolInfo>;
+    getPoolInfo(pid: bigint): Promise<GetPoolInfo>;
+
+    getPoolsLength(): Promise<GetPoolsLength>;
 
     /**
      * @description Gets the user info of a pool
@@ -224,13 +303,7 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {Address} user The address of the user
      * @returns {GetUserInfo}
      */
-    getUserInfo(pid: number, user: Address): Promise<GetUserInfo>;
-
-    /**
-     * @description Gets all the available pools
-     * @returns {Pools}
-     */
-    pools(): Promise<Pools>;
+    getUserInfo(pid: bigint, user: Address): Promise<GetUserInfo>;
 
     /**
      * @description Gets the total alloc point
@@ -262,6 +335,14 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      */
     getBonusMultiplier(): Promise<BonusMultiplier>;
 
+    totalBtcStaked(): Promise<TotalBtcStaked>;
+
+    treasuryAddress(): Promise<TreasuryAddress>;
+
+    getStakingTxId(): Promise<GetStakingTxId>;
+
+    getStakingIndex(): Promise<GetStakingIndex>;
+
     /**
      * @description Set the moto per block. Can only be called by an admin.
      * @param {bigint} motoPerBlock The amount of MOTO per block.
@@ -290,7 +371,7 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {Address} rewarder Address of the rewarder delegate.
      * @returns {Add}
      */
-    add(allocPoint: bigint, lpToken: Address, rewarder: Address): Promise<Add>;
+    add(allocPoint: bigint, lpToken: Address): Promise<Add>;
 
     /**
      * @description Update the given pool's MOTO allocation point and `IRewarder` contract. Can only be called by an admin.
@@ -300,7 +381,7 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {boolean} overwrite True if _rewarder should be `set`. Otherwise `_rewarder` is ignored.
      * @returns {Set}
      */
-    set(pid: number, allocPoint: bigint, rewarder: Address, overwrite: boolean): Promise<Set>;
+    set(pid: bigint, allocPoint: bigint): Promise<Set>;
 
     /**
      * @description Set the `migrator` contract. Can only be called by an admin.
@@ -314,7 +395,7 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {number} pid The index of the pool.
      * @returns {Migrate}
      */
-    migrate(pid: number): Promise<Migrate>;
+    migrate(pid: bigint): Promise<Migrate>;
 
     /**
      * @description Get the multiplier over the given _from to _to block.
@@ -330,7 +411,7 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {Address} user Address of user.
      * @returns {PendingMoto}
      */
-    pendingMoto(pid: number, user: Address): Promise<PendingMoto>;
+    pendingMoto(pid: bigint, user: Address): Promise<PendingMoto>;
 
     /**
      * @description Update reward variables for all pools. Be careful of gas spending!
@@ -338,14 +419,14 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {number[]} pids Pool IDs of all to be updated. Make sure to update all active pools.
      * @returns {MassUpdatePools}
      */
-    massUpdatePools(length: number, pids: number[]): Promise<MassUpdatePools>;
+    massUpdatePools(length: number, pids: bigint[]): Promise<MassUpdatePools>;
 
     /**
      * @description Update reward variables of the given pool.
      * @param {number} pid The index of the pool
      * @returns {UpdatePool}
      */
-    updatePool(pid: number): Promise<UpdatePool>;
+    updatePool(pid: bigint): Promise<UpdatePool>;
 
     /**
      * @description Deposit LP tokens to MotoChef for MOTO allocation.
@@ -354,7 +435,7 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {Address} to The receiver of `amount` deposit benefit.
      * @returns {Deposit}
      */
-    deposit(pid: number, amount: bigint, to: Address): Promise<Deposit>;
+    deposit(pid: bigint, amount: bigint, to: Address): Promise<Deposit>;
 
     /**
      * @description Withdraw LP tokens from MotoChef.
@@ -363,7 +444,7 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {Address} to The receiver of `amount` deposit benefit.
      * @returns {Withdraw}
      */
-    withdraw(pid: number, amount: bigint, to: Address): Promise<Withdraw>;
+    withdraw(pid: bigint, amount: bigint, to: Address): Promise<Withdraw>;
 
     /**
      * @description Harvest proceeds for transaction sender to `to`.
@@ -371,7 +452,7 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {Address} to Receiver of MOTO rewards.
      * @returns {Harvest}
      */
-    harvest(pid: number, to: Address): Promise<Harvest>;
+    harvest(pid: bigint, to: Address): Promise<Harvest>;
 
     /**
      * @description Withdraw LP tokens from MotoChef and harvest proceeds for transaction sender to `to`.
@@ -380,7 +461,7 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {Address} to Receiver of the LP tokens and MOTO rewards.
      * @returns {WithdrawAndHarvest}
      */
-    withdrawAndHarvest(pid: number, amount: bigint, to: Address): Promise<WithdrawAndHarvest>;
+    withdrawAndHarvest(pid: bigint, amount: bigint, to: Address): Promise<WithdrawAndHarvest>;
 
     /**
      * @description Withdraw without caring about rewards. EMERGENCY ONLY.
@@ -388,7 +469,7 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @param {Address} to Receiver of the LP tokens.
      * @returns {EmergencyWithdraw}
      */
-    emergencyWithdraw(pid: number, to: Address): Promise<EmergencyWithdraw>;
+    emergencyWithdraw(pid: bigint, to: Address): Promise<EmergencyWithdraw>;
 
     /**
      * @description Update dev address by the previous dev.
@@ -396,4 +477,8 @@ export interface IMotoChefContract extends IOwnableReentrancyGuardContract {
      * @returns {SetDev}
      */
     setDev(devaddr: Address): Promise<SetDev>;
+
+    stakeBtc(stakeAmount: bigint): Promise<StakeBtc>;
+
+    unstakeBtc(): Promise<UnstakeBtc>;
 }
