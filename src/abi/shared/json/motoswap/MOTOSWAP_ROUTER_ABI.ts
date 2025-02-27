@@ -197,7 +197,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'amountsOut',
-                type: ABIDataTypes.TUPLE,
+                type: ABIDataTypes.ARRAY_OF_UINT256,
             },
         ],
         type: BitcoinAbiTypes.Function,
@@ -217,7 +217,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'amountsIn',
-                type: ABIDataTypes.TUPLE,
+                type: ABIDataTypes.ARRAY_OF_UINT256,
             },
         ],
         type: BitcoinAbiTypes.Function,
