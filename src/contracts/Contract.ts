@@ -378,14 +378,6 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 writer.writeAddress(value as Address);
                 break;
             }
-            case ABIDataTypes.TUPLE: {
-                if (!(value instanceof Array)) {
-                    throw new Error(`Expected value to be of type Array (${name})`);
-                }
-
-                writer.writeTuple(value as bigint[]);
-                break;
-            }
             case ABIDataTypes.UINT8: {
                 if (typeof value !== 'number') {
                     throw new Error(`Expected value to be of type number (${name})`);
@@ -415,7 +407,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 break;
             }
             case ABIDataTypes.ADDRESS_UINT256_TUPLE: {
-                writer.writeAddressValueTupleMap(value as AddressMap<bigint>);
+                writer.writeAddressValueTuple(value as AddressMap<bigint>);
                 break;
             }
             case ABIDataTypes.BYTES: {
@@ -552,9 +544,6 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                     break;
                 case ABIDataTypes.ADDRESS:
                     decodedResult = reader.readAddress();
-                    break;
-                case ABIDataTypes.TUPLE:
-                    decodedResult = reader.readTuple();
                     break;
                 case ABIDataTypes.UINT8:
                     decodedResult = reader.readU8();

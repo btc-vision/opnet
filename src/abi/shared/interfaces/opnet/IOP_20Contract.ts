@@ -106,7 +106,7 @@ export interface IOP_20Contract extends IOP_NETContract {
 
     mint(address: Address, value: bigint): Promise<Mint>;
 
-    airdrop(tuple: AddressMap<bigint>): Promise<Airdrop>;
+    airdrop(map: AddressMap<bigint>): Promise<Airdrop>;
 
     airdropWithAmount(amount: bigint, addresses: Address[]): Promise<AirdropWithAmount>;
 }
