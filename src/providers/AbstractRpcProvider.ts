@@ -715,30 +715,6 @@ export abstract class AbstractRpcProvider {
         return data as JSONRpc2ResponseResult<JSONRpcMethods>;
     }
 
-    /*
-     * Generate parameters needed to wrap bitcoin.
-     * @description This method is used to generate the parameters needed to wrap bitcoin.
-     * @param {BigNumberish} amount The amount to wrap
-     * @returns {Promise<WrappedGeneration>} The wrapped generation parameters
-     * @example await requestTrustedPublicKeyForBitcoinWrapping(100000000n);
-     * @throws {Error} If something went wrong while generating the parameters
-     */
-
-    /*public async requestTrustedPublicKeyForBitcoinWrapping(
-        amount: BigNumberish,
-    ): Promise<WrappedGeneration> {
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GENERATE, [
-            GenerateTarget.WRAP,
-            amount.toString(),
-        ]);
-
-        const rawPublicKey: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: WrappedGenerationParameters =
-            rawPublicKey.result as WrappedGenerationParameters;
-
-        return new WrappedGeneration(result);
-    }*/
-
     /**
      * Send multiple payloads. This method is used to send multiple payloads.
      * @param {JsonRpcPayload[]} payloads The payloads to send
