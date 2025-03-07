@@ -37,6 +37,13 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         outputs: [{ name: 'balance', type: ABIDataTypes.UINT256 }],
     },
     {
+        name: 'motoAddress',
+        type: BitcoinAbiTypes.Function,
+        constant: true,
+        inputs: [],
+        outputs: [{ name: 'motoAddress', type: ABIDataTypes.ADDRESS }],
+    },
+    {
         name: 'totalSupply',
         type: BitcoinAbiTypes.Function,
         constant: true,
