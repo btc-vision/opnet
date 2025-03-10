@@ -1,4 +1,4 @@
-import { ABIDataTypes, Address } from '@btc-vision/transaction';
+import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../opnet.js';
 import { IOwnableReentrancyGuardContract } from './IOwnableReentrancyGuardContract.js';
 
@@ -11,6 +11,10 @@ export type BalanceOf = CallResult<{
 }>;
 
 export type TotalSupply = CallResult<{
+    totalSupply: bigint;
+}>;
+
+export type MotoAddress = CallResult<{
     totalSupply: bigint;
 }>;
 
@@ -96,6 +100,12 @@ export interface IMotoswapStakingContract extends IOwnableReentrancyGuardContrac
     totalSupply(): Promise<TotalSupply>;
 
     /**
+     * @description Returns the address of the MOTO token accepted as a deposit by the staking contract
+     * @returns {MotoAddress}
+     */
+    motoAddress(): Promise<MotoAddress>;
+
+    /**
      * @description Returns the last block the user interacted with the protocol by staking, unstaking or claiming rewards
      * @param address {Address} the address of the staker
      * @returns {TotalSupply}
@@ -168,6 +178,7 @@ export interface IMotoswapStakingContract extends IOwnableReentrancyGuardContrac
     /**
      * @description Changes the address of the Moto token the protocol allows the users to stake
      * Also affects what token is paid out when unstaking.
+     * NOTE: Can only be called if the Moto token address is not set yet (i.e. == Address.dead())
      * @param token {Address} the address of the Moto token
      * @returns {AdminChangeMotoAddress}
      */
