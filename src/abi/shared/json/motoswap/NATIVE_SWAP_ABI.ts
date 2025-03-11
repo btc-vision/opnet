@@ -83,7 +83,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'maximumAmountIn', type: ABIDataTypes.UINT256 },
             { name: 'minimumAmountOut', type: ABIDataTypes.UINT256 },
             { name: 'forLP', type: ABIDataTypes.BOOL },
-            { name: 'activationDelay', type: ABIDataTypes.UINT8 }, // <--- Added
+            { name: 'activationDelay', type: ABIDataTypes.UINT8 },
         ],
         outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
         type: BitcoinAbiTypes.Function,
