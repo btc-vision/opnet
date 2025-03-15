@@ -38,6 +38,8 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                Connection: 'close',
+                'User-Agent': 'OPNET/1.0',
             },
             body: JSON.stringify(payload),
             timeout: this.timeout,
