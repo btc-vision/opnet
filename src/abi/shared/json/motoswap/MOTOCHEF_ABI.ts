@@ -282,7 +282,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
             },
             {
                 name: 'treasuryAddress',
-                type: ABIDataTypes.STRING,
+                type: ABIDataTypes.ADDRESS,
             },
             {
                 name: 'BTCAllocPoint',
@@ -484,7 +484,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'treasuryAddress',
-                type: ABIDataTypes.STRING,
+                type: ABIDataTypes.ADDRESS,
             },
         ],
     },
