@@ -4,7 +4,7 @@ import { CallResult, IOP_NETContract, OPNetEvent } from '../../../../opnet';
 // ------------------------------------------------------------------
 // Event Definitions
 // ------------------------------------------------------------------
-export type OwnershipTransferredEvent = {
+type OwnershipTransferredEvent = {
     readonly previousOwner: Address;
     readonly newOwner: Address;
 };
@@ -16,9 +16,9 @@ export type OwnershipTransferredEvent = {
 /**
  * @description Represents the result of the owner function call.
  */
-export type Owner = CallResult<
+type Owner = CallResult<
     {
-        returnVal1: Address;
+        owner: Address;
     },
     OPNetEvent<never>[]
 >;
@@ -26,9 +26,9 @@ export type Owner = CallResult<
 /**
  * @description Represents the result of the renounceOwnership function call.
  */
-export type RenounceOwnership = CallResult<
+type RenounceOwnership = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
     OPNetEvent<OwnershipTransferredEvent>[]
 >;
@@ -36,17 +36,17 @@ export type RenounceOwnership = CallResult<
 /**
  * @description Represents the result of the transferOwnership function call.
  */
-export type TransferOwnership = CallResult<
+type TransferOwnership = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
     OPNetEvent<OwnershipTransferredEvent>[]
 >;
 
 // ------------------------------------------------------------------
-// IMotoChefOwnable
+// IOwnable
 // ------------------------------------------------------------------
-interface IMotoChefOwnable extends IOP_NETContract {
+interface IOwnable extends IOP_NETContract {
     owner(): Promise<Owner>;
     renounceOwnership(): Promise<RenounceOwnership>;
     transferOwnership(newOwner: Address): Promise<TransferOwnership>;
@@ -55,52 +55,52 @@ interface IMotoChefOwnable extends IOP_NETContract {
 // ------------------------------------------------------------------
 // Event Definitions
 // ------------------------------------------------------------------
-export type LogInitEvent = {};
-export type LogPoolAdditionEvent = {
+type LogPoolAdditionEvent = {
     readonly poolId: bigint;
     readonly allocPoint: bigint;
     readonly lpToken: Address;
 };
-export type StakedBTCEvent = {
-    readonly user: Address;
-    readonly netAmount: bigint;
-    readonly stakeTxHash: bigint;
-    readonly stakeIndex: bigint;
-};
-export type LogUpdatePoolEvent = {
+type LogInitEvent = {};
+type LogUpdatePoolEvent = {
     readonly poolId: bigint;
     readonly lastRewardBlock: bigint;
     readonly lpSupply: bigint;
     readonly accMotoPerShare: bigint;
 };
-export type UnstakedBTCEvent = {
+type StakedBTCEvent = {
+    readonly user: Address;
+    readonly netAmount: bigint;
+    readonly stakeTxHash: bigint;
+    readonly stakeIndex: bigint;
+};
+type UnstakedBTCEvent = {
     readonly user: Address;
     readonly pendingMoto: bigint;
     readonly storedTxHash: bigint;
     readonly storedIndex: bigint;
 };
-export type LogSetPoolEvent = {
+type LogSetPoolEvent = {
     readonly poolId: bigint;
     readonly allocPoint: bigint;
 };
-export type DepositEvent = {
+type DepositEvent = {
     readonly user: Address;
     readonly poolId: bigint;
     readonly amount: bigint;
     readonly to: Address;
 };
-export type WithdrawEvent = {
+type WithdrawEvent = {
     readonly user: Address;
     readonly poolId: bigint;
     readonly amount: bigint;
     readonly to: Address;
 };
-export type HarvestEvent = {
+type HarvestEvent = {
     readonly user: Address;
     readonly poolId: bigint;
     readonly amount: bigint;
 };
-export type EmergencyWithdrawEvent = {
+type EmergencyWithdrawEvent = {
     readonly user: Address;
     readonly poolId: bigint;
     readonly amount: bigint;
@@ -114,19 +114,19 @@ export type EmergencyWithdrawEvent = {
 /**
  * @description Represents the result of the initialize function call.
  */
-export type Initialize = CallResult<
+type Initialize = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
-    OPNetEvent<LogInitEvent | LogPoolAdditionEvent>[]
+    OPNetEvent<LogPoolAdditionEvent | LogInitEvent>[]
 >;
 
 /**
  * @description Represents the result of the totalAllocPoint function call.
  */
-export type TotalAllocPoint = CallResult<
+type TotalAllocPoint = CallResult<
     {
-        returnVal1: bigint;
+        totalAllocPoint: bigint;
     },
     OPNetEvent<never>[]
 >;
@@ -134,9 +134,9 @@ export type TotalAllocPoint = CallResult<
 /**
  * @description Represents the result of the devAddress function call.
  */
-export type DevAddress = CallResult<
+type DevAddress = CallResult<
     {
-        returnVal1: Address;
+        devAddress: Address;
     },
     OPNetEvent<never>[]
 >;
@@ -144,9 +144,9 @@ export type DevAddress = CallResult<
 /**
  * @description Represents the result of the getMotoPerBlock function call.
  */
-export type GetMotoPerBlock = CallResult<
+type GetMotoPerBlock = CallResult<
     {
-        returnVal1: bigint;
+        motoPerBlock: Address;
     },
     OPNetEvent<never>[]
 >;
@@ -154,9 +154,9 @@ export type GetMotoPerBlock = CallResult<
 /**
  * @description Represents the result of the getBonusEndBlock function call.
  */
-export type GetBonusEndBlock = CallResult<
+type GetBonusEndBlock = CallResult<
     {
-        returnVal1: bigint;
+        bonusEndBlock: Address;
     },
     OPNetEvent<never>[]
 >;
@@ -164,9 +164,9 @@ export type GetBonusEndBlock = CallResult<
 /**
  * @description Represents the result of the getBonusMultiplier function call.
  */
-export type GetBonusMultiplier = CallResult<
+type GetBonusMultiplier = CallResult<
     {
-        returnVal1: bigint;
+        bonusMultiplier: Address;
     },
     OPNetEvent<never>[]
 >;
@@ -174,9 +174,9 @@ export type GetBonusMultiplier = CallResult<
 /**
  * @description Represents the result of the getLpTokens function call.
  */
-export type GetLpTokens = CallResult<
+type GetLpTokens = CallResult<
     {
-        returnVal1: Address[];
+        lpTokens: Address[];
     },
     OPNetEvent<never>[]
 >;
@@ -184,9 +184,9 @@ export type GetLpTokens = CallResult<
 /**
  * @description Represents the result of the getPoolsLength function call.
  */
-export type GetPoolsLength = CallResult<
+type GetPoolsLength = CallResult<
     {
-        returnVal1: bigint;
+        poolsLength: bigint;
     },
     OPNetEvent<never>[]
 >;
@@ -194,9 +194,9 @@ export type GetPoolsLength = CallResult<
 /**
  * @description Represents the result of the getLpToken function call.
  */
-export type GetLpToken = CallResult<
+type GetLpToken = CallResult<
     {
-        returnVal1: Address;
+        lpToken: Address;
     },
     OPNetEvent<never>[]
 >;
@@ -204,7 +204,7 @@ export type GetLpToken = CallResult<
 /**
  * @description Represents the result of the getPoolInfo function call.
  */
-export type GetPoolInfo = CallResult<
+type GetPoolInfo = CallResult<
     {
         accMotoPerShare: bigint;
         lastRewardBlock: bigint;
@@ -216,7 +216,7 @@ export type GetPoolInfo = CallResult<
 /**
  * @description Represents the result of the getUserInfo function call.
  */
-export type GetUserInfo = CallResult<
+type GetUserInfo = CallResult<
     {
         amount: bigint;
         rewardDebt: bigint;
@@ -227,9 +227,9 @@ export type GetUserInfo = CallResult<
 /**
  * @description Represents the result of the getMultiplier function call.
  */
-export type GetMultiplier = CallResult<
+type GetMultiplier = CallResult<
     {
-        returnVal1: bigint;
+        multiplier: bigint;
     },
     OPNetEvent<never>[]
 >;
@@ -237,9 +237,9 @@ export type GetMultiplier = CallResult<
 /**
  * @description Represents the result of the pendingMoto function call.
  */
-export type PendingMoto = CallResult<
+type PendingMoto = CallResult<
     {
-        returnVal1: bigint;
+        pendingMoto: bigint;
     },
     OPNetEvent<never>[]
 >;
@@ -247,9 +247,9 @@ export type PendingMoto = CallResult<
 /**
  * @description Represents the result of the treasuryAddress function call.
  */
-export type TreasuryAddress = CallResult<
+type TreasuryAddress = CallResult<
     {
-        returnVal1: Address;
+        treasuryAddress: string;
     },
     OPNetEvent<never>[]
 >;
@@ -257,9 +257,9 @@ export type TreasuryAddress = CallResult<
 /**
  * @description Represents the result of the getStakingTxHash function call.
  */
-export type GetStakingTxHash = CallResult<
+type GetStakingTxHash = CallResult<
     {
-        returnVal1: bigint;
+        stakingTxHash: bigint;
     },
     OPNetEvent<never>[]
 >;
@@ -267,9 +267,9 @@ export type GetStakingTxHash = CallResult<
 /**
  * @description Represents the result of the getStakingIndex function call.
  */
-export type GetStakingIndex = CallResult<
+type GetStakingIndex = CallResult<
     {
-        returnVal1: bigint;
+        stakingIndex: bigint;
     },
     OPNetEvent<never>[]
 >;
@@ -277,9 +277,9 @@ export type GetStakingIndex = CallResult<
 /**
  * @description Represents the result of the totalBTCStaked function call.
  */
-export type TotalBTCStaked = CallResult<
+type TotalBTCStaked = CallResult<
     {
-        returnVal1: bigint;
+        totalBTCStaked: bigint;
     },
     OPNetEvent<never>[]
 >;
@@ -287,29 +287,29 @@ export type TotalBTCStaked = CallResult<
 /**
  * @description Represents the result of the stakeBTC function call.
  */
-export type StakeBTC = CallResult<
+type StakeBTC = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
-    OPNetEvent<StakedBTCEvent | LogUpdatePoolEvent>[]
+    OPNetEvent<LogUpdatePoolEvent | StakedBTCEvent>[]
 >;
 
 /**
  * @description Represents the result of the unstakeBTC function call.
  */
-export type UnstakeBTC = CallResult<
+type UnstakeBTC = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
-    OPNetEvent<UnstakedBTCEvent | LogUpdatePoolEvent>[]
+    OPNetEvent<LogUpdatePoolEvent | UnstakedBTCEvent>[]
 >;
 
 /**
  * @description Represents the result of the add function call.
  */
-export type Add = CallResult<
+type Add = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
     OPNetEvent<LogPoolAdditionEvent>[]
 >;
@@ -317,9 +317,9 @@ export type Add = CallResult<
 /**
  * @description Represents the result of the set function call.
  */
-export type Set = CallResult<
+type Set = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
     OPNetEvent<LogSetPoolEvent>[]
 >;
@@ -327,7 +327,7 @@ export type Set = CallResult<
 /**
  * @description Represents the result of the updatePool function call.
  */
-export type UpdatePool = CallResult<
+type UpdatePool = CallResult<
     {
         accMotoPerShare: bigint;
         lastRewardBlock: bigint;
@@ -339,9 +339,9 @@ export type UpdatePool = CallResult<
 /**
  * @description Represents the result of the massUpdatePools function call.
  */
-export type MassUpdatePools = CallResult<
+type MassUpdatePools = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
     OPNetEvent<LogUpdatePoolEvent>[]
 >;
@@ -349,49 +349,49 @@ export type MassUpdatePools = CallResult<
 /**
  * @description Represents the result of the deposit function call.
  */
-export type Deposit = CallResult<
+type Deposit = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
-    OPNetEvent<DepositEvent | LogUpdatePoolEvent>[]
+    OPNetEvent<LogUpdatePoolEvent | DepositEvent>[]
 >;
 
 /**
  * @description Represents the result of the withdraw function call.
  */
-export type Withdraw = CallResult<
+type Withdraw = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
-    OPNetEvent<WithdrawEvent | LogUpdatePoolEvent>[]
+    OPNetEvent<LogUpdatePoolEvent | WithdrawEvent>[]
 >;
 
 /**
  * @description Represents the result of the harvest function call.
  */
-export type Harvest = CallResult<
+type Harvest = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
-    OPNetEvent<HarvestEvent | LogUpdatePoolEvent>[]
+    OPNetEvent<LogUpdatePoolEvent | HarvestEvent>[]
 >;
 
 /**
  * @description Represents the result of the withdrawAndHarvest function call.
  */
-export type WithdrawAndHarvest = CallResult<
+type WithdrawAndHarvest = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
-    OPNetEvent<WithdrawEvent | HarvestEvent | LogUpdatePoolEvent>[]
+    OPNetEvent<LogUpdatePoolEvent | WithdrawEvent | HarvestEvent>[]
 >;
 
 /**
  * @description Represents the result of the emergencyWithdraw function call.
  */
-export type EmergencyWithdraw = CallResult<
+type EmergencyWithdraw = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
     OPNetEvent<EmergencyWithdrawEvent>[]
 >;
@@ -399,9 +399,9 @@ export type EmergencyWithdraw = CallResult<
 /**
  * @description Represents the result of the setMotoPerBlock function call.
  */
-export type SetMotoPerBlock = CallResult<
+type SetMotoPerBlock = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
     OPNetEvent<never>[]
 >;
@@ -409,9 +409,9 @@ export type SetMotoPerBlock = CallResult<
 /**
  * @description Represents the result of the setBonusEndBlock function call.
  */
-export type SetBonusEndBlock = CallResult<
+type SetBonusEndBlock = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
     OPNetEvent<never>[]
 >;
@@ -419,9 +419,9 @@ export type SetBonusEndBlock = CallResult<
 /**
  * @description Represents the result of the setBonusMultiplier function call.
  */
-export type SetBonusMultiplier = CallResult<
+type SetBonusMultiplier = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
     OPNetEvent<never>[]
 >;
@@ -429,9 +429,9 @@ export type SetBonusMultiplier = CallResult<
 /**
  * @description Represents the result of the setDev function call.
  */
-export type SetDev = CallResult<
+type SetDev = CallResult<
     {
-        returnVal1: boolean;
+        success: boolean;
     },
     OPNetEvent<never>[]
 >;
@@ -439,7 +439,7 @@ export type SetDev = CallResult<
 // ------------------------------------------------------------------
 // IMotoChef
 // ------------------------------------------------------------------
-export interface IMotoChef extends IMotoChefOwnable {
+export interface IMotoChef extends IOwnable {
     initialize(
         motoAddress: Address,
         premineAmount: bigint,

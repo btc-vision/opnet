@@ -3,7 +3,7 @@ import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_NET_ABI } from '../opnet/OP_NET_ABI.js';
 
-export const OwnableEvents: BitcoinInterfaceAbi = [
+const OwnableEvents: BitcoinInterfaceAbi = [
     {
         name: 'OwnershipTransferred',
         values: [
@@ -20,12 +20,48 @@ export const OwnableEvents: BitcoinInterfaceAbi = [
     },
 ];
 
-export const MotoChefEvents: BitcoinInterfaceAbi = [
+const OWNABLE_ABI: BitcoinInterfaceAbi = [
     {
-        name: 'LogInit',
-        values: [],
-        type: BitcoinAbiTypes.Event,
+        name: 'owner',
+        type: BitcoinAbiTypes.Function,
+        inputs: [],
+        outputs: [
+            {
+                name: 'returnVal1',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
     },
+    {
+        name: 'renounceOwnership',
+        type: BitcoinAbiTypes.Function,
+        inputs: [],
+        outputs: [
+            {
+                name: 'returnVal1',
+                type: ABIDataTypes.BOOL,
+            },
+        ],
+    },
+    {
+        name: 'transferOwnership',
+        type: BitcoinAbiTypes.Function,
+        inputs: [
+            {
+                name: 'newOwner',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        outputs: [
+            {
+                name: 'returnVal1',
+                type: ABIDataTypes.BOOL,
+            },
+        ],
+    },
+];
+
+const MotoChefEvents: BitcoinInterfaceAbi = [
     {
         name: 'LogPoolAddition',
         values: [
@@ -40,6 +76,33 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
             {
                 name: 'lpToken',
                 type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'LogInit',
+        values: [],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'LogUpdatePool',
+        values: [
+            {
+                name: 'poolId',
+                type: ABIDataTypes.UINT64,
+            },
+            {
+                name: 'lastRewardBlock',
+                type: ABIDataTypes.UINT64,
+            },
+            {
+                name: 'lpSupply',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'accMotoPerShare',
+                type: ABIDataTypes.UINT256,
             },
         ],
         type: BitcoinAbiTypes.Event,
@@ -61,28 +124,6 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'stakeIndex',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'LogUpdatePool',
-        values: [
-            {
-                name: 'poolId',
-                type: ABIDataTypes.UINT64,
-            },
-            {
-                name: 'lastRewardBlock',
-                type: ABIDataTypes.UINT64,
-            },
-            {
-                name: 'lpSupply',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'accMotoPerShare',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -210,47 +251,6 @@ export const MotoChefEvents: BitcoinInterfaceAbi = [
     },
 ];
 
-export const MOTOCHEF_OWNABLE_ABI: BitcoinInterfaceAbi = [
-    {
-        name: 'owner',
-        type: BitcoinAbiTypes.Function,
-        inputs: [],
-        outputs: [
-            {
-                name: 'returnVal1',
-                type: ABIDataTypes.ADDRESS,
-            },
-        ],
-    },
-    {
-        name: 'renounceOwnership',
-        type: BitcoinAbiTypes.Function,
-        inputs: [],
-        outputs: [
-            {
-                name: 'returnVal1',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
-    },
-    {
-        name: 'transferOwnership',
-        type: BitcoinAbiTypes.Function,
-        inputs: [
-            {
-                name: 'newOwner',
-                type: ABIDataTypes.ADDRESS,
-            },
-        ],
-        outputs: [
-            {
-                name: 'returnVal1',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
-    },
-];
-
 export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'initialize',
@@ -291,7 +291,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -302,7 +302,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'totalAllocPoint',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -313,7 +313,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'devAddress',
                 type: ABIDataTypes.ADDRESS,
             },
         ],
@@ -324,8 +324,8 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
-                type: ABIDataTypes.UINT256,
+                name: 'motoPerBlock',
+                type: ABIDataTypes.ADDRESS,
             },
         ],
     },
@@ -335,8 +335,8 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
-                type: ABIDataTypes.UINT256,
+                name: 'bonusEndBlock',
+                type: ABIDataTypes.ADDRESS,
             },
         ],
     },
@@ -346,8 +346,8 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
-                type: ABIDataTypes.UINT256,
+                name: 'bonusMultiplier',
+                type: ABIDataTypes.ADDRESS,
             },
         ],
     },
@@ -357,7 +357,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'lpTokens',
                 type: ABIDataTypes.ARRAY_OF_ADDRESSES,
             },
         ],
@@ -368,7 +368,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'poolsLength',
                 type: ABIDataTypes.UINT64,
             },
         ],
@@ -384,7 +384,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'lpToken',
                 type: ABIDataTypes.ADDRESS,
             },
         ],
@@ -452,7 +452,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'multiplier',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -472,7 +472,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'pendingMoto',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -483,8 +483,8 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
-                type: ABIDataTypes.ADDRESS,
+                name: 'treasuryAddress',
+                type: ABIDataTypes.STRING,
             },
         ],
     },
@@ -499,7 +499,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'stakingTxHash',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -515,7 +515,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'stakingIndex',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -526,7 +526,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'totalBTCStaked',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -542,7 +542,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -553,7 +553,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -573,7 +573,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -593,7 +593,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -637,7 +637,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -661,7 +661,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -685,7 +685,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -705,7 +705,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -729,7 +729,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -749,7 +749,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -765,7 +765,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -781,7 +781,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -797,7 +797,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -813,21 +813,19 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
     },
+
+    // Ownable
+    ...OwnableEvents,
+    ...OWNABLE_ABI,
 
     // Events
     ...MotoChefEvents,
 
     // OP_NET
     ...OP_NET_ABI,
-
-    // Ownable
-    ...MOTOCHEF_OWNABLE_ABI,
-    ...OwnableEvents,
 ];
-
-export default MOTOCHEF_ABI;
