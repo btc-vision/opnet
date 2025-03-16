@@ -325,7 +325,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'motoPerBlock',
-                type: ABIDataTypes.ADDRESS,
+                type: ABIDataTypes.UINT256,
             },
         ],
     },
@@ -336,7 +336,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'bonusEndBlock',
-                type: ABIDataTypes.ADDRESS,
+                type: ABIDataTypes.UINT256,
             },
         ],
     },
@@ -347,7 +347,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'bonusMultiplier',
-                type: ABIDataTypes.ADDRESS,
+                type: ABIDataTypes.UINT256,
             },
         ],
     },

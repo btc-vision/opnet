@@ -1,5 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult, IOP_NETContract, OPNetEvent } from '../../../../opnet';
+import { CallResult, OPNetEvent } from '../../../../opnet';
+import { IOP_NETContract } from '../opnet/IOP_NETContract';
 
 // ------------------------------------------------------------------
 // Event Definitions
@@ -146,7 +147,7 @@ type DevAddress = CallResult<
  */
 type GetMotoPerBlock = CallResult<
     {
-        motoPerBlock: Address;
+        motoPerBlock: bigint;
     },
     OPNetEvent<never>[]
 >;
@@ -156,7 +157,7 @@ type GetMotoPerBlock = CallResult<
  */
 type GetBonusEndBlock = CallResult<
     {
-        bonusEndBlock: Address;
+        bonusEndBlock: bigint;
     },
     OPNetEvent<never>[]
 >;
@@ -166,7 +167,7 @@ type GetBonusEndBlock = CallResult<
  */
 type GetBonusMultiplier = CallResult<
     {
-        bonusMultiplier: Address;
+        bonusMultiplier: bigint;
     },
     OPNetEvent<never>[]
 >;
