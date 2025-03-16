@@ -75,5 +75,3 @@ export const ADMINISTERED_OP_20_ABI: BitcoinInterfaceAbi = [
     // OP_20
     ...OP_20_ABI,
 ];
-
-export default ADMINISTERED_OP_20_ABI;

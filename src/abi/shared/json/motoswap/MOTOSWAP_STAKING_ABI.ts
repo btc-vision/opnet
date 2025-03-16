@@ -50,7 +50,7 @@ const MOTOSWAP_OWNABLE_REENTRANCY_GUARD_ABI: BitcoinInterfaceAbi = [
     },
 ];
 
-export const MotoswapStakingEvents: BitcoinInterfaceAbi = [
+const MotoswapStakingEvents: BitcoinInterfaceAbi = [
     {
         name: 'RewardTokenAdded',
         type: BitcoinAbiTypes.Event,

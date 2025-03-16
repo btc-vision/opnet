@@ -8,41 +8,41 @@ import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
  * Event Definitions
  * ------------------------------------------------------------------ */
 
-export type LiquidityAddedEvent = {
+type LiquidityAddedEvent = {
     readonly totalTokensContributed: bigint;
     readonly virtualTokenExchanged: bigint;
     readonly totalSatoshisSpent: bigint;
 };
 
-export type LiquidityListedEvent = {
+type LiquidityListedEvent = {
     readonly totalLiquidity: bigint;
     readonly provider: string;
 };
 
-export type LiquidityRemovedEvent = {
+type LiquidityRemovedEvent = {
     readonly providerId: bigint;
     readonly btcOwed: bigint;
     readonly tokenAmount: bigint;
 };
 
-export type ReservationCreatedEvent = {
+type ReservationCreatedEvent = {
     readonly expectedAmountOut: bigint;
     readonly totalSatoshis: bigint;
 };
 
-export type SwapExecutedEvent = {
+type SwapExecutedEvent = {
     readonly buyer: Address;
     readonly amountIn: bigint;
     readonly amountOut: bigint;
 };
 
-export type UnlistEvent = {
+type UnlistEvent = {
     readonly token: Address;
     readonly amount: bigint;
     readonly remainingLiquidity: bigint;
 };
 
-export type LiquidityReservedEvent = {
+type LiquidityReservedEvent = {
     readonly depositAddress: string;
     readonly amount: bigint;
 };
@@ -54,7 +54,7 @@ export type LiquidityReservedEvent = {
 /**
  * @description Represents the result of the reserve function call.
  */
-export type ReserveNativeSwap = CallResult<
+type ReserveNativeSwap = CallResult<
     {
         ok: boolean;
     },
@@ -64,7 +64,7 @@ export type ReserveNativeSwap = CallResult<
 /**
  * @description Represents the result of adding liquidity.
  */
-export type AddLiquidity = CallResult<
+type AddLiquidity = CallResult<
     {
         ok: boolean;
     },
@@ -74,7 +74,7 @@ export type AddLiquidity = CallResult<
 /**
  * @description Represents the result of removing liquidity.
  */
-export type RemoveLiquidity = CallResult<
+type RemoveLiquidity = CallResult<
     {
         ok: boolean;
     },
@@ -84,7 +84,7 @@ export type RemoveLiquidity = CallResult<
 /**
  * @description Represents the result of listing liquidity (new).
  */
-export type ListLiquidity = CallResult<
+type ListLiquidity = CallResult<
     {
         ok: boolean;
     },
@@ -94,7 +94,7 @@ export type ListLiquidity = CallResult<
 /**
  * @description Represents the result of canceling a listing (new).
  */
-export type CancelListing = CallResult<
+type CancelListing = CallResult<
     {
         ok: boolean;
     },
@@ -104,7 +104,7 @@ export type CancelListing = CallResult<
 /**
  * @description Represents the result of creating a new pool (new).
  */
-export type CreatePool = CallResult<
+type CreatePool = CallResult<
     {
         ok: boolean;
     },
@@ -114,7 +114,7 @@ export type CreatePool = CallResult<
 /**
  * @description Represents the result of setting fees (new).
  */
-export type SetFees = CallResult<
+type SetFees = CallResult<
     {
         ok: boolean;
     },
@@ -124,7 +124,7 @@ export type SetFees = CallResult<
 /**
  * @description Represents the result of retrieving the fees (new).
  */
-export type GetFees = CallResult<
+type GetFees = CallResult<
     {
         reservationBaseFee: bigint;
         priorityQueueBaseFee: bigint;
@@ -135,7 +135,7 @@ export type GetFees = CallResult<
 /**
  * @description Represents the result of a swap operation.
  */
-export type Swap = CallResult<
+type Swap = CallResult<
     {
         ok: boolean;
     },
@@ -146,7 +146,7 @@ export type Swap = CallResult<
  * @description Represents the result of the getReserve function call.
  * Now includes virtualBTCReserve and virtualTokenReserve.
  */
-export type GetReserve = CallResult<
+type GetReserve = CallResult<
     {
         liquidity: bigint;
         reservedLiquidity: bigint;
@@ -159,7 +159,7 @@ export type GetReserve = CallResult<
 /**
  * @description Represents the result of the getQuote function call.
  */
-export type GetQuote = CallResult<
+type GetQuote = CallResult<
     {
         tokensOut: bigint;
         requiredSatoshis: bigint;
@@ -172,7 +172,7 @@ export type GetQuote = CallResult<
 /**
  * @description Represents the result of retrieving provider details.
  */
-export type GetProviderDetails = CallResult<
+type GetProviderDetails = CallResult<
     {
         liquidity: bigint;
         reserved: bigint;
@@ -184,7 +184,7 @@ export type GetProviderDetails = CallResult<
 /**
  * @description Represents the result of retrieving the priority queue cost.
  */
-export type GetPriorityQueueCost = CallResult<
+type GetPriorityQueueCost = CallResult<
     {
         cost: bigint;
     },

@@ -1,7 +1,7 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult, IOP_NETContract } from '../../../../opnet.js';
 
-export type Status = CallResult<{ status: bigint }>;
+type Status = CallResult<{ status: bigint }>;
 
 /**
  * @description This interface represents the ReentrancyGuard contract.
@@ -18,11 +18,11 @@ interface IMotoswapReentrancyGuard extends IOP_NETContract {
     status(): Promise<Status>;
 }
 
-export type Admin = CallResult<{
+type Admin = CallResult<{
     adminAddress: Address;
 }>;
 
-export type ChangeAdmin = CallResult<{
+type ChangeAdmin = CallResult<{
     success: boolean;
 }>;
 
@@ -48,80 +48,80 @@ interface IMotoswapOwnableReentrancyGuard extends IMotoswapReentrancyGuard {
     changeAdmin(newAdmin: Address): Promise<ChangeAdmin>;
 }
 
-export type GetMotoAddress = CallResult<{
+type GetMotoAddress = CallResult<{
     motoAddress: Address;
 }>;
 
-export type BalanceOf = CallResult<{
+type BalanceOf = CallResult<{
     balance: bigint;
 }>;
 
-export type TotalSupply = CallResult<{
+type TotalSupply = CallResult<{
     totalSupply: bigint;
 }>;
 
-export type MotoAddress = CallResult<{
+type MotoAddress = CallResult<{
     totalSupply: bigint;
 }>;
 
-export type LastInteractedBlock = CallResult<{
+type LastInteractedBlock = CallResult<{
     lastInteractedBlock: bigint;
 }>;
 
-export type RewardDebt = CallResult<{
+type RewardDebt = CallResult<{
     rewardDebt: bigint;
 }>;
 
-export type RewardBalances = CallResult<{
+type RewardBalances = CallResult<{
     rewardBalance: bigint;
 }>;
 
-export type CalculateSlashingFee = CallResult<{
+type CalculateSlashingFee = CallResult<{
     slashingFee: bigint;
 }>;
 
-export type EnabledRewardTokens = CallResult<{
+type EnabledRewardTokens = CallResult<{
     enabledRewardTokens: Address[];
 }>;
 
-export type Stake = CallResult<{
+type Stake = CallResult<{
     success: boolean;
 }>;
 
-export type Unstake = CallResult<{
+type Unstake = CallResult<{
     success: boolean;
 }>;
 
-export type ClaimRewards = CallResult<{
+type ClaimRewards = CallResult<{
     success: boolean;
 }>;
 
-export type AdminAddRewardToken = CallResult<{
+type AdminAddRewardToken = CallResult<{
     success: boolean;
 }>;
 
-export type AdminRemoveRewardToken = CallResult<{
+type AdminRemoveRewardToken = CallResult<{
     success: boolean;
 }>;
 
-export type AdminChangeMotoAddress = CallResult<{
+type AdminChangeMotoAddress = CallResult<{
     success: boolean;
 }>;
 
-export type AdminChangeLockupParameters = CallResult<{
+type AdminChangeLockupParameters = CallResult<{
     success: boolean;
 }>;
 
-export type AdminEnableEmergencyWithdrawals = CallResult<{
+type AdminEnableEmergencyWithdrawals = CallResult<{
     success: boolean;
 }>;
 
 // EVENTS
-export type RewardTokenAddedEvent = {
+type RewardTokenAddedEvent = {
     readonly token: Address;
 };
 
-export type RewardTokenRemovedEvent = {
+type RewardTokenRemovedEvent = {
     readonly token: Address;
 };
 
