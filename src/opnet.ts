@@ -87,7 +87,7 @@ export { ABIDataTypes } from '@btc-vision/transaction';
 
 /** ABI JSON */
 export * from './abi/shared/json/generic/STAKING_ABI.js';
-export * from './abi/shared/json/motoswap/ADMINISTERD_OP_20_ABI.js';
+export * from './abi/shared/json/motoswap/ADMINISTERED_OP_20_ABI.js';
 export * from './abi/shared/json/motoswap/MOTOCHEF_ABI.js';
 export * from './abi/shared/json/motoswap/MOTOSWAP_FACTORY_ABI.js';
 export * from './abi/shared/json/motoswap/MOTOSWAP_POOL_ABI.js';
