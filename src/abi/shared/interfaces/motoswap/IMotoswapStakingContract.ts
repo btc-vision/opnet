@@ -1,6 +1,52 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../../opnet.js';
-import { IOwnableReentrancyGuardContract } from './IOwnableReentrancyGuardContract.js';
+import { CallResult, IOP_NETContract } from '../../../../opnet.js';
+
+export type Status = CallResult<{ status: bigint }>;
+
+/**
+ * @description This interface represents the ReentrancyGuard contract.
+ * @interface IMotoswapReentrancyGuard
+ * @extends {IOP_NETContract}
+ * @category Contracts
+ *
+ */
+interface IMotoswapReentrancyGuard extends IOP_NETContract {
+    /**
+     * @description Gets the current admin address.
+     * @returns {Status}
+     */
+    status(): Promise<Status>;
+}
+
+export type Admin = CallResult<{
+    adminAddress: Address;
+}>;
+
+export type ChangeAdmin = CallResult<{
+    success: boolean;
+}>;
+
+/**
+ * @description This interface represents the OwnableReentrancyGuard contract.
+ * @interface IMotoswapOwnableReentrancyGuard
+ * @extends {IOP_NETContract}
+ * @category Contracts
+ *
+ */
+interface IMotoswapOwnableReentrancyGuard extends IMotoswapReentrancyGuard {
+    /**
+     * @description Gets the current admin address.
+     * @returns {Admin}
+     */
+    admin(): Promise<Admin>;
+
+    /**
+     * @description Changes the contract admin. Only callable by the current admin.
+     * @param {Address} newAdmin The new admin address.
+     * @returns {ChangeAdmin}
+     */
+    changeAdmin(newAdmin: Address): Promise<ChangeAdmin>;
+}
 
 export type GetMotoAddress = CallResult<{
     motoAddress: Address;
@@ -82,10 +128,10 @@ export type RewardTokenRemovedEvent = {
 /**
  * @description This interface represents the MotoChef contract.
  * @interface IMotoswapStakingContract
- * @extends {IOwnableReentrancyGuardContract}
+ * @extends {IMotoswapOwnableReentrancyGuard}
  * @cathegory Contracts
  */
-export interface IMotoswapStakingContract extends IOwnableReentrancyGuardContract {
+export interface IMotoswapStakingContract extends IMotoswapOwnableReentrancyGuard {
     /**
      * @description Gets the stake of a given user
      * @param address {Address} the address of the staker

@@ -2,8 +2,53 @@ import { ABIDataTypes } from '@btc-vision/transaction';
 import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_NET_ABI } from '../opnet/OP_NET_ABI.js';
-import OWNABLE_ABI from './OWNABLE_ABI.js';
-import { REENTRANCY_GUARD_ABI } from './REENTRANCY_GUARD_ABI.js';
+
+const MOTOSWAP_OWNABLE_REENTRANCY_GUARD_ABI: BitcoinInterfaceAbi = [
+    // Ownable
+    {
+        name: 'admin',
+        type: BitcoinAbiTypes.Function,
+        constant: true,
+        inputs: [],
+        outputs: [
+            {
+                name: 'adminAddress',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
+    },
+    {
+        name: 'changeAdmin',
+        type: BitcoinAbiTypes.Function,
+        constant: false,
+        payable: false,
+        inputs: [
+            {
+                name: 'newAdmin',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        outputs: [
+            {
+                name: 'success',
+                type: ABIDataTypes.BOOL,
+            },
+        ],
+    },
+
+    // Reentrancy guard
+    {
+        name: 'status',
+        inputs: [],
+        outputs: [
+            {
+                name: 'status',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+];
 
 export const MotoswapStakingEvents: BitcoinInterfaceAbi = [
     {
@@ -163,15 +208,12 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
     },
 
+    // Ownable Reentrancy Guard
+    ...MOTOSWAP_OWNABLE_REENTRANCY_GUARD_ABI,
+
     // Events
     ...MotoswapStakingEvents,
 
     // OP_NET
     ...OP_NET_ABI,
-
-    // Reentrancy contract
-    ...REENTRANCY_GUARD_ABI,
-
-    // Ownable contract
-    ...OWNABLE_ABI,
 ];
