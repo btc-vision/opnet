@@ -93,10 +93,12 @@ export class CallResult<
     /**
      * Easily create a bitcoin interaction transaction from a simulated contract call.
      * @param {TransactionParameters} interactionParams - The parameters for the transaction.
+     * @param amountAddition
      * @returns {Promise<InteractionTransactionReceipt>} The transaction hash, the transaction hex and the UTXOs used.
      */
     public async sendTransaction(
         interactionParams: TransactionParameters,
+        amountAddition: bigint = 0n,
     ): Promise<InteractionTransactionReceipt> {
         if (!this.calldata) {
             throw new Error('Calldata not set');
@@ -119,7 +121,10 @@ export class CallResult<
             const UTXOs: UTXO[] =
                 interactionParams.utxos ||
                 (await this.#fetchUTXOs(
-                    totalFee + interactionParams.maximumAllowedSatToSpend + totalAmount,
+                    totalFee +
+                        interactionParams.maximumAllowedSatToSpend +
+                        totalAmount +
+                        amountAddition,
                     interactionParams,
                 ));
 
@@ -174,6 +179,12 @@ export class CallResult<
                 preimage: transaction.preimage,
             };
         } catch (e) {
+            const msgStr = (e as Error).message;
+
+            if (msgStr.includes('Insufficient funds to pay the fees') && amountAddition === 0n) {
+                return await this.sendTransaction(interactionParams, 200_000n);
+            }
+
             // We need to clean up the UTXOs if the transaction fails
             this.#provider.utxoManager.clean();
 
@@ -204,7 +215,7 @@ export class CallResult<
 
         const utxoSetting: RequestUTXOsParamsWithAmount = {
             address: interactionParams.refundTo,
-            amount: 10000n + amount,
+            amount: 50_000n + amount,
             throwErrors: true,
         };
 
