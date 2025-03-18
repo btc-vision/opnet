@@ -250,7 +250,7 @@ type PendingMoto = CallResult<
  */
 type TreasuryAddress = CallResult<
     {
-        treasuryAddress: Address;
+        treasuryAddress: string;
     },
     OPNetEvent<never>[]
 >;
@@ -448,7 +448,7 @@ export interface IMotoChef extends IOwnable {
         motoPerBlock: bigint,
         bonusEndBlock: bigint,
         bonusMultiplier: bigint,
-        treasuryAddress: Address,
+        treasuryAddress: string,
         BTCAllocPoint: bigint,
     ): Promise<Initialize>;
     totalAllocPoint(): Promise<TotalAllocPoint>;
