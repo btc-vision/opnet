@@ -152,6 +152,7 @@ export class CallResult<
                 transaction.fundingTransaction,
                 false,
             );
+            
             if (!tx1 || tx1.error) {
                 throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
             }
