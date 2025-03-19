@@ -3,6 +3,9 @@ import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSONRpcResult.js';
 
+import { fetch } from 'undici';
+import { Response } from 'undici/types/fetch';
+
 /**
  * @description This class is used to provide a JSON RPC provider.
  * @class JSONRpcProvider
@@ -38,7 +41,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Connection: 'close',
+                Connection: 'keep-alive',
                 'User-Agent': 'OPNET/1.0',
             },
             body: JSON.stringify(payload),
@@ -53,9 +56,6 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             }
 
             clearTimeout(timeoutId);
-
-            //const str = await resp.text();
-            //fs.writeFileSync('response.json', str);
 
             const fetchedData = (await resp.json()) as JsonRpcResult | JsonRpcError;
             if (!fetchedData) {
