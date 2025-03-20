@@ -3,7 +3,7 @@ import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
-type PoolCreatedEvent = {
+export type PoolCreatedEvent = {
     readonly token0: Address;
     readonly token1: Address;
     readonly pool: bigint;

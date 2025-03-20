@@ -5,7 +5,7 @@ import { IOP_NETContract } from '../opnet/IOP_NETContract';
 // ------------------------------------------------------------------
 // Event Definitions
 // ------------------------------------------------------------------
-type OwnershipTransferredEvent = {
+export type OwnershipTransferredEvent = {
     readonly previousOwner: Address;
     readonly newOwner: Address;
 };
@@ -17,7 +17,7 @@ type OwnershipTransferredEvent = {
 /**
  * @description Represents the result of the owner function call.
  */
-type Owner = CallResult<
+export type Owner = CallResult<
     {
         owner: Address;
     },
@@ -27,7 +27,7 @@ type Owner = CallResult<
 /**
  * @description Represents the result of the renounceOwnership function call.
  */
-type RenounceOwnership = CallResult<
+export type RenounceOwnership = CallResult<
     {
         success: boolean;
     },
@@ -37,7 +37,7 @@ type RenounceOwnership = CallResult<
 /**
  * @description Represents the result of the transferOwnership function call.
  */
-type TransferOwnership = CallResult<
+export type TransferOwnership = CallResult<
     {
         success: boolean;
     },
@@ -56,52 +56,52 @@ interface IOwnable extends IOP_NETContract {
 // ------------------------------------------------------------------
 // Event Definitions
 // ------------------------------------------------------------------
-type LogPoolAdditionEvent = {
+export type LogPoolAdditionEvent = {
     readonly poolId: bigint;
     readonly allocPoint: bigint;
     readonly lpToken: Address;
 };
-type LogInitEvent = {};
-type LogUpdatePoolEvent = {
+export type LogInitEvent = {};
+export type LogUpdatePoolEvent = {
     readonly poolId: bigint;
     readonly lastRewardBlock: bigint;
     readonly lpSupply: bigint;
     readonly accMotoPerShare: bigint;
 };
-type StakedBTCEvent = {
+export type StakedBTCEvent = {
     readonly user: Address;
     readonly netAmount: bigint;
     readonly stakeTxHash: bigint;
     readonly stakeIndex: bigint;
 };
-type UnstakedBTCEvent = {
+export type UnstakedBTCEvent = {
     readonly user: Address;
     readonly pendingMoto: bigint;
     readonly storedTxHash: bigint;
     readonly storedIndex: bigint;
 };
-type LogSetPoolEvent = {
+export type LogSetPoolEvent = {
     readonly poolId: bigint;
     readonly allocPoint: bigint;
 };
-type DepositEvent = {
+export type DepositEvent = {
     readonly user: Address;
     readonly poolId: bigint;
     readonly amount: bigint;
     readonly to: Address;
 };
-type WithdrawEvent = {
+export type WithdrawEvent = {
     readonly user: Address;
     readonly poolId: bigint;
     readonly amount: bigint;
     readonly to: Address;
 };
-type HarvestEvent = {
+export type HarvestEvent = {
     readonly user: Address;
     readonly poolId: bigint;
     readonly amount: bigint;
 };
-type EmergencyWithdrawEvent = {
+export type EmergencyWithdrawEvent = {
     readonly user: Address;
     readonly poolId: bigint;
     readonly amount: bigint;
@@ -115,7 +115,7 @@ type EmergencyWithdrawEvent = {
 /**
  * @description Represents the result of the initialize function call.
  */
-type Initialize = CallResult<
+export type Initialize = CallResult<
     {
         success: boolean;
     },
@@ -125,7 +125,7 @@ type Initialize = CallResult<
 /**
  * @description Represents the result of the totalAllocPoint function call.
  */
-type TotalAllocPoint = CallResult<
+export type TotalAllocPoint = CallResult<
     {
         totalAllocPoint: bigint;
     },
@@ -135,7 +135,7 @@ type TotalAllocPoint = CallResult<
 /**
  * @description Represents the result of the devAddress function call.
  */
-type DevAddress = CallResult<
+export type DevAddress = CallResult<
     {
         devAddress: Address;
     },
@@ -145,7 +145,7 @@ type DevAddress = CallResult<
 /**
  * @description Represents the result of the getMotoPerBlock function call.
  */
-type GetMotoPerBlock = CallResult<
+export type GetMotoPerBlock = CallResult<
     {
         motoPerBlock: bigint;
     },
@@ -155,7 +155,7 @@ type GetMotoPerBlock = CallResult<
 /**
  * @description Represents the result of the getBonusEndBlock function call.
  */
-type GetBonusEndBlock = CallResult<
+export type GetBonusEndBlock = CallResult<
     {
         bonusEndBlock: bigint;
     },
@@ -165,7 +165,7 @@ type GetBonusEndBlock = CallResult<
 /**
  * @description Represents the result of the getBonusMultiplier function call.
  */
-type GetBonusMultiplier = CallResult<
+export type GetBonusMultiplier = CallResult<
     {
         bonusMultiplier: bigint;
     },
@@ -175,7 +175,7 @@ type GetBonusMultiplier = CallResult<
 /**
  * @description Represents the result of the getLpTokens function call.
  */
-type GetLpTokens = CallResult<
+export type GetLpTokens = CallResult<
     {
         lpTokens: Address[];
     },
@@ -185,7 +185,7 @@ type GetLpTokens = CallResult<
 /**
  * @description Represents the result of the getPoolsLength function call.
  */
-type GetPoolsLength = CallResult<
+export type GetPoolsLength = CallResult<
     {
         poolsLength: bigint;
     },
@@ -195,7 +195,7 @@ type GetPoolsLength = CallResult<
 /**
  * @description Represents the result of the getLpToken function call.
  */
-type GetLpToken = CallResult<
+export type GetLpToken = CallResult<
     {
         lpToken: Address;
     },
@@ -205,7 +205,7 @@ type GetLpToken = CallResult<
 /**
  * @description Represents the result of the getPoolInfo function call.
  */
-type GetPoolInfo = CallResult<
+export type GetPoolInfo = CallResult<
     {
         accMotoPerShare: bigint;
         lastRewardBlock: bigint;
@@ -217,7 +217,7 @@ type GetPoolInfo = CallResult<
 /**
  * @description Represents the result of the getUserInfo function call.
  */
-type GetUserInfo = CallResult<
+export type GetUserInfo = CallResult<
     {
         amount: bigint;
         rewardDebt: bigint;
@@ -228,7 +228,7 @@ type GetUserInfo = CallResult<
 /**
  * @description Represents the result of the getMultiplier function call.
  */
-type GetMultiplier = CallResult<
+export type GetMultiplier = CallResult<
     {
         multiplier: bigint;
     },
@@ -238,7 +238,7 @@ type GetMultiplier = CallResult<
 /**
  * @description Represents the result of the pendingMoto function call.
  */
-type PendingMoto = CallResult<
+export type PendingMoto = CallResult<
     {
         pendingMoto: bigint;
     },
@@ -248,7 +248,7 @@ type PendingMoto = CallResult<
 /**
  * @description Represents the result of the treasuryAddress function call.
  */
-type TreasuryAddress = CallResult<
+export type TreasuryAddress = CallResult<
     {
         treasuryAddress: string;
     },
@@ -258,7 +258,7 @@ type TreasuryAddress = CallResult<
 /**
  * @description Represents the result of the getStakingTxHash function call.
  */
-type GetStakingTxHash = CallResult<
+export type GetStakingTxHash = CallResult<
     {
         stakingTxHash: bigint;
     },
@@ -268,7 +268,7 @@ type GetStakingTxHash = CallResult<
 /**
  * @description Represents the result of the getStakingIndex function call.
  */
-type GetStakingIndex = CallResult<
+export type GetStakingIndex = CallResult<
     {
         stakingIndex: bigint;
     },
@@ -278,7 +278,7 @@ type GetStakingIndex = CallResult<
 /**
  * @description Represents the result of the totalBTCStaked function call.
  */
-type TotalBTCStaked = CallResult<
+export type TotalBTCStaked = CallResult<
     {
         totalBTCStaked: bigint;
     },
@@ -288,7 +288,7 @@ type TotalBTCStaked = CallResult<
 /**
  * @description Represents the result of the stakeBTC function call.
  */
-type StakeBTC = CallResult<
+export type StakeBTC = CallResult<
     {
         success: boolean;
     },
@@ -298,7 +298,7 @@ type StakeBTC = CallResult<
 /**
  * @description Represents the result of the unstakeBTC function call.
  */
-type UnstakeBTC = CallResult<
+export type UnstakeBTC = CallResult<
     {
         success: boolean;
     },
@@ -308,7 +308,7 @@ type UnstakeBTC = CallResult<
 /**
  * @description Represents the result of the add function call.
  */
-type Add = CallResult<
+export type Add = CallResult<
     {
         success: boolean;
     },
@@ -318,7 +318,7 @@ type Add = CallResult<
 /**
  * @description Represents the result of the set function call.
  */
-type Set = CallResult<
+export type Set = CallResult<
     {
         success: boolean;
     },
@@ -328,7 +328,7 @@ type Set = CallResult<
 /**
  * @description Represents the result of the updatePool function call.
  */
-type UpdatePool = CallResult<
+export type UpdatePool = CallResult<
     {
         accMotoPerShare: bigint;
         lastRewardBlock: bigint;
@@ -340,7 +340,7 @@ type UpdatePool = CallResult<
 /**
  * @description Represents the result of the massUpdatePools function call.
  */
-type MassUpdatePools = CallResult<
+export type MassUpdatePools = CallResult<
     {
         success: boolean;
     },
@@ -350,7 +350,7 @@ type MassUpdatePools = CallResult<
 /**
  * @description Represents the result of the deposit function call.
  */
-type Deposit = CallResult<
+export type Deposit = CallResult<
     {
         success: boolean;
     },
@@ -360,7 +360,7 @@ type Deposit = CallResult<
 /**
  * @description Represents the result of the withdraw function call.
  */
-type Withdraw = CallResult<
+export type Withdraw = CallResult<
     {
         success: boolean;
     },
@@ -370,7 +370,7 @@ type Withdraw = CallResult<
 /**
  * @description Represents the result of the harvest function call.
  */
-type Harvest = CallResult<
+export type Harvest = CallResult<
     {
         success: boolean;
     },
@@ -380,7 +380,7 @@ type Harvest = CallResult<
 /**
  * @description Represents the result of the withdrawAndHarvest function call.
  */
-type WithdrawAndHarvest = CallResult<
+export type WithdrawAndHarvest = CallResult<
     {
         success: boolean;
     },
@@ -390,7 +390,7 @@ type WithdrawAndHarvest = CallResult<
 /**
  * @description Represents the result of the emergencyWithdraw function call.
  */
-type EmergencyWithdraw = CallResult<
+export type EmergencyWithdraw = CallResult<
     {
         success: boolean;
     },
@@ -400,7 +400,7 @@ type EmergencyWithdraw = CallResult<
 /**
  * @description Represents the result of the setMotoPerBlock function call.
  */
-type SetMotoPerBlock = CallResult<
+export type SetMotoPerBlock = CallResult<
     {
         success: boolean;
     },
@@ -410,7 +410,7 @@ type SetMotoPerBlock = CallResult<
 /**
  * @description Represents the result of the setBonusEndBlock function call.
  */
-type SetBonusEndBlock = CallResult<
+export type SetBonusEndBlock = CallResult<
     {
         success: boolean;
     },
@@ -420,7 +420,7 @@ type SetBonusEndBlock = CallResult<
 /**
  * @description Represents the result of the setBonusMultiplier function call.
  */
-type SetBonusMultiplier = CallResult<
+export type SetBonusMultiplier = CallResult<
     {
         success: boolean;
     },
@@ -430,7 +430,7 @@ type SetBonusMultiplier = CallResult<
 /**
  * @description Represents the result of the setDev function call.
  */
-type SetDev = CallResult<
+export type SetDev = CallResult<
     {
         success: boolean;
     },

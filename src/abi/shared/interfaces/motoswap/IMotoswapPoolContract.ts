@@ -3,26 +3,26 @@ import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { IOP_20Contract } from '../opnet/IOP_20Contract.js';
 
-type Reserves = {
+export type Reserves = {
     readonly reserve0: bigint;
     readonly reserve1: bigint;
     readonly blockTimestampLast: bigint;
 };
 
 // Events
-type PoolBurnEvent = {
+export type PoolBurnEvent = {
     readonly sender: Address;
     readonly amount0: bigint;
     readonly amount1: bigint;
 };
 
-type PoolMintEvent = {
+export type PoolMintEvent = {
     readonly sender: Address;
     readonly amount0: bigint;
     readonly amount1: bigint;
 };
 
-type SwapEvent = {
+export type SwapEvent = {
     readonly sender: Address;
     readonly amount0In: bigint;
     readonly amount1In: bigint;

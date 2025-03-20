@@ -1,7 +1,7 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult, IOP_NETContract } from '../../../../opnet.js';
 
-type Status = CallResult<{ status: bigint }>;
+export type Status = CallResult<{ status: bigint }>;
 
 /**
  * @description This interface represents the ReentrancyGuard contract.
@@ -18,11 +18,11 @@ interface IMotoswapReentrancyGuard extends IOP_NETContract {
     status(): Promise<Status>;
 }
 
-type Admin = CallResult<{
+export type Admin = CallResult<{
     adminAddress: Address;
 }>;
 
-type ChangeAdmin = CallResult<{
+export type ChangeAdmin = CallResult<{
     success: boolean;
 }>;
 
@@ -48,80 +48,80 @@ interface IMotoswapOwnableReentrancyGuard extends IMotoswapReentrancyGuard {
     changeAdmin(newAdmin: Address): Promise<ChangeAdmin>;
 }
 
-type GetMotoAddress = CallResult<{
+export type GetMotoAddress = CallResult<{
     motoAddress: Address;
 }>;
 
-type BalanceOf = CallResult<{
+export type BalanceOf = CallResult<{
     balance: bigint;
 }>;
 
-type TotalSupply = CallResult<{
+export type TotalSupply = CallResult<{
     totalSupply: bigint;
 }>;
 
-type MotoAddress = CallResult<{
+export type MotoAddress = CallResult<{
     totalSupply: bigint;
 }>;
 
-type LastInteractedBlock = CallResult<{
+export type LastInteractedBlock = CallResult<{
     lastInteractedBlock: bigint;
 }>;
 
-type RewardDebt = CallResult<{
+export type RewardDebt = CallResult<{
     rewardDebt: bigint;
 }>;
 
-type RewardBalances = CallResult<{
+export type RewardBalances = CallResult<{
     rewardBalance: bigint;
 }>;
 
-type CalculateSlashingFee = CallResult<{
+export type CalculateSlashingFee = CallResult<{
     slashingFee: bigint;
 }>;
 
-type EnabledRewardTokens = CallResult<{
+export type EnabledRewardTokens = CallResult<{
     enabledRewardTokens: Address[];
 }>;
 
-type Stake = CallResult<{
+export type Stake = CallResult<{
     success: boolean;
 }>;
 
-type Unstake = CallResult<{
+export type Unstake = CallResult<{
     success: boolean;
 }>;
 
-type ClaimRewards = CallResult<{
+export type ClaimRewards = CallResult<{
     success: boolean;
 }>;
 
-type AdminAddRewardToken = CallResult<{
+export type AdminAddRewardToken = CallResult<{
     success: boolean;
 }>;
 
-type AdminRemoveRewardToken = CallResult<{
+export type AdminRemoveRewardToken = CallResult<{
     success: boolean;
 }>;
 
-type AdminChangeMotoAddress = CallResult<{
+export type AdminChangeMotoAddress = CallResult<{
     success: boolean;
 }>;
 
-type AdminChangeLockupParameters = CallResult<{
+export type AdminChangeLockupParameters = CallResult<{
     success: boolean;
 }>;
 
-type AdminEnableEmergencyWithdrawals = CallResult<{
+export type AdminEnableEmergencyWithdrawals = CallResult<{
     success: boolean;
 }>;
 
 // EVENTS
-type RewardTokenAddedEvent = {
+export type RewardTokenAddedEvent = {
     readonly token: Address;
 };
 
-type RewardTokenRemovedEvent = {
+export type RewardTokenRemovedEvent = {
     readonly token: Address;
 };
 

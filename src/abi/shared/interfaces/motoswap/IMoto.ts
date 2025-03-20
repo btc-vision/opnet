@@ -2,19 +2,19 @@ import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../opnet';
 import { IOP_20Contract } from '../opnet/IOP_20Contract';
 
-type Admin = CallResult<{
+export type Admin = CallResult<{
     ADDRESS: Address;
 }>;
 
-type ChangeAdmin = CallResult<{
+export type ChangeAdmin = CallResult<{
     success: boolean;
 }>;
 
-type AdminMint = CallResult<{
+export type AdminMint = CallResult<{
     success: boolean;
 }>;
 
-type AdminBurn = CallResult<{
+export type AdminBurn = CallResult<{
     success: boolean;
 }>;
 
