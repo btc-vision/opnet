@@ -1,7 +1,7 @@
 {
   "name": "opnet",
   "type": "module",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "author": "OP_NET",
   "description": "The perfect library for building Bitcoin-based applications.",
   "engines": {
