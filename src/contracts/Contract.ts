@@ -629,10 +629,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const gasPerSat = gasParameters.gasPerSat;
         const exactGas = ((gas / 1000000n) * gasPerSat) / 1000000n;
 
-        // Add 15% extra gas
-        const extraGas = (exactGas * 15n) / 100n;
+        // Add 25% extra gas
+        const extraGas = (exactGas * 25n) / 100n;
 
-        return this.max(exactGas + extraGas, 330n);
+        return this.max(exactGas + extraGas, 330n) + 1n;
     }
 
     private max(a: bigint, b: bigint): bigint {
