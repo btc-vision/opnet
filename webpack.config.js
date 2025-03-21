@@ -29,6 +29,7 @@ export default {
 
             assert: import.meta.resolve('assert/'),
             crypto: import.meta.resolve('./src/crypto/crypto-browser.js'),
+            undici: import.meta.resolve('./src/fetch/fetch-browser.js'),
             http: import.meta.resolve('stream-http/'),
             https: import.meta.resolve('https-browserify/'),
             os: import.meta.resolve('os-browserify/browser/'),
