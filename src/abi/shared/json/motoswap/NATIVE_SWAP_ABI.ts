@@ -61,7 +61,21 @@ const NativeSwapEvents: BitcoinInterfaceAbi = [
         values: [
             { name: 'depositAddress', type: ABIDataTypes.STRING },
             { name: 'amount', type: ABIDataTypes.UINT128 },
+            { name: 'providerId', type: ABIDataTypes.UINT256 },
         ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'ActivateProvider',
+        values: [
+            { name: 'providerId', type: ABIDataTypes.UINT256 },
+            { name: 'listingAmount', type: ABIDataTypes.UINT128 },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'FulfilledProvider',
+        values: [{ name: 'providerId', type: ABIDataTypes.UINT256 }],
         type: BitcoinAbiTypes.Event,
     },
 ];

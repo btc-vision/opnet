@@ -45,6 +45,16 @@ export type UnlistEvent = {
 export type LiquidityReservedEvent = {
     readonly depositAddress: string;
     readonly amount: bigint;
+    readonly providerId: bigint;
+};
+
+export type ActivateProviderEvent = {
+    readonly providerId: bigint;
+    readonly listingAmount: bigint;
+};
+
+export type FulfilledProviderEvent = {
+    readonly providerId: bigint;
 };
 
 /** ------------------------------------------------------------------
@@ -58,7 +68,9 @@ export type ReserveNativeSwap = CallResult<
     {
         ok: boolean;
     },
-    OPNetEvent<LiquidityReservedEvent | ReservationCreatedEvent | TransferEvent>[]
+    OPNetEvent<
+        LiquidityReservedEvent | ReservationCreatedEvent | TransferEvent | FulfilledProviderEvent
+    >[]
 >;
 
 /**
@@ -68,7 +80,9 @@ export type AddLiquidity = CallResult<
     {
         ok: boolean;
     },
-    OPNetEvent<LiquidityAddedEvent | TransferEvent>[]
+    OPNetEvent<
+        LiquidityAddedEvent | TransferEvent | ActivateProviderEvent | FulfilledProviderEvent
+    >[]
 >;
 
 /**
@@ -78,7 +92,7 @@ export type RemoveLiquidity = CallResult<
     {
         ok: boolean;
     },
-    OPNetEvent<LiquidityRemovedEvent | TransferEvent>[]
+    OPNetEvent<LiquidityRemovedEvent | TransferEvent | FulfilledProviderEvent>[]
 >;
 
 /**
@@ -98,7 +112,7 @@ export type CancelListing = CallResult<
     {
         ok: boolean;
     },
-    OPNetEvent<UnlistEvent | TransferEvent>[]
+    OPNetEvent<UnlistEvent | TransferEvent | FulfilledProviderEvent>[]
 >;
 
 /**
@@ -139,7 +153,7 @@ export type Swap = CallResult<
     {
         ok: boolean;
     },
-    OPNetEvent<SwapExecutedEvent | TransferEvent>[]
+    OPNetEvent<SwapExecutedEvent | TransferEvent | ActivateProviderEvent | FulfilledProviderEvent>[]
 >;
 
 /**
