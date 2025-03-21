@@ -1,5 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult, IOP_NETContract } from '../../../../opnet.js';
+import { CallResult } from '../../../../contracts/CallResult.js';
+import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
 export type Status = CallResult<{ status: bigint }>;
 

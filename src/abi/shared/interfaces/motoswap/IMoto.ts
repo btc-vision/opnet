@@ -1,6 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../../opnet';
-import { IOP_20Contract } from '../opnet/IOP_20Contract';
+import { CallResult } from '../../../../opnet.js';
+import { IOP_20Contract } from '../opnet/IOP_20Contract.js';
 
 export type Admin = CallResult<{
     ADDRESS: Address;
