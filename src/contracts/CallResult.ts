@@ -28,6 +28,7 @@ export interface TransactionParameters {
     readonly maximumAllowedSatToSpend: bigint;
     readonly network: Network;
 
+    readonly extraInputs?: UTXO[];
     readonly extraOutputs?: PsbtOutputExtended[];
 }
 
@@ -118,7 +119,7 @@ export class CallResult<
         const priorityFee = interactionParams.priorityFee || 0n;
         const totalFee: bigint = this.estimatedSatGas + priorityFee;
         try {
-            const UTXOs: UTXO[] =
+            let UTXOs: UTXO[] =
                 interactionParams.utxos ||
                 (await this.#fetchUTXOs(
                     totalFee +
@@ -127,6 +128,19 @@ export class CallResult<
                         amountAddition,
                     interactionParams,
                 ));
+
+            if (interactionParams.extraInputs) {
+                UTXOs = UTXOs.filter((utxo) => {
+                    return (
+                        interactionParams.extraInputs?.find((input) => {
+                            return (
+                                input.outputIndex === utxo.outputIndex &&
+                                input.transactionId === utxo.transactionId
+                            );
+                        }) === undefined
+                    );
+                });
+            }
 
             if (!UTXOs || UTXOs.length === 0) {
                 throw new Error('No UTXOs found');
@@ -142,6 +156,7 @@ export class CallResult<
                 utxos: UTXOs,
                 to: this.to,
                 network: interactionParams.network,
+                optionalInputs: interactionParams.extraInputs || [],
                 optionalOutputs: interactionParams.extraOutputs || [],
                 signer: interactionParams.signer,
                 preimage: preimage,
@@ -152,7 +167,7 @@ export class CallResult<
                 transaction.fundingTransaction,
                 false,
             );
-            
+
             if (!tx1 || tx1.error) {
                 throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
             }
