@@ -15,12 +15,12 @@ export const OP_NET_ABI: BitcoinInterfaceAbi = [
         ],
     },
     {
-        name: 'contractDeployer',
+        name: 'deployer',
         type: BitcoinAbiTypes.Function,
         inputs: [],
         outputs: [
             {
-                name: 'contractDeployer',
+                name: 'deployer',
                 type: ABIDataTypes.ADDRESS,
             },
         ],
