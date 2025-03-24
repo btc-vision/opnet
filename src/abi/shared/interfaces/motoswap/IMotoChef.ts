@@ -71,13 +71,13 @@ export type LogUpdatePoolEvent = {
 export type StakedBTCEvent = {
     readonly user: Address;
     readonly netAmount: bigint;
-    readonly stakeTxHash: bigint;
+    readonly stakeTxId: bigint;
     readonly stakeIndex: bigint;
 };
 export type UnstakedBTCEvent = {
     readonly user: Address;
     readonly pendingMoto: bigint;
-    readonly storedTxHash: bigint;
+    readonly storedTxId: bigint;
     readonly storedIndex: bigint;
 };
 export type LogSetPoolEvent = {
@@ -256,11 +256,11 @@ export type TreasuryAddress = CallResult<
 >;
 
 /**
- * @description Represents the result of the getStakingTxHash function call.
+ * @description Represents the result of the getStakingTxId function call.
  */
-export type GetStakingTxHash = CallResult<
+export type GetStakingTxId = CallResult<
     {
-        stakingTxHash: bigint;
+        stakingTxId: bigint;
     },
     OPNetEvent<never>[]
 >;
@@ -464,7 +464,7 @@ export interface IMotoChef extends IOwnable {
     getMultiplier(from: bigint, to: bigint): Promise<GetMultiplier>;
     pendingMoto(poolId: bigint, user: Address): Promise<PendingMoto>;
     treasuryAddress(): Promise<TreasuryAddress>;
-    getStakingTxHash(user: Address): Promise<GetStakingTxHash>;
+    getStakingTxId(user: Address): Promise<GetStakingTxId>;
     getStakingIndex(user: Address): Promise<GetStakingIndex>;
     totalBTCStaked(): Promise<TotalBTCStaked>;
     stakeBTC(amount: bigint): Promise<StakeBTC>;

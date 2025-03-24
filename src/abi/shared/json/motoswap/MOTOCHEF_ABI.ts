@@ -119,7 +119,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
             {
-                name: 'stakeTxHash',
+                name: 'stakeTxId',
                 type: ABIDataTypes.UINT256,
             },
             {
@@ -141,7 +141,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
             {
-                name: 'storedTxHash',
+                name: 'storedTxId',
                 type: ABIDataTypes.UINT256,
             },
             {
@@ -489,7 +489,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
     },
     {
-        name: 'getStakingTxHash',
+        name: 'getStakingTxId',
         type: BitcoinAbiTypes.Function,
         inputs: [
             {
@@ -499,7 +499,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'stakingTxHash',
+                name: 'stakingTxId',
                 type: ABIDataTypes.UINT256,
             },
         ],
