@@ -1,4 +1,4 @@
-import { BinaryReader, NetEvent } from '@btc-vision/transaction';
+import { BinaryReader, LoadedStorage, NetEvent } from '@btc-vision/transaction';
 import { IAccessList } from './IAccessList.js';
 
 /**
@@ -34,6 +34,7 @@ export interface ICallResultData {
     readonly accessList: IAccessList;
     readonly revert?: string;
     readonly estimatedGas?: string;
+    readonly loadedStorage?: LoadedStorage;
 }
 
 /**

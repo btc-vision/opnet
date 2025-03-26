@@ -5,6 +5,7 @@ import {
     BufferHelper,
     IInteractionParameters,
     InteractionParametersWithoutSigner,
+    LoadedStorage,
     NetEvent,
     TransactionFactory,
     UTXO,
@@ -54,6 +55,7 @@ export class CallResult<
     public readonly revert: string | undefined;
 
     public calldata: Buffer | undefined;
+    public loadedStorage: LoadedStorage | undefined;
     public readonly estimatedGas: bigint | undefined;
 
     public properties: T = {} as T;
@@ -70,6 +72,7 @@ export class CallResult<
         this.#provider = provider;
         this.#rawEvents = this.parseEvents(callResult.events);
         this.accessList = callResult.accessList;
+        this.loadedStorage = this.getValuesFromAccessList(); // callResult.loadedStorage;
 
         if (callResult.estimatedGas) {
             this.estimatedGas = BigInt(callResult.estimatedGas);
@@ -160,6 +163,7 @@ export class CallResult<
                 optionalOutputs: interactionParams.extraOutputs || [],
                 signer: interactionParams.signer,
                 preimage: preimage,
+                loadedStorage: this.loadedStorage,
             };
 
             const transaction = await factory.signInteraction(params);
@@ -241,6 +245,17 @@ export class CallResult<
         }
 
         return utxos;
+    }
+
+    private getValuesFromAccessList(): LoadedStorage {
+        const storage: LoadedStorage = {};
+
+        for (const contract in this.accessList) {
+            const contractData = this.accessList[contract];
+            storage[contract] = Object.keys(contractData);
+        }
+
+        return storage;
     }
 
     private contractToString(contract: string): string {
