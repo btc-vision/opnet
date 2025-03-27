@@ -31,6 +31,8 @@ export interface TransactionParameters {
 
     readonly extraInputs?: UTXO[];
     readonly extraOutputs?: PsbtOutputExtended[];
+
+    readonly dontIncludeAccessList?: boolean;
 }
 
 export interface InteractionTransactionReceipt {
@@ -149,6 +151,21 @@ export class CallResult<
                 throw new Error('No UTXOs found');
             }
 
+            let totalPointers = 0;
+            if (this.loadedStorage) {
+                for (const obj in this.loadedStorage) {
+                    totalPointers += obj.length;
+                }
+            }
+
+            // It's useless to send the access list if we don't load at least 100 pointers.
+            const storage =
+                interactionParams.dontIncludeAccessList === undefined
+                    ? totalPointers > 100
+                        ? this.loadedStorage
+                        : undefined
+                    : undefined;
+
             const preimage = await this.#provider.getPreimage();
             const params: IInteractionParameters | InteractionParametersWithoutSigner = {
                 calldata: this.calldata,
@@ -163,7 +180,7 @@ export class CallResult<
                 optionalOutputs: interactionParams.extraOutputs || [],
                 signer: interactionParams.signer,
                 preimage: preimage,
-                loadedStorage: this.loadedStorage,
+                loadedStorage: storage,
             };
 
             const transaction = await factory.signInteraction(params);
