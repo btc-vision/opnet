@@ -72,7 +72,7 @@ export class CallResult<
         this.#provider = provider;
         this.#rawEvents = this.parseEvents(callResult.events);
         this.accessList = callResult.accessList;
-        this.loadedStorage = this.getValuesFromAccessList(); // callResult.loadedStorage;
+        this.loadedStorage = callResult.loadedStorage; //this.getValuesFromAccessList();
 
         if (callResult.estimatedGas) {
             this.estimatedGas = BigInt(callResult.estimatedGas);
@@ -163,7 +163,7 @@ export class CallResult<
                 optionalOutputs: interactionParams.extraOutputs || [],
                 signer: interactionParams.signer,
                 preimage: preimage,
-                //loadedStorage: this.loadedStorage, DISABLED FOR NOW
+                loadedStorage: this.loadedStorage,
             };
 
             const transaction = await factory.signInteraction(params);
