@@ -163,7 +163,7 @@ export class CallResult<
                 optionalOutputs: interactionParams.extraOutputs || [],
                 signer: interactionParams.signer,
                 preimage: preimage,
-                loadedStorage: this.loadedStorage,
+                //loadedStorage: this.loadedStorage, DISABLED FOR NOW
             };
 
             const transaction = await factory.signInteraction(params);
