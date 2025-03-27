@@ -639,7 +639,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
         // Add 25% extra gas
         const finalGas = (exactGas * 100n) / (100n - 25n);
-        return this.max(finalGas, 330n);
+        return this.max(finalGas, 5000n); //330n
     }
 
     private max(a: bigint, b: bigint): bigint {
