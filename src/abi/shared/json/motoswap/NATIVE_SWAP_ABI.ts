@@ -263,6 +263,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         outputs: [
             { name: 'liquidity', type: ABIDataTypes.UINT128 },
             { name: 'reserved', type: ABIDataTypes.UINT128 },
+            { name: 'lpBalance', type: ABIDataTypes.UINT256 },
             { name: 'btcReceiver', type: ABIDataTypes.STRING },
         ],
         type: BitcoinAbiTypes.Function,

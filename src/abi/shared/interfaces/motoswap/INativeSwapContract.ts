@@ -190,6 +190,7 @@ export type GetProviderDetails = CallResult<
     {
         liquidity: bigint;
         reserved: bigint;
+        lpBalance: bigint;
         btcReceiver: string;
     },
     []
