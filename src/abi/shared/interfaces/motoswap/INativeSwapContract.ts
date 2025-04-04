@@ -190,7 +190,7 @@ export type GetProviderDetails = CallResult<
     {
         liquidity: bigint;
         reserved: bigint;
-        lpBalance: bigint;
+        lpShares: bigint;
         btcReceiver: string;
     },
     []
@@ -205,6 +205,17 @@ export type GetPriorityQueueCost = CallResult<
     },
     []
 >;
+
+export type AntiBotSettings = CallResult<
+    {
+        antibotEnabledFor: number;
+        antibotMaximumTokensPerReservation: bigint;
+        maxReservesIn5BlocksPercent: number;
+    },
+    []
+>;
+
+export type StakingAddressResult = CallResult<{ stakingContractAddress: Address }, []>;
 
 /** ------------------------------------------------------------------
  * NativeSwap Interface
@@ -371,4 +382,23 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @returns {Promise<GetPriorityQueueCost>}
      */
     getPriorityQueueCost(token: Address): Promise<GetPriorityQueueCost>;
+
+    /**
+     * @description Gets the anti-bot settings for a token.
+     * @param token
+     */
+    getAntibotSettings(token: Address): Promise<AntiBotSettings>;
+
+    /**
+     * @description Set the address of the staking contract.
+     */
+    setStakingContractAddress(
+        stakingContractAddress: Address,
+    ): Promise<CallResult<{ ok: boolean }, []>>;
+
+    /**
+     * @description Retrieves the address of the staking contract.
+     * @returns {Promise<StakingAddressResult>}
+     */
+    getStakingContractAddress(): Promise<StakingAddressResult>;
 }
