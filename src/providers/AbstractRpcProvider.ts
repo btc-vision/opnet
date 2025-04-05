@@ -529,8 +529,18 @@ export abstract class AbstractRpcProvider {
         }
 
         if (result.revert) {
+            let decodedError: string;
+
+            try {
+                decodedError = CallResult.decodeRevertData(
+                    BufferHelper.bufferToUint8Array(Buffer.from(result.revert, 'base64')),
+                );
+            } catch {
+                decodedError = result.revert;
+            }
+
             return {
-                error: result.revert,
+                error: decodedError,
             };
         }
 

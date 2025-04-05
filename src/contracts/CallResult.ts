@@ -80,7 +80,14 @@ export class CallResult<
             this.estimatedGas = BigInt(callResult.estimatedGas);
         }
 
-        this.revert = callResult.revert;
+        const revert =
+            typeof callResult.revert === 'string'
+                ? this.base64ToUint8Array(callResult.revert)
+                : callResult.revert;
+
+        if (revert) {
+            this.revert = CallResult.decodeRevertData(revert);
+        }
 
         this.result =
             typeof callResult.result === 'string'
@@ -90,6 +97,42 @@ export class CallResult<
 
     public get rawEvents(): EventList {
         return this.#rawEvents;
+    }
+
+    public static decodeRevertData(revertDataBytes: Uint8Array): string {
+        if (this.startsWithErrorSelector(revertDataBytes)) {
+            const decoder = new TextDecoder();
+
+            return decoder.decode(revertDataBytes.slice(6));
+        } else {
+            return `Execution reverted: 0x${this.bytesToHexString(revertDataBytes)}`;
+        }
+    }
+
+    private static startsWithErrorSelector(revertDataBytes: Uint8Array) {
+        const errorSelectorBytes = Uint8Array.from([0x63, 0x73, 0x9d, 0x5c]);
+        return (
+            revertDataBytes.length >= 4 &&
+            this.areBytesEqual(revertDataBytes.slice(0, 4), errorSelectorBytes)
+        );
+    }
+
+    private static areBytesEqual(a: Uint8Array, b: Uint8Array) {
+        if (a.length !== b.length) return false;
+
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bytesToHexString(byteArray: Uint8Array): string {
+        return Array.from(byteArray, function (byte) {
+            return ('0' + (byte & 0xff).toString(16)).slice(-2);
+        }).join('');
     }
 
     public setTo(to: string): void {
