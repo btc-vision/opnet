@@ -1,5 +1,6 @@
 import { Network } from '@btc-vision/bitcoin';
 import { Address, NetEvent } from '@btc-vision/transaction';
+import { CallResult } from '../../contracts/CallResult.js';
 import {
     ContractEvents,
     ITransactionReceipt,
@@ -32,7 +33,9 @@ export class TransactionReceipt implements ITransactionReceipt {
     /**
      * @description If the transaction was reverted, this field will contain the revert message.
      */
-    public readonly revert?: Buffer;
+    public readonly rawRevert?: Buffer;
+
+    public readonly revert?: string;
 
     constructor(receipt: ITransactionReceipt, network: Network) {
         this.receipt = receipt.receipt
@@ -42,7 +45,12 @@ export class TransactionReceipt implements ITransactionReceipt {
         this.receiptProofs = receipt.receiptProofs || [];
 
         this.events = receipt.events ? this.parseEvents(receipt.events, network) : {};
-        this.revert = receipt.revert ? Buffer.from(receipt.revert as string, 'base64') : undefined;
+
+        this.rawRevert = receipt.revert
+            ? Buffer.from(receipt.revert as string, 'base64')
+            : undefined;
+
+        this.revert = this.rawRevert ? CallResult.decodeRevertData(this.rawRevert) : undefined;
     }
 
     /**

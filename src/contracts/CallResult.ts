@@ -99,25 +99,26 @@ export class CallResult<
         return this.#rawEvents;
     }
 
-    public static decodeRevertData(revertDataBytes: Uint8Array): string {
+    public static decodeRevertData(revertDataBytes: Uint8Array | Buffer): string {
         if (this.startsWithErrorSelector(revertDataBytes)) {
             const decoder = new TextDecoder();
 
             return decoder.decode(revertDataBytes.slice(6));
         } else {
-            return `Execution reverted: 0x${this.bytesToHexString(revertDataBytes)}`;
+            return `Unknown Revert: 0x${this.bytesToHexString(revertDataBytes)}`;
         }
     }
 
-    private static startsWithErrorSelector(revertDataBytes: Uint8Array) {
+    private static startsWithErrorSelector(revertDataBytes: Uint8Array | Buffer) {
         const errorSelectorBytes = Uint8Array.from([0x63, 0x73, 0x9d, 0x5c]);
+
         return (
             revertDataBytes.length >= 4 &&
-            this.areBytesEqual(revertDataBytes.slice(0, 4), errorSelectorBytes)
+            this.areBytesEqual(revertDataBytes.subarray(0, 4), errorSelectorBytes)
         );
     }
 
-    private static areBytesEqual(a: Uint8Array, b: Uint8Array) {
+    private static areBytesEqual(a: Uint8Array | Buffer, b: Uint8Array | Buffer) {
         if (a.length !== b.length) return false;
 
         for (let i = 0; i < a.length; i++) {
