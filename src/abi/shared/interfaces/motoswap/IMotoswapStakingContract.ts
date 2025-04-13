@@ -1,5 +1,6 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
+import { BalanceOf, TotalSupply } from '../opnet/IOP_20Contract.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
 export type Status = CallResult<{ status: bigint }>;
@@ -51,14 +52,6 @@ interface IMotoswapOwnableReentrancyGuard extends IMotoswapReentrancyGuard {
 
 export type GetMotoAddress = CallResult<{
     motoAddress: Address;
-}>;
-
-export type BalanceOf = CallResult<{
-    balance: bigint;
-}>;
-
-export type TotalSupply = CallResult<{
-    totalSupply: bigint;
 }>;
 
 export type MotoAddress = CallResult<{

@@ -1,14 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../../opnet.js';
+import { Admin, CallResult, ChangeAdmin } from '../../../../opnet.js';
 import { IOP_20Contract } from '../opnet/IOP_20Contract.js';
-
-export type Admin = CallResult<{
-    ADDRESS: Address;
-}>;
-
-export type ChangeAdmin = CallResult<{
-    success: boolean;
-}>;
 
 export type AdminMint = CallResult<{
     success: boolean;
@@ -21,7 +13,7 @@ export type AdminBurn = CallResult<{
 /**
  * @description This interface represents the IMoto contract. It extends the IOP_20Contract and adds the ability to have an admin address that can mint and burn tokens.
  * @interface IMoto
- * @extends {IOwnableReentrancyGuardContract}
+ * @extends {IOP_20Contract}
  * @cathegory Contracts
  */
 export interface IMoto extends IOP_20Contract {

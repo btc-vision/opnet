@@ -497,6 +497,10 @@ export abstract class AbstractRpcProvider {
         }
 
         if (height) {
+            if (typeof height === 'object') {
+                throw new Error('Height must be a number or bigint');
+            }
+
             params.push(height.toString());
         } else {
             params.push(undefined);
