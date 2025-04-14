@@ -480,7 +480,7 @@ export abstract class AbstractRpcProvider {
         accessList?: IAccessList,
     ): Promise<CallResult | ICallRequestError> {
         const toStr: string = to.toString();
-        const fromStr: string | null = from ? from.toHex() : null;
+        const fromStr: string | undefined = from ? from.toHex() : undefined;
 
         let dataStr: string = Buffer.isBuffer(data) ? this.bufferToHex(data) : data;
         if (dataStr.startsWith('0x')) {
@@ -490,11 +490,8 @@ export abstract class AbstractRpcProvider {
         const params: [string, string, string?, string?, SimulatedTransaction?, IAccessList?] = [
             toStr,
             dataStr,
+            fromStr,
         ];
-
-        if (fromStr) {
-            params.push(fromStr);
-        }
 
         if (height) {
             if (typeof height === 'object') {
