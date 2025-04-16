@@ -17,7 +17,7 @@ export const MotoSwapFactoryEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'pool',
-                type: ABIDataTypes.UINT256,
+                type: ABIDataTypes.ADDRESS,
             },
         ],
         type: BitcoinAbiTypes.Event,
@@ -38,10 +38,6 @@ export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
             },
         ],
         outputs: [
-            {
-                name: 'pool',
-                type: ABIDataTypes.UINT256,
-            },
             {
                 name: 'address',
                 type: ABIDataTypes.ADDRESS,
@@ -64,7 +60,7 @@ export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'pool',
-                type: ABIDataTypes.UINT256,
+                type: ABIDataTypes.ADDRESS,
             },
         ],
         type: BitcoinAbiTypes.Function,
