@@ -6,9 +6,6 @@ import { OP_NET_ABI } from '../opnet/OP_NET_ABI.js';
 import { MotoSwapFactoryEvents } from './MOTOSWAP_FACTORY_ABI.js';
 import { MotoSwapPoolEvents } from './MOTOSWAP_POOL_ABI.js';
 
-/**
- * @category ABI
- */
 export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
     /** Liquidity functions */
     {
@@ -197,7 +194,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'amountsOut',
-                type: ABIDataTypes.TUPLE,
+                type: ABIDataTypes.ARRAY_OF_UINT256,
             },
         ],
         type: BitcoinAbiTypes.Function,
@@ -217,7 +214,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'amountsIn',
-                type: ABIDataTypes.TUPLE,
+                type: ABIDataTypes.ARRAY_OF_UINT256,
             },
         ],
         type: BitcoinAbiTypes.Function,

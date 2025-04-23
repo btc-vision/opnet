@@ -3,9 +3,6 @@ import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_20_ABI } from '../opnet/OP_20_ABI.js';
 
-/**
- * @category Events
- */
 export const MotoSwapPoolEvents: BitcoinInterfaceAbi = [
     {
         name: 'PoolBurn',
@@ -89,9 +86,6 @@ export const MotoSwapPoolEvents: BitcoinInterfaceAbi = [
     },
 ];
 
-/**
- * @category ABI
- */
 export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
     {
         name: 'initialize',

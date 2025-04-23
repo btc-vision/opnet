@@ -2,10 +2,7 @@ import { ABIDataTypes } from '@btc-vision/transaction';
 import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi.js';
 
-/**
- * @category Events
- */
-export const StackingEvents: BitcoinInterfaceAbi = [
+const StackingEvents: BitcoinInterfaceAbi = [
     {
         name: 'Stake',
         values: [
@@ -38,9 +35,6 @@ export const StackingEvents: BitcoinInterfaceAbi = [
     },
 ];
 
-/**
- * @category ABI
- */
 export const STAKING_ABI: BitcoinInterfaceAbi = [
     {
         name: 'stake',

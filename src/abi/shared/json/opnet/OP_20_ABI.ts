@@ -237,7 +237,7 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         name: 'airdrop',
         inputs: [
             {
-                name: 'tuple',
+                name: 'map',
                 type: ABIDataTypes.ADDRESS_UINT256_TUPLE,
             },
         ],

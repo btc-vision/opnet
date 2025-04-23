@@ -69,8 +69,7 @@ import { Address, Wallet } from '@btc-vision/transaction';
 import { Network } from '@btc-vision/bitcoin';
 
 const network: Network = Configs.NETWORK;
-const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.
-org', network);
+const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.org', network);
 const wallet: Wallet = Configs.WALLET;
 const yourAddress: Address = new Address(wallet.keypair.publicKey);
 

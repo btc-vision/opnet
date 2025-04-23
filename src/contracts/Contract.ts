@@ -211,6 +211,14 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     }
 
     public setTransactionDetails(tx: ParsedSimulatedTransaction): void {
+        for (let i = 0; i < tx.outputs.length; i++) {
+            const input = tx.outputs[i];
+
+            if (input.index === 0 || input.index === 1) {
+                throw new Error(`Outputs 0 and 1 are reserved for the contract internal use.`);
+            }
+        }
+
         this.currentTxDetails = tx;
     }
 
@@ -378,14 +386,6 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 writer.writeAddress(value as Address);
                 break;
             }
-            case ABIDataTypes.TUPLE: {
-                if (!(value instanceof Array)) {
-                    throw new Error(`Expected value to be of type Array (${name})`);
-                }
-
-                writer.writeTuple(value as bigint[]);
-                break;
-            }
             case ABIDataTypes.UINT8: {
                 if (typeof value !== 'number') {
                     throw new Error(`Expected value to be of type number (${name})`);
@@ -415,7 +415,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 break;
             }
             case ABIDataTypes.ADDRESS_UINT256_TUPLE: {
-                writer.writeAddressValueTupleMap(value as AddressMap<bigint>);
+                writer.writeAddressValueTuple(value as AddressMap<bigint>);
                 break;
             }
             case ABIDataTypes.BYTES: {
@@ -553,9 +553,6 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 case ABIDataTypes.ADDRESS:
                     decodedResult = reader.readAddress();
                     break;
-                case ABIDataTypes.TUPLE:
-                    decodedResult = reader.readTuple();
-                    break;
                 case ABIDataTypes.UINT8:
                     decodedResult = reader.readU8();
                     break;
@@ -638,12 +635,11 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const gasParameters = await this.currentGasParameters();
 
         const gasPerSat = gasParameters.gasPerSat;
-        const exactGas = ((gas / 1000000n) * gasPerSat) / 1000000n;
+        const exactGas = (gas * gasPerSat) / 1000000000000n;
 
-        // Add 15% extra gas
-        const extraGas = (exactGas * 50n) / 100n;
-
-        return this.max(exactGas + extraGas, 330n);
+        // Add 25% extra gas
+        const finalGas = (exactGas * 100n) / (100n - 25n);
+        return this.max(finalGas, 5000n); //330n
     }
 
     private max(a: bigint, b: bigint): bigint {

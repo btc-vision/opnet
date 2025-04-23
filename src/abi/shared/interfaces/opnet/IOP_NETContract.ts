@@ -9,7 +9,5 @@ import { BaseContractProperties } from '../../../interfaces/BaseContractProperti
  * @cathegory Contracts
  */
 export interface IOP_NETContract extends BaseContractProperties {
-    owner(): Promise<CallResult<{ owner: Address }>>;
-
     deployer(): Promise<CallResult<{ deployer: Address }>>;
 }

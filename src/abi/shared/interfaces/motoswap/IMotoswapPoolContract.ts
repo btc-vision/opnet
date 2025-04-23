@@ -31,11 +31,6 @@ export type SwapEvent = {
     readonly to: Address;
 };
 
-export type SyncEvent = {
-    readonly reserve0: bigint;
-    readonly reserve1: bigint;
-};
-
 /**
  * @description This interface represents a motoswap pool contract.
  * @interface IMotoswapPoolContract

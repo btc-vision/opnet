@@ -132,8 +132,8 @@ export abstract class AbstractRpcProvider {
      * @returns {Promise<Buffer>} The preimage
      */
     public async getPreimage(): Promise<Buffer> {
-        if(this.preimageCache) {
-            if(this.preimageCache.expireAt > Date.now()) {
+        if (this.preimageCache) {
+            if (this.preimageCache.expireAt > Date.now()) {
                 return this.preimageCache.preimage;
             }
         }
@@ -144,17 +144,22 @@ export abstract class AbstractRpcProvider {
         );
 
         const rawBlockNumber: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: { preimage: string } = rawBlockNumber.result as {preimage: string};
+        const result: { preimage: string } = rawBlockNumber.result as { preimage: string };
 
-        if(!result || result.preimage === '0000000000000000000000000000000000000000000000000000000000000000') {
-            throw new Error('No preimage found. OPNet is probably not active yet on this blockchain.');
+        if (
+            !result ||
+            result.preimage === '0000000000000000000000000000000000000000000000000000000000000000'
+        ) {
+            throw new Error(
+                'No preimage found. OPNet is probably not active yet on this blockchain.',
+            );
         }
 
         const preimage = Buffer.from(result.preimage, 'hex');
         this.preimageCache = {
             preimage: preimage,
-            expireAt: Date.now() + 10_000
-        }
+            expireAt: Date.now() + 10_000,
+        };
 
         return preimage;
     }
@@ -475,7 +480,7 @@ export abstract class AbstractRpcProvider {
         accessList?: IAccessList,
     ): Promise<CallResult | ICallRequestError> {
         const toStr: string = to.toString();
-        const fromStr: string | null = from ? from.toHex() : null;
+        const fromStr: string | undefined = from ? from.toHex() : undefined;
 
         let dataStr: string = Buffer.isBuffer(data) ? this.bufferToHex(data) : data;
         if (dataStr.startsWith('0x')) {
@@ -485,13 +490,14 @@ export abstract class AbstractRpcProvider {
         const params: [string, string, string?, string?, SimulatedTransaction?, IAccessList?] = [
             toStr,
             dataStr,
+            fromStr,
         ];
 
-        if (fromStr) {
-            params.push(fromStr);
-        }
-
         if (height) {
+            if (typeof height === 'object') {
+                throw new Error('Height must be a number or bigint');
+            }
+
             params.push(height.toString());
         } else {
             params.push(undefined);
@@ -524,8 +530,18 @@ export abstract class AbstractRpcProvider {
         }
 
         if (result.revert) {
+            let decodedError: string;
+
+            try {
+                decodedError = CallResult.decodeRevertData(
+                    BufferHelper.bufferToUint8Array(Buffer.from(result.revert, 'base64')),
+                );
+            } catch {
+                decodedError = result.revert;
+            }
+
             return {
-                error: result.revert,
+                error: decodedError,
             };
         }
 
@@ -710,30 +726,6 @@ export abstract class AbstractRpcProvider {
         return data as JSONRpc2ResponseResult<JSONRpcMethods>;
     }
 
-    /*
-     * Generate parameters needed to wrap bitcoin.
-     * @description This method is used to generate the parameters needed to wrap bitcoin.
-     * @param {BigNumberish} amount The amount to wrap
-     * @returns {Promise<WrappedGeneration>} The wrapped generation parameters
-     * @example await requestTrustedPublicKeyForBitcoinWrapping(100000000n);
-     * @throws {Error} If something went wrong while generating the parameters
-     */
-
-    /*public async requestTrustedPublicKeyForBitcoinWrapping(
-        amount: BigNumberish,
-    ): Promise<WrappedGeneration> {
-        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GENERATE, [
-            GenerateTarget.WRAP,
-            amount.toString(),
-        ]);
-
-        const rawPublicKey: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: WrappedGenerationParameters =
-            rawPublicKey.result as WrappedGenerationParameters;
-
-        return new WrappedGeneration(result);
-    }*/
-
     /**
      * Send multiple payloads. This method is used to send multiple payloads.
      * @param {JsonRpcPayload[]} payloads The payloads to send
@@ -778,12 +770,14 @@ export abstract class AbstractRpcProvider {
      * Get the public key information.
      * @description This method is used to get the public key information.
      * @param {string | string[] | Address | Address[]} addresses The address or addresses to get the public key information of
+     * @param logErrors
      * @returns {Promise<AddressesInfo>} The public keys information
      * @example await getPublicKeysInfo(['addressA', 'addressB']);
      * @throws {Error} If the address is invalid
      */
     public async getPublicKeysInfo(
         addresses: string | string[] | Address | Address[],
+        logErrors: boolean = false,
     ): Promise<AddressesInfo> {
         const addressArray = Array.isArray(addresses) ? addresses : [addresses];
 
@@ -808,7 +802,13 @@ export abstract class AbstractRpcProvider {
         for (const pubKey of keys) {
             const pubKeyValue = result[pubKey];
             if ('error' in pubKeyValue) {
-                throw new Error(`Error fetching public key info: ${pubKeyValue.error}`);
+                if (logErrors) {
+                    console.error(
+                        `Error fetching public key info for ${pubKey}: ${pubKeyValue.error}`,
+                    );
+                }
+
+                continue;
             }
 
             response[pubKey] = pubKeyValue.originalPubKey

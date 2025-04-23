@@ -3,9 +3,6 @@ import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_NET_ABI } from '../opnet/OP_NET_ABI.js';
 
-/**
- * @category Events
- */
 export const MotoSwapFactoryEvents: BitcoinInterfaceAbi = [
     {
         name: 'PoolCreated',
@@ -20,16 +17,13 @@ export const MotoSwapFactoryEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'pool',
-                type: ABIDataTypes.UINT256,
+                type: ABIDataTypes.ADDRESS,
             },
         ],
         type: BitcoinAbiTypes.Event,
     },
 ];
 
-/**
- * @category ABI
- */
 export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
     {
         name: 'createPool',
@@ -44,10 +38,6 @@ export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
             },
         ],
         outputs: [
-            {
-                name: 'pool',
-                type: ABIDataTypes.UINT256,
-            },
             {
                 name: 'address',
                 type: ABIDataTypes.ADDRESS,
@@ -70,7 +60,7 @@ export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'pool',
-                type: ABIDataTypes.UINT256,
+                type: ABIDataTypes.ADDRESS,
             },
         ],
         type: BitcoinAbiTypes.Function,

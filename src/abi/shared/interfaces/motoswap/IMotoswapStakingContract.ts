@@ -1,16 +1,60 @@
-import { ABIDataTypes, Address } from '@btc-vision/transaction';
-import { CallResult } from '../../../../opnet.js';
-import { IOwnableReentrancyGuardContract } from './IOwnableReentrancyGuardContract.js';
+import { Address } from '@btc-vision/transaction';
+import { CallResult } from '../../../../contracts/CallResult.js';
+import { BalanceOf, TotalSupply } from '../opnet/IOP_20Contract.js';
+import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
+
+export type Status = CallResult<{ status: bigint }>;
+
+/**
+ * @description This interface represents the ReentrancyGuard contract.
+ * @interface IMotoswapReentrancyGuard
+ * @extends {IOP_NETContract}
+ * @category Contracts
+ *
+ */
+interface IMotoswapReentrancyGuard extends IOP_NETContract {
+    /**
+     * @description Gets the current admin address.
+     * @returns {Status}
+     */
+    status(): Promise<Status>;
+}
+
+export type Admin = CallResult<{
+    adminAddress: Address;
+}>;
+
+export type ChangeAdmin = CallResult<{
+    success: boolean;
+}>;
+
+/**
+ * @description This interface represents the OwnableReentrancyGuard contract.
+ * @interface IMotoswapOwnableReentrancyGuard
+ * @extends {IOP_NETContract}
+ * @category Contracts
+ *
+ */
+interface IMotoswapOwnableReentrancyGuard extends IMotoswapReentrancyGuard {
+    /**
+     * @description Gets the current admin address.
+     * @returns {Admin}
+     */
+    admin(): Promise<Admin>;
+
+    /**
+     * @description Changes the contract admin. Only callable by the current admin.
+     * @param {Address} newAdmin The new admin address.
+     * @returns {ChangeAdmin}
+     */
+    changeAdmin(newAdmin: Address): Promise<ChangeAdmin>;
+}
 
 export type GetMotoAddress = CallResult<{
     motoAddress: Address;
 }>;
 
-export type BalanceOf = CallResult<{
-    balance: bigint;
-}>;
-
-export type TotalSupply = CallResult<{
+export type MotoAddress = CallResult<{
     totalSupply: bigint;
 }>;
 
@@ -82,10 +126,10 @@ export type RewardTokenRemovedEvent = {
 /**
  * @description This interface represents the MotoChef contract.
  * @interface IMotoswapStakingContract
- * @extends {IOwnableReentrancyGuardContract}
+ * @extends {IMotoswapOwnableReentrancyGuard}
  * @cathegory Contracts
  */
-export interface IMotoswapStakingContract extends IOwnableReentrancyGuardContract {
+export interface IMotoswapStakingContract extends IMotoswapOwnableReentrancyGuard {
     /**
      * @description Gets the stake of a given user
      * @param address {Address} the address of the staker
@@ -98,6 +142,12 @@ export interface IMotoswapStakingContract extends IOwnableReentrancyGuardContrac
      * @returns {TotalSupply}
      */
     totalSupply(): Promise<TotalSupply>;
+
+    /**
+     * @description Returns the address of the MOTO token accepted as a deposit by the staking contract
+     * @returns {MotoAddress}
+     */
+    motoAddress(): Promise<MotoAddress>;
 
     /**
      * @description Returns the last block the user interacted with the protocol by staking, unstaking or claiming rewards
@@ -181,6 +231,7 @@ export interface IMotoswapStakingContract extends IOwnableReentrancyGuardContrac
     /**
      * @description Changes the address of the Moto token the protocol allows the users to stake
      * Also affects what token is paid out when unstaking.
+     * NOTE: Can only be called if the Moto token address is not set yet (i.e. == Address.dead())
      * @param token {Address} the address of the Moto token
      * @returns {AdminChangeMotoAddress}
      */

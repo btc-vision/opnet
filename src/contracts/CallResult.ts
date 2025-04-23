@@ -5,6 +5,7 @@ import {
     BufferHelper,
     IInteractionParameters,
     InteractionParametersWithoutSigner,
+    LoadedStorage,
     NetEvent,
     TransactionFactory,
     UTXO,
@@ -28,7 +29,10 @@ export interface TransactionParameters {
     readonly maximumAllowedSatToSpend: bigint;
     readonly network: Network;
 
+    readonly extraInputs?: UTXO[];
     readonly extraOutputs?: PsbtOutputExtended[];
+
+    readonly dontIncludeAccessList?: boolean;
 }
 
 export interface InteractionTransactionReceipt {
@@ -53,6 +57,7 @@ export class CallResult<
     public readonly revert: string | undefined;
 
     public calldata: Buffer | undefined;
+    public loadedStorage: LoadedStorage | undefined;
     public readonly estimatedGas: bigint | undefined;
 
     public properties: T = {} as T;
@@ -69,12 +74,20 @@ export class CallResult<
         this.#provider = provider;
         this.#rawEvents = this.parseEvents(callResult.events);
         this.accessList = callResult.accessList;
+        this.loadedStorage = callResult.loadedStorage; //this.getValuesFromAccessList();
 
         if (callResult.estimatedGas) {
             this.estimatedGas = BigInt(callResult.estimatedGas);
         }
 
-        this.revert = callResult.revert;
+        const revert =
+            typeof callResult.revert === 'string'
+                ? this.base64ToUint8Array(callResult.revert)
+                : callResult.revert;
+
+        if (revert) {
+            this.revert = CallResult.decodeRevertData(revert);
+        }
 
         this.result =
             typeof callResult.result === 'string'
@@ -86,6 +99,43 @@ export class CallResult<
         return this.#rawEvents;
     }
 
+    public static decodeRevertData(revertDataBytes: Uint8Array | Buffer): string {
+        if (this.startsWithErrorSelector(revertDataBytes)) {
+            const decoder = new TextDecoder();
+
+            return decoder.decode(revertDataBytes.slice(6));
+        } else {
+            return `Unknown Revert: 0x${this.bytesToHexString(revertDataBytes)}`;
+        }
+    }
+
+    private static startsWithErrorSelector(revertDataBytes: Uint8Array | Buffer) {
+        const errorSelectorBytes = Uint8Array.from([0x63, 0x73, 0x9d, 0x5c]);
+
+        return (
+            revertDataBytes.length >= 4 &&
+            this.areBytesEqual(revertDataBytes.subarray(0, 4), errorSelectorBytes)
+        );
+    }
+
+    private static areBytesEqual(a: Uint8Array | Buffer, b: Uint8Array | Buffer) {
+        if (a.length !== b.length) return false;
+
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bytesToHexString(byteArray: Uint8Array): string {
+        return Array.from(byteArray, function (byte) {
+            return ('0' + (byte & 0xff).toString(16)).slice(-2);
+        }).join('');
+    }
+
     public setTo(to: string): void {
         this.to = to;
     }
@@ -93,10 +143,12 @@ export class CallResult<
     /**
      * Easily create a bitcoin interaction transaction from a simulated contract call.
      * @param {TransactionParameters} interactionParams - The parameters for the transaction.
+     * @param amountAddition
      * @returns {Promise<InteractionTransactionReceipt>} The transaction hash, the transaction hex and the UTXOs used.
      */
     public async sendTransaction(
         interactionParams: TransactionParameters,
+        amountAddition: bigint = 0n,
     ): Promise<InteractionTransactionReceipt> {
         if (!this.calldata) {
             throw new Error('Calldata not set');
@@ -116,16 +168,47 @@ export class CallResult<
         const priorityFee = interactionParams.priorityFee || 0n;
         const totalFee: bigint = this.estimatedSatGas + priorityFee;
         try {
-            const UTXOs: UTXO[] =
+            let UTXOs: UTXO[] =
                 interactionParams.utxos ||
                 (await this.#fetchUTXOs(
-                    totalFee + interactionParams.maximumAllowedSatToSpend + totalAmount,
+                    totalFee +
+                        interactionParams.maximumAllowedSatToSpend +
+                        totalAmount +
+                        amountAddition,
                     interactionParams,
                 ));
+
+            if (interactionParams.extraInputs) {
+                UTXOs = UTXOs.filter((utxo) => {
+                    return (
+                        interactionParams.extraInputs?.find((input) => {
+                            return (
+                                input.outputIndex === utxo.outputIndex &&
+                                input.transactionId === utxo.transactionId
+                            );
+                        }) === undefined
+                    );
+                });
+            }
 
             if (!UTXOs || UTXOs.length === 0) {
                 throw new Error('No UTXOs found');
             }
+
+            let totalPointers = 0;
+            if (this.loadedStorage) {
+                for (const obj in this.loadedStorage) {
+                    totalPointers += obj.length;
+                }
+            }
+
+            // It's useless to send the access list if we don't load at least 100 pointers.
+            const storage =
+                interactionParams.dontIncludeAccessList === undefined
+                    ? totalPointers > 100
+                        ? this.loadedStorage
+                        : undefined
+                    : undefined;
 
             const preimage = await this.#provider.getPreimage();
             const params: IInteractionParameters | InteractionParametersWithoutSigner = {
@@ -137,9 +220,11 @@ export class CallResult<
                 utxos: UTXOs,
                 to: this.to,
                 network: interactionParams.network,
+                optionalInputs: interactionParams.extraInputs || [],
                 optionalOutputs: interactionParams.extraOutputs || [],
                 signer: interactionParams.signer,
                 preimage: preimage,
+                loadedStorage: storage,
             };
 
             const transaction = await factory.signInteraction(params);
@@ -147,6 +232,7 @@ export class CallResult<
                 transaction.fundingTransaction,
                 false,
             );
+
             if (!tx1 || tx1.error) {
                 throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
             }
@@ -174,6 +260,12 @@ export class CallResult<
                 preimage: transaction.preimage,
             };
         } catch (e) {
+            const msgStr = (e as Error).message;
+
+            if (msgStr.includes('Insufficient funds to pay the fees') && amountAddition === 0n) {
+                return await this.sendTransaction(interactionParams, 200_000n);
+            }
+
             // We need to clean up the UTXOs if the transaction fails
             this.#provider.utxoManager.clean();
 
@@ -204,7 +296,7 @@ export class CallResult<
 
         const utxoSetting: RequestUTXOsParamsWithAmount = {
             address: interactionParams.refundTo,
-            amount: 10000n + amount,
+            amount: 50_000n + amount,
             throwErrors: true,
         };
 
@@ -214,6 +306,17 @@ export class CallResult<
         }
 
         return utxos;
+    }
+
+    private getValuesFromAccessList(): LoadedStorage {
+        const storage: LoadedStorage = {};
+
+        for (const contract in this.accessList) {
+            const contractData = this.accessList[contract];
+            storage[contract] = Object.keys(contractData);
+        }
+
+        return storage;
     }
 
     private contractToString(contract: string): string {

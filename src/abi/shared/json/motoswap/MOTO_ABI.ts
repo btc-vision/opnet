@@ -3,15 +3,14 @@ import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi.js';
 import { OP_20_ABI } from '../opnet/OP_20_ABI.js';
 
-const ADMINISTERED_OP_20_ABI: BitcoinInterfaceAbi = [
+export const MOTO_ABI: BitcoinInterfaceAbi = [
     {
         name: 'admin',
         type: BitcoinAbiTypes.Function,
-        constant: true,
         inputs: [],
         outputs: [
             {
-                name: 'ADDRESS',
+                name: 'adminAddress',
                 type: ABIDataTypes.ADDRESS,
             },
         ],
@@ -19,11 +18,9 @@ const ADMINISTERED_OP_20_ABI: BitcoinInterfaceAbi = [
     {
         name: 'changeAdmin',
         type: BitcoinAbiTypes.Function,
-        constant: false,
-        payable: false,
         inputs: [
             {
-                name: 'newAdmin',
+                name: 'to',
                 type: ABIDataTypes.ADDRESS,
             },
         ],
@@ -37,8 +34,6 @@ const ADMINISTERED_OP_20_ABI: BitcoinInterfaceAbi = [
     {
         name: 'adminMint',
         type: BitcoinAbiTypes.Function,
-        constant: false,
-        payable: false,
         inputs: [
             {
                 name: 'to',
@@ -59,8 +54,6 @@ const ADMINISTERED_OP_20_ABI: BitcoinInterfaceAbi = [
     {
         name: 'adminBurn',
         type: BitcoinAbiTypes.Function,
-        constant: false,
-        payable: false,
         inputs: [
             {
                 name: 'from',
@@ -78,8 +71,7 @@ const ADMINISTERED_OP_20_ABI: BitcoinInterfaceAbi = [
             },
         ],
     },
+
     // OP_20
     ...OP_20_ABI,
 ];
-
-export default ADMINISTERED_OP_20_ABI;

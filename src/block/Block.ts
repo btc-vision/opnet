@@ -1,4 +1,5 @@
 import { Network } from '@btc-vision/bitcoin';
+import { Address } from '@btc-vision/transaction';
 import { BigNumberish } from '../common/CommonTypes.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { ITransaction } from '../transactions/interfaces/ITransaction.js';
@@ -11,7 +12,7 @@ import { BlockHeaderChecksumProof, IBlock } from './interfaces/IBlock.js';
  * @class Block
  * @category Block
  */
-export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas'> {
+export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas' | 'deployedContracts'> {
     public readonly height: BigNumberish;
 
     public readonly hash: string;
@@ -42,6 +43,7 @@ export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas'> {
     public readonly checksumProofs: BlockHeaderChecksumProof;
 
     public readonly transactions: TransactionBase<OPNetTransactionTypes>[] = [];
+    public readonly deployedContracts: Address[] = [];
 
     constructor(block: IBlock, network: Network) {
         this.height = BigInt(block.height.toString());
@@ -75,7 +77,13 @@ export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas'> {
 
         this.transactions = TransactionParser.parseTransactions(
             block.transactions as ITransaction[],
-            network
+            network,
         );
+
+        this.deployedContracts = block.deployedContracts
+            ? block.deployedContracts.map((address) => {
+                  return Address.fromString(address);
+              })
+            : [];
     }
 }
