@@ -71,6 +71,17 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         outputs: [{ name: 'rewardBalance', type: ABIDataTypes.UINT256 }],
     },
     {
+        name: 'pendingReward',
+        type: BitcoinAbiTypes.Function,
+        constant: true,
+        payable: false,
+        inputs: [
+            { name: 'user', type: ABIDataTypes.ADDRESS },
+            { name: 'rewardToken', type: ABIDataTypes.ADDRESS },
+        ],
+        outputs: [{ name: 'pendingReward', type: ABIDataTypes.UINT256 }],
+    },
+    {
         name: 'calculateSlashingFee',
         type: BitcoinAbiTypes.Function,
         constant: true,
