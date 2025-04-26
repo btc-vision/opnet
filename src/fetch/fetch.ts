@@ -4,8 +4,8 @@ import { Agent, fetch as undiciFetch, Response, setGlobalDispatcher } from 'undi
 const agent = new Agent({
     keepAliveTimeout: 30_000, // how long sockets stay open
     keepAliveTimeoutThreshold: 30_000, // threshold before closing keep-alive sockets
-    connections: 128, // max connections per server
-    pipelining: 10, // max pipelining per server
+    connections: 150, // max connections per server
+    pipelining: 1, // max pipelining per server
 });
 
 setGlobalDispatcher(agent);
