@@ -332,8 +332,6 @@ export function fetchTest(url: RequestInfo, options: BasicFetchOptions = {}): Pr
                     await writeWithPromise(sock, requestBuffer);
                 }
 
-                sock.cork();
-
                 // Then signal we’re done sending the request
                 //await endWithPromise(sock, Buffer.alloc(0));
             }
