@@ -293,7 +293,7 @@ export async function fetchTest(
                 }
 
                 // End the request
-                sock.end();
+                //sock.end();
             }
 
             function writeWithPromise(
