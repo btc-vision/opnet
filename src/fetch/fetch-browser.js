@@ -11,10 +11,16 @@ if (!originalFetch) {
     throw new Error('Fetch API is not available.');
 }
 
-export function getFetcher() {
-    return function fetch(input, init) {
-        return originalFetch(input, init);
-    };
-}
+export class Agent {}
 
-export default getFetcher;
+const def = {
+    fetch(input, init) {
+        return originalFetch(input, init);
+    },
+    setGlobalDispatcher: () => {},
+    Agent,
+};
+
+export default def;
+export const fetch = def.fetch;
+const setGlobalDispatcher = def.setGlobalDispatcher;
