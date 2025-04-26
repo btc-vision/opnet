@@ -1,10 +1,10 @@
 import { Network } from '@btc-vision/bitcoin';
+import { Response } from 'undici/types/fetch';
+
+import fetch from '../fetch/fetch.js';
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSONRpcResult.js';
-
-import fetch from '../fetch/fetch.js';
-import { Response } from 'undici/types/fetch';
 
 /**
  * @description This class is used to provide a JSON RPC provider.
@@ -42,7 +42,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             headers: {
                 'Content-Type': 'application/json',
                 'User-Agent': 'OPNET/1.0',
-                'Accept-Encoding': 'gzip, deflate, br',
+                //'Accept-Encoding': 'gzip, deflate, br',
                 Accept: 'application/json',
                 'Accept-Charset': 'utf-8',
                 'Accept-Language': 'en-US',
@@ -59,8 +59,6 @@ export class JSONRpcProvider extends AbstractRpcProvider {
                 throw new Error(`Failed to fetch: ${resp.statusText}`);
             }
 
-            clearTimeout(timeoutId);
-
             const fetchedData = (await resp.json()) as JsonRpcResult | JsonRpcError;
             if (!fetchedData) {
                 throw new Error('No data fetched');
@@ -68,13 +66,14 @@ export class JSONRpcProvider extends AbstractRpcProvider {
 
             return [fetchedData];
         } catch (e) {
-            console.log(e);
             const error = e as Error;
             if (error.name === 'AbortError') {
                 throw new Error(`Request timed out after ${this.timeout}ms`);
             }
 
             throw e;
+        } finally {
+            clearTimeout(timeoutId);
         }
     }
 

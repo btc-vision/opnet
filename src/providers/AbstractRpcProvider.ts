@@ -30,6 +30,7 @@ import { JSONRpcMethods } from './interfaces/JSONRpcMethods.js';
 import {
     JSONRpc2ResponseResult,
     JsonRpcCallResult,
+    JsonRpcError,
     JsonRpcResult,
     JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
@@ -791,8 +792,11 @@ export abstract class AbstractRpcProvider {
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [addressArray]);
         const data: JsonRpcResult = await this.callPayloadSingle(payload);
 
-        if ('error' in data) {
-            throw new Error(`Error fetching public key info: ${data.error}`);
+        if (data.error) {
+            const errorData = (data as JsonRpcError).error;
+            const errorMessage = typeof errorData === 'string' ? errorData : errorData.message;
+
+            throw new Error(errorMessage);
         }
 
         const response: AddressesInfo = {};
