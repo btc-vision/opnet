@@ -278,74 +278,76 @@ export async function fetchTest(
 
             const startTime = Date.now();
 
-            if (isHttps) {
-                socket = tls.connect(connectOptions, () => {
-                    console.log(`socket open after ${Date.now() - startTime} ms`);
-                    void onSocketConnect(socket);
-                });
-            } else {
-                socket = net.connect(connectOptions, () => {
-                    console.log(`socket open after ${Date.now() - startTime} ms`);
-                    void onSocketConnect(socket);
-                });
-            }
-
-            socket.on('error', (err) => {
-                reject(err as Error);
-            });
-
-            async function onSocketConnect(sock: net.Socket | tls.TLSSocket) {
-                // Send the initial request
-                await writeWithPromise(sock, rawRequest);
-
-                if (requestBuffer) {
-                    await writeWithPromise(sock, requestBuffer);
-                }
-
-                // End the request
-                //sock.end();
-            }
-
-            function writeWithPromise(
-                sock: net.Socket | tls.TLSSocket,
-                data: Buffer,
-            ): Promise<void> {
-                return new Promise((resolve, reject) => {
-                    sock.write(data, (err) => {
-                        if (err) reject(err);
-                        else resolve();
+            process.nextTick(() => {
+                if (isHttps) {
+                    socket = tls.connect(connectOptions, () => {
+                        console.log(`socket open after ${Date.now() - startTime} ms`);
+                        void onSocketConnect(socket);
                     });
-                });
-            }
-
-            const responseChunks: Buffer[] = [];
-            socket.on('data', (chunk: Buffer) => {
-                responseChunks.push(chunk);
-            });
-
-            socket.on('end', () => {
-                try {
-                    const fullResponse = Buffer.concat(responseChunks);
-                    const {
-                        status,
-                        statusText,
-                        headers: responseHeaders,
-                        body: responseBody,
-                    } = parseRawHttpResponse(fullResponse);
-
-                    const response = new BasicFetchResponse(
-                        responseBody,
-                        status,
-                        statusText,
-                        responseHeaders,
-                        urlObj.toString(),
-                    );
-                    response.setBodyBuffer(responseBody);
-
-                    resolve(response as Response);
-                } catch (parseErr) {
-                    reject(parseErr as Error);
+                } else {
+                    socket = net.connect(connectOptions, () => {
+                        console.log(`socket open after ${Date.now() - startTime} ms`);
+                        void onSocketConnect(socket);
+                    });
                 }
+
+                socket.on('error', (err) => {
+                    reject(err as Error);
+                });
+
+                async function onSocketConnect(sock: net.Socket | tls.TLSSocket) {
+                    // Send the initial request
+                    await writeWithPromise(sock, rawRequest);
+
+                    if (requestBuffer) {
+                        await writeWithPromise(sock, requestBuffer);
+                    }
+
+                    // End the request
+                    //sock.end();
+                }
+
+                function writeWithPromise(
+                    sock: net.Socket | tls.TLSSocket,
+                    data: Buffer,
+                ): Promise<void> {
+                    return new Promise((resolve, reject) => {
+                        sock.write(data, (err) => {
+                            if (err) reject(err);
+                            else resolve();
+                        });
+                    });
+                }
+
+                const responseChunks: Buffer[] = [];
+                socket.on('data', (chunk: Buffer) => {
+                    responseChunks.push(chunk);
+                });
+
+                socket.on('end', () => {
+                    try {
+                        const fullResponse = Buffer.concat(responseChunks);
+                        const {
+                            status,
+                            statusText,
+                            headers: responseHeaders,
+                            body: responseBody,
+                        } = parseRawHttpResponse(fullResponse);
+
+                        const response = new BasicFetchResponse(
+                            responseBody,
+                            status,
+                            statusText,
+                            responseHeaders,
+                            urlObj.toString(),
+                        );
+                        response.setBodyBuffer(responseBody);
+
+                        resolve(response as Response);
+                    } catch (parseErr) {
+                        reject(parseErr as Error);
+                    }
+                });
             });
         } catch (error) {
             reject(error as Error);
