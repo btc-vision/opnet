@@ -23,4 +23,4 @@ const def = {
 
 export default def;
 export const fetch = def.fetch;
-const setGlobalDispatcher = def.setGlobalDispatcher;
+export const setGlobalDispatcher = def.setGlobalDispatcher;
