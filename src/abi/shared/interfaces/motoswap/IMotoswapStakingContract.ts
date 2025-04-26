@@ -66,8 +66,12 @@ export type RewardDebt = CallResult<{
     rewardDebt: bigint;
 }>;
 
-export type RewardBalances = CallResult<{
+export type RewardBalance = CallResult<{
     rewardBalance: bigint;
+}>;
+
+export type PendingReward = CallResult<{
+    pendingReward: bigint;
 }>;
 
 export type CalculateSlashingFee = CallResult<{
@@ -163,9 +167,18 @@ export interface IMotoswapStakingContract extends IMotoswapOwnableReentrancyGuar
     /**
      * @description Returns the pending reward balances that a user can claim.
      * @param user {Address} the address of the staker
-     * @returns {RewardBalances}
+     * @returns {RewardBalance}
      */
-    rewardBalances(user: Address): Promise<RewardBalances>;
+    rewardBalance(user: Address): Promise<RewardBalance>;
+
+    /**
+     * @description Returns the pending reward amount for a user and a reward token.
+     * This represents how much the user would earn if they claimed rewards now.
+     * @param user {Address} the user address
+     * @param rewardToken {Address} the reward token to check
+     * @returns {PendingReward}
+     */
+    pendingReward(user: Address, rewardToken: Address): Promise<PendingReward>;
 
     /**
      * @description Returns the amount of the user's stake that would be slashed, if they were to withdraw
