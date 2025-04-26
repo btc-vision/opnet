@@ -12,10 +12,8 @@ if (!originalFetch) {
 }
 
 export function getFetcher() {
-    return {
-        fetch(input, init) {
-            return originalFetch(input, init);
-        },
+    return function fetch(input, init) {
+        return originalFetch(input, init);
     };
 }
 
