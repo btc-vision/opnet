@@ -1,10 +1,12 @@
 import { Network } from '@btc-vision/bitcoin';
+import Agent from 'undici/types/agent.js';
+import { Response } from 'undici/types/fetch';
+
+import getFetcher from '../fetch/fetch.js';
+import { Fetcher } from '../fetch/fetcher-type.js';
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSONRpcResult.js';
-
-import fetch from '../fetch/fetch.js';
-import { Response } from 'undici/types/fetch';
 
 /**
  * @description This class is used to provide a JSON RPC provider.
@@ -18,10 +20,26 @@ export class JSONRpcProvider extends AbstractRpcProvider {
         url: string,
         network: Network,
         private readonly timeout: number = 20_000,
+        private readonly fetcherConfigurations: Agent.Options = {
+            keepAliveTimeout: 30_000, // how long sockets stay open
+            keepAliveTimeoutThreshold: 30_000, // threshold before closing keep-alive sockets
+            connections: 128, // max connections per server
+            pipelining: 2, // max pipelining per server
+        },
     ) {
         super(network);
 
         this.url = this.providerUrl(url);
+    }
+
+    private _fetcher: Fetcher | undefined;
+
+    private get fetcher(): Fetcher {
+        if (!this._fetcher) {
+            this._fetcher = getFetcher(this.fetcherConfigurations);
+        }
+
+        return this._fetcher;
     }
 
     /**
@@ -42,7 +60,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             headers: {
                 'Content-Type': 'application/json',
                 'User-Agent': 'OPNET/1.0',
-                'Accept-Encoding': 'gzip, deflate, br',
+                //'Accept-Encoding': 'gzip, deflate, br',
                 Accept: 'application/json',
                 'Accept-Charset': 'utf-8',
                 'Accept-Language': 'en-US',
@@ -54,12 +72,10 @@ export class JSONRpcProvider extends AbstractRpcProvider {
         };
 
         try {
-            const resp: Response = await fetch(this.url, params);
+            const resp: Response = await this.fetcher(this.url, params);
             if (!resp.ok) {
                 throw new Error(`Failed to fetch: ${resp.statusText}`);
             }
-
-            clearTimeout(timeoutId);
 
             const fetchedData = (await resp.json()) as JsonRpcResult | JsonRpcError;
             if (!fetchedData) {
@@ -68,13 +84,14 @@ export class JSONRpcProvider extends AbstractRpcProvider {
 
             return [fetchedData];
         } catch (e) {
-            console.log(e);
             const error = e as Error;
             if (error.name === 'AbortError') {
                 throw new Error(`Request timed out after ${this.timeout}ms`);
             }
 
             throw e;
+        } finally {
+            clearTimeout(timeoutId);
         }
     }
 
