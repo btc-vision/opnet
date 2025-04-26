@@ -6,7 +6,18 @@ import { URL } from 'node:url';
 import { FormData, Headers, RequestInfo, Response, ResponseType } from 'undici';
 
 // Keep a cache from hostname => { address, expiresAt }
-const dnsCache = new Map<string, { address: string; expiresAt: number }>();
+const dnsCache = new Map<string, { address: Promise<string>; expiresAt: number }>();
+
+async function dnsAddress(host: string): Promise<string> {
+    const lookupResult = await dnsPromises.lookup(host);
+    let address = lookupResult.address;
+
+    if (address === '::1') {
+        address = '127.0.0.1';
+    }
+
+    return address;
+}
 
 /**
  * Resolve a hostname to an IP address, using an in-memory cache.
@@ -17,19 +28,18 @@ async function resolveHostnameWithCache(host: string): Promise<string> {
     const cached = dnsCache.get(host);
     const now = Date.now();
     if (cached && cached.expiresAt > now) {
+        console.log(`Using cached IP for ${host}: ${cached.address}`);
+
         // If still valid, return cached IP
-        return cached.address;
+        return await cached.address;
     }
 
-    // Otherwise, do DNS lookup
-    const lookupResult = await dnsPromises.lookup(host);
-    const address = lookupResult.address;
-
+    const address = dnsAddress(host);
     // Store it in cache for 60 seconds
     const ttlMs = 60000;
     dnsCache.set(host, { address, expiresAt: now + ttlMs });
 
-    return address;
+    return await address;
 }
 
 /**
