@@ -16,9 +16,4 @@ export interface BroadcastedTransaction {
      * The number of peers that the transaction was broadcasted to.
      */
     readonly peers?: number;
-
-    /**
-     * The identifier of the transaction.
-     */
-    readonly id: string;
 }

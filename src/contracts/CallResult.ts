@@ -250,7 +250,11 @@ export class CallResult<
                 throw new Error('No transaction ID returned');
             }
 
-            this.#provider.utxoManager.spentUTXO(UTXOs, transaction.nextUTXOs);
+            this.#provider.utxoManager.spentUTXO(
+                interactionParams.refundTo,
+                UTXOs,
+                transaction.nextUTXOs,
+            );
 
             return {
                 transactionId: tx2.result,

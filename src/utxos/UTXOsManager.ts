@@ -16,44 +16,50 @@ const FETCH_COOLDOWN = 10000; // 10 seconds
 const MEMPOOL_CHAIN_LIMIT = 25;
 
 /**
- * Manages unspent transaction outputs (UTXOs).
+ * A helper interface for per-address data tracking.
+ */
+interface AddressData {
+    spentUTXOs: UTXOs;
+    pendingUTXOs: UTXOs;
+    /**
+     * Key: `${transactionId}:${outputIndex}`
+     * Value: the unconfirmed chain depth
+     */
+    pendingUtxoDepth: Record<string, number>;
+    lastCleanup: number;
+
+    lastFetchTimestamp: number;
+    lastFetchedData: IUTXOsData | null;
+}
+
+/**
+ * Manages unspent transaction outputs (UTXOs) by address/wallet.
  * @category Bitcoin
  */
 export class UTXOsManager {
-    private spentUTXOs: UTXOs = [];
-    private pendingUTXOs: UTXOs = [];
-
     /**
-     * Tracks the current “depth” of each pending UTXO:
-     *   - Key: `${transactionId}:${outputIndex}`
-     *   - Value: number (the unconfirmed chain depth).
+     * Holds all address-specific data so we don’t mix up UTXOs between addresses/wallets.
      */
-    private pendingUtxoDepth: Record<string, number> = {};
-
-    private lastCleanup: number = Date.now();
-
-    /**
-     * Cache for recently fetched data + timestamp
-     */
-    private lastFetchTimestamp: number = 0;
-    private lastFetchedData: IUTXOsData | null = null;
+    private dataByAddress: Record<string, AddressData> = {};
 
     public constructor(private readonly provider: AbstractRpcProvider) {}
 
     /**
-     * Mark UTXOs as spent and track new UTXOs created by the transaction.
+     * Mark UTXOs as spent and track new UTXOs created by the transaction, _per address_.
      *
      * Enforces a mempool chain limit of 25 unconfirmed transaction descendants.
      *
+     * @param address - The address these spent/new UTXOs belong to
      * @param {UTXOs} spent - The UTXOs that were spent.
      * @param {UTXOs} newUTXOs - The new UTXOs created by the transaction.
      * @throws {Error} If adding the new unconfirmed outputs would exceed the mempool chain limit.
      */
-    public spentUTXO(spent: UTXOs, newUTXOs: UTXOs): void {
+    public spentUTXO(address: string, spent: UTXOs, newUTXOs: UTXOs): void {
+        const addressData = this.getAddressData(address);
         const utxoKey = (u: UTXO) => `${u.transactionId}:${u.outputIndex}`;
 
-        // Remove any spent UTXOs from pending
-        this.pendingUTXOs = this.pendingUTXOs.filter((utxo) => {
+        // Remove spent UTXOs from that address’s pending
+        addressData.pendingUTXOs = addressData.pendingUTXOs.filter((utxo) => {
             return !spent.some(
                 (spentUtxo) =>
                     spentUtxo.transactionId === utxo.transactionId &&
@@ -61,22 +67,21 @@ export class UTXOsManager {
             );
         });
 
-        // Also remove from the depth map if they were pending
+        // Also remove them from the depth map if they were pending
         for (const spentUtxo of spent) {
             const key = utxoKey(spentUtxo);
-            delete this.pendingUtxoDepth[key];
+            delete addressData.pendingUtxoDepth[key];
         }
 
-        // Add the spent UTXOs to the "spent" list
-        this.spentUTXOs.push(...spent);
+        // Add spent UTXOs to the "spent" list
+        addressData.spentUTXOs.push(...spent);
 
         // Determine the parent depth for new UTXOs. If a spent UTXO was pending,
         // it contributes to the chain depth. If it was confirmed, depth = 0 for that.
         let maxParentDepth = 0;
         for (const spentUtxo of spent) {
             const key = utxoKey(spentUtxo);
-            // If it was an unconfirmed (pending) parent, capture its depth
-            const parentDepth = this.pendingUtxoDepth[key] ?? 0;
+            const parentDepth = addressData.pendingUtxoDepth[key] ?? 0;
             if (parentDepth > maxParentDepth) {
                 maxParentDepth = parentDepth;
             }
@@ -89,38 +94,52 @@ export class UTXOsManager {
             );
         }
 
-        // Now push the new UTXOs into pending; set their depth
+        // Push the new UTXOs into this address’s pending and set their depth
         for (const nu of newUTXOs) {
-            this.pendingUTXOs.push(nu);
-            this.pendingUtxoDepth[utxoKey(nu)] = newDepth;
+            addressData.pendingUTXOs.push(nu);
+            addressData.pendingUtxoDepth[utxoKey(nu)] = newDepth;
         }
     }
 
     /**
-     * Clean the spent and pending UTXOs, allowing reset after transactions are built.
+     * Get the pending UTXOs for a specific address.
+     * @param address
      */
-    public clean(): void {
-        this.spentUTXOs = [];
-        this.pendingUTXOs = [];
-        this.pendingUtxoDepth = {};
-        this.lastCleanup = Date.now();
-
-        // Also reset the fetch cache.
-        this.lastFetchTimestamp = 0;
-        this.lastFetchedData = null;
+    public getPendingUTXOs(address: string): UTXOs {
+        const addressData = this.getAddressData(address);
+        return addressData.pendingUTXOs;
     }
 
     /**
-     * Get UTXOs with configurable options.
+     * Clean (reset) the data for a particular address or for all addresses if none is passed.
+     */
+    public clean(address?: string): void {
+        if (address) {
+            // Reset a single address
+            const addressData = this.getAddressData(address);
+            addressData.spentUTXOs = [];
+            addressData.pendingUTXOs = [];
+            addressData.pendingUtxoDepth = {};
+            addressData.lastCleanup = Date.now();
+            addressData.lastFetchTimestamp = 0;
+            addressData.lastFetchedData = null;
+        } else {
+            // Reset everything
+            this.dataByAddress = {};
+        }
+    }
+
+    /**
+     * Get UTXOs with configurable options, specifically for an address.
      *
-     * If the last UTXO fetch was less than 10 seconds ago, this returns cached data
-     * rather than calling out to the provider again. Otherwise, it fetches fresh data.
+     * If the last UTXO fetch for that address was <10s ago, returns cached data.
+     * Otherwise, fetches fresh data from the provider.
      *
      * @param {object} options - The UTXO fetch options
      * @param {string} options.address - The address to get the UTXOs for
      * @param {boolean} [options.optimize=true] - Whether to optimize the UTXOs
-     * @param {boolean} [options.mergePendingUTXOs=true] - Whether to merge pending UTXOs
-     * @param {boolean} [options.filterSpentUTXOs=true] - Whether to filter out spent UTXOs
+     * @param {boolean} [options.mergePendingUTXOs=true] - Merge locally pending UTXOs
+     * @param {boolean} [options.filterSpentUTXOs=true] - Filter out known-spent UTXOs
      * @returns {Promise<UTXOs>} The UTXOs
      * @throws {Error} If something goes wrong
      */
@@ -130,21 +149,18 @@ export class UTXOsManager {
         mergePendingUTXOs = true,
         filterSpentUTXOs = true,
     }: RequestUTXOsParams): Promise<UTXOs> {
+        const addressData = this.getAddressData(address);
         const fetchedData = await this.maybeFetchUTXOs(address, optimize);
 
-        // Helper function to create a unique key for UTXOs
         const utxoKey = (utxo: UTXO) => `${utxo.transactionId}:${utxo.outputIndex}`;
-
-        // Prepare sets for quick lookups
-        const pendingUTXOKeys = new Set(this.pendingUTXOs.map(utxoKey));
-        const spentUTXOKeys = new Set(this.spentUTXOs.map(utxoKey));
+        const pendingUTXOKeys = new Set(addressData.pendingUTXOs.map(utxoKey));
+        const spentUTXOKeys = new Set(addressData.spentUTXOs.map(utxoKey));
         const fetchedSpentKeys = new Set(fetchedData.spentTransactions.map(utxoKey));
 
         // Start with confirmed UTXOs
-        const combinedUTXOs: UTXO[] = [];
+        const combinedUTXOs: UTXOs = [];
         const combinedKeysSet = new Set<string>();
 
-        // Add confirmed UTXOs without duplicates
         for (const utxo of fetchedData.confirmed) {
             const key = utxoKey(utxo);
             if (!combinedKeysSet.has(key)) {
@@ -155,16 +171,15 @@ export class UTXOsManager {
 
         // Merge pending UTXOs if requested
         if (mergePendingUTXOs) {
-            // Add currently pending UTXOs without duplicates
-            for (const utxo of this.pendingUTXOs) {
+            // Add currently pending
+            for (const utxo of addressData.pendingUTXOs) {
                 const key = utxoKey(utxo);
                 if (!combinedKeysSet.has(key)) {
                     combinedUTXOs.push(utxo);
                     combinedKeysSet.add(key);
                 }
             }
-
-            // Add fetched pending UTXOs that aren't already in pending or combined
+            // Add fetched pending UTXOs that aren't already known
             for (const utxo of fetchedData.pending) {
                 const key = utxoKey(utxo);
                 if (!pendingUTXOKeys.has(key) && !combinedKeysSet.has(key)) {
@@ -177,7 +192,7 @@ export class UTXOsManager {
         // Filter out UTXOs spent locally
         let finalUTXOs = combinedUTXOs.filter((utxo) => !spentUTXOKeys.has(utxoKey(utxo)));
 
-        // Optionally filter out UTXOs that are known-spent in the fetch
+        // Optionally filter out UTXOs that are known spent in the fetch
         if (filterSpentUTXOs && fetchedSpentKeys.size > 0) {
             finalUTXOs = finalUTXOs.filter((utxo) => !fetchedSpentKeys.has(utxoKey(utxo)));
         }
@@ -186,17 +201,17 @@ export class UTXOsManager {
     }
 
     /**
-     * Fetch UTXOs for a specific amount needed, merging from pending and confirmed UTXOs.
+     * Fetch UTXOs for a specific amount needed, from a single address,
+     * merging from pending and confirmed UTXOs.
      *
-     * @param {object} options The UTXO fetch options
-     * @param {string} options.address The address to fetch UTXOs from
-     * @param {bigint} options.amount The amount of UTXOs to retrieve
-     * @param {boolean} [options.optimize=true] Optimize the UTXOs (e.g., remove dust)
-     * @param {boolean} [options.mergePendingUTXOs=true] - Whether to merge pending UTXOs
-     * @param {boolean} [options.filterSpentUTXOs=true] - Whether to filter out spent UTXOs
-     * @param {boolean} [options.throwErrors=false] - Whether to throw errors if UTXOs are insufficient
-     * @returns {Promise<UTXOs>} The fetched UTXOs
-     * @throws {Error} If something goes wrong or if not enough UTXOs are available (when throwErrors=true)
+     * @param {object} options
+     * @param {string} options.address The address to fetch UTXOs for
+     * @param {bigint} options.amount The needed amount
+     * @param {boolean} [options.optimize=true] Optimize the UTXOs
+     * @param {boolean} [options.mergePendingUTXOs=true] Merge pending
+     * @param {boolean} [options.filterSpentUTXOs=true] Filter out spent
+     * @param {boolean} [options.throwErrors=false] Throw error if insufficient
+     * @returns {Promise<UTXOs>}
      */
     public async getUTXOsForAmount({
         address,
@@ -234,42 +249,57 @@ export class UTXOsManager {
     }
 
     /**
-     * Checks if we need to fetch fresh UTXOs or can return the cached data.
-     * - If less than 10s since last fetch, return cached data
-     * - Otherwise, fetch new data from the provider
+     * Return the AddressData object for a given address. Initializes it if nonexistent.
      */
-    private async maybeFetchUTXOs(address: string, optimize: boolean): Promise<IUTXOsData> {
-        const now = Date.now();
-        const age = now - this.lastFetchTimestamp;
-
-        // Purge after certain time
-        if (now - this.lastCleanup > AUTO_PURGE_AFTER) {
-            this.clean();
+    private getAddressData(address: string): AddressData {
+        if (!this.dataByAddress[address]) {
+            this.dataByAddress[address] = {
+                spentUTXOs: [],
+                pendingUTXOs: [],
+                pendingUtxoDepth: {},
+                lastCleanup: Date.now(),
+                lastFetchTimestamp: 0,
+                lastFetchedData: null,
+            };
         }
-
-        // If it's been less than FETCH_COOLDOWN ms, return cached data if available
-        if (this.lastFetchedData && age < FETCH_COOLDOWN) {
-            return this.lastFetchedData;
-        }
-
-        // Otherwise, fetch from the RPC
-        this.lastFetchedData = await this.fetchUTXOs(address, optimize);
-        this.lastFetchTimestamp = now;
-
-        // Remove any pending UTXOs that have become confirmed or known spent
-        this.syncPendingDepthWithFetched();
-
-        return this.lastFetchedData;
+        return this.dataByAddress[address];
     }
 
     /**
-     * Generic method to fetch all UTXOs in one call (confirmed, pending, spent).
+     * Checks if we need to fetch fresh UTXOs or can return the cached data (per address).
+     */
+    private async maybeFetchUTXOs(address: string, optimize: boolean): Promise<IUTXOsData> {
+        const addressData = this.getAddressData(address);
+        const now = Date.now();
+        const age = now - addressData.lastFetchTimestamp;
+
+        // Purge if it's been too long for this address
+        if (now - addressData.lastCleanup > AUTO_PURGE_AFTER) {
+            this.clean(address); // Clean only this address data
+        }
+
+        // If it's been less than FETCH_COOLDOWN ms, return cached data if available
+        if (addressData.lastFetchedData && age < FETCH_COOLDOWN) {
+            return addressData.lastFetchedData;
+        }
+
+        // Otherwise, fetch from the RPC
+        addressData.lastFetchedData = await this.fetchUTXOs(address, optimize);
+        addressData.lastFetchTimestamp = now;
+
+        // Remove any pending UTXOs that have become confirmed or known spent
+        this.syncPendingDepthWithFetched(address);
+
+        return addressData.lastFetchedData;
+    }
+
+    /**
+     * Generic method to fetch all UTXOs in one call (confirmed, pending, spent) for a given address.
      */
     private async fetchUTXOs(address: string, optimize: boolean = false): Promise<IUTXOsData> {
-        const addressStr: string = address.toString();
         const payload: JsonRpcPayload = this.provider.buildJsonRpcPayload(
             JSONRpcMethods.GET_UTXOS,
-            [addressStr, optimize],
+            [address, optimize],
         );
 
         const rawUTXOs: JsonRpcResult = await this.provider.callPayloadSingle(payload);
@@ -291,29 +321,26 @@ export class UTXOsManager {
     }
 
     /**
-     * Whenever we fetch new data, some pending UTXOs may have confirmed
-     * or become known-spent. We remove them from pending state and depth map.
+     * After fetching new data for a single address, some pending UTXOs may have confirmed
+     * or become known-spent. Remove them from pending state/depth map.
      */
-    private syncPendingDepthWithFetched(): void {
-        if (!this.lastFetchedData) {
-            return;
-        }
+    private syncPendingDepthWithFetched(address: string): void {
+        const addressData = this.getAddressData(address);
+        const fetched = addressData.lastFetchedData;
+        if (!fetched) return;
 
         const confirmedKeys = new Set(
-            this.lastFetchedData.confirmed.map((u) => `${u.transactionId}:${u.outputIndex}`),
+            fetched.confirmed.map((u) => `${u.transactionId}:${u.outputIndex}`),
         );
-
         const spentKeys = new Set(
-            this.lastFetchedData.spentTransactions.map(
-                (u) => `${u.transactionId}:${u.outputIndex}`,
-            ),
+            fetched.spentTransactions.map((u) => `${u.transactionId}:${u.outputIndex}`),
         );
 
-        this.pendingUTXOs = this.pendingUTXOs.filter((u) => {
+        addressData.pendingUTXOs = addressData.pendingUTXOs.filter((u) => {
             const key = `${u.transactionId}:${u.outputIndex}`;
             // If it’s now confirmed or known spent, remove it from pending
             if (confirmedKeys.has(key) || spentKeys.has(key)) {
-                delete this.pendingUtxoDepth[key];
+                delete addressData.pendingUtxoDepth[key];
                 return false;
             }
             return true;
