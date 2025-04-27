@@ -587,10 +587,10 @@ export abstract class AbstractRpcProvider {
 
         const rawTx: JsonRpcResult = await this.callPayloadSingle(payload);
         const result: BroadcastedTransaction = rawTx.result as BroadcastedTransaction;
-        if (result && result.identifier) {
+        if (result && result.id) {
             return {
                 ...result,
-                identifier: BigInt(result.identifier),
+                id: result.id,
             };
         }
 
@@ -616,10 +616,10 @@ export abstract class AbstractRpcProvider {
 
         return rawTxs.map((rawTx) => {
             const result: BroadcastedTransaction = rawTx.result as BroadcastedTransaction;
-            if (result && result.identifier) {
+            if (result && result.id) {
                 return {
                     ...result,
-                    identifier: BigInt(result.identifier),
+                    id: result.id,
                 };
             }
 

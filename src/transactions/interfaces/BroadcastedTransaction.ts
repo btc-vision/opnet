@@ -20,5 +20,5 @@ export interface BroadcastedTransaction {
     /**
      * The identifier of the transaction.
      */
-    readonly identifier: bigint | string;
+    readonly id: string;
 }
