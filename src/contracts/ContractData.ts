@@ -24,7 +24,9 @@ export class ContractData implements Omit<IRawContract, 'contractTweakedPublicKe
 
     constructor(raw: IRawContract) {
         this.contractAddress = raw.contractAddress;
-        this.contractPublicKey = Address.fromString(raw.contractTweakedPublicKey);
+        this.contractPublicKey = Buffer.isBuffer(raw.contractTweakedPublicKey)
+            ? new Address(raw.contractTweakedPublicKey)
+            : new Address(Buffer.from(raw.contractTweakedPublicKey, 'base64'));
 
         this.bytecode = Buffer.isBuffer(raw.bytecode)
             ? raw.bytecode

@@ -8,7 +8,7 @@ import { Address } from '@btc-vision/transaction';
 export interface IRawContract {
     readonly contractAddress: string;
 
-    readonly contractTweakedPublicKey: string;
+    readonly contractTweakedPublicKey: string | Buffer;
 
     readonly bytecode: Buffer | string;
     readonly wasCompressed: boolean;
