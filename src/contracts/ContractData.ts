@@ -49,6 +49,9 @@ export class ContractData implements IRawContract {
             ? raw.contractSaltHash
             : Buffer.from(raw.contractSaltHash, 'base64');
 
-        this.deployerAddress = raw.deployerAddress;
+        this.deployerAddress =
+            !raw.deployerAddress && this.deployerPubKey
+                ? new Address(this.deployerPubKey)
+                : raw.deployerAddress;
     }
 }
