@@ -6,10 +6,9 @@ import { IRawContract } from './interfaces/IRawContract.js';
  * @class ContractData
  * @category Bitcoin
  */
-export class ContractData implements IRawContract {
-    public readonly contractAddress: Address;
-    public readonly virtualAddress: Address;
-    public readonly p2trAddress: Address;
+export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
+    public readonly contractAddress: string;
+    public readonly contractPublicKey: Address;
 
     public readonly bytecode: Buffer;
     public readonly wasCompressed: boolean;
@@ -25,13 +24,11 @@ export class ContractData implements IRawContract {
 
     constructor(raw: IRawContract) {
         this.contractAddress = raw.contractAddress;
-        this.virtualAddress = raw.virtualAddress;
+        this.contractPublicKey = Address.fromString(raw.contractPublicKey);
 
         this.bytecode = Buffer.isBuffer(raw.bytecode)
             ? raw.bytecode
             : Buffer.from(raw.bytecode, 'base64');
-
-        this.p2trAddress = raw.p2trAddress;
 
         this.wasCompressed = raw.wasCompressed;
         this.deployedTransactionId = raw.deployedTransactionId;

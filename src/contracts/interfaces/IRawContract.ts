@@ -6,9 +6,9 @@ import { Address } from '@btc-vision/transaction';
  * @cathegory Raw
  */
 export interface IRawContract {
-    readonly contractAddress: Address;
-    readonly virtualAddress: Address;
-    readonly p2trAddress: Address;
+    readonly contractAddress: string;
+
+    readonly contractPublicKey: string;
 
     readonly bytecode: Buffer | string;
     readonly wasCompressed: boolean;
