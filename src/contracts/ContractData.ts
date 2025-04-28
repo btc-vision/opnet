@@ -6,7 +6,7 @@ import { IRawContract } from './interfaces/IRawContract.js';
  * @class ContractData
  * @category Bitcoin
  */
-export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
+export class ContractData implements Omit<IRawContract, 'contractTweakedPublicKey'> {
     public readonly contractAddress: string;
     public readonly contractPublicKey: Address;
 
@@ -24,7 +24,7 @@ export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
 
     constructor(raw: IRawContract) {
         this.contractAddress = raw.contractAddress;
-        this.contractPublicKey = Address.fromString(raw.contractPublicKey);
+        this.contractPublicKey = Address.fromString(raw.contractTweakedPublicKey);
 
         this.bytecode = Buffer.isBuffer(raw.bytecode)
             ? raw.bytecode
