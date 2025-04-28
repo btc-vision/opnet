@@ -47,5 +47,5 @@ export interface IBlockCommon {
  */
 export interface IBlock extends IBlockCommon {
     transactions?: ITransaction[] | TransactionBase<OPNetTransactionTypes>[];
-    deployedContracts?: string[];
+    deployments?: string[];
 }

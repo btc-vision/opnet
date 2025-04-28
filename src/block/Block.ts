@@ -12,7 +12,7 @@ import { BlockHeaderChecksumProof, IBlock } from './interfaces/IBlock.js';
  * @class Block
  * @category Block
  */
-export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas' | 'deployedContracts'> {
+export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas' | 'deployments'> {
     public readonly height: BigNumberish;
 
     public readonly hash: string;
@@ -43,7 +43,7 @@ export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas' | 'depl
     public readonly checksumProofs: BlockHeaderChecksumProof;
 
     public readonly transactions: TransactionBase<OPNetTransactionTypes>[] = [];
-    public readonly deployedContracts: Address[] = [];
+    public readonly deployments: Address[] = [];
 
     constructor(block: IBlock, network: Network) {
         this.height = BigInt(block.height.toString());
@@ -80,8 +80,8 @@ export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas' | 'depl
             network,
         );
 
-        this.deployedContracts = block.deployedContracts
-            ? block.deployedContracts.map((address) => {
+        this.deployments = block.deployments
+            ? block.deployments.map((address) => {
                   return Address.fromString(address);
               })
             : [];
