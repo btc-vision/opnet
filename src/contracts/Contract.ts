@@ -145,6 +145,13 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         if (!Array.isArray(events)) {
             events = events[this.p2trOrTweaked];
 
+            if (!events && typeof this.address === 'string' && this.address.startsWith('0x')) {
+                const addy = Address.fromString(this.address);
+                const p2tr = addy.p2tr(this.network);
+
+                events = events[p2tr];
+            }
+
             if (!events) {
                 return [];
             }
