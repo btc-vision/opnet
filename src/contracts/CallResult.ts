@@ -32,6 +32,8 @@ export interface TransactionParameters {
     readonly extraInputs?: UTXO[];
     readonly extraOutputs?: PsbtOutputExtended[];
 
+    readonly minGas?: bigint;
+
     readonly dontIncludeAccessList?: boolean;
 }
 
@@ -214,7 +216,7 @@ export class CallResult<
             const params: IInteractionParameters | InteractionParametersWithoutSigner = {
                 calldata: this.calldata,
                 priorityFee: priorityFee,
-                gasSatFee: this.estimatedSatGas,
+                gasSatFee: this.bigintMax(this.estimatedSatGas, interactionParams.minGas || 0n),
                 feeRate: interactionParams.feeRate || 10,
                 from: interactionParams.refundTo,
                 utxos: UTXOs,
@@ -291,6 +293,10 @@ export class CallResult<
 
     public setCalldata(calldata: Buffer): void {
         this.calldata = calldata;
+    }
+
+    private bigintMax(a: bigint, b: bigint): bigint {
+        return a > b ? a : b;
     }
 
     async #fetchUTXOs(amount: bigint, interactionParams: TransactionParameters): Promise<UTXO[]> {
