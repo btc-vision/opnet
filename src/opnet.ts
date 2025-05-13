@@ -108,3 +108,5 @@ export * from './abi/shared/interfaces/motoswap/INativeSwapContract.js';
 export * from './abi/shared/interfaces/opnet/IOP_20Contract.js';
 export * from './abi/shared/interfaces/opnet/IOP_NETContract.js';
 export * from './abi/shared/interfaces/motoswap/IMotoswapStakingContract.js';
+
+export * from './contracts/enums/TransactionFlags.js';

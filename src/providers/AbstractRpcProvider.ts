@@ -9,6 +9,7 @@ import { IBlock } from '../block/interfaces/IBlock.js';
 import { BigNumberish, BlockTag } from '../common/CommonTypes.js';
 import { CallResult } from '../contracts/CallResult.js';
 import { ContractData } from '../contracts/ContractData.js';
+import { TransactionOutputFlags } from '../contracts/enums/TransactionFlags.js';
 import { IAccessList } from '../contracts/interfaces/IAccessList.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
@@ -830,6 +831,8 @@ export abstract class AbstractRpcProvider {
                     txId: input.txId.toString('base64'),
                     outputIndex: input.outputIndex,
                     scriptSig: input.scriptSig.toString('base64'),
+                    coinbase: input.coinbase ? input.coinbase.toString('base64') : undefined,
+                    flags: input.flags,
                 };
             }),
             outputs: transaction.outputs.map((output) => {
@@ -837,6 +840,9 @@ export abstract class AbstractRpcProvider {
                     index: output.index,
                     to: output.to,
                     value: output.value.toString(),
+
+                    scriptPubKey: output.scriptPubKey?.toString('base64') || undefined,
+                    flags: output.flags || TransactionOutputFlags.hasTo,
                 };
             }),
         };
