@@ -645,8 +645,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const exactGas = (gas * gasPerSat) / 1000000000000n;
 
         // Add 25% extra gas
-        const finalGas = (exactGas * 100n) / (100n - 25n);
-        return this.max(finalGas, 5000n); //330n
+        const finalGas = (exactGas * 100n) / (100n - 30n);
+        return this.max(finalGas, 1000n);
     }
 
     private max(a: bigint, b: bigint): bigint {
@@ -687,11 +687,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             response.setDecoded(decoded);
             response.setCalldata(buffer);
 
-            if (response.estimatedGas) {
-                const gas = await this.estimateGas(response.estimatedGas);
-                response.setGasEstimation(gas);
-            }
+            const gas = await this.estimateGas(response.estimatedGas || 0n);
+            const gasRefunded = await this.estimateGas(response.refundedGas || 0n);
 
+            response.setGasEstimation(gas, gasRefunded);
             response.setEvents(this.decodeEvents(response.rawEvents));
 
             return response;

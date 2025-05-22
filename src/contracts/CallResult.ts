@@ -52,7 +52,7 @@ export interface InteractionTransactionReceipt {
 export class CallResult<
     T extends ContractDecodedObjectResult = {},
     U extends OPNetEvent<ContractDecodedObjectResult>[] = OPNetEvent<ContractDecodedObjectResult>[],
-> implements Omit<ICallResultData, 'estimatedGas' | 'events'>
+> implements Omit<ICallResultData, 'estimatedGas' | 'events' | 'specialGas'>
 {
     public readonly result: BinaryReader;
     public readonly accessList: IAccessList;
@@ -61,10 +61,12 @@ export class CallResult<
     public calldata: Buffer | undefined;
     public loadedStorage: LoadedStorage | undefined;
     public readonly estimatedGas: bigint | undefined;
+    public readonly refundedGas: bigint | undefined;
 
     public properties: T = {} as T;
 
     public estimatedSatGas: bigint = 0n;
+    public estimatedRefundedGasInSat: bigint = 0n;
     public events: U = [] as unknown as U;
 
     public to: string | undefined;
@@ -80,6 +82,10 @@ export class CallResult<
 
         if (callResult.estimatedGas) {
             this.estimatedGas = BigInt(callResult.estimatedGas);
+        }
+
+        if (callResult.specialGas) {
+            this.refundedGas = BigInt(callResult.specialGas);
         }
 
         const revert =
@@ -279,8 +285,9 @@ export class CallResult<
         }
     }
 
-    public setGasEstimation(estimatedGas: bigint): void {
+    public setGasEstimation(estimatedGas: bigint, refundedGas: bigint): void {
         this.estimatedSatGas = estimatedGas;
+        this.estimatedRefundedGasInSat = refundedGas;
     }
 
     public setDecoded(decoded: DecodedOutput): void {

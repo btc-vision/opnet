@@ -34,6 +34,7 @@ export interface ICallResultData {
     readonly accessList: IAccessList;
     readonly revert?: string;
     readonly estimatedGas?: string;
+    readonly specialGas?: string;
     readonly loadedStorage?: LoadedStorage;
 }
 
