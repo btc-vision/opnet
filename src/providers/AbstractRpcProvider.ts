@@ -22,6 +22,7 @@ import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
 import { BroadcastedTransaction } from '../transactions/interfaces/BroadcastedTransaction.js';
 import { ITransaction } from '../transactions/interfaces/ITransaction.js';
+import { ITransactionReceipt } from '../transactions/interfaces/ITransactionReceipt.js';
 import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.js';
 import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
@@ -352,7 +353,7 @@ export abstract class AbstractRpcProvider {
         );
 
         const rawTransaction: JsonRpcResult = await this.callPayloadSingle(payload);
-        return new TransactionReceipt(rawTransaction.result, this.network);
+        return new TransactionReceipt(rawTransaction.result as ITransactionReceipt, this.network);
     }
 
     /**
