@@ -37,6 +37,9 @@ export class TransactionReceipt implements ITransactionReceipt {
 
     public readonly revert?: string;
 
+    public readonly gasUsed: bigint;
+    public readonly specialGasUsed: bigint;
+
     constructor(receipt: ITransactionReceipt, network: Network) {
         this.receipt = receipt.receipt
             ? Buffer.from(receipt.receipt as string, 'base64')
@@ -51,6 +54,9 @@ export class TransactionReceipt implements ITransactionReceipt {
             : undefined;
 
         this.revert = this.rawRevert ? CallResult.decodeRevertData(this.rawRevert) : undefined;
+
+        this.gasUsed = BigInt(receipt.gasUsed || '0x00') || 0n;
+        this.specialGasUsed = BigInt(receipt.specialGasUsed || '0x00') || 0n;
     }
 
     /**

@@ -49,4 +49,14 @@ export interface ITransactionReceipt {
      * @description If the transaction was reverted, this field will contain the revert message.
      */
     readonly revert?: string | Buffer;
+
+    /**
+     * @description Gas used by the transaction.
+     */
+    readonly gasUsed: string | bigint;
+
+    /**
+     * @description Special gas used by the transaction.
+     */
+    readonly specialGasUsed: string | bigint;
 }

@@ -70,6 +70,11 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
     public readonly gasUsed: bigint;
 
     /**
+     * @description Special gas used by the transaction.
+     */
+    public readonly specialGasUsed: bigint;
+
+    /**
      * @description The proof of work challenge.
      */
     public readonly pow?: ProofOfWorkChallenge;
@@ -81,6 +86,8 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
                 receiptProofs: transaction.receiptProofs,
                 events: transaction.events,
                 revert: transaction.revert,
+                gasUsed: transaction.gasUsed,
+                specialGasUsed: transaction.specialGasUsed,
             },
             network,
         );
@@ -99,6 +106,7 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
 
         this.OPNetType = transaction.OPNetType;
         this.gasUsed = BigInt(transaction.gasUsed || '0x00') || 0n;
+        this.specialGasUsed = BigInt(transaction.specialGasUsed || '0x00') || 0n;
 
         if (transaction.pow) {
             this.pow = this.decodeProofOfWorkChallenge(transaction.pow as RawProofOfWorkChallenge);

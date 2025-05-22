@@ -65,6 +65,11 @@ export interface ITransactionBase<T extends OPNetTransactionTypes> extends ITran
     readonly gasUsed: string | bigint;
 
     /**
+     * @description Special gas used by the transaction.
+     */
+    readonly specialGasUsed: string | bigint;
+
+    /**
      * @description The raw proof of work challenge.
      */
     readonly pow?: RawProofOfWorkChallenge | ProofOfWorkChallenge;
