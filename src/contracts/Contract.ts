@@ -305,8 +305,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     private getSelector(element: FunctionBaseData): string {
         let name = element.name;
 
+        name += '(';
         if (element.inputs && element.inputs.length) {
-            name += '(';
             for (let i = 0; i < element.inputs.length; i++) {
                 const input = element.inputs[i];
                 const str = AbiTypeToStr[input.type];
@@ -321,8 +321,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
                 name += str;
             }
-            name += ')';
         }
+        name += ')';
 
         return name;
     }
