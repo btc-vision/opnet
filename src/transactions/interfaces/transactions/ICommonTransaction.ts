@@ -5,7 +5,7 @@ import { ProofOfWorkChallenge } from '../ProofOfWorkChallenge.js';
 
 export interface ICommonTransaction<T extends OPNetTransactionTypes> extends ITransactionBase<T> {
     /**
-     * @description The p2tr contract address. (SAFE)
+     * @description The p2op contract address. (SAFE)
      */
     readonly contractAddress?: string;
 
