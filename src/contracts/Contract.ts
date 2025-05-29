@@ -143,16 +143,20 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const decodedEvents: OPNetEvent<ContractDecodedObjectResult>[] = [];
 
         if (!Array.isArray(events)) {
-            events = events[this.p2trOrTweaked];
+            const tempEvents = events;
+            events = tempEvents[this.p2trOrTweaked];
 
-            if (!events && typeof this.address === 'string' && this.address.startsWith('0x')) {
+            if (
+                !Array.isArray(events) &&
+                typeof this.address === 'string' &&
+                this.address.startsWith('0x')
+            ) {
                 const addy = Address.fromString(this.address);
                 const p2tr = addy.p2tr(this.network);
-
-                events = events[p2tr];
+                events = tempEvents[p2tr];
             }
 
-            if (!events) {
+            if (!Array.isArray(events)) {
                 return [];
             }
         }
