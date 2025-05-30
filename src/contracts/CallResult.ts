@@ -111,7 +111,7 @@ export class CallResult<
         if (this.startsWithErrorSelector(revertDataBytes)) {
             const decoder = new TextDecoder();
 
-            return decoder.decode(revertDataBytes.slice(6));
+            return decoder.decode(revertDataBytes.slice(8));
         } else {
             return `Unknown Revert: 0x${this.bytesToHexString(revertDataBytes)}`;
         }
