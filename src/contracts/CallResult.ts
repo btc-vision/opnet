@@ -339,7 +339,7 @@ export class CallResult<
     private contractToString(contract: string): string {
         const addressCa = Address.fromString(contract);
 
-        return addressCa.p2tr(this.#provider.network);
+        return addressCa.p2op(this.#provider.network);
     }
 
     private parseEvents(events: RawEventList): EventList {

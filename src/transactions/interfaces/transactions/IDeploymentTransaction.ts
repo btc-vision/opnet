@@ -10,7 +10,7 @@ import { ICommonTransaction } from './ICommonTransaction.js';
 export interface IDeploymentTransaction
     extends ICommonTransaction<OPNetTransactionTypes.Deployment> {
     /**
-     * @description The p2tr contract address. (SAFE)
+     * @description The p2op contract address. (SAFE)
      */
     readonly contractAddress?: string;
 

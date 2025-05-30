@@ -113,12 +113,12 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     }
 
     /**
-     * The P2TR address of the contract.
-     * @returns {string} The P2TR address of the contract.
+     * The P2OP address of the contract.
+     * @returns {string} The P2OP address of the contract.
      */
-    public get p2trOrTweaked(): string {
+    public get p2opOrTweaked(): string {
         if (typeof this.address !== 'string') {
-            return this.address.p2tr(this.network);
+            return this.address.p2op(this.network);
         }
 
         return this.address;
@@ -144,7 +144,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
         if (!Array.isArray(events)) {
             const tempEvents = events;
-            events = tempEvents[this.p2trOrTweaked];
+            events = tempEvents[this.p2opOrTweaked];
 
             if (
                 !Array.isArray(events) &&
@@ -152,8 +152,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 this.address.startsWith('0x')
             ) {
                 const addy = Address.fromString(this.address);
-                const p2tr = addy.p2tr(this.network);
-                events = tempEvents[p2tr];
+                const p2op = addy.p2op(this.network);
+                events = tempEvents[p2op];
             }
 
             if (!Array.isArray(events)) {
@@ -687,7 +687,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 ? this.decodeOutput(element.outputs, response.result)
                 : { values: [], obj: {} };
 
-            response.setTo(this.p2trOrTweaked);
+            response.setTo(this.p2opOrTweaked);
             response.setDecoded(decoded);
             response.setCalldata(buffer);
 

@@ -73,12 +73,12 @@ export class TransactionReceipt implements ITransactionReceipt {
         if (!Array.isArray(events)) {
             for (const [key, value] of Object.entries(events)) {
                 const ca = Address.fromString(key);
-                const caP2tr = ca.p2tr(network);
+                const caP2op = ca.p2op(network);
                 const v = (value as NetEventDocument[]).map((event: NetEventDocument) => {
                     return this.decodeEvent(event);
                 });
 
-                parsedEvents[caP2tr] = v;
+                parsedEvents[caP2op] = v;
 
                 this.rawEvents[key] = v;
             }
@@ -89,17 +89,17 @@ export class TransactionReceipt implements ITransactionReceipt {
 
                 // TODO: Add a weak cache to avoid parsing the same address multiple times?
                 const ca = Address.fromString(contractAddress);
-                const caP2tr = ca.p2tr(network);
+                const caP2op = ca.p2op(network);
 
-                if (!parsedEvents[caP2tr]) {
-                    parsedEvents[caP2tr] = [];
+                if (!parsedEvents[caP2op]) {
+                    parsedEvents[caP2op] = [];
                 }
 
-                if (!parsedEvents[caP2tr]) {
-                    parsedEvents[caP2tr] = [];
+                if (!parsedEvents[caP2op]) {
+                    parsedEvents[caP2op] = [];
                 }
 
-                parsedEvents[caP2tr].push(parsedEvent);
+                parsedEvents[caP2op].push(parsedEvent);
 
                 if (!this.rawEvents[contractAddress]) {
                     this.rawEvents[contractAddress] = [];
