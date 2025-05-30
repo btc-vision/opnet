@@ -320,7 +320,7 @@ export class CallResult<
 
         const utxoSetting: RequestUTXOsParamsWithAmount = {
             address: interactionParams.refundTo,
-            amount: 50_000n + amount,
+            amount: 3_000n + amount,
             throwErrors: true,
         };
 
