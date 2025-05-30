@@ -70,6 +70,7 @@ export class CallResult<
     public events: U = [] as unknown as U;
 
     public to: string | undefined;
+    public address: Address | undefined;
 
     readonly #rawEvents: EventList;
     readonly #provider: AbstractRpcProvider;
@@ -144,8 +145,9 @@ export class CallResult<
         }).join('');
     }
 
-    public setTo(to: string): void {
+    public setTo(to: string, address: Address): void {
         this.to = to;
+        this.address = address;
     }
 
     /**
@@ -158,6 +160,10 @@ export class CallResult<
         interactionParams: TransactionParameters,
         amountAddition: bigint = 0n,
     ): Promise<InteractionTransactionReceipt> {
+        if (!this.address) {
+            throw new Error('Contract address not set');
+        }
+
         if (!this.calldata) {
             throw new Error('Calldata not set');
         }
@@ -220,6 +226,7 @@ export class CallResult<
 
             const preimage = await this.#provider.getPreimage();
             const params: IInteractionParameters | InteractionParametersWithoutSigner = {
+                contract: this.address.toHex(),
                 calldata: this.calldata,
                 priorityFee: priorityFee,
                 gasSatFee: this.bigintMax(this.estimatedSatGas, interactionParams.minGas || 0n),

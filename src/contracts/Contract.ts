@@ -4,6 +4,7 @@ import {
     ABIDataTypes,
     Address,
     AddressMap,
+    AddressTypes,
     AddressVerificator,
     BinaryReader,
     BinaryWriter,
@@ -85,6 +86,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     private currentTxDetails: ParsedSimulatedTransaction | undefined;
     private simulatedHeight: bigint | undefined = undefined;
     private accessList: IAccessList | undefined;
+    private _rlAddress: Promise<Address> | undefined;
 
     protected constructor(
         address: string | Address,
@@ -94,9 +96,9 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         from?: Address,
     ) {
         if (typeof address === 'string') {
-            if (!AddressVerificator.detectAddressType(address, network)) {
+            if (AddressVerificator.detectAddressType(address, network) !== AddressTypes.P2OP) {
                 throw new Error(
-                    `It seems that the address ${address} is not a valid Bitcoin address.`,
+                    `Oops! The address provided is not a valid P2OP address ${address}.`,
                 );
             }
         }
@@ -122,6 +124,22 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         }
 
         return this.address;
+    }
+
+    /**
+     * Gets the contract address as an Address object.
+     * @return {Promise<Address>} The contract address as an Address object.
+     */
+    public get contractAddress(): Promise<Address> {
+        if (typeof this.address === 'string') {
+            if (!this._rlAddress) {
+                this._rlAddress = this.provider.getPublicKeyInfo(this.address);
+            }
+
+            return this._rlAddress;
+        }
+
+        return Promise.resolve(this.address);
     }
 
     /**
@@ -264,6 +282,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             | 'setSimulatedHeight'
             | 'setTransactionDetails'
             | 'setAccessList'
+            | 'contractAddress'
         >;
 
         return this[key];
@@ -659,6 +678,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
     private callFunction(element: FunctionBaseData): (...args: unknown[]) => Promise<CallResult> {
         return async (...args: unknown[]): Promise<CallResult> => {
+            const address = await this.contractAddress;
+
             const txDetails: ParsedSimulatedTransaction | undefined = this.currentTxDetails;
             const accessList: IAccessList | undefined = this.accessList;
             this.currentTxDetails = undefined;
@@ -687,7 +708,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 ? this.decodeOutput(element.outputs, response.result)
                 : { values: [], obj: {} };
 
-            response.setTo(this.p2opOrTweaked);
+            response.setTo(this.p2opOrTweaked, address);
             response.setDecoded(decoded);
             response.setCalldata(buffer);
 
