@@ -17,6 +17,7 @@ import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';
 import { IAccessList } from './interfaces/IAccessList.js';
 import { EventList, ICallResultData, RawEventList } from './interfaces/ICallResult.js';
 import { OPNetEvent } from './OPNetEvent.js';
+import { TransactionHelper } from './TransactionHelpper.js';
 
 const factory = new TransactionFactory();
 
@@ -24,7 +25,7 @@ export interface TransactionParameters {
     readonly signer?: Signer | ECPairInterface;
     readonly refundTo: string;
     readonly priorityFee?: bigint;
-    readonly feeRate?: number;
+    feeRate?: number;
     readonly utxos?: UTXO[];
     readonly maximumAllowedSatToSpend: bigint;
     readonly network: Network;
@@ -176,21 +177,17 @@ export class CallResult<
             throw new Error(`Can not send transaction! Simulation reverted: ${this.revert}`);
         }
 
-        const addedOutputs = interactionParams.extraOutputs || [];
-        const totalAmount = BigInt(addedOutputs.reduce((acc, output) => acc + output.value, 0));
-
-        const priorityFee = interactionParams.priorityFee || 0n;
-        const totalFee: bigint = this.estimatedSatGas + priorityFee;
         try {
             let UTXOs: UTXO[] =
-                interactionParams.utxos ||
-                (await this.#fetchUTXOs(
-                    totalFee +
-                        interactionParams.maximumAllowedSatToSpend +
-                        totalAmount +
-                        amountAddition,
-                    interactionParams,
-                ));
+                interactionParams.utxos || (await this.acquire(interactionParams, amountAddition));
+            /*(await this.#fetchUTXOs(
+                totalFee +
+                    interactionParams.maximumAllowedSatToSpend +
+                    totalAmount +
+                    amountAddition +
+                    BigInt(approxCostMining),
+                interactionParams,
+            ));*/
 
             if (interactionParams.extraInputs) {
                 UTXOs = UTXOs.filter((utxo) => {
@@ -224,6 +221,7 @@ export class CallResult<
                         : undefined
                     : undefined;
 
+            const priorityFee: bigint = interactionParams.priorityFee || 0n;
             const preimage = await this.#provider.getPreimage();
             const params: IInteractionParameters | InteractionParametersWithoutSigner = {
                 contract: this.address.toHex(),
@@ -309,6 +307,70 @@ export class CallResult<
         this.calldata = calldata;
     }
 
+    private async acquire(
+        interactionParams: TransactionParameters,
+        amountAddition: bigint = 0n,
+    ): Promise<UTXO[]> {
+        if (!this.calldata) {
+            throw new Error('Calldata not set');
+        }
+
+        if (!interactionParams.feeRate) {
+            interactionParams.feeRate = 1.5;
+        }
+
+        const feeRate = interactionParams.feeRate;
+        const priority = interactionParams.priorityFee ?? 0n;
+        const addedOuts = interactionParams.extraOutputs ?? [];
+        const totalOuts = BigInt(addedOuts.reduce((s, o) => s + o.value, 0));
+
+        const gasFee = this.bigintMax(this.estimatedSatGas, interactionParams.minGas ?? 0n);
+        const preWant =
+            gasFee +
+            priority +
+            amountAddition +
+            totalOuts +
+            interactionParams.maximumAllowedSatToSpend;
+
+        let utxos = interactionParams.utxos ?? (await this.#fetchUTXOs(preWant, interactionParams));
+
+        let refetched = false;
+        while (true) {
+            const miningCost = TransactionHelper.estimateMiningCost(
+                utxos,
+                addedOuts,
+                this.calldata.length + 200,
+                interactionParams.network,
+                feeRate,
+            );
+
+            const want =
+                gasFee +
+                priority +
+                amountAddition +
+                totalOuts +
+                miningCost +
+                interactionParams.maximumAllowedSatToSpend;
+
+            const have = utxos.reduce((s, u) => s + BigInt(u.value), 0n);
+            if (have >= want) break;
+
+            if (refetched) {
+                throw new Error('Not enough sat to complete transaction');
+            }
+
+            utxos = await this.#fetchUTXOs(want, interactionParams);
+            refetched = true;
+
+            const haveAfter = utxos.reduce((s, u) => s + BigInt(u.value), 0n);
+            if (haveAfter === have) {
+                throw new Error('Not enough sat to complete transaction');
+            }
+        }
+
+        return utxos;
+    }
+
     private bigintMax(a: bigint, b: bigint): bigint {
         return a > b ? a : b;
     }
@@ -320,7 +382,7 @@ export class CallResult<
 
         const utxoSetting: RequestUTXOsParamsWithAmount = {
             address: interactionParams.refundTo,
-            amount: 3_000n + amount,
+            amount: amount,
             throwErrors: true,
         };
 
