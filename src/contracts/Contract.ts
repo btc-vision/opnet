@@ -96,9 +96,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         from?: Address,
     ) {
         if (typeof address === 'string') {
-            if (AddressVerificator.detectAddressType(address, network) !== AddressTypes.P2OP) {
+            const type = AddressVerificator.detectAddressType(address, network);
+            if (type !== AddressTypes.P2OP && type !== AddressTypes.P2PK) {
                 throw new Error(
-                    `Oops! The address provided is not a valid P2OP address ${address}.`,
+                    `Oops! The address provided is not a valid P2OP or P2PK address ${address}.`,
                 );
             }
         }
