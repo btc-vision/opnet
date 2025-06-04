@@ -215,7 +215,7 @@ export class CallResult<
 
             // It's useless to send the access list if we don't load at least 100 pointers.
             const storage =
-                interactionParams.dontIncludeAccessList === undefined
+                interactionParams.dontIncludeAccessList === false
                     ? totalPointers > 100
                         ? this.loadedStorage
                         : undefined

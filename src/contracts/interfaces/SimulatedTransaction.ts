@@ -2,16 +2,16 @@ export interface StrippedTransactionOutput {
     readonly value: bigint;
     readonly index: number;
     readonly flags: number;
-    readonly scriptPubKey: Buffer | undefined;
-    readonly to: string | undefined;
+    readonly scriptPubKey?: Buffer;
+    readonly to?: string;
 }
 
 export interface StrippedTransactionOutputAPI {
     readonly value: string;
     readonly index: number;
-    readonly to: string | undefined;
+    readonly to?: string;
     readonly flags: number;
-    readonly scriptPubKey: string | undefined;
+    readonly scriptPubKey?: string;
 }
 
 export interface StrippedTransactionInput {
@@ -20,7 +20,7 @@ export interface StrippedTransactionInput {
     readonly scriptSig: Buffer;
 
     readonly flags: number;
-    readonly coinbase: Buffer | undefined;
+    readonly coinbase?: Buffer;
 }
 
 export interface StrippedTransactionInputAPI {
@@ -28,7 +28,7 @@ export interface StrippedTransactionInputAPI {
     readonly outputIndex: number;
     readonly scriptSig: string;
 
-    readonly coinbase: string | undefined;
+    readonly coinbase?: string;
     readonly flags: number;
 }
 
