@@ -175,9 +175,8 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
 
     //=================================================
     // CREATE POOL WITH SIGNATURE
-    // (fixed param order to match what the code reads)
     //=================================================
-    {
+    /*{
         name: 'createPoolWithSignature',
         inputs: [
             { name: 'signature', type: ABIDataTypes.BYTES },
@@ -193,7 +192,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         ],
         outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
         type: BitcoinAbiTypes.Function,
-    },
+    },*/
 
     //=================================================
     // SET FEES (only 2 params in the code)
@@ -265,6 +264,32 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'reserved', type: ABIDataTypes.UINT128 },
             { name: 'lpShares', type: ABIDataTypes.UINT256 },
             { name: 'btcReceiver', type: ABIDataTypes.STRING },
+
+            { name: 'indexedAt', type: ABIDataTypes.UINT32 },
+            { name: 'isPriority', type: ABIDataTypes.BOOL },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+
+    {
+        name: 'getQueueDetails',
+        inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
+        outputs: [
+            { name: 'lastPurgedBlock', type: ABIDataTypes.UINT32 },
+            { name: 'blockWithReservationsLength', type: ABIDataTypes.UINT32 },
+
+            { name: 'removalQueueLength', type: ABIDataTypes.UINT32 },
+            { name: 'removalQueueStartingIndex', type: ABIDataTypes.UINT32 },
+
+            { name: 'priorityQueueLength', type: ABIDataTypes.UINT32 },
+            { name: 'priorityQueueStartingIndex', type: ABIDataTypes.UINT32 },
+
+            { name: 'standardQueueLength', type: ABIDataTypes.UINT32 },
+            { name: 'standardQueueStartingIndex', type: ABIDataTypes.UINT32 },
+
+            { name: 'priorityPurgeQueueLength', type: ABIDataTypes.UINT32 },
+            { name: 'standardPurgeQueueLength', type: ABIDataTypes.UINT32 },
+            { name: 'removePurgeQueueLength', type: ABIDataTypes.UINT32 },
         ],
         type: BitcoinAbiTypes.Function,
     },

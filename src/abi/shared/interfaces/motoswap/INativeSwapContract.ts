@@ -192,6 +192,9 @@ export type GetProviderDetails = CallResult<
         reserved: bigint;
         lpShares: bigint;
         btcReceiver: string;
+
+        indexedAt: number;
+        isPriority: boolean;
     },
     []
 >;
@@ -216,6 +219,23 @@ export type AntiBotSettings = CallResult<
 >;
 
 export type StakingAddressResult = CallResult<{ stakingContractAddress: Address }, []>;
+
+export type QueueDetails = CallResult<
+    {
+        lastPurgedBlock: number;
+        blockWithReservationsLength: number;
+        removalQueueLength: number;
+        removalQueueStartingIndex: number;
+        priorityQueueLength: number;
+        priorityQueueStartingIndex: number;
+        standardQueueLength: number;
+        standardQueueStartingIndex: number;
+        priorityPurgeQueueLength: number;
+        standardPurgeQueueLength: number;
+        removePurgeQueueLength: number;
+    },
+    []
+>;
 
 /** ------------------------------------------------------------------
  * NativeSwap Interface
@@ -304,7 +324,8 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @param maxReservesIn5BlocksPercent - Cap on reserves in a short window.
      * @returns {Promise<CreatePool>}
      */
-    createPoolWithSignature(
+
+    /*createPoolWithSignature(
         signature: Buffer,
         approveAmount: bigint,
         nonce: bigint,
@@ -315,7 +336,7 @@ export interface INativeSwapContract extends IOP_NETContract {
         antiBotEnabledFor: number,
         antiBotMaximumTokensPerReservation: bigint,
         maxReservesIn5BlocksPercent: number,
-    ): Promise<CreatePool>;
+    ): Promise<CreatePool>;*/
 
     /**
      * @description Sets the global fee parameters (new).
@@ -375,6 +396,13 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @returns {Promise<GetProviderDetails>}
      */
     getProviderDetails(token: Address): Promise<GetProviderDetails>;
+
+    /**
+     * @description Retrieves the queue details for a token.
+     * @param token - The address of the token.
+     * @returns {Promise<QueueDetails>}
+     */
+    getQueueDetails(token: Address): Promise<QueueDetails>;
 
     /**
      * @description Retrieves the cost for using the priority queue (new).
