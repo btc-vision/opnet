@@ -4,10 +4,6 @@ import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { TransferEvent } from '../opnet/IOP_20Contract.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
-/** ------------------------------------------------------------------
- * Event Definitions
- * ------------------------------------------------------------------ */
-
 export type LiquidityAddedEvent = {
     readonly totalTokensContributed: bigint;
     readonly virtualTokenExchanged: bigint;
@@ -30,16 +26,24 @@ export type ReservationCreatedEvent = {
     readonly totalSatoshis: bigint;
 };
 
+export type ReservationPurgedEvent = {
+    readonly reservationId: bigint;
+    readonly currentBlock: bigint;
+    readonly purgingBlock: bigint;
+    readonly purgeIndex: number;
+    readonly providerCount: number;
+};
+
+export type ReservationPurgingEvent = {
+    readonly reservationId: bigint;
+    readonly purgeIndex: number;
+    readonly purgeQueueLength: number;
+};
+
 export type SwapExecutedEvent = {
     readonly buyer: Address;
     readonly amountIn: bigint;
     readonly amountOut: bigint;
-};
-
-export type UnlistEvent = {
-    readonly token: Address;
-    readonly amount: bigint;
-    readonly remainingLiquidity: bigint;
 };
 
 export type LiquidityReservedEvent = {
@@ -48,118 +52,67 @@ export type LiquidityReservedEvent = {
     readonly providerId: bigint;
 };
 
+export type ListingCanceledEvent = {
+    readonly amount: bigint;
+    readonly penalty: bigint;
+};
+
 export type ActivateProviderEvent = {
     readonly providerId: bigint;
     readonly listingAmount: bigint;
+    readonly btcToRemove: bigint;
 };
 
 export type FulfilledProviderEvent = {
     readonly providerId: bigint;
+    readonly canceled: boolean;
+    readonly removalCompleted: boolean;
 };
 
-/** ------------------------------------------------------------------
- * Call Results
+/* ------------------------------------------------------------------
+ * Call-result helpers
  * ------------------------------------------------------------------ */
 
-/**
- * @description Represents the result of the reserve function call.
- */
 export type ReserveNativeSwap = CallResult<
-    {
-        ok: boolean;
-    },
+    { ok: boolean },
     OPNetEvent<
         LiquidityReservedEvent | ReservationCreatedEvent | TransferEvent | FulfilledProviderEvent
     >[]
 >;
 
-/**
- * @description Represents the result of adding liquidity.
- */
 export type AddLiquidity = CallResult<
-    {
-        ok: boolean;
-    },
+    { ok: boolean },
     OPNetEvent<
         LiquidityAddedEvent | TransferEvent | ActivateProviderEvent | FulfilledProviderEvent
     >[]
 >;
 
-/**
- * @description Represents the result of removing liquidity.
- */
 export type RemoveLiquidity = CallResult<
-    {
-        ok: boolean;
-    },
+    { ok: boolean },
     OPNetEvent<LiquidityRemovedEvent | TransferEvent | FulfilledProviderEvent>[]
 >;
 
-/**
- * @description Represents the result of listing liquidity (new).
- */
-export type ListLiquidity = CallResult<
-    {
-        ok: boolean;
-    },
-    OPNetEvent<LiquidityListedEvent>[]
->;
+export type ListLiquidity = CallResult<{ ok: boolean }, OPNetEvent<LiquidityListedEvent>[]>;
 
-/**
- * @description Represents the result of canceling a listing (new).
- */
 export type CancelListing = CallResult<
-    {
-        ok: boolean;
-    },
-    OPNetEvent<UnlistEvent | TransferEvent | FulfilledProviderEvent>[]
+    { ok: boolean },
+    OPNetEvent<ListingCanceledEvent | TransferEvent | FulfilledProviderEvent>[]
 >;
 
-/**
- * @description Represents the result of creating a new pool (new).
- */
 export type CreatePool = CallResult<
-    {
-        ok: boolean;
-    },
+    { ok: boolean },
     OPNetEvent<TransferEvent | LiquidityAddedEvent>[]
 >;
 
-/**
- * @description Represents the result of setting fees (new).
- */
-export type SetFees = CallResult<
-    {
-        ok: boolean;
-    },
-    []
->;
+export type SetFees = CallResult<{ ok: boolean }, []>;
 
-/**
- * @description Represents the result of retrieving the fees (new).
- */
-export type GetFees = CallResult<
-    {
-        reservationBaseFee: bigint;
-        priorityQueueBaseFee: bigint;
-    },
-    []
->;
+export type GetFees = CallResult<{ reservationBaseFee: bigint; priorityQueueBaseFee: bigint }, []>;
 
-/**
- * @description Represents the result of a swap operation.
- */
 export type Swap = CallResult<
-    {
-        ok: boolean;
-    },
+    { ok: boolean },
     OPNetEvent<SwapExecutedEvent | TransferEvent | ActivateProviderEvent | FulfilledProviderEvent>[]
 >;
 
-/**
- * @description Represents the result of the getReserve function call.
- * Now includes virtualBTCReserve and virtualTokenReserve.
- */
 export type GetReserve = CallResult<
     {
         liquidity: bigint;
@@ -170,9 +123,6 @@ export type GetReserve = CallResult<
     []
 >;
 
-/**
- * @description Represents the result of the getQuote function call.
- */
 export type GetQuote = CallResult<
     {
         tokensOut: bigint;
@@ -183,42 +133,29 @@ export type GetQuote = CallResult<
     []
 >;
 
-/**
- * @description Represents the result of retrieving provider details.
- */
 export type GetProviderDetails = CallResult<
     {
         liquidity: bigint;
         reserved: bigint;
         lpShares: bigint;
         btcReceiver: string;
-
         indexedAt: number;
         isPriority: boolean;
     },
     []
 >;
 
-/**
- * @description Represents the result of retrieving the priority queue cost.
- */
-export type GetPriorityQueueCost = CallResult<
-    {
-        cost: bigint;
-    },
-    []
->;
+export type GetPriorityQueueCost = CallResult<{ cost: bigint }, []>;
 
 export type AntiBotSettings = CallResult<
     {
-        antibotEnabledFor: number;
-        antibotMaximumTokensPerReservation: bigint;
-        maxReservesIn5BlocksPercent: number;
+        antiBotExpirationBlock: bigint;
+        maxTokensPerReservation: bigint;
     },
     []
 >;
 
-export type StakingAddressResult = CallResult<{ stakingContractAddress: Address }, []>;
+export type StakingAddressResult = CallResult<{ stakingAddress: Address }, []>;
 
 export type QueueDetails = CallResult<
     {
@@ -236,10 +173,6 @@ export type QueueDetails = CallResult<
     },
     []
 >;
-
-/** ------------------------------------------------------------------
- * NativeSwap Interface
- * ------------------------------------------------------------------ */
 
 /**
  * @description This interface represents the NativeSwap contract,
