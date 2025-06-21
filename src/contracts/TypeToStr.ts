@@ -13,6 +13,7 @@ export const AbiTypeToStr: { [key in ABIDataTypes]: string } = {
     [ABIDataTypes.UINT8]: 'uint8',
     [ABIDataTypes.STRING]: 'string',
     [ABIDataTypes.BYTES32]: 'bytes32',
+    [ABIDataTypes.BYTES4]: 'bytes4',
     [ABIDataTypes.ADDRESS_UINT256_TUPLE]: 'tuple(address,uint256)[]',
     [ABIDataTypes.ARRAY_OF_ADDRESSES]: 'address[]',
     [ABIDataTypes.ARRAY_OF_UINT256]: 'uint256[]',
