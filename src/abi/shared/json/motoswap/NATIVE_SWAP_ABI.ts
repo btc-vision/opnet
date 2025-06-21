@@ -9,7 +9,7 @@ const NativeSwapEvents: BitcoinInterfaceAbi = [
         values: [
             { name: 'totalTokensContributed', type: ABIDataTypes.UINT256 },
             { name: 'virtualTokenExchanged', type: ABIDataTypes.UINT256 },
-            { name: 'totalSatoshisSpent', type: ABIDataTypes.UINT256 },
+            { name: 'totalSatoshisSpent', type: ABIDataTypes.UINT64 },
         ],
         type: BitcoinAbiTypes.Event,
     },
@@ -25,8 +25,8 @@ const NativeSwapEvents: BitcoinInterfaceAbi = [
         name: 'LiquidityRemoved',
         values: [
             { name: 'providerId', type: ABIDataTypes.UINT256 },
-            { name: 'btcOwed', type: ABIDataTypes.UINT256 },
-            { name: 'tokenAmount', type: ABIDataTypes.UINT256 },
+            { name: 'btcOwed', type: ABIDataTypes.UINT64 },
+            { name: 'tokenAmount', type: ABIDataTypes.UINT128 },
         ],
         type: BitcoinAbiTypes.Event,
     },
@@ -34,7 +34,27 @@ const NativeSwapEvents: BitcoinInterfaceAbi = [
         name: 'ReservationCreated',
         values: [
             { name: 'expectedAmountOut', type: ABIDataTypes.UINT256 },
-            { name: 'totalSatoshis', type: ABIDataTypes.UINT256 },
+            { name: 'totalSatoshis', type: ABIDataTypes.UINT64 },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'ReservationPurged',
+        values: [
+            { name: 'reservationId', type: ABIDataTypes.UINT128 },
+            { name: 'currentBlock', type: ABIDataTypes.UINT64 },
+            { name: 'purgingBlock', type: ABIDataTypes.UINT64 },
+            { name: 'purgeIndex', type: ABIDataTypes.UINT32 },
+            { name: 'providerCount', type: ABIDataTypes.UINT32 },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'ReservationPurging',
+        values: [
+            { name: 'reservationId', type: ABIDataTypes.UINT128 },
+            { name: 'purgeIndex', type: ABIDataTypes.UINT32 },
+            { name: 'purgeQueueLength', type: ABIDataTypes.UINT32 },
         ],
         type: BitcoinAbiTypes.Event,
     },
@@ -42,17 +62,8 @@ const NativeSwapEvents: BitcoinInterfaceAbi = [
         name: 'SwapExecuted',
         values: [
             { name: 'buyer', type: ABIDataTypes.ADDRESS },
-            { name: 'amountIn', type: ABIDataTypes.UINT256 },
+            { name: 'amountIn', type: ABIDataTypes.UINT64 },
             { name: 'amountOut', type: ABIDataTypes.UINT256 },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'Unlist',
-        values: [
-            { name: 'token', type: ABIDataTypes.ADDRESS },
-            { name: 'amount', type: ABIDataTypes.UINT256 },
-            { name: 'remainingLiquidity', type: ABIDataTypes.UINT256 },
         ],
         type: BitcoinAbiTypes.Event,
     },
@@ -60,8 +71,16 @@ const NativeSwapEvents: BitcoinInterfaceAbi = [
         name: 'LiquidityReserved',
         values: [
             { name: 'depositAddress', type: ABIDataTypes.STRING },
-            { name: 'amount', type: ABIDataTypes.UINT128 },
+            { name: 'amount', type: ABIDataTypes.UINT64 },
             { name: 'providerId', type: ABIDataTypes.UINT256 },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'ListingCanceled',
+        values: [
+            { name: 'amount', type: ABIDataTypes.UINT128 },
+            { name: 'penalty', type: ABIDataTypes.UINT128 },
         ],
         type: BitcoinAbiTypes.Event,
     },
@@ -70,12 +89,17 @@ const NativeSwapEvents: BitcoinInterfaceAbi = [
         values: [
             { name: 'providerId', type: ABIDataTypes.UINT256 },
             { name: 'listingAmount', type: ABIDataTypes.UINT128 },
+            { name: 'btcToRemove', type: ABIDataTypes.UINT64 },
         ],
         type: BitcoinAbiTypes.Event,
     },
     {
         name: 'FulfilledProvider',
-        values: [{ name: 'providerId', type: ABIDataTypes.UINT256 }],
+        values: [
+            { name: 'providerId', type: ABIDataTypes.UINT256 },
+            { name: 'canceled', type: ABIDataTypes.BOOL },
+            { name: 'removalCompleted', type: ABIDataTypes.BOOL },
+        ],
         type: BitcoinAbiTypes.Event,
     },
 ];
@@ -88,7 +112,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         name: 'reserve',
         inputs: [
             { name: 'token', type: ABIDataTypes.ADDRESS },
-            { name: 'maximumAmountIn', type: ABIDataTypes.UINT256 },
+            { name: 'maximumAmountIn', type: ABIDataTypes.UINT64 },
             { name: 'minimumAmountOut', type: ABIDataTypes.UINT256 },
             { name: 'forLP', type: ABIDataTypes.BOOL },
             { name: 'activationDelay', type: ABIDataTypes.UINT8 },
@@ -195,7 +219,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     },*/
 
     //=================================================
-    // SET FEES (only 2 params in the code)
+    // SET FEES
     //=================================================
     {
         name: 'setFees',
@@ -208,7 +232,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     },
 
     //=================================================
-    // GET FEES (only 2 outputs in the code)
+    // GET FEES
     //=================================================
     {
         name: 'getFees',
@@ -229,7 +253,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         outputs: [
             { name: 'liquidity', type: ABIDataTypes.UINT256 },
             { name: 'reservedLiquidity', type: ABIDataTypes.UINT256 },
-            { name: 'virtualBTCReserve', type: ABIDataTypes.UINT256 },
+            { name: 'virtualBTCReserve', type: ABIDataTypes.UINT64 },
             { name: 'virtualTokenReserve', type: ABIDataTypes.UINT256 },
         ],
         type: BitcoinAbiTypes.Function,
@@ -242,11 +266,11 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         name: 'getQuote',
         inputs: [
             { name: 'token', type: ABIDataTypes.ADDRESS },
-            { name: 'satoshisIn', type: ABIDataTypes.UINT256 },
+            { name: 'satoshisIn', type: ABIDataTypes.UINT64 },
         ],
         outputs: [
             { name: 'tokensOut', type: ABIDataTypes.UINT256 },
-            { name: 'requiredSatoshis', type: ABIDataTypes.UINT256 },
+            { name: 'requiredSatoshis', type: ABIDataTypes.UINT64 },
             { name: 'price', type: ABIDataTypes.UINT256 },
             { name: 'scale', type: ABIDataTypes.UINT64 },
         ],
@@ -262,7 +286,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         outputs: [
             { name: 'liquidity', type: ABIDataTypes.UINT128 },
             { name: 'reserved', type: ABIDataTypes.UINT128 },
-            { name: 'lpShares', type: ABIDataTypes.UINT256 },
+            { name: 'lpShares', type: ABIDataTypes.UINT128 },
             { name: 'btcReceiver', type: ABIDataTypes.STRING },
 
             { name: 'indexedAt', type: ABIDataTypes.UINT32 },
@@ -275,7 +299,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         name: 'getQueueDetails',
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
         outputs: [
-            { name: 'lastPurgedBlock', type: ABIDataTypes.UINT32 },
+            { name: 'lastPurgedBlock', type: ABIDataTypes.UINT64 },
             { name: 'blockWithReservationsLength', type: ABIDataTypes.UINT32 },
 
             { name: 'removalQueueLength', type: ABIDataTypes.UINT32 },
