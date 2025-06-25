@@ -27,7 +27,7 @@ const OWNABLE_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'owner',
                 type: ABIDataTypes.ADDRESS,
             },
         ],
@@ -38,7 +38,7 @@ const OWNABLE_ABI: BitcoinInterfaceAbi = [
         inputs: [],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -54,7 +54,7 @@ const OWNABLE_ABI: BitcoinInterfaceAbi = [
         ],
         outputs: [
             {
-                name: 'returnVal1',
+                name: 'success',
                 type: ABIDataTypes.BOOL,
             },
         ],
@@ -67,7 +67,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         values: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'allocPoint',
@@ -90,7 +90,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         values: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'lastRewardBlock',
@@ -130,6 +130,24 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
+        name: 'UserOverwriteBTCStake',
+        values: [
+            {
+                name: 'user',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'storedTxId',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'storedIndex',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
         name: 'UnstakedBTC',
         values: [
             {
@@ -152,11 +170,29 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
+        name: 'RemovedBTCStake',
+        values: [
+            {
+                name: 'user',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'storedTxId',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'storedIndex',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
         name: 'LogSetPool',
         values: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'allocPoint',
@@ -174,7 +210,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'amount',
@@ -196,7 +232,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'amount',
@@ -218,7 +254,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'amount',
@@ -236,7 +272,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
             },
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'amount',
@@ -286,6 +322,10 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
             },
             {
                 name: 'BTCAllocPoint',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'MOTOAllocPoint',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -369,7 +409,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'poolsLength',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
         ],
     },
@@ -379,7 +419,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
         ],
         outputs: [
@@ -395,7 +435,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
         ],
         outputs: [
@@ -419,7 +459,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'user',
@@ -463,7 +503,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'user',
@@ -559,6 +599,22 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         ],
     },
     {
+        name: 'removeBTCStake',
+        type: BitcoinAbiTypes.Function,
+        inputs: [
+            {
+                name: 'user',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        outputs: [
+            {
+                name: 'success',
+                type: ABIDataTypes.BOOL,
+            },
+        ],
+    },
+    {
         name: 'add',
         type: BitcoinAbiTypes.Function,
         inputs: [
@@ -584,7 +640,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'allocPoint',
@@ -604,7 +660,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
         ],
         outputs: [
@@ -632,7 +688,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
             },
             {
                 name: 'poolIds',
-                type: ABIDataTypes.ARRAY_OF_UINT64,
+                type: ABIDataTypes.ARRAY_OF_UINT32,
             },
         ],
         outputs: [
@@ -648,7 +704,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'amount',
@@ -672,7 +728,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'amount',
@@ -696,7 +752,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'to',
@@ -716,7 +772,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'amount',
@@ -740,7 +796,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         inputs: [
             {
                 name: 'poolId',
-                type: ABIDataTypes.UINT64,
+                type: ABIDataTypes.UINT32,
             },
             {
                 name: 'to',
