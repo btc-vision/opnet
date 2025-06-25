@@ -57,13 +57,13 @@ interface IOwnable extends IOP_NETContract {
 // Event Definitions
 // ------------------------------------------------------------------
 export type LogPoolAdditionEvent = {
-    readonly poolId: bigint;
+    readonly poolId: number;
     readonly allocPoint: bigint;
     readonly lpToken: Address;
 };
 export type LogInitEvent = {};
 export type LogUpdatePoolEvent = {
-    readonly poolId: bigint;
+    readonly poolId: number;
     readonly lastRewardBlock: bigint;
     readonly lpSupply: bigint;
     readonly accMotoPerShare: bigint;
@@ -74,36 +74,46 @@ export type StakedBTCEvent = {
     readonly stakeTxId: bigint;
     readonly stakeIndex: bigint;
 };
+export type UserOverwriteBTCStakeEvent = {
+    readonly user: Address;
+    readonly storedTxId: bigint;
+    readonly storedIndex: bigint;
+};
 export type UnstakedBTCEvent = {
     readonly user: Address;
     readonly pendingMoto: bigint;
     readonly storedTxId: bigint;
     readonly storedIndex: bigint;
 };
+export type RemovedBTCStakeEvent = {
+    readonly user: Address;
+    readonly storedTxId: bigint;
+    readonly storedIndex: bigint;
+};
 export type LogSetPoolEvent = {
-    readonly poolId: bigint;
+    readonly poolId: number;
     readonly allocPoint: bigint;
 };
 export type DepositEvent = {
     readonly user: Address;
-    readonly poolId: bigint;
+    readonly poolId: number;
     readonly amount: bigint;
     readonly to: Address;
 };
 export type WithdrawEvent = {
     readonly user: Address;
-    readonly poolId: bigint;
+    readonly poolId: number;
     readonly amount: bigint;
     readonly to: Address;
 };
 export type HarvestEvent = {
     readonly user: Address;
-    readonly poolId: bigint;
+    readonly poolId: number;
     readonly amount: bigint;
 };
 export type EmergencyWithdrawEvent = {
     readonly user: Address;
-    readonly poolId: bigint;
+    readonly poolId: number;
     readonly amount: bigint;
     readonly to: Address;
 };
@@ -187,7 +197,7 @@ export type GetLpTokens = CallResult<
  */
 export type GetPoolsLength = CallResult<
     {
-        poolsLength: bigint;
+        poolsLength: number;
     },
     OPNetEvent<never>[]
 >;
@@ -292,7 +302,7 @@ export type StakeBTC = CallResult<
     {
         success: boolean;
     },
-    OPNetEvent<LogUpdatePoolEvent | StakedBTCEvent>[]
+    OPNetEvent<LogUpdatePoolEvent | StakedBTCEvent | UserOverwriteBTCStakeEvent>[]
 >;
 
 /**
@@ -303,6 +313,16 @@ export type UnstakeBTC = CallResult<
         success: boolean;
     },
     OPNetEvent<LogUpdatePoolEvent | UnstakedBTCEvent>[]
+>;
+
+/**
+ * @description Represents the result of the removeBTCStake function call.
+ */
+export type RemoveBTCStake = CallResult<
+    {
+        success: boolean;
+    },
+    OPNetEvent<LogUpdatePoolEvent | RemovedBTCStakeEvent>[]
 >;
 
 /**
@@ -450,6 +470,7 @@ export interface IMotoChef extends IOwnable {
         bonusMultiplier: bigint,
         treasuryAddress: string,
         BTCAllocPoint: bigint,
+        MOTOAllocPoint: bigint,
     ): Promise<Initialize>;
     totalAllocPoint(): Promise<TotalAllocPoint>;
     devAddress(): Promise<DevAddress>;
@@ -458,26 +479,27 @@ export interface IMotoChef extends IOwnable {
     getBonusMultiplier(): Promise<GetBonusMultiplier>;
     getLpTokens(): Promise<GetLpTokens>;
     getPoolsLength(): Promise<GetPoolsLength>;
-    getLpToken(poolId: bigint): Promise<GetLpToken>;
-    getPoolInfo(poolId: bigint): Promise<GetPoolInfo>;
-    getUserInfo(poolId: bigint, user: Address): Promise<GetUserInfo>;
+    getLpToken(poolId: number): Promise<GetLpToken>;
+    getPoolInfo(poolId: number): Promise<GetPoolInfo>;
+    getUserInfo(poolId: number, user: Address): Promise<GetUserInfo>;
     getMultiplier(from: bigint, to: bigint): Promise<GetMultiplier>;
-    pendingMoto(poolId: bigint, user: Address): Promise<PendingMoto>;
+    pendingMoto(poolId: number, user: Address): Promise<PendingMoto>;
     treasuryAddress(): Promise<TreasuryAddress>;
     getStakingTxId(user: Address): Promise<GetStakingTxId>;
     getStakingIndex(user: Address): Promise<GetStakingIndex>;
     totalBTCStaked(): Promise<TotalBTCStaked>;
     stakeBTC(amount: bigint): Promise<StakeBTC>;
     unstakeBTC(): Promise<UnstakeBTC>;
+    removeBTCStake(user: Address): Promise<RemoveBTCStake>;
     add(allocPoint: bigint, lpToken: Address): Promise<Add>;
-    set(poolId: bigint, allocPoint: bigint): Promise<Set>;
-    updatePool(poolId: bigint): Promise<UpdatePool>;
-    massUpdatePools(length: number, poolIds: bigint[]): Promise<MassUpdatePools>;
-    deposit(poolId: bigint, amount: bigint, to: Address): Promise<Deposit>;
-    withdraw(poolId: bigint, amount: bigint, to: Address): Promise<Withdraw>;
-    harvest(poolId: bigint, to: Address): Promise<Harvest>;
-    withdrawAndHarvest(poolId: bigint, amount: bigint, to: Address): Promise<WithdrawAndHarvest>;
-    emergencyWithdraw(poolId: bigint, to: Address): Promise<EmergencyWithdraw>;
+    set(poolId: number, allocPoint: bigint): Promise<Set>;
+    updatePool(poolId: number): Promise<UpdatePool>;
+    massUpdatePools(length: number, poolIds: number[]): Promise<MassUpdatePools>;
+    deposit(poolId: number, amount: bigint, to: Address): Promise<Deposit>;
+    withdraw(poolId: number, amount: bigint, to: Address): Promise<Withdraw>;
+    harvest(poolId: number, to: Address): Promise<Harvest>;
+    withdrawAndHarvest(poolId: number, amount: bigint, to: Address): Promise<WithdrawAndHarvest>;
+    emergencyWithdraw(poolId: number, to: Address): Promise<EmergencyWithdraw>;
     setMotoPerBlock(motoPerBlock: bigint): Promise<SetMotoPerBlock>;
     setBonusEndBlock(bonusEndBlock: bigint): Promise<SetBonusEndBlock>;
     setBonusMultiplier(bonusMultiplier: bigint): Promise<SetBonusMultiplier>;
