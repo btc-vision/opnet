@@ -73,12 +73,7 @@ export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {

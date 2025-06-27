@@ -27,21 +27,13 @@ export type Owner = CallResult<
 /**
  * @description Represents the result of the renounceOwnership function call.
  */
-export type RenounceOwnership = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<OwnershipTransferredEvent>[]
+export type RenounceOwnership = CallResult<{}, OPNetEvent<OwnershipTransferredEvent>[]>
 >;
 
 /**
  * @description Represents the result of the transferOwnership function call.
  */
-export type TransferOwnership = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<OwnershipTransferredEvent>[]
+export type TransferOwnership = CallResult<{}, OPNetEvent<OwnershipTransferredEvent>[]>
 >;
 
 // ------------------------------------------------------------------
@@ -56,62 +48,57 @@ interface IOwnable extends IOP_NETContract {
 // ------------------------------------------------------------------
 // Event Definitions
 // ------------------------------------------------------------------
-export type LogPoolAdditionEvent = {
+export type PoolAddedEvent = {
     readonly poolId: number;
     readonly allocPoint: bigint;
     readonly lpToken: Address;
 };
-export type LogInitEvent = {};
-export type LogUpdatePoolEvent = {
+export type InitializedEvent = {};
+export type PoolUpdatedEvent = {
     readonly poolId: number;
     readonly lastRewardBlock: bigint;
     readonly lpSupply: bigint;
     readonly accMotoPerShare: bigint;
 };
-export type StakedBTCEvent = {
+export type BTCStakedEvent = {
     readonly user: Address;
     readonly netAmount: bigint;
     readonly stakeTxId: bigint;
     readonly stakeIndex: bigint;
 };
-export type UserOverwriteBTCStakeEvent = {
+export type BTCStakeRemovedEvent = {
     readonly user: Address;
     readonly storedTxId: bigint;
     readonly storedIndex: bigint;
 };
-export type UnstakedBTCEvent = {
+export type BTCUnstakedEvent = {
     readonly user: Address;
     readonly pendingMoto: bigint;
     readonly storedTxId: bigint;
     readonly storedIndex: bigint;
 };
-export type RemovedBTCStakeEvent = {
-    readonly user: Address;
-    readonly storedTxId: bigint;
-    readonly storedIndex: bigint;
-};
-export type LogSetPoolEvent = {
+export type PoolSetEvent = {
     readonly poolId: number;
     readonly allocPoint: bigint;
 };
-export type DepositEvent = {
+export type DepositedEvent = {
     readonly user: Address;
     readonly poolId: number;
     readonly amount: bigint;
     readonly to: Address;
 };
-export type WithdrawEvent = {
+export type WithdrawnEvent = {
     readonly user: Address;
     readonly poolId: number;
     readonly amount: bigint;
     readonly to: Address;
 };
-export type HarvestEvent = {
+export type HarvestedEvent = {
     readonly user: Address;
     readonly poolId: number;
     readonly amount: bigint;
 };
-export type EmergencyWithdrawEvent = {
+export type EmergencyWithdrawnEvent = {
     readonly user: Address;
     readonly poolId: number;
     readonly amount: bigint;
@@ -125,12 +112,7 @@ export type EmergencyWithdrawEvent = {
 /**
  * @description Represents the result of the initialize function call.
  */
-export type Initialize = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogPoolAdditionEvent | LogInitEvent>[]
->;
+export type Initialize = CallResult<{}, OPNetEvent<PoolAddedEvent | InitializedEvent>[]>;
 
 /**
  * @description Represents the result of the totalAllocPoint function call.
@@ -298,51 +280,31 @@ export type TotalBTCStaked = CallResult<
 /**
  * @description Represents the result of the stakeBTC function call.
  */
-export type StakeBTC = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogUpdatePoolEvent | StakedBTCEvent | UserOverwriteBTCStakeEvent>[]
+export type StakeBTC = CallResult<{}, OPNetEvent<PoolUpdatedEvent | BTCStakedEvent | BTCStakeRemovedEvent>[]>
 >;
 
 /**
  * @description Represents the result of the unstakeBTC function call.
  */
-export type UnstakeBTC = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogUpdatePoolEvent | UnstakedBTCEvent>[]
+export type UnstakeBTC = CallResult<{}, OPNetEvent<PoolUpdatedEvent | BTCUnstakedEvent>[]>
 >;
 
 /**
  * @description Represents the result of the removeBTCStake function call.
  */
-export type RemoveBTCStake = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogUpdatePoolEvent | RemovedBTCStakeEvent>[]
+export type RemoveBTCStake = CallResult<{}, OPNetEvent<PoolUpdatedEvent | BTCStakeRemovedEvent>[]>
 >;
 
 /**
  * @description Represents the result of the add function call.
  */
-export type Add = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogPoolAdditionEvent>[]
+export type Add = CallResult<{}, OPNetEvent<PoolAddedEvent>[]>
 >;
 
 /**
  * @description Represents the result of the set function call.
  */
-export type Set = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogSetPoolEvent>[]
+export type Set = CallResult<{}, OPNetEvent<PoolSetEvent>[]>
 >;
 
 /**
@@ -354,107 +316,67 @@ export type UpdatePool = CallResult<
         lastRewardBlock: bigint;
         allocPoint: bigint;
     },
-    OPNetEvent<LogUpdatePoolEvent>[]
+    OPNetEvent<PoolUpdatedEvent>[]
 >;
 
 /**
  * @description Represents the result of the massUpdatePools function call.
  */
-export type MassUpdatePools = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogUpdatePoolEvent>[]
+export type MassUpdatePools = CallResult<{}, OPNetEvent<PoolUpdatedEvent>[]>
 >;
 
 /**
  * @description Represents the result of the deposit function call.
  */
-export type Deposit = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogUpdatePoolEvent | DepositEvent>[]
+export type Deposit = CallResult<{}, OPNetEvent<PoolUpdatedEvent | DepositedEvent>[]>
 >;
 
 /**
  * @description Represents the result of the withdraw function call.
  */
-export type Withdraw = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogUpdatePoolEvent | WithdrawEvent>[]
+export type Withdraw = CallResult<{}, OPNetEvent<PoolUpdatedEvent | WithdrawnEvent>[]>
 >;
 
 /**
  * @description Represents the result of the harvest function call.
  */
-export type Harvest = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogUpdatePoolEvent | HarvestEvent>[]
+export type Harvest = CallResult<{}, OPNetEvent<PoolUpdatedEvent | HarvestedEvent>[]>
 >;
 
 /**
  * @description Represents the result of the withdrawAndHarvest function call.
  */
-export type WithdrawAndHarvest = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<LogUpdatePoolEvent | WithdrawEvent | HarvestEvent>[]
+export type WithdrawAndHarvest = CallResult<{}, OPNetEvent<PoolUpdatedEvent | WithdrawnEvent | HarvestedEvent>[]>
 >;
 
 /**
  * @description Represents the result of the emergencyWithdraw function call.
  */
-export type EmergencyWithdraw = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<EmergencyWithdrawEvent>[]
+export type EmergencyWithdraw = CallResult<{}, OPNetEvent<EmergencyWithdrawnEvent>[]>
 >;
 
 /**
  * @description Represents the result of the setMotoPerBlock function call.
  */
-export type SetMotoPerBlock = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<never>[]
+export type SetMotoPerBlock = CallResult<{}, OPNetEvent<never>[]>
 >;
 
 /**
  * @description Represents the result of the setBonusEndBlock function call.
  */
-export type SetBonusEndBlock = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<never>[]
+export type SetBonusEndBlock = CallResult<{}, OPNetEvent<never>[]>
 >;
 
 /**
  * @description Represents the result of the setBonusMultiplier function call.
  */
-export type SetBonusMultiplier = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<never>[]
+export type SetBonusMultiplier = CallResult<{}, OPNetEvent<never>[]>
 >;
 
 /**
  * @description Represents the result of the setDev function call.
  */
-export type SetDev = CallResult<
-    {
-        success: boolean;
-    },
-    OPNetEvent<never>[]
+export type SetDev = CallResult<{}, OPNetEvent<never>[]>
 >;
 
 // ------------------------------------------------------------------

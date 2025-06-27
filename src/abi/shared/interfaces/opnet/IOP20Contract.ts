@@ -3,22 +3,23 @@ import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
 
-export type MintEvent = {
+export type MintedEvent = {
     to: Address;
     amount: bigint;
 };
 
-export type TransferEvent = {
+export type TransferredEvent = {
     from: Address;
     to: Address;
     amount: bigint;
 };
 
-export type BurnEvent = {
+export type BurnedEvent = {
+    from: Address;
     amount: bigint;
 };
 
-export type ApproveEvent = {
+export type ApprovedEvent = {
     owner: Address;
     spender: Address;
     value: bigint;
@@ -30,38 +31,37 @@ export type SymbolOf = CallResult<{ symbol: string }, []>;
 export type TotalSupply = CallResult<{ totalSupply: bigint }, []>;
 export type MaxSupply = CallResult<{ maximumSupply: bigint }, []>;
 export type Decimals = CallResult<{ decimals: number }, []>;
+export type DomainSeparator = CallResult<{ domainSeparator: Uint8Array }, []>;
+export type NonceOf = CallResult<{ nonce: bigint }, []>;
 
-export type Transfer = CallResult<
-    {
-        success: boolean;
-    },
-    [OPNetEvent<TransferEvent>]
->;
-
-export type TransferFrom = CallResult<{ success: boolean }, [OPNetEvent<TransferEvent>]>;
-export type Approve = CallResult<{ success: boolean }, [OPNetEvent<ApproveEvent>]>;
+export type Transfer = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
+export type TransferFrom = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
+export type IncreaseAllowance = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
+export type DecreaseAllowance = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
+export type IncreaseAllowanceBySignature = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
+export type DecreaseAllowanceBySignature = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
 export type Allowance = CallResult<{ remaining: bigint }, []>;
-export type Burn = CallResult<{ success: boolean }, [OPNetEvent<BurnEvent>]>;
-export type Mint = CallResult<{ success: boolean }, [OPNetEvent<MintEvent>]>;
-export type Airdrop = CallResult<{ success: boolean }, OPNetEvent<MintEvent>[]>;
-export type AirdropWithAmount = CallResult<{ success: boolean }, OPNetEvent<MintEvent>[]>;
+export type Burn = CallResult<{}, [OPNetEvent<BurnedEvent>]>;
+export type Mint = CallResult<{}, [OPNetEvent<MintedEvent>]>;
+export type Airdrop = CallResult<{}, OPNetEvent<MintedEvent>[]>;
+export type AirdropWithAmount = CallResult<{}, OPNetEvent<MintedEvent>[]>;
 
 /**
- * @description This interface represents the OP_20 base contract.
- * @interface IOP_20Contract
+ * @description This interface represents the OP20 base contract.
+ * @interface IOP20Contract
  * @extends {IOP_NETContract}
  * @cathegory Contracts
  *
  * @example
  * import { Address } from '@btc-vision/transaction';
- * import { IOP_20Contract } from '../abi/shared/interfaces/IOP_20Contract.js';
+ * import { IOP20Contract } from '../abi/shared/interfaces/IOP20Contract.js';
  * import { OP_20_ABI } from '../abi/shared/json/OP_20_ABI.js';
  * import { CallResult } from '../contracts/CallResult.js';
  * import { getContract } from '../contracts/Contract.js';
  * import { JSONRpcProvider } from '../providers/JSONRpcProvider.js';
  *
  * const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.org');
- * const contract: IOP_20Contract = getContract<IOP_20Contract>(
+ * const contract: IOP20Contract = getContract<IOP20Contract>(
  *     'bcrt1pyrs3eqwnrmd4ql3nwvx66yzp0wc24xd2t9pf8699ln340pjs7f3sar3tum',
  *     OP_20_ABI,
  *     provider,
@@ -79,7 +79,7 @@ export type AirdropWithAmount = CallResult<{ success: boolean }, OPNetEvent<Mint
  *
  * console.log('Balance:', balanceExample.properties.balance);
  */
-export interface IOP_20Contract extends IOP_NETContract {
+export interface IOP20Contract extends IOP_NETContract {
     balanceOf(account: Address): Promise<BalanceOf>;
 
     name(): Promise<Name>;
@@ -90,15 +90,35 @@ export interface IOP_20Contract extends IOP_NETContract {
 
     maximumSupply(): Promise<MaxSupply>;
 
+    domainSeparator(): Promise<DomainSeparator>;
+
+    nonceOf(owner: Address): Promise<NonceOf>;
+
     decimals(): Promise<Decimals>;
 
-    transfer(recipient: Address, amount: bigint): Promise<Transfer>;
+    safeTransfer(to: Address, amount: bigint, data: Uint8Array): Promise<Transfer>;
 
-    transferFrom(sender: Address, recipient: Address, amount: bigint): Promise<TransferFrom>;
+    safeTransferFrom(from: Address, to: Address, amount: bigint, data: Uint8Array): Promise<TransferFrom>;
 
-    approve(spender: Address, amount: bigint): Promise<Approve>;
+    increaseAllowance(spender: Address, amount: bigint): Promise<IncreaseAllowance>;
 
-    approveFrom(spender: Address, amount: bigint, signature: Uint8Array): Promise<Approve>;
+    decreaseAllowance(spender: Address, amount: bigint): Promise<DecreaseAllowance>;
+
+    increaseAllowanceBySignature(
+        owner: Address,
+        spender: Address,
+        amount: bigint,
+        deadline: bigint,
+        signature: Uint8Array,
+    ): Promise<IncreaseAllowanceBySignature>;
+
+    decreaseAllowanceBySignature(
+        owner: Address,
+        spender: Address,
+        amount: bigint,
+        deadline: bigint,
+        signature: Uint8Array,
+    ): Promise<DecreaseAllowanceBySignature>;
 
     allowance(owner: Address, spender: Address): Promise<Allowance>;
 
