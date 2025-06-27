@@ -117,7 +117,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'forLP', type: ABIDataTypes.BOOL },
             { name: 'activationDelay', type: ABIDataTypes.UINT8 },
         ],
-        outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -127,7 +127,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     {
         name: 'swap',
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
-        outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -142,7 +142,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'amountIn', type: ABIDataTypes.UINT128 },
             { name: 'priority', type: ABIDataTypes.BOOL },
         ],
-        outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -152,7 +152,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     {
         name: 'cancelListing',
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
-        outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -165,7 +165,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'token', type: ABIDataTypes.ADDRESS },
             { name: 'receiver', type: ABIDataTypes.STRING },
         ],
-        outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -175,7 +175,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     {
         name: 'removeLiquidity',
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
-        outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -193,7 +193,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'antiBotMaximumTokensPerReservation', type: ABIDataTypes.UINT256 },
             { name: 'maxReservesIn5BlocksPercent', type: ABIDataTypes.UINT16 },
         ],
-        outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -214,7 +214,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'antiBotMaximumTokensPerReservation', type: ABIDataTypes.UINT256 },
             { name: 'maxReservesIn5BlocksPercent', type: ABIDataTypes.UINT16 },
         ],
-        outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },*/
 
@@ -227,7 +227,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'reservationBaseFee', type: ABIDataTypes.UINT64 },
             { name: 'priorityQueueBaseFee', type: ABIDataTypes.UINT64 },
         ],
-        outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -345,7 +345,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     {
         name: 'setStakingContractAddress',
         inputs: [{ name: 'newStakingAddress', type: ABIDataTypes.ADDRESS }],
-        outputs: [{ name: 'ok', type: ABIDataTypes.BOOL }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 

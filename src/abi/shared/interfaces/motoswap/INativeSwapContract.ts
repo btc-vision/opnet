@@ -74,42 +74,42 @@ export type FulfilledProviderEvent = {
  * ------------------------------------------------------------------ */
 
 export type ReserveNativeSwap = CallResult<
-    { ok: boolean },
+    {},
     OPNetEvent<
         LiquidityReservedEvent | ReservationCreatedEvent | TransferredEvent | FulfilledProviderEvent
     >[]
 >;
 
 export type AddLiquidity = CallResult<
-    { ok: boolean },
+    {},
     OPNetEvent<
         LiquidityAddedEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent
     >[]
 >;
 
 export type RemoveLiquidity = CallResult<
-    { ok: boolean },
+    {},
     OPNetEvent<LiquidityRemovedEvent | TransferredEvent | FulfilledProviderEvent>[]
 >;
 
-export type ListLiquidity = CallResult<{ ok: boolean }, OPNetEvent<LiquidityListedEvent>[]>;
+export type ListLiquidity = CallResult<{}, OPNetEvent<LiquidityListedEvent>[]>;
 
 export type CancelListing = CallResult<
-    { ok: boolean },
+    {},
     OPNetEvent<ListingCanceledEvent | TransferredEvent | FulfilledProviderEvent>[]
 >;
 
 export type CreatePool = CallResult<
-    { ok: boolean },
+    {},
     OPNetEvent<TransferredEvent | LiquidityAddedEvent>[]
 >;
 
-export type SetFees = CallResult<{ ok: boolean }, []>;
+export type SetFees = CallResult;
 
 export type GetFees = CallResult<{ reservationBaseFee: bigint; priorityQueueBaseFee: bigint }, []>;
 
 export type Swap = CallResult<
-    { ok: boolean },
+    {},
     OPNetEvent<SwapExecutedEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent>[]
 >;
 
@@ -355,7 +355,7 @@ export interface INativeSwapContract extends IOP_NETContract {
      */
     setStakingContractAddress(
         stakingContractAddress: Address,
-    ): Promise<CallResult<{ ok: boolean }, []>>;
+    ): Promise<CallResult>;
 
     /**
      * @description Retrieves the address of the staking contract.
