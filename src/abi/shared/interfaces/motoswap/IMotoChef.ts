@@ -27,21 +27,21 @@ export type Owner = CallResult<
 /**
  * @description Represents the result of the renounceOwnership function call.
  */
-export type RenounceOwnership = CallResult<{}, OPNetEvent<OwnershipTransferredEvent>[]>
->;
+export type RenounceOwnership = CallResult<{}, OPNetEvent<OwnershipTransferredEvent>[]>;
 
 /**
  * @description Represents the result of the transferOwnership function call.
  */
-export type TransferOwnership = CallResult<{}, OPNetEvent<OwnershipTransferredEvent>[]>
->;
+export type TransferOwnership = CallResult<{}, OPNetEvent<OwnershipTransferredEvent>[]>;
 
 // ------------------------------------------------------------------
 // IOwnable
 // ------------------------------------------------------------------
 interface IOwnable extends IOP_NETContract {
     owner(): Promise<Owner>;
+
     renounceOwnership(): Promise<RenounceOwnership>;
+
     transferOwnership(newOwner: Address): Promise<TransferOwnership>;
 }
 
@@ -280,32 +280,30 @@ export type TotalBTCStaked = CallResult<
 /**
  * @description Represents the result of the stakeBTC function call.
  */
-export type StakeBTC = CallResult<{}, OPNetEvent<PoolUpdatedEvent | BTCStakedEvent | BTCStakeRemovedEvent>[]>
+export type StakeBTC = CallResult<
+    {},
+    OPNetEvent<PoolUpdatedEvent | BTCStakedEvent | BTCStakeRemovedEvent>[]
 >;
 
 /**
  * @description Represents the result of the unstakeBTC function call.
  */
-export type UnstakeBTC = CallResult<{}, OPNetEvent<PoolUpdatedEvent | BTCUnstakedEvent>[]>
->;
+export type UnstakeBTC = CallResult<{}, OPNetEvent<PoolUpdatedEvent | BTCUnstakedEvent>[]>;
 
 /**
  * @description Represents the result of the removeBTCStake function call.
  */
-export type RemoveBTCStake = CallResult<{}, OPNetEvent<PoolUpdatedEvent | BTCStakeRemovedEvent>[]>
->;
+export type RemoveBTCStake = CallResult<{}, OPNetEvent<PoolUpdatedEvent | BTCStakeRemovedEvent>[]>;
 
 /**
  * @description Represents the result of the add function call.
  */
-export type Add = CallResult<{}, OPNetEvent<PoolAddedEvent>[]>
->;
+export type Add = CallResult<{}, OPNetEvent<PoolAddedEvent>[]>;
 
 /**
  * @description Represents the result of the set function call.
  */
-export type Set = CallResult<{}, OPNetEvent<PoolSetEvent>[]>
->;
+export type Set = CallResult<{}, OPNetEvent<PoolSetEvent>[]>;
 
 /**
  * @description Represents the result of the updatePool function call.
@@ -322,62 +320,55 @@ export type UpdatePool = CallResult<
 /**
  * @description Represents the result of the massUpdatePools function call.
  */
-export type MassUpdatePools = CallResult<{}, OPNetEvent<PoolUpdatedEvent>[]>
->;
+export type MassUpdatePools = CallResult<{}, OPNetEvent<PoolUpdatedEvent>[]>;
 
 /**
  * @description Represents the result of the deposit function call.
  */
-export type Deposit = CallResult<{}, OPNetEvent<PoolUpdatedEvent | DepositedEvent>[]>
->;
+export type Deposit = CallResult<{}, OPNetEvent<PoolUpdatedEvent | DepositedEvent>[]>;
 
 /**
  * @description Represents the result of the withdraw function call.
  */
-export type Withdraw = CallResult<{}, OPNetEvent<PoolUpdatedEvent | WithdrawnEvent>[]>
->;
+export type Withdraw = CallResult<{}, OPNetEvent<PoolUpdatedEvent | WithdrawnEvent>[]>;
 
 /**
  * @description Represents the result of the harvest function call.
  */
-export type Harvest = CallResult<{}, OPNetEvent<PoolUpdatedEvent | HarvestedEvent>[]>
->;
+export type Harvest = CallResult<{}, OPNetEvent<PoolUpdatedEvent | HarvestedEvent>[]>;
 
 /**
  * @description Represents the result of the withdrawAndHarvest function call.
  */
-export type WithdrawAndHarvest = CallResult<{}, OPNetEvent<PoolUpdatedEvent | WithdrawnEvent | HarvestedEvent>[]>
+export type WithdrawAndHarvest = CallResult<
+    {},
+    OPNetEvent<PoolUpdatedEvent | WithdrawnEvent | HarvestedEvent>[]
 >;
 
 /**
  * @description Represents the result of the emergencyWithdraw function call.
  */
-export type EmergencyWithdraw = CallResult<{}, OPNetEvent<EmergencyWithdrawnEvent>[]>
->;
+export type EmergencyWithdraw = CallResult<{}, OPNetEvent<EmergencyWithdrawnEvent>[]>;
 
 /**
  * @description Represents the result of the setMotoPerBlock function call.
  */
-export type SetMotoPerBlock = CallResult<{}, OPNetEvent<never>[]>
->;
+export type SetMotoPerBlock = CallResult<{}, OPNetEvent<never>[]>;
 
 /**
  * @description Represents the result of the setBonusEndBlock function call.
  */
-export type SetBonusEndBlock = CallResult<{}, OPNetEvent<never>[]>
->;
+export type SetBonusEndBlock = CallResult<{}, OPNetEvent<never>[]>;
 
 /**
  * @description Represents the result of the setBonusMultiplier function call.
  */
-export type SetBonusMultiplier = CallResult<{}, OPNetEvent<never>[]>
->;
+export type SetBonusMultiplier = CallResult<{}, OPNetEvent<never>[]>;
 
 /**
  * @description Represents the result of the setDev function call.
  */
-export type SetDev = CallResult<{}, OPNetEvent<never>[]>
->;
+export type SetDev = CallResult<{}, OPNetEvent<never>[]>;
 
 // ------------------------------------------------------------------
 // IMotoChef
@@ -394,36 +385,68 @@ export interface IMotoChef extends IOwnable {
         BTCAllocPoint: bigint,
         MOTOAllocPoint: bigint,
     ): Promise<Initialize>;
+
     totalAllocPoint(): Promise<TotalAllocPoint>;
+
     devAddress(): Promise<DevAddress>;
+
     getMotoPerBlock(): Promise<GetMotoPerBlock>;
+
     getBonusEndBlock(): Promise<GetBonusEndBlock>;
+
     getBonusMultiplier(): Promise<GetBonusMultiplier>;
+
     getLpTokens(): Promise<GetLpTokens>;
+
     getPoolsLength(): Promise<GetPoolsLength>;
+
     getLpToken(poolId: number): Promise<GetLpToken>;
+
     getPoolInfo(poolId: number): Promise<GetPoolInfo>;
+
     getUserInfo(poolId: number, user: Address): Promise<GetUserInfo>;
+
     getMultiplier(from: bigint, to: bigint): Promise<GetMultiplier>;
+
     pendingMoto(poolId: number, user: Address): Promise<PendingMoto>;
+
     treasuryAddress(): Promise<TreasuryAddress>;
+
     getStakingTxId(user: Address): Promise<GetStakingTxId>;
+
     getStakingIndex(user: Address): Promise<GetStakingIndex>;
+
     totalBTCStaked(): Promise<TotalBTCStaked>;
+
     stakeBTC(amount: bigint): Promise<StakeBTC>;
+
     unstakeBTC(): Promise<UnstakeBTC>;
+
     removeBTCStake(user: Address): Promise<RemoveBTCStake>;
+
     add(allocPoint: bigint, lpToken: Address): Promise<Add>;
+
     set(poolId: number, allocPoint: bigint): Promise<Set>;
+
     updatePool(poolId: number): Promise<UpdatePool>;
+
     massUpdatePools(length: number, poolIds: number[]): Promise<MassUpdatePools>;
+
     deposit(poolId: number, amount: bigint, to: Address): Promise<Deposit>;
+
     withdraw(poolId: number, amount: bigint, to: Address): Promise<Withdraw>;
+
     harvest(poolId: number, to: Address): Promise<Harvest>;
+
     withdrawAndHarvest(poolId: number, amount: bigint, to: Address): Promise<WithdrawAndHarvest>;
+
     emergencyWithdraw(poolId: number, to: Address): Promise<EmergencyWithdraw>;
+
     setMotoPerBlock(motoPerBlock: bigint): Promise<SetMotoPerBlock>;
+
     setBonusEndBlock(bonusEndBlock: bigint): Promise<SetBonusEndBlock>;
+
     setBonusMultiplier(bonusMultiplier: bigint): Promise<SetBonusMultiplier>;
+
     setDev(devAddress: Address): Promise<SetDev>;
 }

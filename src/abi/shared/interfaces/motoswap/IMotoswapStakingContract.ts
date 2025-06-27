@@ -24,7 +24,7 @@ export type Admin = CallResult<{
     adminAddress: Address;
 }>;
 
-export type ChangeAdmin = CallResult<{}>;
+export type ChangeAdmin = CallResult;
 
 /**
  * @description This interface represents the OwnableReentrancyGuard contract.
@@ -80,21 +80,21 @@ export type EnabledRewardTokens = CallResult<{
     enabledRewardTokens: Address[];
 }>;
 
-export type Stake = CallResult<{}>;
+export type Stake = CallResult;
 
-export type Unstake = CallResult<{}>;
+export type Unstake = CallResult;
 
-export type ClaimRewards = CallResult<{}>;
+export type ClaimRewards = CallResult;
 
-export type AdminAddRewardToken = CallResult<{}>;
+export type AdminAddRewardToken = CallResult;
 
-export type AdminRemoveRewardToken = CallResult<{}>;
+export type AdminRemoveRewardToken = CallResult;
 
-export type AdminChangeMotoAddress = CallResult<{}>;
+export type AdminChangeMotoAddress = CallResult;
 
-export type AdminChangeLockupParameters = CallResult<{}>;
+export type AdminChangeLockupParameters = CallResult;
 
-export type AdminEnableEmergencyWithdrawals = CallResult<{}>;
+export type AdminEnableEmergencyWithdrawals = CallResult;
 
 // EVENTS
 export type RewardTokenAddedEvent = {

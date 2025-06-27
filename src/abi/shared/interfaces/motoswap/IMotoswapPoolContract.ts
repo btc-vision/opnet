@@ -10,14 +10,14 @@ export type Reserves = {
 };
 
 // Events
-export type BurnedEvent = {
+export type MotoswapBurnedEvent = {
     readonly sender: Address;
     readonly amount0: bigint;
     readonly amount1: bigint;
     readonly to: Address;
 };
 
-export type MintedEvent = {
+export type MotoswapMintedEvent = {
     readonly sender: Address;
     readonly amount0: bigint;
     readonly amount1: bigint;
@@ -75,7 +75,7 @@ export interface IMotoswapPoolContract extends Omit<IOP20Contract, 'burn' | 'min
     /**
      * Skim
      */
-    skim(): Promise<CallResult<{}>>;
+    skim(): Promise<CallResult>;
 
     /**
      * kLast
@@ -89,7 +89,7 @@ export interface IMotoswapPoolContract extends Omit<IOP20Contract, 'burn' | 'min
      */
     burn(
         to: Address,
-    ): Promise<CallResult<{ amount0: bigint; amount1: bigint }, [OPNetEvent<BurnedEvent>]>>;
+    ): Promise<CallResult<{ amount0: bigint; amount1: bigint }, [OPNetEvent<MotoswapBurnedEvent>]>>;
 
     /**
      * Get block timestamp last
@@ -100,7 +100,7 @@ export interface IMotoswapPoolContract extends Omit<IOP20Contract, 'burn' | 'min
      * @description This method syncs the pool.
      * @returns {Promise<CallResult>}
      */
-    sync(): Promise<CallResult<{}>>;
+    sync(): Promise<CallResult>;
 
     /**
      * @description This method returns the price0 cumulative last.
@@ -118,7 +118,7 @@ export interface IMotoswapPoolContract extends Omit<IOP20Contract, 'burn' | 'min
 
     MINIMUM_LIQUIDITY(): Promise<CallResult<{ MINIMUM_LIQUIDITY: bigint }>>;
 
-    mint(to: Address): Promise<CallResult<{ liquidity: bigint }, [OPNetEvent<MintedEvent>]>>;
+    mint(to: Address): Promise<CallResult<{ liquidity: bigint }, [OPNetEvent<MotoswapMintedEvent>]>>;
 
-    initialize(token0: Address, token1: Address): Promise<CallResult<{}>>;
+    initialize(token0: Address, token1: Address): Promise<CallResult>;
 }
