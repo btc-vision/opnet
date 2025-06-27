@@ -1,7 +1,7 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
-import { TransferEvent } from '../opnet/IOP_20Contract.js';
+import { TransferredEvent } from '../opnet/IOP20Contract.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
 export type LiquidityAddedEvent = {
@@ -76,32 +76,32 @@ export type FulfilledProviderEvent = {
 export type ReserveNativeSwap = CallResult<
     { ok: boolean },
     OPNetEvent<
-        LiquidityReservedEvent | ReservationCreatedEvent | TransferEvent | FulfilledProviderEvent
+        LiquidityReservedEvent | ReservationCreatedEvent | TransferredEvent | FulfilledProviderEvent
     >[]
 >;
 
 export type AddLiquidity = CallResult<
     { ok: boolean },
     OPNetEvent<
-        LiquidityAddedEvent | TransferEvent | ActivateProviderEvent | FulfilledProviderEvent
+        LiquidityAddedEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent
     >[]
 >;
 
 export type RemoveLiquidity = CallResult<
     { ok: boolean },
-    OPNetEvent<LiquidityRemovedEvent | TransferEvent | FulfilledProviderEvent>[]
+    OPNetEvent<LiquidityRemovedEvent | TransferredEvent | FulfilledProviderEvent>[]
 >;
 
 export type ListLiquidity = CallResult<{ ok: boolean }, OPNetEvent<LiquidityListedEvent>[]>;
 
 export type CancelListing = CallResult<
     { ok: boolean },
-    OPNetEvent<ListingCanceledEvent | TransferEvent | FulfilledProviderEvent>[]
+    OPNetEvent<ListingCanceledEvent | TransferredEvent | FulfilledProviderEvent>[]
 >;
 
 export type CreatePool = CallResult<
     { ok: boolean },
-    OPNetEvent<TransferEvent | LiquidityAddedEvent>[]
+    OPNetEvent<TransferredEvent | LiquidityAddedEvent>[]
 >;
 
 export type SetFees = CallResult<{ ok: boolean }, []>;
@@ -110,7 +110,7 @@ export type GetFees = CallResult<{ reservationBaseFee: bigint; priorityQueueBase
 
 export type Swap = CallResult<
     { ok: boolean },
-    OPNetEvent<SwapExecutedEvent | TransferEvent | ActivateProviderEvent | FulfilledProviderEvent>[]
+    OPNetEvent<SwapExecutedEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent>[]
 >;
 
 export type GetReserve = CallResult<

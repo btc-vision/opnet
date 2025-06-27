@@ -1,7 +1,7 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
-import { IOP_20Contract } from '../opnet/IOP_20Contract.js';
+import { IOP20Contract } from '../opnet/IOP20Contract.js';
 
 export type Reserves = {
     readonly reserve0: bigint;
@@ -10,19 +10,20 @@ export type Reserves = {
 };
 
 // Events
-export type PoolBurnEvent = {
+export type BurnedEvent = {
+    readonly sender: Address;
+    readonly amount0: bigint;
+    readonly amount1: bigint;
+    readonly to: Address;
+};
+
+export type MintedEvent = {
     readonly sender: Address;
     readonly amount0: bigint;
     readonly amount1: bigint;
 };
 
-export type PoolMintEvent = {
-    readonly sender: Address;
-    readonly amount0: bigint;
-    readonly amount1: bigint;
-};
-
-export type SwapEvent = {
+export type SwappedEvent = {
     readonly sender: Address;
     readonly amount0In: bigint;
     readonly amount1In: bigint;
@@ -34,10 +35,10 @@ export type SwapEvent = {
 /**
  * @description This interface represents a motoswap pool contract.
  * @interface IMotoswapPoolContract
- * @extends {Omit<IOP_20Contract, 'burn' | 'mint'>}
+ * @extends {Omit<IOP20Contract, 'burn' | 'mint'>}
  * @cathegory Contracts
  */
-export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mint'> {
+export interface IMotoswapPoolContract extends Omit<IOP20Contract, 'burn' | 'mint'> {
     /**
      * @description This method returns the token0 address.
      * @returns {Promise<CallResult<{ token0: Address }>>}
@@ -69,19 +70,12 @@ export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mi
         amount1Out: bigint,
         to: string,
         data: Uint8Array,
-    ): Promise<
-        CallResult<
-            {
-                success: boolean;
-            },
-            [OPNetEvent<SwapEvent>]
-        >
-    >;
+    ): Promise<CallResult<{}, [OPNetEvent<SwappedEvent>]>>;
 
     /**
      * Skim
      */
-    skim(): Promise<CallResult<{ success: boolean }>>;
+    skim(): Promise<CallResult<{}>>;
 
     /**
      * kLast
@@ -95,7 +89,7 @@ export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mi
      */
     burn(
         to: Address,
-    ): Promise<CallResult<{ amount0: bigint; amount1: bigint }, [OPNetEvent<PoolBurnEvent>]>>;
+    ): Promise<CallResult<{ amount0: bigint; amount1: bigint }, [OPNetEvent<BurnedEvent>]>>;
 
     /**
      * Get block timestamp last
@@ -106,7 +100,7 @@ export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mi
      * @description This method syncs the pool.
      * @returns {Promise<CallResult>}
      */
-    sync(): Promise<CallResult<{ success: boolean }>>;
+    sync(): Promise<CallResult<{}>>;
 
     /**
      * @description This method returns the price0 cumulative last.
@@ -124,7 +118,7 @@ export interface IMotoswapPoolContract extends Omit<IOP_20Contract, 'burn' | 'mi
 
     MINIMUM_LIQUIDITY(): Promise<CallResult<{ MINIMUM_LIQUIDITY: bigint }>>;
 
-    mint(to: Address): Promise<CallResult<{ liquidity: bigint }, [OPNetEvent<PoolMintEvent>]>>;
+    mint(to: Address): Promise<CallResult<{ liquidity: bigint }, [OPNetEvent<MintedEvent>]>>;
 
-    initialize(token0: Address, token1: Address): Promise<CallResult<{ success: boolean }>>;
+    initialize(token0: Address, token1: Address): Promise<CallResult<{}>>;
 }

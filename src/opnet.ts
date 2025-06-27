@@ -105,7 +105,7 @@ export * from './abi/shared/interfaces/motoswap/IMotoswapFactoryContract.js';
 export * from './abi/shared/interfaces/motoswap/IMotoswapPoolContract.js';
 export * from './abi/shared/interfaces/motoswap/IMotoswapRouterContract.js';
 export * from './abi/shared/interfaces/motoswap/INativeSwapContract.js';
-export * from './abi/shared/interfaces/opnet/IOP_20Contract.js';
+export * from './abi/shared/interfaces/opnet/IOP20Contract.js';
 export * from './abi/shared/interfaces/opnet/IOP_NETContract.js';
 export * from './abi/shared/interfaces/motoswap/IMotoswapStakingContract.js';
 

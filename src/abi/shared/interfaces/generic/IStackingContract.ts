@@ -8,15 +8,15 @@ import { CallResult } from '../../../../contracts/CallResult.js';
  * @cathegory Contracts
  */
 export interface IStackingContract {
-    stake(amount: bigint): Promise<CallResult<{ success: boolean }>>;
+    stake(amount: bigint): Promise<CallResult<{}>>;
 
-    unstake(): Promise<CallResult<{ success: boolean }>>;
+    unstake(): Promise<CallResult<{}>>;
 
     stakedAmount(address: Address): Promise<CallResult<{ amount: bigint }>>;
 
     stakedReward(address: Address): Promise<CallResult<{ amount: bigint }>>;
 
-    claim(): Promise<CallResult<{ success: boolean }>>;
+    claim(): Promise<CallResult<{}>>;
 
     rewardPool(): Promise<CallResult<{ reward: bigint }>>;
 
