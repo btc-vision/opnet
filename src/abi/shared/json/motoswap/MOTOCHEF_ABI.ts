@@ -120,24 +120,6 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'BTCStakeRemoved',
-        values: [
-            {
-                name: 'user',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'storedTxId',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'storedIndex',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
         name: 'BTCUnstaked',
         values: [
             {

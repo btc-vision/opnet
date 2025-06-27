@@ -66,14 +66,14 @@ export type BTCStakedEvent = {
     readonly stakeTxId: bigint;
     readonly stakeIndex: bigint;
 };
-export type BTCStakeRemovedEvent = {
-    readonly user: Address;
-    readonly storedTxId: bigint;
-    readonly storedIndex: bigint;
-};
 export type BTCUnstakedEvent = {
     readonly user: Address;
     readonly pendingMoto: bigint;
+    readonly storedTxId: bigint;
+    readonly storedIndex: bigint;
+};
+export type BTCStakeRemovedEvent = {
+    readonly user: Address;
     readonly storedTxId: bigint;
     readonly storedIndex: bigint;
 };
