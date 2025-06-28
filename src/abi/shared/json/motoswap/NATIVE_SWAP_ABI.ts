@@ -284,6 +284,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         name: 'getProviderDetails',
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
         outputs: [
+            { name: 'id', type: ABIDataTypes.UINT256 },
             { name: 'liquidity', type: ABIDataTypes.UINT128 },
             { name: 'reserved', type: ABIDataTypes.UINT128 },
             { name: 'lpShares', type: ABIDataTypes.UINT128 },
@@ -291,6 +292,12 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
 
             { name: 'indexedAt', type: ABIDataTypes.UINT32 },
             { name: 'isPriority', type: ABIDataTypes.BOOL },
+
+            { name: 'purgeIndex', type: ABIDataTypes.UINT32 },
+            { name: 'isActive', type: ABIDataTypes.BOOL },
+
+            { name: 'lastListedTokensAtBlock', type: ABIDataTypes.UINT64 },
+            { name: 'isPurged', type: ABIDataTypes.BOOL },
         ],
         type: BitcoinAbiTypes.Function,
     },

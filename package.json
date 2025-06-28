@@ -1,110 +1,110 @@
 {
-    "name": "opnet",
-    "type": "module",
-    "version": "1.5.12",
-    "author": "OP_NET",
-    "description": "The perfect library for building Bitcoin-based applications.",
-    "engines": {
-        "node": ">=22.0.0"
+  "name": "opnet",
+  "type": "module",
+  "version": "1.5.13",
+  "author": "OP_NET",
+  "description": "The perfect library for building Bitcoin-based applications.",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "exports": {
+    ".": {
+      "browser": "./browser/index.js",
+      "import": "./build/index.js",
+      "require": "./build/index.js",
+      "types": "./build/index.d.ts"
     },
-    "exports": {
-        ".": {
-            "browser": "./browser/index.js",
-            "import": "./build/index.js",
-            "require": "./build/index.js",
-            "types": "./build/index.d.ts"
-        },
-        "./browser": {
-            "import": "./browser/index.js",
-            "require": "./browser/index.js",
-            "types": "./browser/index.d.ts"
-        }
-    },
-    "browser": {
-        "./build/index.d.ts": "./browser/index.d.ts",
-        "./build/index.js": "./browser/index.js",
-        "Buffer": "buffer",
-        "crypto": "./src/crypto/crypto-browser.js",
-        "stream": "stream-browserify",
-        "undici": "./src/fetch/fetch-browser.js"
-    },
-    "homepage": "https://opnet.org",
-    "keywords": [
-        "opnet",
-        "bitcoin",
-        "btc"
-    ],
-    "license": "MIT",
-    "main": "build/index.js",
-    "types": "build/index.d.ts",
-    "typings": "build/index.d.ts",
-    "module": "build/index.js",
-    "publishConfig": {
-        "access": "public",
-        "tag": "latest"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/btc-vision/opnet.git"
-    },
-    "scripts": {
-        "watch": "gulp watch",
-        "build": "gulp build",
-        "test": "jest --runInBand",
-        "setup": "npm i && npm run build",
-        "browserBuild": "webpack --mode production",
-        "docs": "typedoc --out docs --tsconfig tsconfig.json --readme README.md --name OPNet --plugin typedoc-material-theme --themeColor '#cb9820' --exclude src/scripts/test.ts --exclude src/index.ts src"
-    },
-    "devDependencies": {
-        "@babel/core": "^7.27.4",
-        "@babel/plugin-proposal-class-properties": "^7.18.6",
-        "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
-        "@babel/plugin-transform-runtime": "^7.27.4",
-        "@babel/preset-env": "^7.27.2",
-        "@babel/preset-flow": "^7.27.1",
-        "@babel/preset-react": "^7.27.1",
-        "@babel/preset-typescript": "^7.27.1",
-        "@eslint/js": "^9.29.0",
-        "@types/node": "^24.0.3",
-        "@types/sha.js": "^2.4.4",
-        "@types/ws": "^8.18.1",
-        "assert": "^2.1.0",
-        "babel-loader": "^10.0.0",
-        "babel-plugin-transform-import-meta": "^2.3.3",
-        "babel-preset-react": "^6.24.1",
-        "babelify": "^10.0.0",
-        "eslint": "^9.29.0",
-        "gulp": "^5.0.0",
-        "gulp-cached": "^1.1.1",
-        "gulp-clean": "^0.4.0",
-        "gulp-eslint-new": "^2.4.0",
-        "gulp-logger-new": "^1.0.1",
-        "gulp-typescript": "^6.0.0-alpha.1",
-        "https-browserify": "^1.0.0",
-        "os-browserify": "^0.3.0",
-        "prettier": "^3.5.3",
-        "process": "^0.11.10",
-        "stream-browserify": "^3.0.0",
-        "stream-http": "^3.2.0",
-        "ts-loader": "^9.5.2",
-        "ts-node": "^10.9.2",
-        "typedoc": "^0.28.5",
-        "typescript": "^5.8.3",
-        "typescript-eslint": "^8.34.1",
-        "webpack": "^5.99.9",
-        "webpack-cli": "^6.0.1"
-    },
-    "dependencies": {
-        "@bitcoinerlab/secp256k1": "^1.2.0",
-        "@btc-vision/bitcoin": "^6.4.6",
-        "@btc-vision/bitcoin-rpc": "^1.0.2",
-        "@btc-vision/transaction": "^1.5.4",
-        "@noble/hashes": "^1.8.0",
-        "bignumber.js": "^9.3.0",
-        "buffer": "^6.0.3",
-        "ecpair": "^2.1.0",
-        "p-limit": "^6.2.0",
-        "tiny-secp256k1": "^2.2.4",
-        "undici": "^7.10.0"
+    "./browser": {
+      "import": "./browser/index.js",
+      "require": "./browser/index.js",
+      "types": "./browser/index.d.ts"
     }
+  },
+  "browser": {
+    "./build/index.d.ts": "./browser/index.d.ts",
+    "./build/index.js": "./browser/index.js",
+    "Buffer": "buffer",
+    "crypto": "./src/crypto/crypto-browser.js",
+    "stream": "stream-browserify",
+    "undici": "./src/fetch/fetch-browser.js"
+  },
+  "homepage": "https://opnet.org",
+  "keywords": [
+    "opnet",
+    "bitcoin",
+    "btc"
+  ],
+  "license": "MIT",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "typings": "build/index.d.ts",
+  "module": "build/index.js",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/btc-vision/opnet.git"
+  },
+  "scripts": {
+    "watch": "gulp watch",
+    "build": "gulp build",
+    "test": "jest --runInBand",
+    "setup": "npm i && npm run build",
+    "browserBuild": "webpack --mode production",
+    "docs": "typedoc --out docs --tsconfig tsconfig.json --readme README.md --name OPNet --plugin typedoc-material-theme --themeColor '#cb9820' --exclude src/scripts/test.ts --exclude src/index.ts src"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.27.4",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
+    "@babel/plugin-transform-runtime": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-flow": "^7.27.1",
+    "@babel/preset-react": "^7.27.1",
+    "@babel/preset-typescript": "^7.27.1",
+    "@eslint/js": "^9.29.0",
+    "@types/node": "^24.0.3",
+    "@types/sha.js": "^2.4.4",
+    "@types/ws": "^8.18.1",
+    "assert": "^2.1.0",
+    "babel-loader": "^10.0.0",
+    "babel-plugin-transform-import-meta": "^2.3.3",
+    "babel-preset-react": "^6.24.1",
+    "babelify": "^10.0.0",
+    "eslint": "^9.29.0",
+    "gulp": "^5.0.0",
+    "gulp-cached": "^1.1.1",
+    "gulp-clean": "^0.4.0",
+    "gulp-eslint-new": "^2.4.0",
+    "gulp-logger-new": "^1.0.1",
+    "gulp-typescript": "^6.0.0-alpha.1",
+    "https-browserify": "^1.0.0",
+    "os-browserify": "^0.3.0",
+    "prettier": "^3.5.3",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "typedoc": "^0.28.5",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.34.1",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@bitcoinerlab/secp256k1": "^1.2.0",
+    "@btc-vision/bitcoin": "^6.4.6",
+    "@btc-vision/bitcoin-rpc": "^1.0.2",
+    "@btc-vision/transaction": "^1.5.4",
+    "@noble/hashes": "^1.8.0",
+    "bignumber.js": "^9.3.0",
+    "buffer": "^6.0.3",
+    "ecpair": "^2.1.0",
+    "p-limit": "^6.2.0",
+    "tiny-secp256k1": "^2.2.4",
+    "undici": "^7.10.0"
+  }
 }
