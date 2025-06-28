@@ -17,7 +17,7 @@ import { TransactionReceipt } from './metadata/TransactionReceipt.js';
  */
 export abstract class TransactionBase<T extends OPNetTransactionTypes>
     extends TransactionReceipt
-    implements Omit<ITransactionBase<T>, 'blockNumber'>
+    implements ITransactionBase<T>
 {
     /**
      * @description The transaction ID (hash).
