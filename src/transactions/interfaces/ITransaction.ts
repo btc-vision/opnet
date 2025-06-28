@@ -20,6 +20,11 @@ export interface ITransactionBase<T extends OPNetTransactionTypes> extends ITran
     readonly id: string;
 
     /**
+     * @description The block number in which the transaction was included.
+     */
+    readonly blockNumber?: string;
+
+    /**
      * @description The transaction "hash".
      */
     readonly hash: string;
