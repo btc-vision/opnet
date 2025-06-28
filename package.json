@@ -48,6 +48,7 @@
         "url": "git://github.com/btc-vision/opnet.git"
     },
     "scripts": {
+        "postinstall": "npm run build",
         "watch": "gulp watch",
         "build": "gulp build",
         "test": "jest --runInBand",
