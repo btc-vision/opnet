@@ -28,12 +28,7 @@ const MOTOSWAP_OWNABLE_REENTRANCY_GUARD_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
 
     // Reentrancy guard
@@ -156,7 +151,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [{ name: 'amount', type: ABIDataTypes.UINT256 }],
-        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+        outputs: [],
     },
     {
         name: 'unstake',
@@ -164,7 +159,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [],
-        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+        outputs: [],
     },
     {
         name: 'claimRewards',
@@ -172,7 +167,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [],
-        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+        outputs: [],
     },
     {
         name: 'adminAddRewardToken',
@@ -180,7 +175,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
-        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+        outputs: [],
     },
     {
         name: 'adminRemoveRewardToken',
@@ -188,7 +183,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
-        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+        outputs: [],
     },
     {
         name: 'adminChangeMotoAddress',
@@ -196,7 +191,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
-        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+        outputs: [],
     },
     {
         name: 'adminChangeLockupParameters',
@@ -208,7 +203,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
             { name: 'newMaxSlashingFeePercent', type: ABIDataTypes.UINT256 },
             { name: 'newBlocksPerOnePercentSlashingFeeReduction', type: ABIDataTypes.UINT256 },
         ],
-        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+        outputs: [],
     },
     {
         name: 'adminEnableEmergencyWithdrawals',
@@ -216,7 +211,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [],
-        outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
+        outputs: [],
     },
 
     // Ownable Reentrancy Guard

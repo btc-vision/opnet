@@ -36,12 +36,7 @@ const OWNABLE_ABI: BitcoinInterfaceAbi = [
         name: 'renounceOwnership',
         type: BitcoinAbiTypes.Function,
         inputs: [],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'transferOwnership',
@@ -52,18 +47,13 @@ const OWNABLE_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
 ];
 
 const MotoChefEvents: BitcoinInterfaceAbi = [
     {
-        name: 'LogPoolAddition',
+        name: 'PoolAdded',
         values: [
             {
                 name: 'poolId',
@@ -81,12 +71,12 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'LogInit',
+        name: 'Initialized',
         values: [],
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'LogUpdatePool',
+        name: 'PoolUpdated',
         values: [
             {
                 name: 'poolId',
@@ -108,7 +98,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'StakedBTC',
+        name: 'BTCStaked',
         values: [
             {
                 name: 'user',
@@ -130,25 +120,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'UserOverwriteBTCStake',
-        values: [
-            {
-                name: 'user',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'storedTxId',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'storedIndex',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'UnstakedBTC',
+        name: 'BTCUnstaked',
         values: [
             {
                 name: 'user',
@@ -170,7 +142,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'RemovedBTCStake',
+        name: 'BTCStakeRemoved',
         values: [
             {
                 name: 'user',
@@ -188,7 +160,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'LogSetPool',
+        name: 'PoolSet',
         values: [
             {
                 name: 'poolId',
@@ -202,7 +174,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'Deposit',
+        name: 'Deposited',
         values: [
             {
                 name: 'user',
@@ -224,7 +196,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'Withdraw',
+        name: 'Withdrawn',
         values: [
             {
                 name: 'user',
@@ -246,7 +218,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'Harvest',
+        name: 'Harvested',
         values: [
             {
                 name: 'user',
@@ -264,7 +236,7 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'EmergencyWithdraw',
+        name: 'EmergencyWithdrawn',
         values: [
             {
                 name: 'user',
@@ -329,12 +301,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'totalAllocPoint',
@@ -580,23 +547,13 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'unstakeBTC',
         type: BitcoinAbiTypes.Function,
         inputs: [],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'removeBTCStake',
@@ -607,12 +564,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'add',
@@ -627,12 +579,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'set',
@@ -647,12 +594,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'updatePool',
@@ -691,12 +633,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ARRAY_OF_UINT32,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'deposit',
@@ -715,12 +652,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'withdraw',
@@ -739,12 +671,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'harvest',
@@ -759,15 +686,10 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
-        name: 'withdrawAndHarvest',
+        name: 'withdrawAndHarvested',
         type: BitcoinAbiTypes.Function,
         inputs: [
             {
@@ -783,12 +705,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'emergencyWithdraw',
@@ -803,12 +720,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'setMotoPerBlock',
@@ -819,12 +731,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'setBonusEndBlock',
@@ -835,12 +742,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'setBonusMultiplier',
@@ -851,12 +753,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'setDev',
@@ -867,12 +764,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
 
     // Ownable

@@ -18,58 +18,26 @@ export const MOTO_ABI: BitcoinInterfaceAbi = [
     {
         name: 'changeAdmin',
         type: BitcoinAbiTypes.Function,
-        inputs: [
-            {
-                name: 'to',
-                type: ABIDataTypes.ADDRESS,
-            },
-        ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        inputs: [{ name: 'to', type: ABIDataTypes.ADDRESS }],
+        outputs: [],
     },
     {
         name: 'adminMint',
         type: BitcoinAbiTypes.Function,
         inputs: [
-            {
-                name: 'to',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
+            { name: 'to', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'adminBurn',
         type: BitcoinAbiTypes.Function,
         inputs: [
-            {
-                name: 'from',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
+            { name: 'from', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
     },
 
     // OP_20
