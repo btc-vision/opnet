@@ -79,6 +79,11 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
      */
     public readonly pow?: ProofOfWorkChallenge;
 
+    /**
+     * @description The block number in which the transaction was included.
+     */
+    public readonly blockNumber?: bigint;
+
     protected constructor(transaction: ITransactionBase<T>, network: Network) {
         super(
             {
@@ -95,6 +100,8 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
         this.id = transaction.id;
         this.hash = transaction.hash;
         this.index = transaction.index;
+
+        if (transaction.blockNumber) this.blockNumber = BigInt(transaction.blockNumber);
 
         this.burnedBitcoin = BigInt(transaction.burnedBitcoin) || 0n;
         this.priorityFee = BigInt(transaction.priorityFee) || 0n;

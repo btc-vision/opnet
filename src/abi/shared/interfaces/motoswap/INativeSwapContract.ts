@@ -135,12 +135,17 @@ export type GetQuote = CallResult<
 
 export type GetProviderDetails = CallResult<
     {
+        id: bigint;
         liquidity: bigint;
         reserved: bigint;
         lpShares: bigint;
         btcReceiver: string;
         indexedAt: number;
         isPriority: boolean;
+        purgeIndex: number;
+        isActive: boolean;
+        lastListedTokensAtBlock: bigint;
+        isPurged: boolean;
     },
     []
 >;
