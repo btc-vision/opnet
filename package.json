@@ -92,8 +92,7 @@
     "typedoc": "^0.28.5",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.34.1",
-    "webpack": "^5.99.9",
-    "webpack-cli": "^6.0.1"
+    "webpack": "^5.99.9"
   },
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.2.0",
@@ -106,6 +105,7 @@
     "ecpair": "^2.1.0",
     "p-limit": "^6.2.0",
     "tiny-secp256k1": "^2.2.4",
-    "undici": "^7.10.0"
+    "undici": "^7.10.0",
+    "webpack-cli": "^6.0.1"
   }
 }
