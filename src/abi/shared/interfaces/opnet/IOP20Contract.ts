@@ -34,8 +34,8 @@ export type Decimals = CallResult<{ decimals: number }, []>;
 export type DomainSeparator = CallResult<{ domainSeparator: Uint8Array }, []>;
 export type NonceOf = CallResult<{ nonce: bigint }, []>;
 
-export type Transfer = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
-export type TransferFrom = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
+export type SafeTransfer = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
+export type SafeTransferFrom = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
 export type IncreaseAllowance = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
 export type DecreaseAllowance = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
 export type IncreaseAllowanceBySignature = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
@@ -96,9 +96,9 @@ export interface IOP20Contract extends IOP_NETContract {
 
     decimals(): Promise<Decimals>;
 
-    safeTransfer(to: Address, amount: bigint, data: Uint8Array): Promise<Transfer>;
+    safeTransfer(to: Address, amount: bigint, data: Uint8Array): Promise<SafeTransfer>;
 
-    safeTransferFrom(from: Address, to: Address, amount: bigint, data: Uint8Array): Promise<TransferFrom>;
+    safeTransferFrom(from: Address, to: Address, amount: bigint, data: Uint8Array): Promise<SafeTransferFrom>;
 
     increaseAllowance(spender: Address, amount: bigint): Promise<IncreaseAllowance>;
 
