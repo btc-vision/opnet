@@ -18,6 +18,7 @@ import { IAccessList } from './interfaces/IAccessList.js';
 import { EventList, ICallResultData, RawEventList } from './interfaces/ICallResult.js';
 import { OPNetEvent } from './OPNetEvent.js';
 import { TransactionHelper } from './TransactionHelpper.js';
+import { BitcoinFees } from '../block/BlockGasParameters.js';
 
 const factory = new TransactionFactory();
 
@@ -72,6 +73,8 @@ export class CallResult<
 
     public to: string | undefined;
     public address: Address | undefined;
+
+    #bitcoinFees: BitcoinFees | undefined;
 
     readonly #rawEvents: EventList;
     readonly #provider: AbstractRpcProvider;
@@ -228,7 +231,7 @@ export class CallResult<
                 calldata: this.calldata,
                 priorityFee: priorityFee,
                 gasSatFee: this.bigintMax(this.estimatedSatGas, interactionParams.minGas || 0n),
-                feeRate: interactionParams.feeRate || 10,
+                feeRate: interactionParams.feeRate || this.#bitcoinFees?.conservative || 10,
                 from: interactionParams.refundTo,
                 utxos: UTXOs,
                 to: this.to,
@@ -293,6 +296,10 @@ export class CallResult<
     public setGasEstimation(estimatedGas: bigint, refundedGas: bigint): void {
         this.estimatedSatGas = estimatedGas;
         this.estimatedRefundedGasInSat = refundedGas;
+    }
+
+    public setBitcoinFee(fees: BitcoinFees): void {
+        this.#bitcoinFees = fees;
     }
 
     public setDecoded(decoded: DecodedOutput): void {
