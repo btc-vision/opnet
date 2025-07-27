@@ -217,30 +217,6 @@ export abstract class AbstractRpcProvider {
     }
 
     /**
-     * Get the latest preimage as a buffer (backwards compatibility).
-     * @description This method is used to get the latest preimage as a buffer.
-     * @returns {Promise<Buffer>} The preimage buffer
-     * @example const preimageBuffer = await getPreimageBuffer();
-     * @deprecated Use getPreimage() instead for full epoch data
-     */
-    public async getPreimageBuffer(): Promise<Buffer> {
-        if (this.preimageCache && this.preimageCache.expireAt > Date.now()) {
-            return this.preimageCache.preimage;
-        }
-
-        const preimage = await this.getPreimage();
-        const preimageBuffer = preimage.toBuffer();
-
-        // Cache the buffer
-        this.preimageCache = {
-            preimage: preimageBuffer,
-            expireAt: Date.now() + 10_000,
-        };
-
-        return preimageBuffer;
-    }
-
-    /**
      * Get block by number or hash.
      * @param {BlockTag} blockNumberOrHash The block number or hash
      * @param {boolean} prefetchTxs Whether to prefetch transactions
