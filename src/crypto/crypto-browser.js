@@ -1,6 +1,7 @@
 /* Browser Crypto Shims */
 import { hmac } from '@noble/hashes/hmac';
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
+import { sha1 } from '@noble/hashes/sha1';
 import { sha256 } from '@noble/hashes/sha256';
 import { sha512 } from '@noble/hashes/sha512';
 import { assertArgument } from 'ethers';
@@ -23,6 +24,8 @@ const crypto = anyGlobal.crypto || anyGlobal.msCrypto;
 
 export function createHash(algo) {
     switch (algo) {
+        case 'sha1':
+            return sha1.create();
         case 'sha256':
             return sha256.create();
         case 'sha512':
@@ -32,19 +35,19 @@ export function createHash(algo) {
 }
 
 export function createHmac(_algo, key) {
-    const algo = { sha256, sha512 }[_algo];
+    const algo = { sha1, sha256, sha512 }[_algo];
     assertArgument(algo != null, 'invalid hmac algorithm', 'algorithm', _algo);
     return hmac.create(algo, key);
 }
 
 export function pbkdf2Sync(password, salt, iterations, keylen, _algo) {
-    const algo = { sha256, sha512 }[_algo];
+    const algo = { sha1, sha256, sha512 }[_algo];
     assertArgument(algo != null, 'invalid pbkdf2 algorithm', 'algorithm', _algo);
     return pbkdf2(algo, password, salt, { c: iterations, dkLen: keylen });
 }
 
 export function randomBytes(length) {
-    assert(
+    assertArgument(
         crypto != null,
         'platform does not support secure random numbers',
         'UNSUPPORTED_OPERATION',
