@@ -30,8 +30,8 @@ import { EpochWithSubmissions } from '../epoch/EpochSubmission.js';
 import { EpochTemplate } from '../epoch/EpochTemplate.js';
 import { EpochSubmissionParams } from '../epoch/interfaces/EpochSubmissionParams.js';
 import {
-    IEpochTemplate,
     RawEpoch,
+    RawEpochTemplate,
     RawEpochWithSubmissions,
     RawSubmittedEpoch,
 } from '../epoch/interfaces/IEpoch.js';
@@ -958,7 +958,7 @@ export abstract class AbstractRpcProvider {
             );
         }
 
-        const result: IEpochTemplate = rawTemplate.result as IEpochTemplate;
+        const result: RawEpochTemplate = rawTemplate.result as RawEpochTemplate;
         return new EpochTemplate(result);
     }
 

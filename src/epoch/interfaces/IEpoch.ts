@@ -64,9 +64,14 @@ export interface RawEpochWithSubmissions extends RawEpoch {
     readonly submissions?: readonly RawEpochSubmission[];
 }
 
-export interface IEpochTemplate {
+export interface RawEpochTemplate {
     readonly epochNumber: string;
     readonly epochTarget: string;
+}
+
+export interface IEpochTemplate {
+    readonly epochNumber: bigint;
+    readonly epochTarget: Buffer;
 }
 
 export enum SubmissionStatus {
