@@ -3,12 +3,12 @@ import {
     Address,
     BinaryReader,
     BufferHelper,
+    ChallengeSolution,
     IInteractionParameters,
     InteractionParametersWithoutSigner,
     LoadedStorage,
     NetEvent,
-    Preimage,
-    RawPreimage,
+    RawChallenge,
     TransactionFactory,
     UTXO,
 } from '@btc-vision/transaction';
@@ -46,7 +46,7 @@ export interface InteractionTransactionReceipt {
     readonly newUTXOs: UTXO[];
     readonly peerAcknowledgements: number;
     readonly estimatedFees: bigint;
-    readonly preimage: RawPreimage;
+    readonly challengeSolution: RawChallenge;
 }
 
 /**
@@ -219,7 +219,7 @@ export class CallResult<
                     : undefined;
 
             const priorityFee: bigint = interactionParams.priorityFee || 0n;
-            const preimage: Preimage = await this.#provider.getPreimage();
+            const challenge: ChallengeSolution = await this.#provider.getChallenge();
             const params: IInteractionParameters | InteractionParametersWithoutSigner = {
                 contract: this.address.toHex(),
                 calldata: this.calldata,
@@ -233,7 +233,7 @@ export class CallResult<
                 optionalInputs: interactionParams.extraInputs || [],
                 optionalOutputs: interactionParams.extraOutputs || [],
                 signer: interactionParams.signer as Signer | ECPairInterface,
-                preimage: preimage,
+                challenge: challenge,
                 loadedStorage: storage,
             };
 
@@ -271,7 +271,7 @@ export class CallResult<
                 peerAcknowledgements: tx2.peers || 0,
                 newUTXOs: transaction.nextUTXOs,
                 estimatedFees: transaction.estimatedFees,
-                preimage: transaction.preimage,
+                challengeSolution: transaction.preimage,
             };
         } catch (e) {
             const msgStr = (e as Error).message;

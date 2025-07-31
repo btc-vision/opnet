@@ -4,8 +4,8 @@ import {
     AddressTypes,
     AddressVerificator,
     BufferHelper,
-    Preimage,
-    RawPreimage,
+    ChallengeSolution,
+    RawChallenge,
 } from '@btc-vision/transaction';
 import '../serialize/BigInt.js';
 
@@ -58,8 +58,8 @@ import {
 import { AddressesInfo, IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
-interface PreimageCache {
-    readonly preimage: Buffer;
+interface ChallengeCache {
+    readonly challenge: ChallengeSolution;
     readonly expireAt: number;
 }
 
@@ -75,7 +75,7 @@ export abstract class AbstractRpcProvider {
     private gasCache: BlockGasParameters | undefined;
     private lastFetchedGas: number = 0;
 
-    private preimageCache: PreimageCache | undefined;
+    private challengeCache: ChallengeCache | undefined;
 
     protected constructor(public readonly network: Network) {}
 
@@ -178,30 +178,34 @@ export abstract class AbstractRpcProvider {
     }
 
     /**
-     * Get the latest preimage to use in a transaction.
-     * @description This method is used to get the latest preimage along with epoch winner and verification data.
-     * @returns {Promise<Preimage>} The preimage and epoch data
-     * @example const preimage = await getPreimage();
-     * @throws {Error} If no preimage found or OPNet is not active
+     * Get the latest challenge to use in a transaction.
+     * @description This method is used to get the latest challenge along with epoch winner and verification data.
+     * @returns {Promise<ChallengeSolution>} The challenge and epoch data
+     * @example const challenge = await getChallenge();
+     * @throws {Error} If no challenge found or OPNet is not active
      */
-    public async getPreimage(): Promise<Preimage> {
+    public async getChallenge(): Promise<ChallengeSolution> {
+        // Check if we have a cached preimage that hasn't expired
+        if (this.challengeCache && Date.now() < this.challengeCache.expireAt) {
+            return this.challengeCache.challenge;
+        }
+
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(
             JSONRpcMethods.TRANSACTION_PREIMAGE,
             [],
         );
 
-        const rawPreimage: JsonRpcResult = await this.callPayloadSingle(payload);
-        if ('error' in rawPreimage) {
+        const rawChallenge: JsonRpcResult = await this.callPayloadSingle(payload);
+        if ('error' in rawChallenge) {
             throw new Error(
-                `Error fetching preimage: ${rawPreimage.error?.message || 'Unknown error'}`,
+                `Error fetching preimage: ${rawChallenge.error?.message || 'Unknown error'}`,
             );
         }
 
-        const result: RawPreimage = rawPreimage.result as RawPreimage;
-
+        const result: RawChallenge = rawChallenge.result as RawChallenge;
         if (!result || !result.solution) {
             throw new Error(
-                'No preimage found. OPNet is probably not active yet on this blockchain.',
+                'No challenge found. OPNet is probably not active yet on this blockchain.',
             );
         }
 
@@ -209,11 +213,17 @@ export abstract class AbstractRpcProvider {
         const solutionHex = result.solution.replace('0x', '');
         if (solutionHex === '0'.repeat(64)) {
             throw new Error(
-                'No valid preimage found. OPNet is probably not active yet on this blockchain.',
+                'No valid challenge found. OPNet is probably not active yet on this blockchain.',
             );
         }
 
-        return new Preimage(result);
+        const challengeSolution = new ChallengeSolution(result);
+        this.challengeCache = {
+            challenge: challengeSolution,
+            expireAt: Date.now() + 10_000,
+        };
+
+        return challengeSolution;
     }
 
     /**
