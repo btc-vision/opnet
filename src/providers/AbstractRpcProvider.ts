@@ -973,6 +973,7 @@ export abstract class AbstractRpcProvider {
      *     salt: Buffer.from('0a0a0a0a0a0a00a', 'hex'),
      *     publicKey: Address.dead(),
      *     graffiti: Buffer.from('Hello, world!'),
+     *     signature: Buffer.from('1234567890abcdef', 'hex'),
      * });
      * @throws {Error} If something went wrong while submitting the epoch
      */
@@ -982,7 +983,8 @@ export abstract class AbstractRpcProvider {
                 epochNumber: params.epochNumber.toString(),
                 targetHash: this.bufferToHex(params.targetHash),
                 salt: this.bufferToHex(params.salt),
-                publicKey: params.publicKey.toHex(),
+                publicKey: '0x' + params.publicKey.originalPublicKeyBuffer().toString('hex'),
+                signature: this.bufferToHex(params.signature),
                 graffiti: params.graffiti ? this.bufferToHex(params.graffiti) : undefined,
             },
         ]);

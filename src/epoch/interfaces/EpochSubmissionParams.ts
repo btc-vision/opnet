@@ -5,5 +5,6 @@ export interface EpochSubmissionParams {
     readonly targetHash: Buffer;
     readonly salt: Buffer;
     readonly publicKey: Address;
+    readonly signature: Buffer;
     readonly graffiti?: Buffer;
 }
