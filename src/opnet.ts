@@ -28,8 +28,17 @@ export * from './providers/interfaces/ReorgInformation.js';
 /** Block */
 export * from './block/Block.js';
 export * from './block/BlockGasParameters.js';
-export * from './block/interfaces/BlockWitness.js';
+export * from './block/interfaces/IBlockWitness.js';
 export * from './block/interfaces/IBlock.js';
+export * from './block/BlockWitness.js';
+
+/** Epoch */
+export * from './epoch/Epoch.js';
+export * from './epoch/interfaces/IEpoch.js';
+export * from './epoch/interfaces/EpochSubmissionParams.js';
+export * from './epoch/EpochSubmission.js';
+export * from './epoch/EpochTemplate.js';
+export * from './epoch/SubmittedEpoch.js';
 
 /** UTXOs */
 export * from './utxos/interfaces/IUTXOsManager.js';
@@ -58,6 +67,7 @@ export * from './abi/interfaces/BitcoinInterfaceAbi.js';
 
 /** Utils */
 export * from './utils/BitcoinUtils.js';
+export * from './utils/StringToBuffer.js';
 
 /** Storage */
 export * from './storage/interfaces/IStorageValue.js';

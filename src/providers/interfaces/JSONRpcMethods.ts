@@ -8,6 +8,7 @@ export enum JSONRpcMethods {
 
     /** Blocks */
     GET_BLOCK_BY_HASH = 'btc_getBlockByHash',
+    GET_BLOCK_BY_CHECKSUM = 'btc_getBlockByChecksum',
     GET_BLOCK_BY_NUMBER = 'btc_getBlockByNumber',
     GAS = 'btc_gas',
 
@@ -29,7 +30,13 @@ export enum JSONRpcMethods {
     GET_CODE = 'btc_getCode',
     GET_STORAGE_AT = 'btc_getStorageAt',
 
+    /** Epochs */
+    LATEST_EPOCH = 'btc_latestEpoch',
+    GET_EPOCH_BY_NUMBER = 'btc_getEpochByNumber',
+    GET_EPOCH_BY_HASH = 'btc_getEpochByHash',
+    GET_EPOCH_TEMPLATE = 'btc_getEpochTemplate',
+    SUBMIT_EPOCH = 'btc_submitEpoch',
+
     /** Simulation */
     CALL = 'btc_call',
-    SIMULATE = 'btc_simulate',
 }

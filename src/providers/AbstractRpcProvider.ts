@@ -1,11 +1,19 @@
 import { Network } from '@btc-vision/bitcoin';
-import { Address, AddressTypes, AddressVerificator, BufferHelper } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    AddressVerificator,
+    BufferHelper,
+    ChallengeSolution,
+    RawChallenge,
+} from '@btc-vision/transaction';
 import '../serialize/BigInt.js';
 
 import { Block } from '../block/Block.js';
 import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters.js';
-import { BlockWitnesses } from '../block/interfaces/BlockWitness.js';
+import { parseBlockWitnesses } from '../block/BlockWitness.js';
 import { IBlock } from '../block/interfaces/IBlock.js';
+import { BlockWitnesses, RawBlockWitnessAPI } from '../block/interfaces/IBlockWitness.js';
 import { BigNumberish, BlockTag } from '../common/CommonTypes.js';
 import { CallResult } from '../contracts/CallResult.js';
 import { ContractData } from '../contracts/ContractData.js';
@@ -17,6 +25,17 @@ import {
     ParsedSimulatedTransaction,
     SimulatedTransaction,
 } from '../contracts/interfaces/SimulatedTransaction.js';
+import { Epoch } from '../epoch/Epoch.js';
+import { EpochWithSubmissions } from '../epoch/EpochSubmission.js';
+import { EpochTemplate } from '../epoch/EpochTemplate.js';
+import { EpochSubmissionParams } from '../epoch/interfaces/EpochSubmissionParams.js';
+import {
+    RawEpoch,
+    RawEpochTemplate,
+    RawEpochWithSubmissions,
+    RawSubmittedEpoch,
+} from '../epoch/interfaces/IEpoch.js';
+import { SubmittedEpoch } from '../epoch/SubmittedEpoch.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
@@ -39,8 +58,8 @@ import {
 import { AddressesInfo, IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
-interface PreimageCache {
-    readonly preimage: Buffer;
+interface ChallengeCache {
+    readonly challenge: ChallengeSolution;
     readonly expireAt: number;
 }
 
@@ -56,7 +75,7 @@ export abstract class AbstractRpcProvider {
     private gasCache: BlockGasParameters | undefined;
     private lastFetchedGas: number = 0;
 
-    private preimageCache: PreimageCache | undefined;
+    private challengeCache: ChallengeCache | undefined;
 
     protected constructor(public readonly network: Network) {}
 
@@ -130,15 +149,45 @@ export abstract class AbstractRpcProvider {
     }
 
     /**
-     * Get the latest preimage to use in a transaction.
-     * @description This method is used to get the latest preimage to use in a transaction.
-     * @returns {Promise<Buffer>} The preimage
+     * Get block by checksum.
+     * @param {string} checksum The block checksum
+     * @param {boolean} prefetchTxs Whether to prefetch transactions
+     * @description This method is used to get a block by its checksum.
+     * @returns {Promise<Block>} The requested block
+     * @throws {Error} If the block is not found
+     * @example await getBlockByChecksum('0xabcdef123456...');
      */
-    public async getPreimage(): Promise<Buffer> {
-        if (this.preimageCache) {
-            if (this.preimageCache.expireAt > Date.now()) {
-                return this.preimageCache.preimage;
-            }
+    public async getBlockByChecksum(
+        checksum: string,
+        prefetchTxs: boolean = false,
+    ): Promise<Block> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_BLOCK_BY_CHECKSUM,
+            [checksum, prefetchTxs],
+        );
+
+        const block: JsonRpcResult = await this.callPayloadSingle(payload);
+        if ('error' in block) {
+            throw new Error(
+                `Error fetching block by checksum: ${block.error?.message || 'Unknown error'}`,
+            );
+        }
+
+        const result: IBlock = block.result as IBlock;
+        return new Block(result, this.network);
+    }
+
+    /**
+     * Get the latest challenge to use in a transaction.
+     * @description This method is used to get the latest challenge along with epoch winner and verification data.
+     * @returns {Promise<ChallengeSolution>} The challenge and epoch data
+     * @example const challenge = await getChallenge();
+     * @throws {Error} If no challenge found or OPNet is not active
+     */
+    public async getChallenge(): Promise<ChallengeSolution> {
+        // Check if we have a cached preimage that hasn't expired
+        if (this.challengeCache && Date.now() < this.challengeCache.expireAt) {
+            return this.challengeCache.challenge;
         }
 
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(
@@ -146,25 +195,35 @@ export abstract class AbstractRpcProvider {
             [],
         );
 
-        const rawBlockNumber: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: { preimage: string } = rawBlockNumber.result as { preimage: string };
-
-        if (
-            !result ||
-            result.preimage === '0000000000000000000000000000000000000000000000000000000000000000'
-        ) {
+        const rawChallenge: JsonRpcResult = await this.callPayloadSingle(payload);
+        if ('error' in rawChallenge) {
             throw new Error(
-                'No preimage found. OPNet is probably not active yet on this blockchain.',
+                `Error fetching preimage: ${rawChallenge.error?.message || 'Unknown error'}`,
             );
         }
 
-        const preimage = Buffer.from(result.preimage, 'hex');
-        this.preimageCache = {
-            preimage: preimage,
+        const result: RawChallenge = rawChallenge.result as RawChallenge;
+        if (!result || !result.solution) {
+            throw new Error(
+                'No challenge found. OPNet is probably not active yet on this blockchain.',
+            );
+        }
+
+        // Check if the solution is all zeros (invalid)
+        const solutionHex = result.solution.replace('0x', '');
+        if (solutionHex === '0'.repeat(64)) {
+            throw new Error(
+                'No valid challenge found. OPNet is probably not active yet on this blockchain.',
+            );
+        }
+
+        const challengeSolution = new ChallengeSolution(result);
+        this.challengeCache = {
+            challenge: challengeSolution,
             expireAt: Date.now() + 10_000,
         };
 
-        return preimage;
+        return challengeSolution;
     }
 
     /**
@@ -615,7 +674,7 @@ export abstract class AbstractRpcProvider {
 
     /**
      * Get block witnesses.
-     * @description This method is used to get the witnesses of a block. This proves that the action executed inside a block are valid and confirmed by the network. If the minimum number of witnesses are not met, the block is considered as potentially invalid.
+     * @description This method is used to get the witnesses of a block. This proves that the actions executed inside a block are valid and confirmed by the network. If the minimum number of witnesses are not met, the block is considered as potentially invalid.
      * @param {BlockTag} height The block number or hash, use -1 for latest block
      * @param {boolean} [trusted] Whether to trust the witnesses or not
      * @param {number} [limit] The maximum number of witnesses to return
@@ -642,13 +701,19 @@ export abstract class AbstractRpcProvider {
         );
 
         const rawWitnesses: JsonRpcResult = await this.callPayloadSingle(payload);
-        const result: BlockWitnesses = rawWitnesses.result as BlockWitnesses;
 
-        for (let i = 0; i < result.length; i++) {
-            result[i].blockNumber = BigInt('0x' + result[i].blockNumber.toString());
+        if ('error' in rawWitnesses) {
+            throw new Error(
+                `Error fetching block witnesses: ${rawWitnesses.error?.message || 'Unknown error'}`,
+            );
         }
 
-        return result;
+        const result = rawWitnesses.result as Array<{
+            blockNumber: string;
+            witnesses: RawBlockWitnessAPI[];
+        }>;
+
+        return parseBlockWitnesses(result);
     }
 
     /**
@@ -807,6 +872,142 @@ export abstract class AbstractRpcProvider {
         }
 
         return response;
+    }
+
+    /**
+     * Get the latest epoch.
+     * @description This method is used to get the latest epoch in the OPNet protocol.
+     * @returns {Promise<Epoch>} The latest epoch
+     * @example await getLatestEpoch();
+     * @throws {Error} If something went wrong while fetching the epoch
+     */
+    public async getLatestEpoch(includeSubmissions: boolean): Promise<Epoch> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.LATEST_EPOCH, []);
+
+        const rawEpoch: JsonRpcResult = await this.callPayloadSingle(payload);
+        const result: RawEpoch = rawEpoch.result as RawEpoch;
+
+        return new Epoch(result);
+    }
+
+    /**
+     * Get an epoch by its number.
+     * @description This method is used to get an epoch by its number.
+     * @param {BigNumberish} epochNumber The epoch number (-1 for latest)
+     * @param {boolean} [includeSubmissions] Whether to include submissions in the response
+     * @returns {Promise<Epoch | EpochWithSubmissions>} The requested epoch
+     * @example await getEpochByNumber(123n);
+     * @throws {Error} If something went wrong while fetching the epoch
+     */
+    public async getEpochByNumber(
+        epochNumber: BigNumberish,
+        includeSubmissions: boolean = false,
+    ): Promise<Epoch | EpochWithSubmissions> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_EPOCH_BY_NUMBER,
+            [epochNumber.toString(), includeSubmissions],
+        );
+
+        const rawEpoch: JsonRpcResult = await this.callPayloadSingle(payload);
+        if ('error' in rawEpoch) {
+            throw new Error(`Error fetching epoch: ${rawEpoch.error?.message || 'Unknown error'}`);
+        }
+
+        const result: RawEpochWithSubmissions = rawEpoch.result as RawEpochWithSubmissions;
+        return includeSubmissions || result.submissions
+            ? new EpochWithSubmissions(result)
+            : new Epoch(result);
+    }
+
+    /**
+     * Get an epoch by its hash.
+     * @description This method is used to get an epoch by its hash.
+     * @param {string} epochHash The epoch hash
+     * @param {boolean} [includeSubmissions] Whether to include submissions in the response
+     * @returns {Promise<Epoch | EpochWithSubmissions>} The requested epoch
+     * @example await getEpochByHash('0x1234567890abcdef...');
+     * @throws {Error} If something went wrong while fetching the epoch
+     */
+    public async getEpochByHash(
+        epochHash: string,
+        includeSubmissions: boolean = false,
+    ): Promise<Epoch | EpochWithSubmissions> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_EPOCH_BY_HASH, [
+            epochHash,
+            includeSubmissions,
+        ]);
+
+        const rawEpoch: JsonRpcResult = await this.callPayloadSingle(payload);
+        if ('error' in rawEpoch) {
+            throw new Error(`Error fetching epoch: ${rawEpoch.error?.message || 'Unknown error'}`);
+        }
+
+        const result: RawEpochWithSubmissions = rawEpoch.result as RawEpochWithSubmissions;
+        return includeSubmissions || result.submissions
+            ? new EpochWithSubmissions(result)
+            : new Epoch(result);
+    }
+
+    /**
+     * Get the current epoch mining template.
+     * @description This method is used to get the current epoch mining template with target hash and requirements.
+     * @returns {Promise<EpochTemplate>} The epoch template
+     * @example await getEpochTemplate();
+     * @throws {Error} If something went wrong while fetching the template
+     */
+    public async getEpochTemplate(): Promise<EpochTemplate> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_EPOCH_TEMPLATE,
+            [],
+        );
+
+        const rawTemplate: JsonRpcResult = await this.callPayloadSingle(payload);
+        if ('error' in rawTemplate) {
+            throw new Error(
+                `Error fetching epoch template: ${rawTemplate.error?.message || 'Unknown error'}`,
+            );
+        }
+
+        const result: RawEpochTemplate = rawTemplate.result as RawEpochTemplate;
+        return new EpochTemplate(result);
+    }
+
+    /**
+     * Submit a new epoch solution.
+     * @description This method is used to submit a SHA-1 collision solution for epoch mining.
+     * @param {EpochSubmissionParams} params The parameters for the epoch submission
+     * @returns {Promise<SubmittedEpoch>} The submission result
+     * @example await submitEpoch({
+     *     epochNumber: 123n,
+     *     targetHash: Buffer.from('00000000000000000000000000000000', 'hex'),
+     *     salt: Buffer.from('0a0a0a0a0a0a00a', 'hex'),
+     *     publicKey: Address.dead(),
+     *     graffiti: Buffer.from('Hello, world!'),
+     *     signature: Buffer.from('1234567890abcdef', 'hex'),
+     * });
+     * @throws {Error} If something went wrong while submitting the epoch
+     */
+    public async submitEpoch(params: EpochSubmissionParams): Promise<SubmittedEpoch> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.SUBMIT_EPOCH, [
+            {
+                epochNumber: params.epochNumber.toString(),
+                targetHash: this.bufferToHex(params.targetHash),
+                salt: this.bufferToHex(params.salt),
+                publicKey: '0x' + params.publicKey.originalPublicKeyBuffer().toString('hex'),
+                signature: this.bufferToHex(params.signature),
+                graffiti: params.graffiti ? this.bufferToHex(params.graffiti) : undefined,
+            },
+        ]);
+
+        const rawSubmission: JsonRpcResult = await this.callPayloadSingle(payload);
+        if ('error' in rawSubmission) {
+            throw new Error(
+                `Error submitting epoch: ${rawSubmission.error?.message || 'Unknown error'}`,
+            );
+        }
+
+        const result: RawSubmittedEpoch = rawSubmission.result as RawSubmittedEpoch;
+        return new SubmittedEpoch(result);
     }
 
     protected abstract providerUrl(url: string): string;

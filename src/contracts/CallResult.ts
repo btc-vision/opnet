@@ -3,14 +3,17 @@ import {
     Address,
     BinaryReader,
     BufferHelper,
+    ChallengeSolution,
     IInteractionParameters,
     InteractionParametersWithoutSigner,
     LoadedStorage,
     NetEvent,
+    RawChallenge,
     TransactionFactory,
     UTXO,
 } from '@btc-vision/transaction';
 import { ECPairInterface } from 'ecpair';
+import { BitcoinFees } from '../block/BlockGasParameters.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { RequestUTXOsParamsWithAmount } from '../utxos/interfaces/IUTXOsManager.js';
 import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';
@@ -18,7 +21,6 @@ import { IAccessList } from './interfaces/IAccessList.js';
 import { EventList, ICallResultData, RawEventList } from './interfaces/ICallResult.js';
 import { OPNetEvent } from './OPNetEvent.js';
 import { TransactionHelper } from './TransactionHelpper.js';
-import { BitcoinFees } from '../block/BlockGasParameters.js';
 
 const factory = new TransactionFactory();
 
@@ -44,7 +46,7 @@ export interface InteractionTransactionReceipt {
     readonly newUTXOs: UTXO[];
     readonly peerAcknowledgements: number;
     readonly estimatedFees: bigint;
-    readonly preimage: string;
+    readonly challengeSolution: RawChallenge;
 }
 
 /**
@@ -116,7 +118,7 @@ export class CallResult<
         if (this.startsWithErrorSelector(revertDataBytes)) {
             const decoder = new TextDecoder();
 
-            return decoder.decode(revertDataBytes.slice(8));
+            return decoder.decode(revertDataBytes.subarray(8));
         } else {
             return `Unknown Revert: 0x${this.bytesToHexString(revertDataBytes)}`;
         }
@@ -183,14 +185,6 @@ export class CallResult<
         try {
             let UTXOs: UTXO[] =
                 interactionParams.utxos || (await this.acquire(interactionParams, amountAddition));
-            /*(await this.#fetchUTXOs(
-                totalFee +
-                    interactionParams.maximumAllowedSatToSpend +
-                    totalAmount +
-                    amountAddition +
-                    BigInt(approxCostMining),
-                interactionParams,
-            ));*/
 
             if (interactionParams.extraInputs) {
                 UTXOs = UTXOs.filter((utxo) => {
@@ -225,7 +219,7 @@ export class CallResult<
                     : undefined;
 
             const priorityFee: bigint = interactionParams.priorityFee || 0n;
-            const preimage = await this.#provider.getPreimage();
+            const challenge: ChallengeSolution = await this.#provider.getChallenge();
             const params: IInteractionParameters | InteractionParametersWithoutSigner = {
                 contract: this.address.toHex(),
                 calldata: this.calldata,
@@ -238,8 +232,8 @@ export class CallResult<
                 network: interactionParams.network,
                 optionalInputs: interactionParams.extraInputs || [],
                 optionalOutputs: interactionParams.extraOutputs || [],
-                signer: interactionParams.signer,
-                preimage: preimage,
+                signer: interactionParams.signer as Signer | ECPairInterface,
+                challenge: challenge,
                 loadedStorage: storage,
             };
 
@@ -277,7 +271,7 @@ export class CallResult<
                 peerAcknowledgements: tx2.peers || 0,
                 newUTXOs: transaction.nextUTXOs,
                 estimatedFees: transaction.estimatedFees,
-                preimage: transaction.preimage,
+                challengeSolution: transaction.preimage,
             };
         } catch (e) {
             const msgStr = (e as Error).message;
