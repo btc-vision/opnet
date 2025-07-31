@@ -271,7 +271,7 @@ export class CallResult<
                 peerAcknowledgements: tx2.peers || 0,
                 newUTXOs: transaction.nextUTXOs,
                 estimatedFees: transaction.estimatedFees,
-                challengeSolution: transaction.preimage,
+                challengeSolution: transaction.challenge,
             };
         } catch (e) {
             const msgStr = (e as Error).message;
