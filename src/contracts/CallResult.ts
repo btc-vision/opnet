@@ -37,6 +37,7 @@ export interface TransactionParameters {
     readonly extraOutputs?: PsbtOutputExtended[];
 
     readonly minGas?: bigint;
+    readonly note?: string | Buffer;
 
     readonly dontIncludeAccessList?: boolean;
 }
@@ -235,6 +236,7 @@ export class CallResult<
                 signer: interactionParams.signer as Signer | ECPairInterface,
                 challenge: challenge,
                 loadedStorage: storage,
+                note: interactionParams.note,
             };
 
             const transaction = await factory.signInteraction(params);
