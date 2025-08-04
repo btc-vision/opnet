@@ -59,7 +59,7 @@ lines of code:
 ```typescript
 import {
     getContract,
-    IOP_20Contract,
+    IOP20Contract,
     JSONRpcProvider,
     OP_20_ABI,
     TransactionParameters,
@@ -73,7 +73,7 @@ const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.org
 const wallet: Wallet = Configs.WALLET;
 const yourAddress: Address = new Address(wallet.keypair.publicKey);
 
-const example: IOP_20Contract = getContract<IOP_20Contract>(
+const example: IOP20Contract = getContract<IOP20Contract>(
     'bcrt1plz0svv3wl05qrrv0dx8hvh5mgqc7jf3mhqgtw8jnj3l3d3cs6lzsfc3mxh',
     OP_20_ABI,
     provider,

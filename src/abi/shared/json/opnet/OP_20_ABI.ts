@@ -8,7 +8,7 @@ import { OP_NET_ABI } from './OP_NET_ABI.js';
  */
 export const OP20Events: BitcoinInterfaceAbi = [
     {
-        name: 'Mint',
+        name: 'Minted',
         values: [
             {
                 name: 'to',
@@ -22,7 +22,7 @@ export const OP20Events: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'Transfer',
+        name: 'Transferred',
         values: [
             {
                 name: 'from',
@@ -40,17 +40,15 @@ export const OP20Events: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'Burn',
+        name: 'Burned',
         values: [
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
+            { name: 'from', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
         ],
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'Approve',
+        name: 'Approved',
         values: [
             {
                 name: 'owner',
@@ -94,47 +92,45 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
     },
     {
-        name: 'approve',
+        name: 'increaseAllowance',
         inputs: [
-            {
-                name: 'spender',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
+            { name: 'spender', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {
-        name: 'approveFrom',
+        name: 'decreaseAllowance',
         inputs: [
-            {
-                name: 'spender',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'signature',
-                type: ABIDataTypes.BYTES,
-            },
+            { name: 'spender', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
+        outputs: [],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
+        name: 'increaseAllowanceBySignature',
+        inputs: [
+            { name: 'owner', type: ABIDataTypes.ADDRESS },
+            { name: 'spender', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+            { name: 'deadline', type: ABIDataTypes.UINT64 },
+            { name: 'signature', type: ABIDataTypes.BYTES },
         ],
+        outputs: [],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
+        name: 'decreaseAllowanceBySignature',
+        inputs: [
+            { name: 'owner', type: ABIDataTypes.ADDRESS },
+            { name: 'spender', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+            { name: 'deadline', type: ABIDataTypes.UINT64 },
+            { name: 'signature', type: ABIDataTypes.BYTES },
+        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {
@@ -155,119 +151,54 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'burn',
-        inputs: [
-            {
-                name: 'value',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        inputs: [{ name: 'value', type: ABIDataTypes.UINT256 }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {
-        name: 'transfer',
+        name: 'safeTransfer',
         inputs: [
-            {
-                name: 'recipient',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
+            { name: 'to', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+            { name: 'data', type: ABIDataTypes.BYTES },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {
-        name: 'transferFrom',
+        name: 'safeTransferFrom',
         inputs: [
-            {
-                name: 'sender',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'recipient',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
+            { name: 'from', type: ABIDataTypes.ADDRESS },
+            { name: 'to', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+            { name: 'data', type: ABIDataTypes.BYTES },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'mint',
         inputs: [
-            {
-                name: 'recipient',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
+            { name: 'recipient', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'airdrop',
-        inputs: [
-            {
-                name: 'map',
-                type: ABIDataTypes.ADDRESS_UINT256_TUPLE,
-            },
-        ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        inputs: [{ name: 'map', type: ABIDataTypes.ADDRESS_UINT256_TUPLE }],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
     {
         name: 'airdropWithAmount',
         inputs: [
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'addresses',
-                type: ABIDataTypes.ARRAY_OF_ADDRESSES,
-            },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+            { name: 'addresses', type: ABIDataTypes.ARRAY_OF_ADDRESSES },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -320,6 +251,29 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         outputs: [
             {
                 name: 'maximumSupply',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
+        name: 'domainSeparator',
+        constant: true,
+        outputs: [
+            {
+                name: 'domainSeparator',
+                type: ABIDataTypes.BYTES32,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
+        name: 'nonceOf',
+        constant: true,
+        inputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
+        outputs: [
+            {
+                name: 'nonce',
                 type: ABIDataTypes.UINT256,
             },
         ],
