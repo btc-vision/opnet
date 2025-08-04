@@ -672,9 +672,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         };
     }
 
-    private async estimateGas(gas: bigint): Promise<bigint> {
-        const gasParameters = await this.currentGasParameters();
-
+    private estimateGas(gas: bigint, gasParameters: BlockGasParameters): bigint {
         const gasPerSat = gasParameters.gasPerSat;
         const exactGas = (gas * gasPerSat) / 1000000000000n;
 
@@ -723,9 +721,11 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             response.setDecoded(decoded);
             response.setCalldata(buffer);
 
-            const gas = await this.estimateGas(response.estimatedGas || 0n);
-            const gasRefunded = await this.estimateGas(response.refundedGas || 0n);
+            const gasParameters = await this.currentGasParameters();
+            const gas = this.estimateGas(response.estimatedGas || 0n, gasParameters);
+            const gasRefunded = this.estimateGas(response.refundedGas || 0n, gasParameters);
 
+            response.setBitcoinFee(gasParameters.bitcoin);
             response.setGasEstimation(gas, gasRefunded);
             response.setEvents(this.decodeEvents(response.rawEvents));
 

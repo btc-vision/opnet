@@ -3,14 +3,17 @@ import {
     Address,
     BinaryReader,
     BufferHelper,
+    ChallengeSolution,
     IInteractionParameters,
     InteractionParametersWithoutSigner,
     LoadedStorage,
     NetEvent,
+    RawChallenge,
     TransactionFactory,
     UTXO,
 } from '@btc-vision/transaction';
 import { ECPairInterface } from 'ecpair';
+import { BitcoinFees } from '../block/BlockGasParameters.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { RequestUTXOsParamsWithAmount } from '../utxos/interfaces/IUTXOsManager.js';
 import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';
@@ -34,6 +37,7 @@ export interface TransactionParameters {
     readonly extraOutputs?: PsbtOutputExtended[];
 
     readonly minGas?: bigint;
+    readonly note?: string | Buffer;
 
     readonly dontIncludeAccessList?: boolean;
 }
@@ -43,7 +47,7 @@ export interface InteractionTransactionReceipt {
     readonly newUTXOs: UTXO[];
     readonly peerAcknowledgements: number;
     readonly estimatedFees: bigint;
-    readonly preimage: string;
+    readonly challengeSolution: RawChallenge;
 }
 
 /**
@@ -72,6 +76,8 @@ export class CallResult<
 
     public to: string | undefined;
     public address: Address | undefined;
+
+    #bitcoinFees: BitcoinFees | undefined;
 
     readonly #rawEvents: EventList;
     readonly #provider: AbstractRpcProvider;
@@ -113,7 +119,7 @@ export class CallResult<
         if (this.startsWithErrorSelector(revertDataBytes)) {
             const decoder = new TextDecoder();
 
-            return decoder.decode(revertDataBytes.slice(8));
+            return decoder.decode(revertDataBytes.subarray(8));
         } else {
             return `Unknown Revert: 0x${this.bytesToHexString(revertDataBytes)}`;
         }
@@ -180,14 +186,6 @@ export class CallResult<
         try {
             let UTXOs: UTXO[] =
                 interactionParams.utxos || (await this.acquire(interactionParams, amountAddition));
-            /*(await this.#fetchUTXOs(
-                totalFee +
-                    interactionParams.maximumAllowedSatToSpend +
-                    totalAmount +
-                    amountAddition +
-                    BigInt(approxCostMining),
-                interactionParams,
-            ));*/
 
             if (interactionParams.extraInputs) {
                 UTXOs = UTXOs.filter((utxo) => {
@@ -222,22 +220,23 @@ export class CallResult<
                     : undefined;
 
             const priorityFee: bigint = interactionParams.priorityFee || 0n;
-            const preimage = await this.#provider.getPreimage();
+            const challenge: ChallengeSolution = await this.#provider.getChallenge();
             const params: IInteractionParameters | InteractionParametersWithoutSigner = {
                 contract: this.address.toHex(),
                 calldata: this.calldata,
                 priorityFee: priorityFee,
                 gasSatFee: this.bigintMax(this.estimatedSatGas, interactionParams.minGas || 0n),
-                feeRate: interactionParams.feeRate || 10,
+                feeRate: interactionParams.feeRate || this.#bitcoinFees?.conservative || 10,
                 from: interactionParams.refundTo,
                 utxos: UTXOs,
                 to: this.to,
                 network: interactionParams.network,
                 optionalInputs: interactionParams.extraInputs || [],
                 optionalOutputs: interactionParams.extraOutputs || [],
-                signer: interactionParams.signer,
-                preimage: preimage,
+                signer: interactionParams.signer as Signer | ECPairInterface,
+                challenge: challenge,
                 loadedStorage: storage,
+                note: interactionParams.note,
             };
 
             const transaction = await factory.signInteraction(params);
@@ -274,7 +273,7 @@ export class CallResult<
                 peerAcknowledgements: tx2.peers || 0,
                 newUTXOs: transaction.nextUTXOs,
                 estimatedFees: transaction.estimatedFees,
-                preimage: transaction.preimage,
+                challengeSolution: transaction.challenge,
             };
         } catch (e) {
             const msgStr = (e as Error).message;
@@ -293,6 +292,10 @@ export class CallResult<
     public setGasEstimation(estimatedGas: bigint, refundedGas: bigint): void {
         this.estimatedSatGas = estimatedGas;
         this.estimatedRefundedGasInSat = refundedGas;
+    }
+
+    public setBitcoinFee(fees: BitcoinFees): void {
+        this.#bitcoinFees = fees;
     }
 
     public setDecoded(decoded: DecodedOutput): void {
