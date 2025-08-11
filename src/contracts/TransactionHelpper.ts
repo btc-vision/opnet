@@ -31,6 +31,7 @@ export class TransactionHelper {
             [AddressTypes.P2PK]: 148 * 4,
             [AddressTypes.P2WSH]: 41 * 4 + (1 + 73 + 1 + 33),
             [AddressTypes.P2OP]: 41 * 4 + 107,
+            [AddressTypes.P2WDA]: 41 * 4 + 253,
         };
 
         const OUTPUT_BYTES: Record<AddressTypes, number> = {
@@ -41,6 +42,7 @@ export class TransactionHelper {
             [AddressTypes.P2PK]: 34,
             [AddressTypes.P2OP]: 32,
             [AddressTypes.P2WSH]: 43,
+            [AddressTypes.P2WDA]: 43,
         };
 
         const ins: readonly UTXO[] = utxos.length ? utxos : new Array(3).fill(null); // simulate 3 taproot
