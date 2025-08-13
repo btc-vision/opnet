@@ -12,6 +12,9 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
     public readonly scriptPubKey: ScriptPubKey;
     public readonly nonWitnessUtxo?: Buffer | string;
 
+    public witnessScript?: Buffer | string;
+    public redeemScript?: Buffer | string;
+
     public constructor(iUTXO: IUTXO) {
         this.transactionId = iUTXO.transactionId;
         this.outputIndex = iUTXO.outputIndex;

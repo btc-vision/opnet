@@ -38,6 +38,8 @@ export interface TransactionParameters {
 
     readonly minGas?: bigint;
     readonly note?: string | Buffer;
+    readonly p2wda?: boolean;
+    readonly from?: Address;
 
     readonly dontIncludeAccessList?: boolean;
 }
@@ -240,13 +242,20 @@ export class CallResult<
             };
 
             const transaction = await factory.signInteraction(params);
-            const tx1 = await this.#provider.sendRawTransaction(
-                transaction.fundingTransaction,
-                false,
-            );
 
-            if (!tx1 || tx1.error) {
-                throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
+            if (!interactionParams.p2wda) {
+                if (!transaction.fundingTransaction) {
+                    throw new Error('Funding transaction not created');
+                }
+
+                const tx1 = await this.#provider.sendRawTransaction(
+                    transaction.fundingTransaction,
+                    false,
+                );
+
+                if (!tx1 || tx1.error) {
+                    throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
+                }
             }
 
             const tx2 = await this.#provider.sendRawTransaction(
@@ -392,6 +401,23 @@ export class CallResult<
         const utxos: UTXO[] = await this.#provider.utxoManager.getUTXOsForAmount(utxoSetting);
         if (!utxos) {
             throw new Error('No UTXOs found');
+        }
+
+        if (!interactionParams.signer) {
+            throw new Error('Signer not set in interaction parameters');
+        }
+
+        if (interactionParams.p2wda) {
+            if (!interactionParams.from) {
+                throw new Error('From address not set in interaction parameters');
+            }
+
+            const p2wda = interactionParams.from.p2wda(this.#provider.network);
+            if (p2wda.address === interactionParams.refundTo) {
+                utxos.forEach((utxo) => {
+                    utxo.witnessScript = p2wda.witnessScript;
+                });
+            }
         }
 
         return utxos;
