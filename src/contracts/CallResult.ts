@@ -11,6 +11,7 @@ import {
     RawChallenge,
     TransactionFactory,
     UTXO,
+    SupportedTransactionVersion,
 } from '@btc-vision/transaction';
 import { ECPairInterface } from 'ecpair';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
@@ -40,6 +41,9 @@ export interface TransactionParameters {
     readonly note?: string | Buffer;
     readonly p2wda?: boolean;
     readonly from?: Address;
+
+    readonly txVersion?: SupportedTransactionVersion;
+    readonly anchor?: boolean;
 
     readonly dontIncludeAccessList?: boolean;
 }
@@ -239,6 +243,8 @@ export class CallResult<
                 challenge: challenge,
                 loadedStorage: storage,
                 note: interactionParams.note,
+                anchor: interactionParams.anchor || false,
+                txVersion: interactionParams.txVersion || 2,
             };
 
             const transaction = await factory.signInteraction(params);
