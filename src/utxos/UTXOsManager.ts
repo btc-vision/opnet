@@ -140,6 +140,7 @@ export class UTXOsManager {
      * @param {boolean} [options.optimize=true] - Whether to optimize the UTXOs
      * @param {boolean} [options.mergePendingUTXOs=true] - Merge locally pending UTXOs
      * @param {boolean} [options.filterSpentUTXOs=true] - Filter out known-spent UTXOs
+     * @param {bigint} [options.olderThan] - Only fetch UTXOs older than this value
      * @returns {Promise<UTXOs>} The UTXOs
      * @throws {Error} If something goes wrong
      */
@@ -212,6 +213,7 @@ export class UTXOsManager {
      * @param {boolean} [options.mergePendingUTXOs=true] Merge pending
      * @param {boolean} [options.filterSpentUTXOs=true] Filter out spent
      * @param {boolean} [options.throwErrors=false] Throw error if insufficient
+     * @param {bigint} [options.olderThan] Only fetch UTXOs older than this value
      * @returns {Promise<UTXOs>}
      */
     public async getUTXOsForAmount({
@@ -221,12 +223,14 @@ export class UTXOsManager {
         mergePendingUTXOs = true,
         filterSpentUTXOs = true,
         throwErrors = false,
+        olderThan = undefined,
     }: RequestUTXOsParamsWithAmount): Promise<UTXOs> {
         const combinedUTXOs = await this.getUTXOs({
             address,
             optimize,
             mergePendingUTXOs,
             filterSpentUTXOs,
+            olderThan,
         });
 
         const utxoUntilAmount: UTXOs = [];
