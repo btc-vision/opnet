@@ -9,9 +9,9 @@ import {
     LoadedStorage,
     NetEvent,
     RawChallenge,
+    SupportedTransactionVersion,
     TransactionFactory,
     UTXO,
-    SupportedTransactionVersion,
 } from '@btc-vision/transaction';
 import { ECPairInterface } from 'ecpair';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
