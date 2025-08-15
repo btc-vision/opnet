@@ -5,7 +5,7 @@ import { OP_20_ABI } from '../opnet/OP_20_ABI.js';
 
 export const MotoSwapPoolEvents: BitcoinInterfaceAbi = [
     {
-        name: 'Burned',
+        name: 'LiquidityRemoved',
         values: [
             {
                 name: 'sender',
@@ -24,7 +24,7 @@ export const MotoSwapPoolEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'Minted',
+        name: 'LiquidityAdded',
         values: [
             {
                 name: 'sender',

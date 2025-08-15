@@ -10,14 +10,14 @@ export type Reserves = {
 };
 
 // Events
-export type MotoswapBurnedEvent = {
+export type LiquidityRemovedEvent = {
     readonly sender: Address;
     readonly amount0: bigint;
     readonly amount1: bigint;
     readonly to: Address;
 };
 
-export type MotoswapMintedEvent = {
+export type LiquidityAddedEvent = {
     readonly sender: Address;
     readonly amount0: bigint;
     readonly amount1: bigint;
@@ -89,7 +89,7 @@ export interface IMotoswapPoolContract extends Omit<IOP20Contract, 'burn' | 'min
      */
     burn(
         to: Address,
-    ): Promise<CallResult<{ amount0: bigint; amount1: bigint }, [OPNetEvent<MotoswapBurnedEvent>]>>;
+    ): Promise<CallResult<{ amount0: bigint; amount1: bigint }, [OPNetEvent<LiquidityRemovedEvent>]>>;
 
     /**
      * Get block timestamp last
@@ -118,7 +118,7 @@ export interface IMotoswapPoolContract extends Omit<IOP20Contract, 'burn' | 'min
 
     MINIMUM_LIQUIDITY(): Promise<CallResult<{ MINIMUM_LIQUIDITY: bigint }>>;
 
-    mint(to: Address): Promise<CallResult<{ liquidity: bigint }, [OPNetEvent<MotoswapMintedEvent>]>>;
+    mint(to: Address): Promise<CallResult<{ liquidity: bigint }, [OPNetEvent<LiquidityAddedEvent>]>>;
 
     initialize(token0: Address, token1: Address): Promise<CallResult>;
 }

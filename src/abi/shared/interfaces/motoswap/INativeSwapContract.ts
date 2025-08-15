@@ -4,7 +4,7 @@ import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { TransferredEvent } from '../opnet/IOP20Contract.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
-export type LiquidityAddedEvent = {
+export type LiquidityAddedNativeEvent = {
     readonly totalTokensContributed: bigint;
     readonly virtualTokenExchanged: bigint;
     readonly totalSatoshisSpent: bigint;
@@ -15,7 +15,7 @@ export type LiquidityListedEvent = {
     readonly provider: string;
 };
 
-export type LiquidityRemovedEvent = {
+export type LiquidityRemovedNativeEvent = {
     readonly providerId: bigint;
     readonly btcOwed: bigint;
     readonly tokenAmount: bigint;
@@ -83,13 +83,13 @@ export type ReserveNativeSwap = CallResult<
 export type AddLiquidity = CallResult<
     {},
     OPNetEvent<
-        LiquidityAddedEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent
+        LiquidityAddedNativeEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent
     >[]
 >;
 
 export type RemoveLiquidity = CallResult<
     {},
-    OPNetEvent<LiquidityRemovedEvent | TransferredEvent | FulfilledProviderEvent>[]
+    OPNetEvent<LiquidityRemovedNativeEvent | TransferredEvent | FulfilledProviderEvent>[]
 >;
 
 export type ListLiquidity = CallResult<{}, OPNetEvent<LiquidityListedEvent>[]>;
@@ -101,7 +101,7 @@ export type CancelListing = CallResult<
 
 export type CreatePool = CallResult<
     {},
-    OPNetEvent<TransferredEvent | LiquidityAddedEvent>[]
+    OPNetEvent<TransferredEvent | LiquidityAddedNativeEvent>[]
 >;
 
 export type SetFees = CallResult;
