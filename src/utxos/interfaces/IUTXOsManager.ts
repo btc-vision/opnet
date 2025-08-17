@@ -31,6 +31,7 @@ export interface RequestUTXOsParams {
     readonly optimize?: boolean;
     readonly mergePendingUTXOs?: boolean;
     readonly filterSpentUTXOs?: boolean;
+    readonly olderThan?: bigint;
 }
 
 export interface RequestUTXOsParamsWithAmount extends RequestUTXOsParams {

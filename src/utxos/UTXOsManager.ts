@@ -140,6 +140,7 @@ export class UTXOsManager {
      * @param {boolean} [options.optimize=true] - Whether to optimize the UTXOs
      * @param {boolean} [options.mergePendingUTXOs=true] - Merge locally pending UTXOs
      * @param {boolean} [options.filterSpentUTXOs=true] - Filter out known-spent UTXOs
+     * @param {bigint} [options.olderThan] - Only fetch UTXOs older than this value
      * @returns {Promise<UTXOs>} The UTXOs
      * @throws {Error} If something goes wrong
      */
@@ -148,9 +149,10 @@ export class UTXOsManager {
         optimize = true,
         mergePendingUTXOs = true,
         filterSpentUTXOs = true,
+        olderThan = undefined,
     }: RequestUTXOsParams): Promise<UTXOs> {
         const addressData = this.getAddressData(address);
-        const fetchedData = await this.maybeFetchUTXOs(address, optimize);
+        const fetchedData = await this.maybeFetchUTXOs(address, optimize, olderThan);
 
         const utxoKey = (utxo: UTXO) => `${utxo.transactionId}:${utxo.outputIndex}`;
         const pendingUTXOKeys = new Set(addressData.pendingUTXOs.map(utxoKey));
@@ -211,6 +213,7 @@ export class UTXOsManager {
      * @param {boolean} [options.mergePendingUTXOs=true] Merge pending
      * @param {boolean} [options.filterSpentUTXOs=true] Filter out spent
      * @param {boolean} [options.throwErrors=false] Throw error if insufficient
+     * @param {bigint} [options.olderThan] Only fetch UTXOs older than this value
      * @returns {Promise<UTXOs>}
      */
     public async getUTXOsForAmount({
@@ -220,12 +223,14 @@ export class UTXOsManager {
         mergePendingUTXOs = true,
         filterSpentUTXOs = true,
         throwErrors = false,
+        olderThan = undefined,
     }: RequestUTXOsParamsWithAmount): Promise<UTXOs> {
         const combinedUTXOs = await this.getUTXOs({
             address,
             optimize,
             mergePendingUTXOs,
             filterSpentUTXOs,
+            olderThan,
         });
 
         const utxoUntilAmount: UTXOs = [];
@@ -268,7 +273,11 @@ export class UTXOsManager {
     /**
      * Checks if we need to fetch fresh UTXOs or can return the cached data (per address).
      */
-    private async maybeFetchUTXOs(address: string, optimize: boolean): Promise<IUTXOsData> {
+    private async maybeFetchUTXOs(
+        address: string,
+        optimize: boolean,
+        olderThan: bigint | undefined,
+    ): Promise<IUTXOsData> {
         const addressData = this.getAddressData(address);
         const now = Date.now();
         const age = now - addressData.lastFetchTimestamp;
@@ -284,7 +293,7 @@ export class UTXOsManager {
         }
 
         // Otherwise, fetch from the RPC
-        addressData.lastFetchedData = await this.fetchUTXOs(address, optimize);
+        addressData.lastFetchedData = await this.fetchUTXOs(address, optimize, olderThan);
         addressData.lastFetchTimestamp = now;
 
         // Remove any pending UTXOs that have become confirmed or known spent
@@ -296,10 +305,19 @@ export class UTXOsManager {
     /**
      * Generic method to fetch all UTXOs in one call (confirmed, pending, spent) for a given address.
      */
-    private async fetchUTXOs(address: string, optimize: boolean = false): Promise<IUTXOsData> {
+    private async fetchUTXOs(
+        address: string,
+        optimize: boolean = false,
+        olderThan: bigint | undefined,
+    ): Promise<IUTXOsData> {
+        const data: [string, boolean?, string?] = [address, optimize];
+        if (olderThan !== undefined) {
+            data.push(olderThan.toString());
+        }
+
         const payload: JsonRpcPayload = this.provider.buildJsonRpcPayload(
             JSONRpcMethods.GET_UTXOS,
-            [address, optimize],
+            data,
         );
 
         const rawUTXOs: JsonRpcResult = await this.provider.callPayloadSingle(payload);
