@@ -304,14 +304,16 @@ export abstract class AbstractRpcProvider {
 
     /**
      * Get the bitcoin balance of an address.
-     * @param {string} addressLike The address to get the balance of
+     * @param {string} address The address to get the balance of
      * @param {boolean} filterOrdinals Whether to filter ordinals or not
      * @description This method is used to get the balance of a bitcoin address.
      * @returns {Promise<bigint>} The balance of the address
      * @example await getBalance('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq');
      */
-    public async getBalance(addressLike: string, filterOrdinals: boolean = true): Promise<bigint> {
-        const address: string = addressLike.toString();
+    public async getBalance(
+        address: string | Address,
+        filterOrdinals: boolean = true,
+    ): Promise<bigint> {
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_BALANCE, [
             address,
             filterOrdinals,
