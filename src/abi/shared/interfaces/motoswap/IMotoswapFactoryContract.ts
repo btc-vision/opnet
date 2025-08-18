@@ -35,9 +35,7 @@ export interface IMotoswapFactoryContract extends IOP_NETContract {
         token1: Address,
     ): Promise<CallResult<{ address: Address }, [OPNetEvent<PoolCreatedEvent>]>>;
 
-    setStakingContractAddress(
-        stakingContractAddress: Address,
-    ): Promise<CallResult>;
+    setStakingContractAddress(stakingContractAddress: Address): Promise<CallResult>;
 
     getStakingContractAddress(): Promise<CallResult<{ stakingContractAddress: Address }>>;
 }

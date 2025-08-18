@@ -83,7 +83,10 @@ export type ReserveNativeSwap = CallResult<
 export type AddLiquidity = CallResult<
     {},
     OPNetEvent<
-        LiquidityAddedNativeEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent
+        | LiquidityAddedNativeEvent
+        | TransferredEvent
+        | ActivateProviderEvent
+        | FulfilledProviderEvent
     >[]
 >;
 
@@ -99,10 +102,7 @@ export type CancelListing = CallResult<
     OPNetEvent<ListingCanceledEvent | TransferredEvent | FulfilledProviderEvent>[]
 >;
 
-export type CreatePool = CallResult<
-    {},
-    OPNetEvent<TransferredEvent | LiquidityAddedNativeEvent>[]
->;
+export type CreatePool = CallResult<{}, OPNetEvent<TransferredEvent | LiquidityAddedNativeEvent>[]>;
 
 export type SetFees = CallResult;
 
@@ -110,7 +110,9 @@ export type GetFees = CallResult<{ reservationBaseFee: bigint; priorityQueueBase
 
 export type Swap = CallResult<
     {},
-    OPNetEvent<SwapExecutedEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent>[]
+    OPNetEvent<
+        SwapExecutedEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent
+    >[]
 >;
 
 export type GetReserve = CallResult<
@@ -358,9 +360,7 @@ export interface INativeSwapContract extends IOP_NETContract {
     /**
      * @description Set the address of the staking contract.
      */
-    setStakingContractAddress(
-        stakingContractAddress: Address,
-    ): Promise<CallResult>;
+    setStakingContractAddress(stakingContractAddress: Address): Promise<CallResult>;
 
     /**
      * @description Retrieves the address of the staking contract.

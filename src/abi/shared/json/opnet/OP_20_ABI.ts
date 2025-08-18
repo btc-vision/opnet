@@ -307,6 +307,10 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT8,
             },
             {
+                name: 'totalSupply',
+                type: ABIDataTypes.UINT256,
+            },
+            {
                 name: 'maximumSupply',
                 type: ABIDataTypes.UINT256,
             },
@@ -316,11 +320,7 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
             },
             {
                 name: 'domainSeparator',
-                type: ABIDataTypes.BYTES32,
-            },
-            {
-                name: 'nonce',
-                type: ABIDataTypes.UINT256,
+                type: ABIDataTypes.BYTES,
             },
         ],
         type: BitcoinAbiTypes.Function,

@@ -39,10 +39,10 @@ export type TokenMetadata = CallResult<
         name: string;
         symbol: string;
         decimals: number;
+        totalSupply: bigint;
         maximumSupply: bigint;
         icon: string;
         domainSeparator: Uint8Array;
-        nonce: bigint;
     },
     []
 >;
