@@ -409,10 +409,6 @@ export class CallResult<
             throw new Error('No UTXOs found');
         }
 
-        if (!interactionParams.signer) {
-            throw new Error('Signer not set in interaction parameters');
-        }
-
         if (interactionParams.p2wda) {
             if (!interactionParams.from) {
                 throw new Error('From address not set in interaction parameters');
