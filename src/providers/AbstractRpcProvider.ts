@@ -21,20 +21,12 @@ import { TransactionOutputFlags } from '../contracts/enums/TransactionFlags.js';
 import { IAccessList } from '../contracts/interfaces/IAccessList.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
-import {
-    ParsedSimulatedTransaction,
-    SimulatedTransaction,
-} from '../contracts/interfaces/SimulatedTransaction.js';
+import { ParsedSimulatedTransaction, SimulatedTransaction, } from '../contracts/interfaces/SimulatedTransaction.js';
 import { Epoch } from '../epoch/Epoch.js';
 import { EpochWithSubmissions } from '../epoch/EpochSubmission.js';
 import { EpochTemplate } from '../epoch/EpochTemplate.js';
 import { EpochSubmissionParams } from '../epoch/interfaces/EpochSubmissionParams.js';
-import {
-    RawEpoch,
-    RawEpochTemplate,
-    RawEpochWithSubmissions,
-    RawSubmittedEpoch,
-} from '../epoch/interfaces/IEpoch.js';
+import { RawEpoch, RawEpochTemplate, RawEpochWithSubmissions, RawSubmittedEpoch, } from '../epoch/interfaces/IEpoch.js';
 import { SubmittedEpoch } from '../epoch/SubmittedEpoch.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
@@ -91,15 +83,13 @@ export abstract class AbstractRpcProvider {
     /**
      * Get the public key information.
      * @description This method is used to get the public key information.
-     * @param {string} address The address or addresses to get the public key information of
+     * @param {string | Address} addressRaw The address or addresses to get the public key information of
      * @returns {Promise<Address>} The public keys information
      * @example await getPublicKeyInfo('bcrt1qfqsr3m7vjxheghcvw4ks0fryqxfq8qzjf8fxes');
      * @throws {Error} If the address is invalid
      */
-    public async getPublicKeyInfo(address: string): Promise<Address> {
-        if (!address) {
-            throw new Error('Address is required');
-        }
+    public async getPublicKeyInfo(addressRaw: string | Address): Promise<Address> {
+        const address = addressRaw.toString();
 
         try {
             const pubKeyInfo = await this.getPublicKeysInfo(address);
