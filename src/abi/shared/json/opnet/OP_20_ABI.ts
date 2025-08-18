@@ -215,6 +215,17 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
     },
     {
+        name: 'icon',
+        constant: true,
+        outputs: [
+            {
+                name: 'icon',
+                type: ABIDataTypes.STRING,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
         name: 'name',
         constant: true,
         outputs: [
@@ -272,6 +283,41 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
         constant: true,
         inputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
         outputs: [
+            {
+                name: 'nonce',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
+        name: 'metadata',
+        constant: true,
+        outputs: [
+            {
+                name: 'name',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'symbol',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'decimals',
+                type: ABIDataTypes.UINT8,
+            },
+            {
+                name: 'maximumSupply',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'icon',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'domainSeparator',
+                type: ABIDataTypes.BYTES32,
+            },
             {
                 name: 'nonce',
                 type: ABIDataTypes.UINT256,

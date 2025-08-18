@@ -31,8 +31,21 @@ export type SymbolOf = CallResult<{ symbol: string }, []>;
 export type TotalSupply = CallResult<{ totalSupply: bigint }, []>;
 export type MaxSupply = CallResult<{ maximumSupply: bigint }, []>;
 export type Decimals = CallResult<{ decimals: number }, []>;
+export type TokenIcon = CallResult<{ icon: string }, []>;
 export type DomainSeparator = CallResult<{ domainSeparator: Uint8Array }, []>;
 export type NonceOf = CallResult<{ nonce: bigint }, []>;
+export type TokenMetadata = CallResult<
+    {
+        name: string;
+        symbol: string;
+        decimals: number;
+        maximumSupply: bigint;
+        icon: string;
+        domainSeparator: Uint8Array;
+        nonce: bigint;
+    },
+    []
+>;
 
 export type SafeTransfer = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
 export type SafeTransferFrom = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
@@ -96,13 +109,22 @@ export interface IOP20Contract extends IOP_NETContract {
 
     decimals(): Promise<Decimals>;
 
+    icon(): Promise<TokenIcon>;
+
     safeTransfer(to: Address, amount: bigint, data: Uint8Array): Promise<SafeTransfer>;
 
-    safeTransferFrom(from: Address, to: Address, amount: bigint, data: Uint8Array): Promise<SafeTransferFrom>;
+    safeTransferFrom(
+        from: Address,
+        to: Address,
+        amount: bigint,
+        data: Uint8Array,
+    ): Promise<SafeTransferFrom>;
 
     increaseAllowance(spender: Address, amount: bigint): Promise<IncreaseAllowance>;
 
     decreaseAllowance(spender: Address, amount: bigint): Promise<DecreaseAllowance>;
+
+    metadata(): Promise<TokenMetadata>;
 
     increaseAllowanceBySignature(
         owner: Address,
