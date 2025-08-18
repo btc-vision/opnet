@@ -370,7 +370,7 @@ export class CallResult<
                 miningCost +
                 interactionParams.maximumAllowedSatToSpend;
 
-            const have = utxos.reduce((s, u) => s + BigInt(u.value), 0n);
+            const have = utxos.reduce((s, u) => s + u.value, 0n);
             if (have >= want) break;
 
             if (refetched) {
@@ -380,7 +380,7 @@ export class CallResult<
             utxos = await this.#fetchUTXOs(want, interactionParams);
             refetched = true;
 
-            const haveAfter = utxos.reduce((s, u) => s + BigInt(u.value), 0n);
+            const haveAfter = utxos.reduce((s, u) => s + u.value, 0n);
             if (haveAfter === have) {
                 throw new Error('Not enough sat to complete transaction');
             }
@@ -407,10 +407,6 @@ export class CallResult<
         const utxos: UTXO[] = await this.#provider.utxoManager.getUTXOsForAmount(utxoSetting);
         if (!utxos) {
             throw new Error('No UTXOs found');
-        }
-
-        if (!interactionParams.signer) {
-            throw new Error('Signer not set in interaction parameters');
         }
 
         if (interactionParams.p2wda) {

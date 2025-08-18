@@ -44,23 +44,13 @@ export const STAKING_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'unstake',
         inputs: [],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {
@@ -98,12 +88,7 @@ export const STAKING_ABI: BitcoinInterfaceAbi = [
     {
         name: 'claim',
         inputs: [],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {

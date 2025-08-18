@@ -90,7 +90,7 @@ export interface IMotoswapRouterContract extends IOP_NETContract {
         path: Address[],
         to: Address,
         deadline: bigint,
-    ): Promise<CallResult<{ success: boolean }>>;
+    ): Promise<CallResult>;
 
     /**
      * @description Get the factory address.

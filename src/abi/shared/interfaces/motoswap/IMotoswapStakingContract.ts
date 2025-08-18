@@ -1,6 +1,6 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
-import { BalanceOf, TotalSupply } from '../opnet/IOP_20Contract.js';
+import { BalanceOf, TotalSupply } from '../opnet/IOP20Contract.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
 export type Status = CallResult<{ status: bigint }>;
@@ -24,9 +24,7 @@ export type Admin = CallResult<{
     adminAddress: Address;
 }>;
 
-export type ChangeAdmin = CallResult<{
-    success: boolean;
-}>;
+export type ChangeAdmin = CallResult;
 
 /**
  * @description This interface represents the OwnableReentrancyGuard contract.
@@ -82,37 +80,21 @@ export type EnabledRewardTokens = CallResult<{
     enabledRewardTokens: Address[];
 }>;
 
-export type Stake = CallResult<{
-    success: boolean;
-}>;
+export type Stake = CallResult;
 
-export type Unstake = CallResult<{
-    success: boolean;
-}>;
+export type Unstake = CallResult;
 
-export type ClaimRewards = CallResult<{
-    success: boolean;
-}>;
+export type ClaimRewards = CallResult;
 
-export type AdminAddRewardToken = CallResult<{
-    success: boolean;
-}>;
+export type AdminAddRewardToken = CallResult;
 
-export type AdminRemoveRewardToken = CallResult<{
-    success: boolean;
-}>;
+export type AdminRemoveRewardToken = CallResult;
 
-export type AdminChangeMotoAddress = CallResult<{
-    success: boolean;
-}>;
+export type AdminChangeMotoAddress = CallResult;
 
-export type AdminChangeLockupParameters = CallResult<{
-    success: boolean;
-}>;
+export type AdminChangeLockupParameters = CallResult;
 
-export type AdminEnableEmergencyWithdrawals = CallResult<{
-    success: boolean;
-}>;
+export type AdminEnableEmergencyWithdrawals = CallResult;
 
 // EVENTS
 export type RewardTokenAddedEvent = {

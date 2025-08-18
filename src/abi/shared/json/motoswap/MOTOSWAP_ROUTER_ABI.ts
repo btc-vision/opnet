@@ -245,12 +245,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT64,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 

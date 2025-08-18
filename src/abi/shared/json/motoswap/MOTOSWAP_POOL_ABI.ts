@@ -5,7 +5,26 @@ import { OP_20_ABI } from '../opnet/OP_20_ABI.js';
 
 export const MotoSwapPoolEvents: BitcoinInterfaceAbi = [
     {
-        name: 'PoolBurn',
+        name: 'LiquidityRemoved',
+        values: [
+            {
+                name: 'sender',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount0',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'amount1',
+                type: ABIDataTypes.UINT256,
+            },
+            { name: 'to', type: ABIDataTypes.ADDRESS },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'LiquidityAdded',
         values: [
             {
                 name: 'sender',
@@ -23,25 +42,7 @@ export const MotoSwapPoolEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'PoolMint',
-        values: [
-            {
-                name: 'sender',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount0',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'amount1',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
-        name: 'Swap',
+        name: 'Swapped',
         values: [
             {
                 name: 'sender',
@@ -71,7 +72,7 @@ export const MotoSwapPoolEvents: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'Sync',
+        name: 'Synced',
         values: [
             {
                 name: 'reserve0',
@@ -99,12 +100,7 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -128,24 +124,14 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.BYTES,
             },
         ],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
     {
         name: 'skim',
         inputs: [],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
 
@@ -243,12 +229,7 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
     {
         name: 'sync',
         inputs: [],
-        outputs: [
-            {
-                name: 'success',
-                type: ABIDataTypes.BOOL,
-            },
-        ],
+        outputs: [],
         type: BitcoinAbiTypes.Function,
     },
     {

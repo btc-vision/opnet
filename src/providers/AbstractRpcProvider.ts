@@ -91,12 +91,14 @@ export abstract class AbstractRpcProvider {
     /**
      * Get the public key information.
      * @description This method is used to get the public key information.
-     * @param {string} address The address or addresses to get the public key information of
+     * @param {string | Address} addressRaw The address or addresses to get the public key information of
      * @returns {Promise<Address>} The public keys information
      * @example await getPublicKeyInfo('bcrt1qfqsr3m7vjxheghcvw4ks0fryqxfq8qzjf8fxes');
      * @throws {Error} If the address is invalid
      */
-    public async getPublicKeyInfo(address: string): Promise<Address> {
+    public async getPublicKeyInfo(addressRaw: string | Address): Promise<Address> {
+        const address = addressRaw.toString();
+
         try {
             const pubKeyInfo = await this.getPublicKeysInfo(address);
 
@@ -304,14 +306,16 @@ export abstract class AbstractRpcProvider {
 
     /**
      * Get the bitcoin balance of an address.
-     * @param {string} addressLike The address to get the balance of
+     * @param {string} address The address to get the balance of
      * @param {boolean} filterOrdinals Whether to filter ordinals or not
      * @description This method is used to get the balance of a bitcoin address.
      * @returns {Promise<bigint>} The balance of the address
      * @example await getBalance('bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq');
      */
-    public async getBalance(addressLike: string, filterOrdinals: boolean = true): Promise<bigint> {
-        const address: string = addressLike.toString();
+    public async getBalance(
+        address: string | Address,
+        filterOrdinals: boolean = true,
+    ): Promise<bigint> {
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_BALANCE, [
             address,
             filterOrdinals,

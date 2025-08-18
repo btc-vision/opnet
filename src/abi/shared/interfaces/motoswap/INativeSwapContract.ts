@@ -1,10 +1,10 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
-import { TransferEvent } from '../opnet/IOP_20Contract.js';
+import { TransferredEvent } from '../opnet/IOP20Contract.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
-export type LiquidityAddedEvent = {
+export type LiquidityAddedNativeEvent = {
     readonly totalTokensContributed: bigint;
     readonly virtualTokenExchanged: bigint;
     readonly totalSatoshisSpent: bigint;
@@ -15,7 +15,7 @@ export type LiquidityListedEvent = {
     readonly provider: string;
 };
 
-export type LiquidityRemovedEvent = {
+export type LiquidityRemovedNativeEvent = {
     readonly providerId: bigint;
     readonly btcOwed: bigint;
     readonly tokenAmount: bigint;
@@ -74,43 +74,43 @@ export type FulfilledProviderEvent = {
  * ------------------------------------------------------------------ */
 
 export type ReserveNativeSwap = CallResult<
-    { ok: boolean },
+    {},
     OPNetEvent<
-        LiquidityReservedEvent | ReservationCreatedEvent | TransferEvent | FulfilledProviderEvent
+        LiquidityReservedEvent | ReservationCreatedEvent | TransferredEvent | FulfilledProviderEvent
     >[]
 >;
 
 export type AddLiquidity = CallResult<
-    { ok: boolean },
+    {},
     OPNetEvent<
-        LiquidityAddedEvent | TransferEvent | ActivateProviderEvent | FulfilledProviderEvent
+        LiquidityAddedNativeEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent
     >[]
 >;
 
 export type RemoveLiquidity = CallResult<
-    { ok: boolean },
-    OPNetEvent<LiquidityRemovedEvent | TransferEvent | FulfilledProviderEvent>[]
+    {},
+    OPNetEvent<LiquidityRemovedNativeEvent | TransferredEvent | FulfilledProviderEvent>[]
 >;
 
-export type ListLiquidity = CallResult<{ ok: boolean }, OPNetEvent<LiquidityListedEvent>[]>;
+export type ListLiquidity = CallResult<{}, OPNetEvent<LiquidityListedEvent>[]>;
 
 export type CancelListing = CallResult<
-    { ok: boolean },
-    OPNetEvent<ListingCanceledEvent | TransferEvent | FulfilledProviderEvent>[]
+    {},
+    OPNetEvent<ListingCanceledEvent | TransferredEvent | FulfilledProviderEvent>[]
 >;
 
 export type CreatePool = CallResult<
-    { ok: boolean },
-    OPNetEvent<TransferEvent | LiquidityAddedEvent>[]
+    {},
+    OPNetEvent<TransferredEvent | LiquidityAddedNativeEvent>[]
 >;
 
-export type SetFees = CallResult<{ ok: boolean }, []>;
+export type SetFees = CallResult;
 
 export type GetFees = CallResult<{ reservationBaseFee: bigint; priorityQueueBaseFee: bigint }, []>;
 
 export type Swap = CallResult<
-    { ok: boolean },
-    OPNetEvent<SwapExecutedEvent | TransferEvent | ActivateProviderEvent | FulfilledProviderEvent>[]
+    {},
+    OPNetEvent<SwapExecutedEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent>[]
 >;
 
 export type GetReserve = CallResult<
@@ -360,7 +360,7 @@ export interface INativeSwapContract extends IOP_NETContract {
      */
     setStakingContractAddress(
         stakingContractAddress: Address,
-    ): Promise<CallResult<{ ok: boolean }, []>>;
+    ): Promise<CallResult>;
 
     /**
      * @description Retrieves the address of the staking contract.
