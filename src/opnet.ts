@@ -106,6 +106,7 @@ export * from './abi/shared/json/motoswap/NATIVE_SWAP_ABI.js';
 export * from './abi/shared/json/opnet/OP_20_ABI.js';
 export * from './abi/shared/json/opnet/OP_NET_ABI.js';
 export * from './abi/shared/json/motoswap/MOTOSWAP_STAKING_ABI.js';
+export * from './abi/shared/json/opnet/OP_721_ABI.js';
 
 /** ABI Interfaces */
 export * from './abi/shared/interfaces/generic/IStackingContract.js';
@@ -118,5 +119,7 @@ export * from './abi/shared/interfaces/motoswap/INativeSwapContract.js';
 export * from './abi/shared/interfaces/opnet/IOP20Contract.js';
 export * from './abi/shared/interfaces/opnet/IOP_NETContract.js';
 export * from './abi/shared/interfaces/motoswap/IMotoswapStakingContract.js';
+export * from './abi/shared/interfaces/opnet/IOP721Contract.js';
+export * from './abi/shared/interfaces/opnet/IExtendedOP721Contract.js';
 
 export * from './contracts/enums/TransactionFlags.js';

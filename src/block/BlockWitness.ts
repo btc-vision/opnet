@@ -1,11 +1,6 @@
 import { Address } from '@btc-vision/transaction';
-import { stringToBuffer } from '../utils/StringToBuffer.js';
-import {
-    BlockWitnesses,
-    IBlockWitness,
-    IBlockWitnessAPI,
-    RawBlockWitnessAPI,
-} from './interfaces/IBlockWitness.js';
+import { stringBase64ToBuffer } from '../utils/StringToBuffer.js';
+import { BlockWitnesses, IBlockWitness, IBlockWitnessAPI, RawBlockWitnessAPI, } from './interfaces/IBlockWitness.js';
 
 export class BlockWitnessAPI implements IBlockWitnessAPI {
     public readonly trusted: boolean;
@@ -17,21 +12,23 @@ export class BlockWitnessAPI implements IBlockWitnessAPI {
 
     constructor(data: RawBlockWitnessAPI) {
         this.trusted = data.trusted;
-        this.signature = stringToBuffer(data.signature);
+        this.signature = stringBase64ToBuffer(data.signature);
         this.timestamp = data.timestamp;
-        this.proofs = Object.freeze(data.proofs.map((proof) => stringToBuffer(proof)));
-        this.identity = data.identity ? stringToBuffer(data.identity) : undefined;
+        this.proofs = Object.freeze(data.proofs.map((proof) => stringBase64ToBuffer(proof)));
+        this.identity = data.identity ? stringBase64ToBuffer(data.identity) : undefined;
         this.publicKey = data.publicKey ? Address.fromString(data.publicKey) : undefined;
     }
 }
 
 export class BlockWitness implements IBlockWitness {
     public blockNumber: bigint;
+
     public readonly witnesses: readonly BlockWitnessAPI[];
 
     constructor(data: { blockNumber: string | bigint; witnesses: RawBlockWitnessAPI[] }) {
         this.blockNumber =
             typeof data.blockNumber === 'string' ? BigInt(data.blockNumber) : data.blockNumber;
+
         this.witnesses = Object.freeze(
             data.witnesses.map((witness) => new BlockWitnessAPI(witness)),
         );

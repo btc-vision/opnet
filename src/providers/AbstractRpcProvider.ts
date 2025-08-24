@@ -705,7 +705,6 @@ export abstract class AbstractRpcProvider {
         );
 
         const rawWitnesses: JsonRpcResult = await this.callPayloadSingle(payload);
-
         if ('error' in rawWitnesses) {
             throw new Error(
                 `Error fetching block witnesses: ${rawWitnesses.error?.message || 'Unknown error'}`,
