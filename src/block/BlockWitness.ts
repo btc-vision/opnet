@@ -1,6 +1,11 @@
 import { Address } from '@btc-vision/transaction';
 import { stringBase64ToBuffer } from '../utils/StringToBuffer.js';
-import { BlockWitnesses, IBlockWitness, IBlockWitnessAPI, RawBlockWitnessAPI, } from './interfaces/IBlockWitness.js';
+import {
+    BlockWitnesses,
+    IBlockWitness,
+    IBlockWitnessAPI,
+    RawBlockWitnessAPI,
+} from './interfaces/IBlockWitness.js';
 
 export class BlockWitnessAPI implements IBlockWitnessAPI {
     public readonly trusted: boolean;

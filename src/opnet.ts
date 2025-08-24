@@ -39,6 +39,7 @@ export * from './epoch/interfaces/EpochSubmissionParams.js';
 export * from './epoch/EpochSubmission.js';
 export * from './epoch/EpochTemplate.js';
 export * from './epoch/SubmittedEpoch.js';
+export * from './epoch/EpochDifficultyConverter.js';
 
 /** UTXOs */
 export * from './utxos/interfaces/IUTXOsManager.js';
