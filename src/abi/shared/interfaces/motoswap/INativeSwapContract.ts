@@ -4,21 +4,44 @@ import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { TransferredEvent } from '../opnet/IOP20Contract.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
-export type LiquidityAddedNativeEvent = {
-    readonly totalTokensContributed: bigint;
-    readonly virtualTokenExchanged: bigint;
-    readonly totalSatoshisSpent: bigint;
-};
-
 export type LiquidityListedEvent = {
     readonly totalLiquidity: bigint;
     readonly provider: string;
 };
 
-export type LiquidityRemovedNativeEvent = {
+export type LiquidityReservedEvent = {
+    readonly depositAddress: string;
+    readonly satoshisAmount: bigint;
     readonly providerId: bigint;
-    readonly btcOwed: bigint;
     readonly tokenAmount: bigint;
+};
+
+export type ListingCanceledEvent = {
+    readonly amount: bigint;
+    readonly penalty: bigint;
+};
+
+export type ProviderActivatedEvent = {
+    readonly providerId: bigint;
+    readonly listingAmount: bigint;
+    readonly btcToRemove: bigint;
+};
+
+export type ProviderConsumedEvent = {
+    readonly providerId: bigint;
+    readonly amountUsed: bigint;
+};
+
+export type ProviderFulfilledEvent = {
+    readonly providerId: bigint;
+    readonly canceled: boolean;
+    readonly removalCompleted: boolean;
+    readonly stakedAmount: bigint;
+};
+
+export type ReservationFallbackEvent = {
+    readonly reservationId: bigint;
+    readonly expirationBlock: bigint;
 };
 
 export type ReservationCreatedEvent = {
@@ -32,41 +55,21 @@ export type ReservationPurgedEvent = {
     readonly purgingBlock: bigint;
     readonly purgeIndex: number;
     readonly providerCount: number;
-};
-
-export type ReservationPurgingEvent = {
-    readonly reservationId: bigint;
-    readonly purgeIndex: number;
-    readonly purgeQueueLength: number;
+    readonly purgedAmount: bigint;
 };
 
 export type SwapExecutedEvent = {
     readonly buyer: Address;
     readonly amountIn: bigint;
     readonly amountOut: bigint;
+    readonly totalFees: bigint;
 };
 
-export type LiquidityReservedEvent = {
-    readonly depositAddress: string;
+export type WithdrawListingEvent = {
     readonly amount: bigint;
+    readonly tokenAddress: Address;
     readonly providerId: bigint;
-};
-
-export type ListingCanceledEvent = {
-    readonly amount: bigint;
-    readonly penalty: bigint;
-};
-
-export type ActivateProviderEvent = {
-    readonly providerId: bigint;
-    readonly listingAmount: bigint;
-    readonly btcToRemove: bigint;
-};
-
-export type FulfilledProviderEvent = {
-    readonly providerId: bigint;
-    readonly canceled: boolean;
-    readonly removalCompleted: boolean;
+    readonly sender: Address;
 };
 
 /* ------------------------------------------------------------------
@@ -76,42 +79,52 @@ export type FulfilledProviderEvent = {
 export type ReserveNativeSwap = CallResult<
     {},
     OPNetEvent<
-        LiquidityReservedEvent | ReservationCreatedEvent | TransferredEvent | FulfilledProviderEvent
-    >[]
->;
-
-export type AddLiquidity = CallResult<
-    {},
-    OPNetEvent<
-        | LiquidityAddedNativeEvent
+        | LiquidityReservedEvent
+        | ReservationCreatedEvent
         | TransferredEvent
-        | ActivateProviderEvent
-        | FulfilledProviderEvent
+        | ProviderFulfilledEvent
+        | ReservationPurgedEvent
     >[]
 >;
 
-export type RemoveLiquidity = CallResult<
-    {},
-    OPNetEvent<LiquidityRemovedNativeEvent | TransferredEvent | FulfilledProviderEvent>[]
->;
-
-export type ListLiquidity = CallResult<{}, OPNetEvent<LiquidityListedEvent>[]>;
+export type ListLiquidity = CallResult<{}, OPNetEvent<LiquidityListedEvent | TransferredEvent>[]>;
 
 export type CancelListing = CallResult<
     {},
-    OPNetEvent<ListingCanceledEvent | TransferredEvent | FulfilledProviderEvent>[]
+    OPNetEvent<ListingCanceledEvent | TransferredEvent | ReservationPurgedEvent>[]
 >;
 
-export type CreatePool = CallResult<{}, OPNetEvent<TransferredEvent | LiquidityAddedNativeEvent>[]>;
+export type WithdrawListing = CallResult<{}, OPNetEvent<WithdrawListingEvent | TransferredEvent>[]>;
+
+export type CreatePool = CallResult<{}, OPNetEvent<TransferredEvent | ReservationPurgedEvent>[]>;
 
 export type SetFees = CallResult;
+
+export type SetStakingContractAddress = CallResult;
+
+export type SetFeesAddress = CallResult;
+
+export type Pause = CallResult;
+
+export type Unpause = CallResult;
+
+export type ActivateWithdrawMode = CallResult;
+
+export type IsPaused = CallResult<{ paused: boolean }, []>;
+
+export type IsWithdrawModeActive = CallResult<{ active: boolean }, []>;
 
 export type GetFees = CallResult<{ reservationBaseFee: bigint; priorityQueueBaseFee: bigint }, []>;
 
 export type Swap = CallResult<
     {},
     OPNetEvent<
-        SwapExecutedEvent | TransferredEvent | ActivateProviderEvent | FulfilledProviderEvent
+        | SwapExecutedEvent
+        | TransferredEvent
+        | ProviderActivatedEvent
+        | ProviderFulfilledEvent
+        | ProviderConsumedEvent
+        | ReservationFallbackEvent
     >[]
 >;
 
@@ -140,7 +153,6 @@ export type GetProviderDetails = CallResult<
         id: bigint;
         liquidity: bigint;
         reserved: bigint;
-        lpShares: bigint;
         btcReceiver: string;
         indexedAt: number;
         isPriority: boolean;
@@ -148,6 +160,24 @@ export type GetProviderDetails = CallResult<
         isActive: boolean;
         lastListedTokensAtBlock: bigint;
         isPurged: boolean;
+        isLiquidityProvisionAllowed: boolean;
+    },
+    []
+>;
+
+export type GetProviderDetailsById = CallResult<
+    {
+        id: bigint;
+        liquidity: bigint;
+        reserved: bigint;
+        btcReceiver: string;
+        indexedAt: number;
+        isPriority: boolean;
+        purgeIndex: number;
+        isActive: boolean;
+        lastListedTokensAtBlock: bigint;
+        isPurged: boolean;
+        isLiquidityProvisionAllowed: boolean;
     },
     []
 >;
@@ -164,9 +194,11 @@ export type AntiBotSettings = CallResult<
 
 export type StakingAddressResult = CallResult<{ stakingAddress: Address }, []>;
 
+export type FeesAddressResult = CallResult<{ feesAddress: string }, []>;
+
 export type QueueDetails = CallResult<
     {
-        lastPurgedBlock: number;
+        lastPurgedBlock: bigint;
         blockWithReservationsLength: number;
         removalQueueLength: number;
         removalQueueStartingIndex: number;
@@ -181,6 +213,8 @@ export type QueueDetails = CallResult<
     []
 >;
 
+export type OnOP20ReceivedResult = CallResult<{ selector: Buffer }, []>;
+
 /**
  * @description This interface represents the NativeSwap contract,
  * including all new/updated methods and type definitions.
@@ -191,12 +225,12 @@ export type QueueDetails = CallResult<
  */
 export interface INativeSwapContract extends IOP_NETContract {
     /**
-     * @description Reserves a certain amount of tokens, possibly for LP.
+     * @description Reserves a certain amount of tokens.
      * @param token - The address of the token to reserve.
-     * @param maximumAmountIn - The maximum amount of tokens to reserve.
+     * @param maximumAmountIn - The maximum amount of satoshis to spend.
      * @param minimumAmountOut - The minimum amount of tokens expected out.
-     * @param forLP - Whether this reservation is for LP or not.
-     * @param activationDelay - Number of blocks before activation (if used).
+     * @param forLP - Whether this reservation is for LP or not (deprecated/unused).
+     * @param activationDelay - Number of blocks before activation.
      * @returns {Promise<ReserveNativeSwap>}
      */
     reserve(
@@ -208,33 +242,43 @@ export interface INativeSwapContract extends IOP_NETContract {
     ): Promise<ReserveNativeSwap>;
 
     /**
-     * @description Lists liquidity for sale (new).
+     * @description Lists liquidity for sale.
      * @param token - The address of the token to list.
-     * @param receiver - The Bitcoin address for receiving payments.
+     * @param receiver - The 33 bytes public key for receiving payments (bytes).
+     * @param receiverStr - The Bitcoin address as a string.
      * @param amountIn - The amount of tokens to list for sale.
      * @param priority - Whether to place this listing in the priority queue.
      * @returns {Promise<ListLiquidity>}
      */
     listLiquidity(
         token: Address,
-        receiver: string,
+        receiver: Buffer,
+        receiverStr: string,
         amountIn: bigint,
         priority: boolean,
     ): Promise<ListLiquidity>;
 
     /**
-     * @description Cancels a previously listed liquidity position (new).
+     * @description Cancels a previously listed liquidity position.
      * @param token - The address of the token to remove from the listing.
      * @returns {Promise<CancelListing>}
      */
     cancelListing(token: Address): Promise<CancelListing>;
 
     /**
-     * @description Creates a new liquidity pool (new).
+     * @description Withdraws listing when in withdraw mode.
+     * @param token - The address of the token to withdraw.
+     * @returns {Promise<WithdrawListing>}
+     */
+    withdrawListing(token: Address): Promise<WithdrawListing>;
+
+    /**
+     * @description Creates a new liquidity pool.
      * @param token - The token address.
      * @param floorPrice - The floor price to set.
      * @param initialLiquidity - The amount of liquidity to seed.
-     * @param receiver - The Bitcoin address for receiving payments.
+     * @param receiver - The 33 bytes public key for receiving payments (bytes).
+     * @param receiverStr - The Bitcoin address as a string.
      * @param antiBotEnabledFor - Number of blocks for anti-bot protection.
      * @param antiBotMaximumTokensPerReservation - Anti-bot max tokens per user.
      * @param maxReservesIn5BlocksPercent - Cap on reserves in a short window.
@@ -244,42 +288,15 @@ export interface INativeSwapContract extends IOP_NETContract {
         token: Address,
         floorPrice: bigint,
         initialLiquidity: bigint,
-        receiver: string,
+        receiver: Buffer,
+        receiverStr: string,
         antiBotEnabledFor: number,
         antiBotMaximumTokensPerReservation: bigint,
         maxReservesIn5BlocksPercent: number,
     ): Promise<CreatePool>;
 
     /**
-     * @description Creates a new liquidity pool with an approval signature (new).
-     * @param signature - Buffer for the signature.
-     * @param approveAmount - Amount to approve.
-     * @param nonce - Approval nonce.
-     * @param token - The token address.
-     * @param floorPrice - The floor price to set.
-     * @param initialLiquidity - The amount of liquidity to seed.
-     * @param receiver - The Bitcoin address for receiving payments.
-     * @param antiBotEnabledFor - Number of blocks for anti-bot protection.
-     * @param antiBotMaximumTokensPerReservation - Anti-bot max tokens per user.
-     * @param maxReservesIn5BlocksPercent - Cap on reserves in a short window.
-     * @returns {Promise<CreatePool>}
-     */
-
-    /*createPoolWithSignature(
-        signature: Buffer,
-        approveAmount: bigint,
-        nonce: bigint,
-        token: Address,
-        floorPrice: bigint,
-        initialLiquidity: bigint,
-        receiver: string,
-        antiBotEnabledFor: number,
-        antiBotMaximumTokensPerReservation: bigint,
-        maxReservesIn5BlocksPercent: number,
-    ): Promise<CreatePool>;*/
-
-    /**
-     * @description Sets the global fee parameters (new).
+     * @description Sets the global fee parameters.
      * @param reservationBaseFee - Base fee for a reservation.
      * @param priorityQueueBaseFee - Base fee for priority queue usage.
      * @returns {Promise<SetFees>}
@@ -287,25 +304,54 @@ export interface INativeSwapContract extends IOP_NETContract {
     setFees(reservationBaseFee: bigint, priorityQueueBaseFee: bigint): Promise<SetFees>;
 
     /**
-     * @description Retrieves the current fee parameters (new).
+     * @description Sets the staking contract address.
+     * @param stakingContractAddress - The new staking contract address.
+     * @returns {Promise<SetStakingContractAddress>}
+     */
+    setStakingContractAddress(stakingContractAddress: Address): Promise<SetStakingContractAddress>;
+
+    /**
+     * @description Sets the fees collection address.
+     * @param feesAddress - The Bitcoin address for fees collection.
+     * @returns {Promise<SetFeesAddress>}
+     */
+    setFeesAddress(feesAddress: string): Promise<SetFeesAddress>;
+
+    /**
+     * @description Pauses the contract.
+     * @returns {Promise<Pause>}
+     */
+    pause(): Promise<Pause>;
+
+    /**
+     * @description Unpauses the contract.
+     * @returns {Promise<Unpause>}
+     */
+    unpause(): Promise<Unpause>;
+
+    /**
+     * @description Activates withdraw mode.
+     * @returns {Promise<ActivateWithdrawMode>}
+     */
+    activateWithdrawMode(): Promise<ActivateWithdrawMode>;
+
+    /**
+     * @description Checks if the contract is paused.
+     * @returns {Promise<IsPaused>}
+     */
+    isPaused(): Promise<IsPaused>;
+
+    /**
+     * @description Checks if withdraw mode is active.
+     * @returns {Promise<IsWithdrawModeActive>}
+     */
+    isWithdrawModeActive(): Promise<IsWithdrawModeActive>;
+
+    /**
+     * @description Retrieves the current fee parameters.
      * @returns {Promise<GetFees>}
      */
     getFees(): Promise<GetFees>;
-
-    /**
-     * @description Adds liquidity to the contract.
-     * @param token - The address of the token to add liquidity for.
-     * @param receiver - The receiver of the liquidity (Bitcoin address).
-     * @returns {Promise<AddLiquidity>}
-     */
-    addLiquidity(token: Address, receiver: string): Promise<AddLiquidity>;
-
-    /**
-     * @description Removes all liquidity from the contract for the given token.
-     * @param token - The address of the token to remove liquidity for.
-     * @returns {Promise<RemoveLiquidity>}
-     */
-    removeLiquidity(token: Address): Promise<RemoveLiquidity>;
 
     /**
      * @description Executes a swap operation.
@@ -316,7 +362,6 @@ export interface INativeSwapContract extends IOP_NETContract {
 
     /**
      * @description Retrieves the reserve information for a token.
-     * Now includes virtual pool reserves.
      * @param token - The address of the token.
      * @returns {Promise<GetReserve>}
      */
@@ -338,6 +383,13 @@ export interface INativeSwapContract extends IOP_NETContract {
     getProviderDetails(token: Address): Promise<GetProviderDetails>;
 
     /**
+     * @description Retrieves provider details by provider ID.
+     * @param providerId - The provider ID.
+     * @returns {Promise<GetProviderDetailsById>}
+     */
+    getProviderDetailsById(providerId: bigint): Promise<GetProviderDetailsById>;
+
+    /**
      * @description Retrieves the queue details for a token.
      * @param token - The address of the token.
      * @returns {Promise<QueueDetails>}
@@ -345,26 +397,27 @@ export interface INativeSwapContract extends IOP_NETContract {
     getQueueDetails(token: Address): Promise<QueueDetails>;
 
     /**
-     * @description Retrieves the cost for using the priority queue (new).
-     * @param token - The address of the token.
+     * @description Retrieves the cost for using the priority queue.
      * @returns {Promise<GetPriorityQueueCost>}
      */
-    getPriorityQueueCost(token: Address): Promise<GetPriorityQueueCost>;
+    getPriorityQueueCost(): Promise<GetPriorityQueueCost>;
 
     /**
      * @description Gets the anti-bot settings for a token.
-     * @param token
+     * @param token - The address of the token.
+     * @returns {Promise<AntiBotSettings>}
      */
     getAntibotSettings(token: Address): Promise<AntiBotSettings>;
-
-    /**
-     * @description Set the address of the staking contract.
-     */
-    setStakingContractAddress(stakingContractAddress: Address): Promise<CallResult>;
 
     /**
      * @description Retrieves the address of the staking contract.
      * @returns {Promise<StakingAddressResult>}
      */
     getStakingContractAddress(): Promise<StakingAddressResult>;
+
+    /**
+     * @description Retrieves the fees collection address.
+     * @returns {Promise<FeesAddressResult>}
+     */
+    getFeesAddress(): Promise<FeesAddressResult>;
 }
