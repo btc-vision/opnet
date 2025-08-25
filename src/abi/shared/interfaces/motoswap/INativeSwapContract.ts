@@ -200,15 +200,12 @@ export type QueueDetails = CallResult<
     {
         lastPurgedBlock: bigint;
         blockWithReservationsLength: number;
-        removalQueueLength: number;
-        removalQueueStartingIndex: number;
         priorityQueueLength: number;
         priorityQueueStartingIndex: number;
         standardQueueLength: number;
         standardQueueStartingIndex: number;
         priorityPurgeQueueLength: number;
         standardPurgeQueueLength: number;
-        removePurgeQueueLength: number;
     },
     []
 >;
