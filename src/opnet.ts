@@ -124,3 +124,4 @@ export * from './abi/shared/interfaces/opnet/IOP721Contract.js';
 export * from './abi/shared/interfaces/opnet/IExtendedOP721Contract.js';
 
 export * from './contracts/enums/TransactionFlags.js';
+export * from './providers/interfaces/PublicKeyInfo.js';
