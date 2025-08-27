@@ -661,6 +661,38 @@ export const EXTENDED_OP721_ABI: BitcoinInterfaceAbi = [
         ],
     },
 
+    {
+        name: 'airdrop',
+        type: BitcoinAbiTypes.Function,
+        inputs: [
+            {
+                name: 'addresses',
+                type: ABIDataTypes.ARRAY_OF_ADDRESSES,
+            },
+            {
+                name: 'amounts',
+                type: ABIDataTypes.ARRAY_OF_UINT8,
+            },
+        ],
+        outputs: [],
+    },
+
+    {
+        name: 'setTokenURI',
+        type: BitcoinAbiTypes.Function,
+        inputs: [
+            {
+                name: 'tokenId',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'uri',
+                type: ABIDataTypes.STRING,
+            },
+        ],
+        outputs: [],
+    },
+
     ...EXTENDED_OP721_EVENTS,
 
     ...OP_721_ABI,

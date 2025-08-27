@@ -1,7 +1,7 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
-import { IOP721, TransferredEventNFT } from './IOP721Contract.js';
+import { IOP721, TransferredEventNFT, URIEventNFT } from './IOP721Contract.js';
 
 // ------------------------------------------------------------------
 // Event Definitions
@@ -88,11 +88,23 @@ export type GetStatus = CallResult<
     OPNetEvent<never>[]
 >;
 
+/**
+ * @description Represents the result of the airdrop function call.
+ */
+export type Airdrop = CallResult<{}, OPNetEvent<TransferredEventNFT>[]>;
+
+/**
+ * @description Represents the result of the setTokenURI function call.
+ */
+export type SetTokenURI = CallResult<{}, OPNetEvent<URIEventNFT>[]>;
+
 export interface IExtendedOP721 extends IOP721 {
     setMintEnabled(enabled: boolean): Promise<SetMintEnabled>;
     isMintEnabled(): Promise<IsMintEnabled>;
+    airdrop(addresses: Address[], amounts: number[]): Promise<Airdrop>;
     reserve(quantity: bigint): Promise<ReserveNFT>;
     claim(): Promise<ClaimNFT>;
     purgeExpired(): Promise<PurgeExpiredNFT>;
     getStatus(): Promise<GetStatus>;
+    setTokenURI(tokenId: bigint, uri: string): Promise<SetTokenURI>;
 }
