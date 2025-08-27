@@ -530,7 +530,16 @@ export const EXTENDED_OP721_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
         ],
-        outputs: [],
+        outputs: [
+            {
+                name: 'remainingPayment',
+                type: ABIDataTypes.UINT64,
+            },
+            {
+                name: 'reservationBlock',
+                type: ABIDataTypes.UINT64,
+            },
+        ],
     },
     {
         name: 'claim',

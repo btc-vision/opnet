@@ -50,7 +50,13 @@ export type IsMintEnabled = CallResult<
 /**
  * @description Represents the result of the reserve function call.
  */
-export type ReserveNFT = CallResult<{}, OPNetEvent<ReservationCreatedEventNFT>[]>;
+export type ReserveNFT = CallResult<
+    {
+        readonly remainingPayment: bigint;
+        readonly reservationBlock: bigint;
+    },
+    OPNetEvent<ReservationCreatedEventNFT>[]
+>;
 
 /**
  * @description Represents the result of the claim function call.
