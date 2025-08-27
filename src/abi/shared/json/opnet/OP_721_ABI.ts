@@ -483,28 +483,6 @@ export const EXTENDED_OP721_EVENTS: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Event,
     },
     {
-        name: 'Transferred',
-        values: [
-            {
-                name: 'operator',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'from',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'to',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'amount',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        type: BitcoinAbiTypes.Event,
-    },
-    {
         name: 'ReservationExpired',
         values: [
             {
