@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.6.13",
+    "version": "1.6.14",
     "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -48,7 +48,6 @@
         "url": "git://github.com/btc-vision/opnet.git"
     },
     "scripts": {
-        "postinstall": "npm run build",
         "watch": "gulp watch",
         "build": "gulp build",
         "test": "jest --runInBand",

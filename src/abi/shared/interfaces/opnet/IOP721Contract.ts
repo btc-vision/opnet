@@ -56,7 +56,7 @@ export type SymbolNFT = CallResult<
 >;
 
 /**
- * @description Represents the result of the fn_maxSupply function call.
+ * @description Represents the result of the maxSupply function call.
  */
 export type MaxSupplyNFT = CallResult<
     {
@@ -76,7 +76,7 @@ export type TokenURI = CallResult<
 >;
 
 /**
- * @description Represents the result of the fn_totalSupply function call.
+ * @description Represents the result of the totalSupply function call.
  */
 export type TotalSupplyNFT = CallResult<
     {
@@ -195,15 +195,48 @@ export type GetApproveNonce = CallResult<
  */
 export type SetBaseURI = CallResult<{}, OPNetEvent<URIEventNFT>[]>;
 
+/**
+ * @description Represents the result of the metadata function call.
+ */
+export type MetadataNFT = CallResult<
+    {
+        name: string;
+        symbol: string;
+        icon: string;
+        banner: string;
+        description: string;
+        website: string;
+        totalSupply: bigint;
+        maximumSupply: bigint;
+        domainSeparator: Uint8Array;
+    },
+    OPNetEvent<never>[]
+>;
+
+/**
+ * @description Represents the result of the collectionInfo function call.
+ */
+export type CollectionInfo = CallResult<
+    {
+        icon: string;
+        banner: string;
+        description: string;
+        website: string;
+    },
+    OPNetEvent<never>[]
+>;
+
 // ------------------------------------------------------------------
 // IOP721
 // ------------------------------------------------------------------
 export interface IOP721 extends IOP_NETContract {
     name(): Promise<NameNFT>;
     symbol(): Promise<SymbolNFT>;
-    fn_maxSupply(): Promise<MaxSupplyNFT>;
+    maxSupply(): Promise<MaxSupplyNFT>;
     tokenURI(tokenId: bigint): Promise<TokenURI>;
-    fn_totalSupply(): Promise<TotalSupplyNFT>;
+    collectionInfo(): Promise<CollectionInfo>;
+    totalSupply(): Promise<TotalSupplyNFT>;
+    metadata(): Promise<MetadataNFT>;
     balanceOf(owner: Address): Promise<BalanceOfNFT>;
     ownerOf(tokenId: bigint): Promise<OwnerOfNFT>;
     safeTransferFrom(

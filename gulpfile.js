@@ -30,12 +30,30 @@ function buildESM() {
         .pipe(gulp.dest('build'));
 }
 
+function buildESMNoEslint() {
+    return tsProject
+        .src()
+        .pipe(gulpcache('ts-esm'))
+        .pipe(
+            logger({
+                before: 'Starting...',
+                after: 'Project compiled!',
+                extname: '.js',
+                showChange: true,
+            }),
+        )
+        .pipe(tsProject())
+        .pipe(gulp.dest('build'));
+}
+
 export async function clean() {
     return gulp.src('./build/src', { read: false }).pipe(gulpClean());
 }
 
 export const build = buildESM;
 export default build;
+
+export const buildNoEslint = buildESMNoEslint;
 
 export function watch() {
     gulp.watch(['src/**/*.ts', 'src/**/*.js'], gulp.series(buildESM));

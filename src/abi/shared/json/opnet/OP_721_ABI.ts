@@ -606,6 +606,74 @@ export const EXTENDED_OP721_ABI: BitcoinInterfaceAbi = [
         ],
     },
 
+    {
+        name: 'collectionInfo',
+        type: BitcoinAbiTypes.Function,
+        inputs: [],
+        outputs: [
+            {
+                name: 'icon',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'banner',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'description',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'website',
+                type: ABIDataTypes.STRING,
+            },
+        ],
+    },
+
+    {
+        name: 'metadata',
+        type: BitcoinAbiTypes.Function,
+        inputs: [],
+        outputs: [
+            {
+                name: 'name',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'symbol',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'icon',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'banner',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'description',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'website',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'totalSupply',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'maximumSupply',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'domainSeparator',
+                type: ABIDataTypes.BYTES32,
+            },
+        ],
+    },
+
     ...EXTENDED_OP721_EVENTS,
 
     ...OP_721_ABI,
