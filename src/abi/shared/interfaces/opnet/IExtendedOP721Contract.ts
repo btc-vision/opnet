@@ -91,7 +91,7 @@ export type GetStatus = CallResult<
 /**
  * @description Represents the result of the airdrop function call.
  */
-export type Airdrop = CallResult<{}, OPNetEvent<TransferredEventNFT>[]>;
+export type AirdropNFT = CallResult<{}, OPNetEvent<TransferredEventNFT>[]>;
 
 /**
  * @description Represents the result of the setTokenURI function call.
@@ -101,7 +101,7 @@ export type SetTokenURI = CallResult<{}, OPNetEvent<URIEventNFT>[]>;
 export interface IExtendedOP721 extends IOP721 {
     setMintEnabled(enabled: boolean): Promise<SetMintEnabled>;
     isMintEnabled(): Promise<IsMintEnabled>;
-    airdrop(addresses: Address[], amounts: number[]): Promise<Airdrop>;
+    airdrop(addresses: Address[], amounts: number[]): Promise<AirdropNFT>;
     reserve(quantity: bigint): Promise<ReserveNFT>;
     claim(): Promise<ClaimNFT>;
     purgeExpired(): Promise<PurgeExpiredNFT>;
