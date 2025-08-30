@@ -244,8 +244,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         for (let i = 0; i < tx.outputs.length; i++) {
             const input = tx.outputs[i];
 
-            if (input.index === 0 || input.index === 1) {
-                throw new Error(`Outputs 0 and 1 are reserved for the contract internal use.`);
+            if (input.index === 0) {
+                throw new Error(`Outputs 0 is reserved for the contract internal use.`);
             }
         }
 
