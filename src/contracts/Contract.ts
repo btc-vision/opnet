@@ -560,6 +560,15 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 break;
             }
 
+            case ABIDataTypes.ARRAY_OF_BUFFERS: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeArrayOfBuffer(value as Uint8Array[]);
+                break;
+            }
+
             default: {
                 throw new Error(`Unsupported type: ${type} (${name})`);
             }
@@ -655,6 +664,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 }
                 case ABIDataTypes.ARRAY_OF_UINT128: {
                     decodedResult = reader.readU128Array();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_BUFFERS: {
+                    decodedResult = reader.readArrayOfBuffer();
                     break;
                 }
                 default: {

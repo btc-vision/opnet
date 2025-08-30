@@ -1036,6 +1036,7 @@ export abstract class AbstractRpcProvider {
                     txId: input.txId.toString('base64'),
                     outputIndex: input.outputIndex,
                     scriptSig: input.scriptSig.toString('base64'),
+                    witnesses: input.witnesses.map((w) => w.toString('base64')),
                     coinbase: input.coinbase ? input.coinbase.toString('base64') : undefined,
                     flags: input.flags,
                 };

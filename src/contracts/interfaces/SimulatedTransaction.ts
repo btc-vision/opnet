@@ -19,6 +19,8 @@ export interface StrippedTransactionInput {
     readonly outputIndex: number;
     readonly scriptSig: Buffer;
 
+    readonly witnesses: Buffer[];
+
     readonly flags: number;
     readonly coinbase?: Buffer;
 }
@@ -27,6 +29,8 @@ export interface StrippedTransactionInputAPI {
     readonly txId: string;
     readonly outputIndex: number;
     readonly scriptSig: string;
+
+    readonly witnesses: string[];
 
     readonly coinbase?: string;
     readonly flags: number;
