@@ -1,4 +1,4 @@
-import { Network, PsbtOutputExtended, Signer, Transaction } from '@btc-vision/bitcoin';
+import { Network, PsbtOutputExtended, Signer } from '@btc-vision/bitcoin';
 import {
     Address,
     BinaryReader,
@@ -54,7 +54,7 @@ export interface InteractionTransactionReceipt {
     readonly peerAcknowledgements: number;
     readonly estimatedFees: bigint;
     readonly challengeSolution: RawChallenge;
-    readonly rawTransaction: Transaction;
+    readonly rawTransaction: string;
 }
 
 /**
@@ -290,7 +290,7 @@ export class CallResult<
                 newUTXOs: transaction.nextUTXOs,
                 estimatedFees: transaction.estimatedFees,
                 challengeSolution: transaction.challenge,
-                rawTransaction: transaction.rawTransaction
+                rawTransaction: transaction.interactionTransaction,
             };
         } catch (e) {
             const msgStr = (e as Error).message;
