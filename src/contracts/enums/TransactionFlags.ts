@@ -4,6 +4,12 @@ export enum TransactionInputFlags {
      * @description This flag is used to mark inputs that are part of a coinbase transaction.
      */
     hasCoinbase = 0b00000001,
+
+    /**
+     * Indicates that the input has a witness. For example P2WPKH / P2WSH
+     * @description This flag is used to mark inputs that have a witness.
+     */
+    hasWitness = 0b00000010,
 }
 
 export enum TransactionOutputFlags {
