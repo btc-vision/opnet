@@ -28,6 +28,7 @@ const factory = new TransactionFactory();
 export interface TransactionParameters {
     readonly signer?: Signer | ECPairInterface;
     readonly refundTo: string;
+    readonly sender?: string;
     readonly priorityFee?: bigint;
     feeRate?: number;
     readonly utxos?: UTXO[];
@@ -279,7 +280,7 @@ export class CallResult<
             }
 
             this.#provider.utxoManager.spentUTXO(
-                interactionParams.refundTo,
+                interactionParams.sender || interactionParams.refundTo,
                 UTXOs,
                 transaction.nextUTXOs,
             );
@@ -396,12 +397,12 @@ export class CallResult<
     }
 
     async #fetchUTXOs(amount: bigint, interactionParams: TransactionParameters): Promise<UTXO[]> {
-        if (!interactionParams.refundTo) {
+        if (!interactionParams.sender && !interactionParams.refundTo) {
             throw new Error('Refund address not set');
         }
 
         const utxoSetting: RequestUTXOsParamsWithAmount = {
-            address: interactionParams.refundTo,
+            address: interactionParams.sender || interactionParams.refundTo,
             amount: amount,
             throwErrors: true,
         };
@@ -417,7 +418,11 @@ export class CallResult<
             }
 
             const p2wda = interactionParams.from.p2wda(this.#provider.network);
-            if (p2wda.address === interactionParams.refundTo) {
+            if (
+                interactionParams.sender
+                    ? p2wda.address === interactionParams.sender
+                    : p2wda.address === interactionParams.refundTo
+            ) {
                 utxos.forEach((utxo) => {
                     utxo.witnessScript = p2wda.witnessScript;
                 });
