@@ -56,6 +56,9 @@ export interface InteractionTransactionReceipt {
     readonly estimatedFees: bigint;
     readonly challengeSolution: RawChallenge;
     readonly rawTransaction: string;
+    readonly interactionAddress: string | null;
+    readonly fundingUTXOs: UTXO[];
+    readonly compiledTargetScript: string | null;
 }
 
 /**
@@ -286,12 +289,15 @@ export class CallResult<
             );
 
             return {
+                interactionAddress: transaction.interactionAddress,
                 transactionId: tx2.result,
                 peerAcknowledgements: tx2.peers || 0,
                 newUTXOs: transaction.nextUTXOs,
                 estimatedFees: transaction.estimatedFees,
                 challengeSolution: transaction.challenge,
                 rawTransaction: transaction.interactionTransaction,
+                fundingUTXOs: transaction.fundingUTXOs,
+                compiledTargetScript: transaction.compiledTargetScript,
             };
         } catch (e) {
             const msgStr = (e as Error).message;
