@@ -15,9 +15,12 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
     public witnessScript?: Buffer | string;
     public redeemScript?: Buffer | string;
 
-    public constructor(iUTXO: IUTXO) {
+    public isCSV?: boolean;
+
+    public constructor(iUTXO: IUTXO, isCSV?: boolean) {
         this.transactionId = iUTXO.transactionId;
         this.outputIndex = iUTXO.outputIndex;
+        this.isCSV = isCSV || false;
 
         this.value = BigInt(iUTXO.value);
 

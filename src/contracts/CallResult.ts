@@ -11,9 +11,10 @@ import {
     RawChallenge,
     SupportedTransactionVersion,
     TransactionFactory,
-    UTXO,
 } from '@btc-vision/transaction';
+import { IP2WSHAddress } from '@btc-vision/transaction/src/transaction/mineable/IP2WSHAddress.js';
 import { ECPairInterface } from 'ecpair';
+import { UTXO } from '../bitcoin/UTXOs.js';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { RequestUTXOsParamsWithAmount } from '../utxos/interfaces/IUTXOsManager.js';
@@ -30,7 +31,9 @@ export interface TransactionParameters {
     readonly refundTo: string;
     readonly sender?: string;
     readonly priorityFee?: bigint;
+
     feeRate?: number;
+
     readonly utxos?: UTXO[];
     readonly maximumAllowedSatToSpend: bigint;
     readonly network: Network;
@@ -46,7 +49,9 @@ export interface TransactionParameters {
     readonly txVersion?: SupportedTransactionVersion;
     readonly anchor?: boolean;
 
-    readonly dontIncludeAccessList?: boolean;
+    readonly dontUseCSVUtxos: boolean;
+
+    //readonly includeAccessList?: boolean;
 }
 
 export interface InteractionTransactionReceipt {
@@ -87,6 +92,8 @@ export class CallResult<
 
     public to: string | undefined;
     public address: Address | undefined;
+    public fromAddress: Address | undefined;
+    public csvAddress: IP2WSHAddress | undefined;
 
     #bitcoinFees: BitcoinFees | undefined;
 
@@ -168,6 +175,13 @@ export class CallResult<
         this.address = address;
     }
 
+    public setFromAddress(from?: Address): void {
+        this.fromAddress = from;
+        this.csvAddress = this.fromAddress
+            ? this.#provider.getCSV1ForAddress(this.fromAddress)
+            : undefined;
+    }
+
     /**
      * Easily create a bitcoin interaction transaction from a simulated contract call.
      * @param {TransactionParameters} interactionParams - The parameters for the transaction.
@@ -223,12 +237,12 @@ export class CallResult<
             }
 
             // It's useless to send the access list if we don't load at least 100 pointers.
-            const storage =
-                interactionParams.dontIncludeAccessList === false
+            /*const storage =
+                interactionParams.includeAccessList === false
                     ? totalPointers > 100
                         ? this.loadedStorage
                         : undefined
-                    : undefined;
+                    : undefined;*/
 
             const priorityFee: bigint = interactionParams.priorityFee || 0n;
             const challenge: ChallengeSolution = await this.#provider.getChallenge();
@@ -246,7 +260,7 @@ export class CallResult<
                 optionalOutputs: interactionParams.extraOutputs || [],
                 signer: interactionParams.signer as Signer | ECPairInterface,
                 challenge: challenge,
-                loadedStorage: storage,
+                //loadedStorage: storage,
                 note: interactionParams.note,
                 anchor: interactionParams.anchor || false,
                 txVersion: interactionParams.txVersion || 2,
@@ -411,11 +425,24 @@ export class CallResult<
             address: interactionParams.sender || interactionParams.refundTo,
             amount: amount,
             throwErrors: true,
+            csvAddress:
+                !interactionParams.p2wda && !interactionParams.dontUseCSVUtxos
+                    ? this.csvAddress?.address
+                    : undefined,
         };
 
         const utxos: UTXO[] = await this.#provider.utxoManager.getUTXOsForAmount(utxoSetting);
         if (!utxos) {
             throw new Error('No UTXOs found');
+        }
+
+        if (this.csvAddress) {
+            const csvUtxos = utxos.filter((u) => u.isCSV === true);
+            if (csvUtxos.length > 0) {
+                for (const utxo of csvUtxos) {
+                    utxo.witnessScript = this.csvAddress.witnessScript;
+                }
+            }
         }
 
         if (interactionParams.p2wda) {

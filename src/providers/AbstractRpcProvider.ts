@@ -1,6 +1,7 @@
 import { Network } from '@btc-vision/bitcoin';
 import {
     Address,
+    AddressMap,
     AddressTypes,
     AddressVerificator,
     BufferHelper,
@@ -8,6 +9,7 @@ import {
     RawChallenge,
 } from '@btc-vision/transaction';
 import '../serialize/BigInt.js';
+import { IP2WSHAddress } from '@btc-vision/transaction/src/transaction/mineable/IP2WSHAddress.js';
 
 import { Block } from '../block/Block.js';
 import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters.js';
@@ -21,20 +23,12 @@ import { TransactionOutputFlags } from '../contracts/enums/TransactionFlags.js';
 import { IAccessList } from '../contracts/interfaces/IAccessList.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
-import {
-    ParsedSimulatedTransaction,
-    SimulatedTransaction,
-} from '../contracts/interfaces/SimulatedTransaction.js';
+import { ParsedSimulatedTransaction, SimulatedTransaction, } from '../contracts/interfaces/SimulatedTransaction.js';
 import { Epoch } from '../epoch/Epoch.js';
 import { EpochWithSubmissions } from '../epoch/EpochSubmission.js';
 import { EpochTemplate } from '../epoch/EpochTemplate.js';
 import { EpochSubmissionParams } from '../epoch/interfaces/EpochSubmissionParams.js';
-import {
-    RawEpoch,
-    RawEpochTemplate,
-    RawEpochWithSubmissions,
-    RawSubmittedEpoch,
-} from '../epoch/interfaces/IEpoch.js';
+import { RawEpoch, RawEpochTemplate, RawEpochWithSubmissions, RawSubmittedEpoch, } from '../epoch/interfaces/IEpoch.js';
 import { SubmittedEpoch } from '../epoch/SubmittedEpoch.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
@@ -76,6 +70,7 @@ export abstract class AbstractRpcProvider {
     private lastFetchedGas: number = 0;
 
     private challengeCache: ChallengeCache | undefined;
+    private csvCache: AddressMap<IP2WSHAddress> = new AddressMap<IP2WSHAddress>();
 
     protected constructor(public readonly network: Network) {}
 
@@ -86,6 +81,23 @@ export abstract class AbstractRpcProvider {
      */
     public get utxoManager(): UTXOsManager {
         return this._utxoManager;
+    }
+
+    /**
+     * Get the CSV1 address for a given address.
+     * @description This method is used to get the CSV1 address for a given address.
+     * @param {Address} address The address to get the CSV1 address for
+     * @returns {IP2WSHAddress} The CSV1 address
+     * @example const csv1Address = provider.getCSV1ForAddress(Address.fromString('bcrt1q...'));
+     */
+    public getCSV1ForAddress(address: Address): IP2WSHAddress {
+        const cached = this.csvCache.get(address);
+        if (cached) return cached;
+
+        const csv = address.toCSV(1, this.network);
+        this.csvCache.set(address, csv);
+
+        return csv;
     }
 
     /**

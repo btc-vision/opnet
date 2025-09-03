@@ -32,9 +32,11 @@ export interface RequestUTXOsParams {
     readonly mergePendingUTXOs?: boolean;
     readonly filterSpentUTXOs?: boolean;
     readonly olderThan?: bigint;
+    readonly isCSV?: boolean;
 }
 
 export interface RequestUTXOsParamsWithAmount extends RequestUTXOsParams {
     readonly amount: bigint;
     readonly throwErrors?: boolean;
+    readonly csvAddress?: string;
 }

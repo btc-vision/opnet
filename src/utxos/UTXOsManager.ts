@@ -140,19 +140,21 @@ export class UTXOsManager {
      * @param {boolean} [options.optimize=true] - Whether to optimize the UTXOs
      * @param {boolean} [options.mergePendingUTXOs=true] - Merge locally pending UTXOs
      * @param {boolean} [options.filterSpentUTXOs=true] - Filter out known-spent UTXOs
+     * @param {boolean} [options.isCSV=false] - Whether to this UTXO as a CSV UTXO
      * @param {bigint} [options.olderThan] - Only fetch UTXOs older than this value
      * @returns {Promise<UTXOs>} The UTXOs
      * @throws {Error} If something goes wrong
      */
     public async getUTXOs({
         address,
+        isCSV = false,
         optimize = true,
         mergePendingUTXOs = true,
         filterSpentUTXOs = true,
         olderThan = undefined,
     }: RequestUTXOsParams): Promise<UTXOs> {
         const addressData = this.getAddressData(address);
-        const fetchedData = await this.maybeFetchUTXOs(address, optimize, olderThan);
+        const fetchedData = await this.maybeFetchUTXOs(address, optimize, olderThan, isCSV);
 
         const utxoKey = (utxo: UTXO) => `${utxo.transactionId}:${utxo.outputIndex}`;
         const pendingUTXOKeys = new Set(addressData.pendingUTXOs.map(utxoKey));
@@ -210,6 +212,7 @@ export class UTXOsManager {
      * @param {string} options.address The address to fetch UTXOs for
      * @param {bigint} options.amount The needed amount
      * @param {boolean} [options.optimize=true] Optimize the UTXOs
+     * @param {boolean} [options.csvAddress] Use CSV UTXOs in priority
      * @param {boolean} [options.mergePendingUTXOs=true] Merge pending
      * @param {boolean} [options.filterSpentUTXOs=true] Filter out spent
      * @param {boolean} [options.throwErrors=false] Throw error if insufficient
@@ -219,23 +222,42 @@ export class UTXOsManager {
     public async getUTXOsForAmount({
         address,
         amount,
+        csvAddress,
         optimize = true,
         mergePendingUTXOs = true,
         filterSpentUTXOs = true,
         throwErrors = false,
         olderThan = undefined,
     }: RequestUTXOsParamsWithAmount): Promise<UTXOs> {
-        const combinedUTXOs = await this.getUTXOs({
-            address,
-            optimize,
-            mergePendingUTXOs,
-            filterSpentUTXOs,
-            olderThan,
-        });
+        const utxosPromises: Promise<UTXO[]>[] = [];
 
+        if (csvAddress) {
+            utxosPromises.push(
+                this.getUTXOs({
+                    address: csvAddress,
+                    optimize: false,
+                    mergePendingUTXOs: false,
+                    filterSpentUTXOs: true,
+                    olderThan: 1n,
+                    isCSV: true,
+                }),
+            );
+        }
+
+        utxosPromises.push(
+            this.getUTXOs({
+                address,
+                optimize,
+                mergePendingUTXOs,
+                filterSpentUTXOs,
+                olderThan,
+            }),
+        );
+
+        const combinedUTXOs: UTXOs = (await Promise.all(utxosPromises)).flat();
         const utxoUntilAmount: UTXOs = [];
-        let currentValue = 0n;
 
+        let currentValue = 0n;
         for (const utxo of combinedUTXOs) {
             utxoUntilAmount.push(utxo);
             currentValue += utxo.value;
@@ -277,6 +299,7 @@ export class UTXOsManager {
         address: string,
         optimize: boolean,
         olderThan: bigint | undefined,
+        isCSV: boolean = false,
     ): Promise<IUTXOsData> {
         const addressData = this.getAddressData(address);
         const now = Date.now();
@@ -293,7 +316,7 @@ export class UTXOsManager {
         }
 
         // Otherwise, fetch from the RPC
-        addressData.lastFetchedData = await this.fetchUTXOs(address, optimize, olderThan);
+        addressData.lastFetchedData = await this.fetchUTXOs(address, optimize, olderThan, isCSV);
         addressData.lastFetchTimestamp = now;
 
         // Remove any pending UTXOs that have become confirmed or known spent
@@ -309,6 +332,7 @@ export class UTXOsManager {
         address: string,
         optimize: boolean = false,
         olderThan: bigint | undefined,
+        isCSV: boolean = false,
     ): Promise<IUTXOsData> {
         const data: [string, boolean?, string?] = [address, optimize];
         if (olderThan !== undefined) {
@@ -332,9 +356,9 @@ export class UTXOsManager {
         };
 
         return {
-            confirmed: result.confirmed.map((utxo: IUTXO) => new UTXO(utxo)),
-            pending: result.pending.map((utxo: IUTXO) => new UTXO(utxo)),
-            spentTransactions: result.spentTransactions.map((utxo: IUTXO) => new UTXO(utxo)),
+            confirmed: result.confirmed.map((utxo: IUTXO) => new UTXO(utxo, isCSV)),
+            pending: result.pending.map((utxo: IUTXO) => new UTXO(utxo, isCSV)),
+            spentTransactions: result.spentTransactions.map((utxo: IUTXO) => new UTXO(utxo, isCSV)),
         };
     }
 
