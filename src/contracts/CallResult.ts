@@ -6,13 +6,13 @@ import {
     ChallengeSolution,
     IInteractionParameters,
     InteractionParametersWithoutSigner,
+    IP2WSHAddress,
     LoadedStorage,
     NetEvent,
     RawChallenge,
     SupportedTransactionVersion,
     TransactionFactory,
 } from '@btc-vision/transaction';
-import { IP2WSHAddress } from '@btc-vision/transaction/src/transaction/mineable/IP2WSHAddress.js';
 import { ECPairInterface } from 'ecpair';
 import { UTXO } from '../bitcoin/UTXOs.js';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
@@ -49,7 +49,7 @@ export interface TransactionParameters {
     readonly txVersion?: SupportedTransactionVersion;
     readonly anchor?: boolean;
 
-    readonly dontUseCSVUtxos: boolean;
+    readonly dontUseCSVUtxos?: boolean;
 
     //readonly includeAccessList?: boolean;
 }
