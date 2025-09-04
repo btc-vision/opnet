@@ -235,7 +235,7 @@ export class UTXOsManager {
             utxosPromises.push(
                 this.getUTXOs({
                     address: csvAddress,
-                    optimize: false,
+                    optimize: true,
                     mergePendingUTXOs: false,
                     filterSpentUTXOs: true,
                     olderThan: 1n,
