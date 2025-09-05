@@ -177,9 +177,10 @@ export class CallResult<
 
     public setFromAddress(from?: Address): void {
         this.fromAddress = from;
-        this.csvAddress = this.fromAddress
-            ? this.#provider.getCSV1ForAddress(this.fromAddress)
-            : undefined;
+        this.csvAddress =
+            this.fromAddress && this.fromAddress.originalPublicKey
+                ? this.#provider.getCSV1ForAddress(this.fromAddress)
+                : undefined;
     }
 
     /**
