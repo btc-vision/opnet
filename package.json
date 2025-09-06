@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.6.31",
+    "version": "1.6.32",
     "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -106,6 +106,7 @@
         "ecpair": "^2.1.0",
         "p-limit": "^7.0.0",
         "tiny-secp256k1": "^2.2.4",
+        "typedoc-material-theme": "^1.4.0",
         "undici": "^7.14.0"
     }
 }

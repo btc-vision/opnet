@@ -26,6 +26,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             connections: 128, // max connections per server
             pipelining: 2, // max pipelining per server
         },
+        private useRESTAPI: boolean = true,
     ) {
         super(network);
 
@@ -40,6 +41,15 @@ export class JSONRpcProvider extends AbstractRpcProvider {
         }
 
         return this._fetcher;
+    }
+
+    /**
+     * @description Sets the fetch mode to use REST API or not.
+     * @param {boolean} useRESTAPI - Whether to use REST API or not
+     * @returns {void}
+     */
+    public setFetchMode(useRESTAPI: boolean) {
+        this.useRESTAPI = useRESTAPI;
     }
 
     /**

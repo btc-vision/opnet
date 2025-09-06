@@ -46,6 +46,10 @@ export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas' | 'depl
     public readonly deployments: Address[] = [];
 
     constructor(block: IBlock, network: Network) {
+        if(!block) {
+            throw new Error('Invalid block.');
+        }
+
         this.height = BigInt(block.height.toString());
 
         this.hash = block.hash;

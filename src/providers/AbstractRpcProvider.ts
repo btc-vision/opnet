@@ -273,6 +273,10 @@ export abstract class AbstractRpcProvider {
 
         const block: JsonRpcResult = await this.callPayloadSingle(payload);
 
+        if ('error' in block) {
+            throw new Error(`Error fetching block: ${block.error?.message || 'Unknown error'}`);
+        }
+
         const result: IBlock = block.result as IBlock;
         return new Block(result, this.network);
     }
