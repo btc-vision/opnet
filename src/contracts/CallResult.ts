@@ -297,11 +297,42 @@ export class CallResult<
                 throw new Error('No transaction ID returned');
             }
 
-            this.#provider.utxoManager.spentUTXO(
-                interactionParams.sender || interactionParams.refundTo,
-                UTXOs,
-                transaction.nextUTXOs,
-            );
+            const csvUTXOs = UTXOs.filter((u) => u.isCSV === true);
+            const p2wdaUTXOs = UTXOs.filter((u) => u.witnessScript && u.isCSV !== true);
+            const otherUTXOs = UTXOs.filter((u) => !u.witnessScript && u.isCSV !== true);
+
+            const refundAddress = interactionParams.sender || interactionParams.refundTo;
+            const p2wdaAddress = interactionParams.from?.p2wda(this.#provider.network);
+
+            const isRefundingToCSV = this.csvAddress && refundAddress === this.csvAddress.address;
+            const isRefundingToP2wda = p2wdaAddress && refundAddress === p2wdaAddress.address;
+
+            // Handle CSV UTXOs
+            if (this.csvAddress && csvUTXOs.length) {
+                this.#provider.utxoManager.spentUTXO(
+                    this.csvAddress.address,
+                    csvUTXOs,
+                    isRefundingToCSV ? transaction.nextUTXOs : [],
+                );
+            }
+
+            // Handle p2wda UTXOs
+            if (p2wdaAddress && p2wdaUTXOs.length) {
+                this.#provider.utxoManager.spentUTXO(
+                    p2wdaAddress.address,
+                    p2wdaUTXOs,
+                    isRefundingToP2wda ? transaction.nextUTXOs : [],
+                );
+            }
+
+            // Handle other UTXOs
+            if (otherUTXOs.length) {
+                this.#provider.utxoManager.spentUTXO(
+                    refundAddress,
+                    otherUTXOs,
+                    !isRefundingToCSV && !isRefundingToP2wda ? transaction.nextUTXOs : [],
+                );
+            }
 
             return {
                 interactionAddress: transaction.interactionAddress,
