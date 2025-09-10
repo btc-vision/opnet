@@ -316,18 +316,32 @@ export class CallResult<
 
             // Track spent UTXOs for each address type
             if (this.csvAddress && csvUTXOs.length) {
+                const finalUTXOs = transaction.nextUTXOs.map((u) => {
+                    return {
+                        ...u,
+                        witnessScript: this.csvAddress?.witnessScript,
+                    };
+                });
+
                 this.#provider.utxoManager.spentUTXO(
                     this.csvAddress.address,
                     csvUTXOs,
-                    refundToAddress === this.csvAddress.address ? transaction.nextUTXOs : [],
+                    refundToAddress === this.csvAddress.address ? finalUTXOs : [],
                 );
             }
 
             if (p2wdaAddress && p2wdaUTXOs.length) {
+                const finalUTXOs = transaction.nextUTXOs.map((u) => {
+                    return {
+                        ...u,
+                        witnessScript: p2wdaAddress.witnessScript,
+                    };
+                });
+
                 this.#provider.utxoManager.spentUTXO(
                     p2wdaAddress.address,
                     p2wdaUTXOs,
-                    refundToAddress === p2wdaAddress.address ? transaction.nextUTXOs : [],
+                    refundToAddress === p2wdaAddress.address ? finalUTXOs : [],
                 );
             }
 
@@ -345,21 +359,27 @@ export class CallResult<
                 refundToAddress === this.csvAddress.address &&
                 !csvUTXOs.length
             ) {
-                this.#provider.utxoManager.spentUTXO(
-                    this.csvAddress.address,
-                    [],
-                    transaction.nextUTXOs,
-                );
+                const finalUTXOs = transaction.nextUTXOs.map((u) => {
+                    return {
+                        ...u,
+                        witnessScript: this.csvAddress?.witnessScript,
+                    };
+                });
+
+                this.#provider.utxoManager.spentUTXO(this.csvAddress.address, [], finalUTXOs);
             } else if (
                 p2wdaAddress &&
                 refundToAddress === p2wdaAddress.address &&
                 !p2wdaUTXOs.length
             ) {
-                this.#provider.utxoManager.spentUTXO(
-                    p2wdaAddress.address,
-                    [],
-                    transaction.nextUTXOs,
-                );
+                const finalUTXOs = transaction.nextUTXOs.map((u) => {
+                    return {
+                        ...u,
+                        witnessScript: p2wdaAddress.witnessScript,
+                    };
+                });
+
+                this.#provider.utxoManager.spentUTXO(p2wdaAddress.address, [], finalUTXOs);
             } else if (refundToAddress === refundAddress && !otherUTXOs.length) {
                 // Only if it's not CSV or p2wda
                 const isSpecialAddress =
