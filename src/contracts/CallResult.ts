@@ -304,34 +304,71 @@ export class CallResult<
             const refundAddress = interactionParams.sender || interactionParams.refundTo;
             const p2wdaAddress = interactionParams.from?.p2wda(this.#provider.network);
 
-            const isRefundingToCSV = this.csvAddress && refundAddress === this.csvAddress.address;
-            const isRefundingToP2wda = p2wdaAddress && refundAddress === p2wdaAddress.address;
+            // Determine which address gets the refunds
+            let refundToAddress: string;
+            if (this.csvAddress && refundAddress === this.csvAddress.address) {
+                refundToAddress = this.csvAddress.address;
+            } else if (p2wdaAddress && refundAddress === p2wdaAddress.address) {
+                refundToAddress = p2wdaAddress.address;
+            } else {
+                refundToAddress = refundAddress;
+            }
 
-            // Handle CSV UTXOs
+            // Track spent UTXOs for each address type
             if (this.csvAddress && csvUTXOs.length) {
                 this.#provider.utxoManager.spentUTXO(
                     this.csvAddress.address,
                     csvUTXOs,
-                    isRefundingToCSV ? transaction.nextUTXOs : [],
+                    refundToAddress === this.csvAddress.address ? transaction.nextUTXOs : [],
                 );
             }
 
-            // Handle p2wda UTXOs
             if (p2wdaAddress && p2wdaUTXOs.length) {
                 this.#provider.utxoManager.spentUTXO(
                     p2wdaAddress.address,
                     p2wdaUTXOs,
-                    isRefundingToP2wda ? transaction.nextUTXOs : [],
+                    refundToAddress === p2wdaAddress.address ? transaction.nextUTXOs : [],
                 );
             }
 
-            // Handle other UTXOs
             if (otherUTXOs.length) {
                 this.#provider.utxoManager.spentUTXO(
                     refundAddress,
                     otherUTXOs,
-                    !isRefundingToCSV && !isRefundingToP2wda ? transaction.nextUTXOs : [],
+                    refundToAddress === refundAddress ? transaction.nextUTXOs : [],
                 );
+            }
+
+            // Handle refunds to addresses that didn't spend any UTXOs
+            if (
+                this.csvAddress &&
+                refundToAddress === this.csvAddress.address &&
+                !csvUTXOs.length
+            ) {
+                this.#provider.utxoManager.spentUTXO(
+                    this.csvAddress.address,
+                    [],
+                    transaction.nextUTXOs,
+                );
+            } else if (
+                p2wdaAddress &&
+                refundToAddress === p2wdaAddress.address &&
+                !p2wdaUTXOs.length
+            ) {
+                this.#provider.utxoManager.spentUTXO(
+                    p2wdaAddress.address,
+                    [],
+                    transaction.nextUTXOs,
+                );
+            } else if (refundToAddress === refundAddress && !otherUTXOs.length) {
+                // Only if it's not CSV or p2wda
+                const isSpecialAddress =
+                    (this.csvAddress && refundToAddress === this.csvAddress.address) ||
+                    (p2wdaAddress && refundToAddress === p2wdaAddress.address);
+
+                if (!isSpecialAddress) {
+                    this.#provider.utxoManager.spentUTXO(refundAddress, [], transaction.nextUTXOs);
+                }
             }
 
             return {
