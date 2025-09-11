@@ -51,6 +51,8 @@ export interface TransactionParameters {
 
     readonly dontUseCSVUtxos?: boolean;
 
+    readonly maxUTXOs?: number;
+
     //readonly includeAccessList?: boolean;
 }
 
@@ -514,6 +516,7 @@ export class CallResult<
             address: interactionParams.sender || interactionParams.refundTo,
             amount: amount,
             throwErrors: true,
+            maxUTXOs: interactionParams.maxUTXOs,
             csvAddress:
                 !interactionParams.p2wda && !interactionParams.dontUseCSVUtxos
                     ? this.csvAddress?.address

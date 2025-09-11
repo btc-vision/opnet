@@ -228,6 +228,7 @@ export class UTXOsManager {
         filterSpentUTXOs = true,
         throwErrors = false,
         olderThan = undefined,
+        maxUTXOs = 5000,
     }: RequestUTXOsParamsWithAmount): Promise<UTXOs> {
         const utxosPromises: Promise<UTXO[]>[] = [];
 
@@ -259,8 +260,13 @@ export class UTXOsManager {
 
         let currentValue = 0n;
         for (const utxo of combinedUTXOs) {
+            if (maxUTXOs && utxoUntilAmount.length >= maxUTXOs) {
+                break;
+            }
+
             utxoUntilAmount.push(utxo);
             currentValue += utxo.value;
+
             if (currentValue >= amount) {
                 break;
             }
