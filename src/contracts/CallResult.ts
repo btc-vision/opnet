@@ -52,6 +52,7 @@ export interface TransactionParameters {
     readonly dontUseCSVUtxos?: boolean;
 
     readonly maxUTXOs?: number;
+    readonly throwIfUTXOsLimitReached?: boolean;
 
     //readonly includeAccessList?: boolean;
 }
@@ -517,6 +518,7 @@ export class CallResult<
             amount: amount,
             throwErrors: true,
             maxUTXOs: interactionParams.maxUTXOs,
+            throwIfUTXOsLimitReached: interactionParams.throwIfUTXOsLimitReached,
             csvAddress:
                 !interactionParams.p2wda && !interactionParams.dontUseCSVUtxos
                     ? this.csvAddress?.address

@@ -40,4 +40,5 @@ export interface RequestUTXOsParamsWithAmount extends RequestUTXOsParams {
     readonly throwErrors?: boolean;
     readonly csvAddress?: string;
     readonly maxUTXOs?: number;
+    readonly throwIfUTXOsLimitReached?: boolean;
 }

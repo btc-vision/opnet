@@ -229,6 +229,7 @@ export class UTXOsManager {
         throwErrors = false,
         olderThan = undefined,
         maxUTXOs = 5000,
+        throwIfUTXOsLimitReached = false,
     }: RequestUTXOsParamsWithAmount): Promise<UTXOs> {
         const utxosPromises: Promise<UTXO[]>[] = [];
 
@@ -261,6 +262,12 @@ export class UTXOsManager {
         let currentValue = 0n;
         for (const utxo of combinedUTXOs) {
             if (maxUTXOs && utxoUntilAmount.length >= maxUTXOs) {
+                if (throwIfUTXOsLimitReached) {
+                    throw new Error(
+                        `Woah. You must consolidate your UTXOs (${combinedUTXOs.length})! This transaction is too large.`,
+                    );
+                }
+
                 break;
             }
 
