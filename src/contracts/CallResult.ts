@@ -285,6 +285,10 @@ export class CallResult<
                 if (!tx1 || tx1.error) {
                     throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
                 }
+
+                if (!tx1.success) {
+                    throw new Error(`Error sending transaction: ${tx1.result || 'Unknown error'}`);
+                }
             }
 
             const tx2 = await this.#provider.sendRawTransaction(
@@ -298,6 +302,10 @@ export class CallResult<
 
             if (!tx2.result) {
                 throw new Error('No transaction ID returned');
+            }
+
+            if (!tx2.success) {
+                throw new Error(`Error sending transaction: ${tx2.result || 'Unknown error'}`);
             }
 
             const csvUTXOs = UTXOs.filter((u) => u.isCSV === true);
