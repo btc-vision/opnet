@@ -40,7 +40,6 @@ export type TokenMetadata = CallResult<
         symbol: string;
         decimals: number;
         totalSupply: bigint;
-        maximumSupply: bigint;
         icon: string;
         domainSeparator: Uint8Array;
     },
@@ -48,6 +47,8 @@ export type TokenMetadata = CallResult<
 >;
 
 export type SafeTransfer = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
+export type Transfer = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
+export type TransferFrom = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
 export type SafeTransferFrom = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
 export type IncreaseAllowance = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
 export type DecreaseAllowance = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
@@ -111,7 +112,11 @@ export interface IOP20Contract extends IOP_NETContract {
 
     icon(): Promise<TokenIcon>;
 
+    transfer(to: Address, amount: bigint, data: Uint8Array): Promise<Transfer>;
+
     safeTransfer(to: Address, amount: bigint, data: Uint8Array): Promise<SafeTransfer>;
+
+    transferFrom(from: Address, to: Address, amount: bigint): Promise<TransferFrom>;
 
     safeTransferFrom(
         from: Address,
