@@ -322,6 +322,10 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.STRING,
             },
             {
+                name: 'icon',
+                type: ABIDataTypes.STRING,
+            },
+            {
                 name: 'decimals',
                 type: ABIDataTypes.UINT8,
             },
@@ -330,12 +334,8 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
             {
-                name: 'icon',
-                type: ABIDataTypes.STRING,
-            },
-            {
                 name: 'domainSeparator',
-                type: ABIDataTypes.BYTES,
+                type: ABIDataTypes.BYTES32,
             },
         ],
         type: BitcoinAbiTypes.Function,
