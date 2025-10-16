@@ -14,7 +14,11 @@ import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
 import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties.js';
 import { BitcoinAbiValue } from '../abi/interfaces/BitcoinAbiValue.js';
-import { BitcoinInterfaceAbi, EventBaseData, FunctionBaseData, } from '../abi/interfaces/BitcoinInterfaceAbi.js';
+import {
+    BitcoinInterfaceAbi,
+    EventBaseData,
+    FunctionBaseData,
+} from '../abi/interfaces/BitcoinInterfaceAbi.js';
 import { BlockGasParameters } from '../block/BlockGasParameters.js';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
