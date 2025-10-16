@@ -351,7 +351,15 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const writer = new BinaryWriter();
 
         const selectorStr = this.getSelector(element);
-        const selector = Number('0x' + bitcoinAbiCoder.encodeSelector(selectorStr));
+
+        let str = bitcoinAbiCoder.encodeSelector(selectorStr);
+        if (str.includes(',')) {
+            const array = str.split(',').map((s) => Number(s));
+            const buffer = Buffer.from(array);
+            str = buffer.toString('hex');
+        }
+
+        const selector = Number('0x' + str);
         writer.writeSelector(selector);
 
         if (args.length !== (element.inputs?.length ?? 0)) {
@@ -706,7 +714,6 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             const data = this.encodeFunctionData(element, args);
             const original = data.getBuffer().buffer;
             const buffer = Buffer.from(original);
-            console.log('buffer from opnet package!', buffer, 'original', original);
 
             const response = await this.provider.call(
                 this.address,

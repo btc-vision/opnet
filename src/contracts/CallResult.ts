@@ -139,8 +139,9 @@ export class CallResult<
     public static decodeRevertData(revertDataBytes: Uint8Array | Buffer): string {
         if (this.startsWithErrorSelector(revertDataBytes)) {
             const decoder = new TextDecoder();
+            const buf = Buffer.from(revertDataBytes.subarray(8));
 
-            return decoder.decode(revertDataBytes.subarray(8));
+            return decoder.decode(buf);
         } else {
             return `Unknown Revert: 0x${this.bytesToHexString(revertDataBytes)}`;
         }
@@ -151,7 +152,7 @@ export class CallResult<
 
         return (
             revertDataBytes.length >= 4 &&
-            this.areBytesEqual(revertDataBytes.subarray(0, 4), errorSelectorBytes)
+            this.areBytesEqual(Buffer.from(revertDataBytes.subarray(0, 4)), errorSelectorBytes)
         );
     }
 
