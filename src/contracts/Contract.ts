@@ -14,11 +14,7 @@ import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
 import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties.js';
 import { BitcoinAbiValue } from '../abi/interfaces/BitcoinAbiValue.js';
-import {
-    BitcoinInterfaceAbi,
-    EventBaseData,
-    FunctionBaseData,
-} from '../abi/interfaces/BitcoinInterfaceAbi.js';
+import { BitcoinInterfaceAbi, EventBaseData, FunctionBaseData, } from '../abi/interfaces/BitcoinInterfaceAbi.js';
 import { BlockGasParameters } from '../block/BlockGasParameters.js';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
@@ -217,7 +213,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         for (const element of this.interface.abi) {
             if (element.name === functionName) {
                 const data = this.encodeFunctionData(element as FunctionBaseData, args);
-                return Buffer.from(data.getBuffer());
+                return Buffer.from(data.getBuffer().buffer);
             }
         }
 
@@ -708,7 +704,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             this.accessList = undefined;
 
             const data = this.encodeFunctionData(element, args);
-            const buffer = Buffer.from(data.getBuffer());
+            const original = data.getBuffer().buffer;
+            const buffer = Buffer.from(original);
+            console.log('buffer from opnet package!', buffer, 'original', original);
+
             const response = await this.provider.call(
                 this.address,
                 buffer,
