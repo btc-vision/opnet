@@ -894,8 +894,8 @@ export abstract class AbstractRpcProvider {
             }
 
             response[pubKey] = pubKeyValue.originalPubKey
-                ? Address.fromString(pubKeyValue.originalPubKey)
-                : Address.fromString(pubKeyValue.tweakedPubkey);
+                ? Address.fromString(pubKeyValue.mldsaPublicKey, pubKeyValue.originalPubKey)
+                : Address.fromString(pubKeyValue.mldsaPublicKey, pubKeyValue.tweakedPubkey);
         }
 
         return response;

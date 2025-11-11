@@ -1,6 +1,9 @@
 import { Address } from '@btc-vision/transaction';
 
 export interface PublicKeyInfo {
+    readonly mldsaPublicKey: string;
+    readonly mldsaAddress: string;
+
     readonly originalPubKey?: string;
     readonly tweakedPubkey: string;
 

@@ -19,7 +19,8 @@ export interface RawBlockWitnessAPI {
     readonly proofs: readonly string[];
 
     readonly identity?: string;
-    readonly publicKey?: string;
+    readonly mldsaPublicKey?: string;
+    readonly classicPublicKey?: string;
 }
 
 export interface IBlockWitness {
