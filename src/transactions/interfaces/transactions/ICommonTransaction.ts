@@ -12,12 +12,17 @@ export interface ICommonTransaction<T extends OPNetTransactionTypes> extends ITr
     /**
      * @description The contract tweaked public key.
      */
-    readonly contractTweakedPublicKey?: Address | string;
+    readonly contractPublicKey?: Address | string;
 
     /**
      * @description This indicates who sent the transaction.
      */
     readonly from?: Address | string;
+
+    /**
+     * @description This indicates who sent the transaction.
+     */
+    readonly classicFrom?: Address | string;
 
     /**
      * @description Was the binary data compressed?

@@ -6,7 +6,7 @@ import { IRawContract } from './interfaces/IRawContract.js';
  * @class ContractData
  * @category Bitcoin
  */
-export class ContractData implements Omit<IRawContract, 'contractTweakedPublicKey'> {
+export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
     public readonly contractAddress: string;
     public readonly contractPublicKey: Address;
 
@@ -17,6 +17,7 @@ export class ContractData implements Omit<IRawContract, 'contractTweakedPublicKe
     public readonly deployedTransactionHash: string;
 
     public readonly deployerPubKey: Buffer;
+    public readonly deployerClassicPublicKey: Buffer;
     public readonly contractSeed: Buffer;
 
     public readonly contractSaltHash: Buffer;
@@ -24,9 +25,9 @@ export class ContractData implements Omit<IRawContract, 'contractTweakedPublicKe
 
     constructor(raw: IRawContract) {
         this.contractAddress = raw.contractAddress;
-        this.contractPublicKey = Buffer.isBuffer(raw.contractTweakedPublicKey)
-            ? new Address(raw.contractTweakedPublicKey)
-            : new Address(Buffer.from(raw.contractTweakedPublicKey, 'base64'));
+        this.contractPublicKey = Buffer.isBuffer(raw.contractPublicKey)
+            ? new Address(raw.contractPublicKey)
+            : new Address(Buffer.from(raw.contractPublicKey, 'base64'));
 
         this.bytecode = Buffer.isBuffer(raw.bytecode)
             ? raw.bytecode
@@ -40,6 +41,10 @@ export class ContractData implements Omit<IRawContract, 'contractTweakedPublicKe
             ? raw.deployerPubKey
             : Buffer.from(raw.deployerPubKey, 'base64');
 
+        this.deployerClassicPublicKey = Buffer.isBuffer(raw.deployerClassicPublicKey)
+            ? raw.deployerClassicPublicKey
+            : Buffer.from(raw.deployerClassicPublicKey, 'base64');
+
         this.contractSeed = Buffer.isBuffer(raw.contractSeed)
             ? raw.contractSeed
             : Buffer.from(raw.contractSeed, 'base64');
@@ -50,7 +55,7 @@ export class ContractData implements Omit<IRawContract, 'contractTweakedPublicKe
 
         this.deployerAddress =
             !raw.deployerAddress && this.deployerPubKey
-                ? new Address(this.deployerPubKey)
+                ? new Address(this.deployerPubKey, this.deployerClassicPublicKey)
                 : raw.deployerAddress;
     }
 }

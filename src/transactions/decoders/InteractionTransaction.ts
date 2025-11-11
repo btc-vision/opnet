@@ -51,13 +51,13 @@ export class InteractionTransaction
     /**
      * @description The contract tweaked public key.
      */
-    public readonly contractTweakedPublicKey: Address;
+    public readonly contractPublicKey: Address;
 
     constructor(transaction: IInteractionTransaction, network: Network) {
         super(transaction, network);
 
-        this.contractTweakedPublicKey = new Address(
-            Buffer.from(transaction.contractTweakedPublicKey as string, 'base64'),
+        this.contractPublicKey = new Address(
+            Buffer.from(transaction.contractPublicKey as string, 'base64'),
         );
 
         if (transaction.calldata) {
@@ -73,7 +73,10 @@ export class InteractionTransaction
 
         try {
             if (transaction.from) {
-                this.from = new Address(Buffer.from(transaction.from as string, 'base64'));
+                this.from = new Address(
+                    Buffer.from(transaction.from as string, 'base64'),
+                    Buffer.from(transaction.classicFrom as string, 'base64'),
+                );
             }
         } catch {}
     }

@@ -14,12 +14,13 @@ export class DeploymentTransaction
     implements IDeploymentTransaction
 {
     public readonly contractAddress?: string;
-    public readonly contractTweakedPublicKey?: Address;
+    public readonly contractPublicKey?: Address;
 
     public readonly bytecode?: Buffer;
     public readonly wasCompressed?: boolean;
 
     public readonly deployerPubKey?: Buffer;
+    public readonly deployerClassicPubKey?: Buffer;
     public readonly deployerAddress?: Address;
 
     public readonly contractSeed?: Buffer;
@@ -31,18 +32,25 @@ export class DeploymentTransaction
         super(transaction, network);
 
         try {
-            this.from = new Address(Buffer.from(transaction.from as string, 'base64'));
+            this.from = new Address(
+                Buffer.from(transaction.from as string, 'base64'),
+                Buffer.from(transaction.classicFrom as string, 'base64'),
+            );
 
             this.contractAddress = transaction.contractAddress;
-            this.contractTweakedPublicKey = new Address(
-                Buffer.from(transaction.contractTweakedPublicKey as string, 'base64'),
+            this.contractPublicKey = new Address(
+                Buffer.from(transaction.contractPublicKey as string, 'base64'),
             );
 
             this.bytecode = Buffer.from(transaction.bytecode as string, 'base64');
             this.wasCompressed = transaction.wasCompressed;
 
             this.deployerPubKey = Buffer.from(transaction.deployerPubKey as string, 'base64');
-            this.deployerAddress = new Address(this.deployerPubKey);
+            this.deployerClassicPubKey = Buffer.from(
+                transaction.deployerClassicPubKey as string,
+                'base64',
+            );
+            this.deployerAddress = new Address(this.deployerClassicPubKey, this.deployerPubKey);
 
             this.contractSeed = Buffer.from(transaction.contractSeed as string, 'base64');
             this.contractSaltHash = Buffer.from(transaction.contractSaltHash as string, 'base64');

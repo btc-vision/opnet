@@ -17,7 +17,7 @@ export interface IDeploymentTransaction
     /**
      * @description The contract tweaked public key.
      */
-    readonly contractTweakedPublicKey?: Address | string;
+    readonly contractPublicKey?: Address | string;
 
     /**
      * @description The bytecode of the contract.
@@ -28,6 +28,11 @@ export interface IDeploymentTransaction
      * @description The public key of the deployer.
      */
     readonly deployerPubKey?: Buffer | string;
+
+    /**
+     * @description The public key of the deployer.
+     */
+    readonly deployerClassicPubKey?: Buffer | string;
 
     /**
      * @description The seed of the contract.
