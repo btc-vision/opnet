@@ -17,6 +17,11 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
 
     public isCSV?: boolean;
 
+    /**
+     * Create a UTXO from raw interface data
+     * @param iUTXO - The raw UTXO data from the API
+     * @param isCSV - Whether this is a CSV UTXO
+     */
     public constructor(iUTXO: IUTXO, isCSV?: boolean) {
         this.transactionId = iUTXO.transactionId;
         this.outputIndex = iUTXO.outputIndex;
@@ -25,9 +30,6 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
         this.value = BigInt(iUTXO.value);
 
         this.scriptPubKey = iUTXO.scriptPubKey;
-        if (!iUTXO.raw) {
-            throw new Error('Missing nonWitnessUtxo field in UTXO');
-        }
 
         this.nonWitnessUtxo = Buffer.from(iUTXO.raw, 'base64');
     }
