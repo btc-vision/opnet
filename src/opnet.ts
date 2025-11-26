@@ -22,6 +22,9 @@ export * from './providers/AbstractRpcProvider.js';
 export * from './providers/JSONRpcProvider.js';
 export * from './providers/WebsocketRpcProvider.js';
 
+/** WebSocket Provider */
+export * from './providers/websocket/index.js';
+
 /** Providers interfaces */
 export * from './providers/interfaces/ReorgInformation.js';
 
