@@ -31,6 +31,7 @@ export default tseslint.config(
             '@typescript-eslint/no-empty-object-type': 'off',
             '@typescript-eslint/no-base-to-string': 'off',
             '@typescript-eslint/no-dynamic-delete': 'off',
+            '@typescript-eslint/no-redundant-type-constituents': 'off',
         },
     },
     {
