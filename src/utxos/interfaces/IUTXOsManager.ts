@@ -1,4 +1,4 @@
-import { IUTXO } from '../../bitcoin/interfaces/IUTXO.js';
+import { ISpentUTXO, RawIUTXO } from '../../bitcoin/interfaces/IUTXO.js';
 import { UTXOs } from '../../bitcoin/UTXOs.js';
 
 /**
@@ -7,19 +7,34 @@ import { UTXOs } from '../../bitcoin/UTXOs.js';
  */
 
 /**
- * UTXOs Data
+ * Spent UTXO reference (used for filtering)
+ * @interface SpentUTXORef
+ */
+export interface SpentUTXORef {
+    readonly transactionId: string;
+    readonly outputIndex: number;
+}
+
+/**
+ * UTXOs Data (processed)
  * @interface IUTXOsData
  */
 export interface IUTXOsData {
     readonly pending: UTXOs;
-    readonly spentTransactions: UTXOs;
+    readonly spentTransactions: SpentUTXORef[];
     readonly confirmed: UTXOs;
 }
 
+/**
+ * Raw UTXOs Data from API response
+ * @interface RawIUTXOsData
+ */
 export interface RawIUTXOsData {
-    readonly pending: IUTXO[];
-    readonly spentTransactions: IUTXO[];
-    readonly confirmed: IUTXO[];
+    readonly pending: RawIUTXO[];
+    readonly spentTransactions: ISpentUTXO[];
+    readonly confirmed: RawIUTXO[];
+    /** Array of raw transaction hex strings (base64 encoded) */
+    readonly raw: string[];
 }
 
 /**
