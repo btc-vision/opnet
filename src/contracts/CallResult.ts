@@ -269,6 +269,7 @@ export class CallResult<
                 note: interactionParams.note,
                 anchor: interactionParams.anchor || false,
                 txVersion: interactionParams.txVersion || 2,
+                mldsaSigner: null,
             };
 
             const transaction = await factory.signInteraction(params);
