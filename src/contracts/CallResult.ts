@@ -28,8 +28,8 @@ import { QuantumBIP32Interface } from '@btc-vision/bip32';
 const factory = new TransactionFactory();
 
 export interface TransactionParameters {
-    readonly signer?: Signer | ECPairInterface;
-    readonly mldsaSigner?: QuantumBIP32Interface;
+    readonly signer: Signer | ECPairInterface | null;
+    readonly mldsaSigner: QuantumBIP32Interface | null;
 
     readonly refundTo: string;
     readonly sender?: string;
@@ -276,8 +276,8 @@ export class CallResult<
                 anchor: interactionParams.anchor || false,
                 txVersion: interactionParams.txVersion || 2,
                 mldsaSigner: interactionParams.mldsaSigner,
-                linkMLDSAPublicKeyToAddress: interactionParams.linkMLDSAPublicKeyToAddress,
-                revealMLDSAPublicKey: interactionParams.revealMLDSAPublicKey,
+                linkMLDSAPublicKeyToAddress: interactionParams.linkMLDSAPublicKeyToAddress ?? true,
+                revealMLDSAPublicKey: interactionParams.revealMLDSAPublicKey ?? false,
             };
 
             const transaction = await factory.signInteraction(params);
