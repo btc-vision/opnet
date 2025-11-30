@@ -29,6 +29,8 @@ const factory = new TransactionFactory();
 
 export interface TransactionParameters {
     readonly signer?: Signer | ECPairInterface;
+    readonly mldsaSigner?: QuantumBIP32Interface;
+
     readonly refundTo: string;
     readonly sender?: string;
     readonly priorityFee?: bigint;
@@ -55,7 +57,6 @@ export interface TransactionParameters {
     readonly maxUTXOs?: number;
     readonly throwIfUTXOsLimitReached?: boolean;
 
-    readonly mldsaSigner: QuantumBIP32Interface;
     readonly linkMLDSAPublicKeyToAddress?: boolean;
     readonly revealMLDSAPublicKey?: boolean;
 
