@@ -23,6 +23,7 @@ import { IAccessList } from './interfaces/IAccessList.js';
 import { EventList, ICallResultData, RawEventList } from './interfaces/ICallResult.js';
 import { OPNetEvent } from './OPNetEvent.js';
 import { TransactionHelper } from './TransactionHelpper.js';
+import { QuantumBIP32Interface } from '@btc-vision/bip32';
 
 const factory = new TransactionFactory();
 
@@ -53,6 +54,10 @@ export interface TransactionParameters {
 
     readonly maxUTXOs?: number;
     readonly throwIfUTXOsLimitReached?: boolean;
+
+    readonly mldsaSigner: QuantumBIP32Interface;
+    readonly linkMLDSAPublicKeyToAddress?: boolean;
+    readonly revealMLDSAPublicKey?: boolean;
 
     //readonly includeAccessList?: boolean;
 }
@@ -269,7 +274,9 @@ export class CallResult<
                 note: interactionParams.note,
                 anchor: interactionParams.anchor || false,
                 txVersion: interactionParams.txVersion || 2,
-                mldsaSigner: null,
+                mldsaSigner: interactionParams.mldsaSigner,
+                linkMLDSAPublicKeyToAddress: interactionParams.linkMLDSAPublicKeyToAddress,
+                revealMLDSAPublicKey: interactionParams.revealMLDSAPublicKey,
             };
 
             const transaction = await factory.signInteraction(params);

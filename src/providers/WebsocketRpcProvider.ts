@@ -556,9 +556,10 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
                     to: String(params[0]),
                     data: params[1],
                     from: params[2],
-                    height: params[3] ? Long.fromString(String(params[3])) : undefined,
-                    simulated_transaction: params[4],
-                    access_list: params[5],
+                    fromLegacy: params[3],
+                    height: params[4] ? Long.fromString(String(params[3])) : undefined,
+                    simulated_transaction: params[5],
+                    access_list: params[6],
                 };
 
             case JSONRpcMethods.LATEST_EPOCH:

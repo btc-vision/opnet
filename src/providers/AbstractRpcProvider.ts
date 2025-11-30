@@ -571,17 +571,22 @@ export abstract class AbstractRpcProvider {
     ): Promise<CallResult | ICallRequestError> {
         const toStr: string = to.toString();
         const fromStr: string | undefined = from ? from.toHex() : undefined;
+        const fromLegacyStr: string | undefined = from ? from.tweakedToHex() : undefined;
 
         let dataStr: string = Buffer.isBuffer(data) ? this.bufferToHex(data) : data;
         if (dataStr.startsWith('0x')) {
             dataStr = dataStr.slice(2);
         }
 
-        const params: [string, string, string?, string?, SimulatedTransaction?, IAccessList?] = [
-            toStr,
-            dataStr,
-            fromStr,
-        ];
+        const params: [
+            string,
+            string,
+            string?,
+            string?,
+            string?,
+            SimulatedTransaction?,
+            IAccessList?,
+        ] = [toStr, dataStr, fromStr, fromLegacyStr];
 
         if (height) {
             if (typeof height === 'object') {
