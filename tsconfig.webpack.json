@@ -10,10 +10,9 @@
         "strict": true,
         "baseUrl": ".",
         "paths": {
-            "@btc-vision/transaction": [
-                "node_modules/@btc-vision/transaction"
-            ]
+            "@btc-vision/transaction": ["node_modules/@btc-vision/transaction"]
         },
         "moduleResolution": "bundler"
-    }
+    },
+    "exclude": ["node_modules", "test", "**/*.test.ts", "**/*.spec.ts"]
 }
