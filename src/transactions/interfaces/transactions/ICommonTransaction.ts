@@ -22,7 +22,7 @@ export interface ICommonTransaction<T extends OPNetTransactionTypes> extends ITr
     /**
      * @description This indicates who sent the transaction.
      */
-    readonly classicFrom?: Address | string;
+    readonly fromLegacy?: Address | string;
 
     /**
      * @description Was the binary data compressed?

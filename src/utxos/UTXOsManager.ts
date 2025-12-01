@@ -1,4 +1,3 @@
-import { IUTXO } from '../bitcoin/interfaces/IUTXO.js';
 import { UTXO, UTXOs } from '../bitcoin/UTXOs.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { JsonRpcPayload } from '../providers/interfaces/JSONRpc.js';
@@ -9,7 +8,9 @@ import {
     RawIUTXOsData,
     RequestUTXOsParams,
     RequestUTXOsParamsWithAmount,
+    SpentUTXORef,
 } from './interfaces/IUTXOsManager.js';
+import { RawIUTXO } from '../bitcoin/interfaces/IUTXO.js';
 
 const AUTO_PURGE_AFTER: number = 1000 * 60; // 1 minute
 const FETCH_COOLDOWN = 10000; // 10 seconds
@@ -157,9 +158,10 @@ export class UTXOsManager {
         const fetchedData = await this.maybeFetchUTXOs(address, optimize, olderThan, isCSV);
 
         const utxoKey = (utxo: UTXO) => `${utxo.transactionId}:${utxo.outputIndex}`;
+        const spentRefKey = (ref: SpentUTXORef) => `${ref.transactionId}:${ref.outputIndex}`;
         const pendingUTXOKeys = new Set(addressData.pendingUTXOs.map(utxoKey));
         const spentUTXOKeys = new Set(addressData.spentUTXOs.map(utxoKey));
-        const fetchedSpentKeys = new Set(fetchedData.spentTransactions.map(utxoKey));
+        const fetchedSpentKeys = new Set(fetchedData.spentTransactions.map(spentRefKey));
 
         // Start with confirmed UTXOs
         const combinedUTXOs: UTXOs = [];
@@ -359,20 +361,54 @@ export class UTXOsManager {
 
         const rawUTXOs: JsonRpcResult = await this.provider.callPayloadSingle(payload);
         if ('error' in rawUTXOs) {
-            throw new Error(`Error fetching block: ${rawUTXOs.error}`);
+            throw new Error(`Error fetching UTXOs: ${rawUTXOs.error}`);
         }
 
         const result: RawIUTXOsData = (rawUTXOs.result as RawIUTXOsData) || {
             confirmed: [],
             pending: [],
             spentTransactions: [],
+            raw: [],
         };
 
+        // The raw array contains the actual transaction hex strings (base64 encoded)
+        // Each UTXO has a `raw` field that is an index into this array
+        const rawTransactions = result.raw || [];
+
         return {
-            confirmed: result.confirmed.map((utxo: IUTXO) => new UTXO(utxo, isCSV)),
-            pending: result.pending.map((utxo: IUTXO) => new UTXO(utxo, isCSV)),
-            spentTransactions: result.spentTransactions.map((utxo: IUTXO) => new UTXO(utxo, isCSV)),
+            confirmed: result.confirmed.map((utxo) => {
+                return this.parseUTXO(utxo, isCSV, rawTransactions);
+            }),
+            pending: result.pending.map((utxo) => {
+                return this.parseUTXO(utxo, isCSV, rawTransactions);
+            }),
+            // spentTransactions only contain transactionId and outputIndex (no raw data needed)
+            spentTransactions: result.spentTransactions.map(
+                (spent): SpentUTXORef => ({
+                    transactionId: spent.transactionId,
+                    outputIndex: spent.outputIndex,
+                }),
+            ),
         };
+    }
+
+    private parseUTXO(utxo: RawIUTXO, isCSV: boolean, rawTransactions: string[]): UTXO {
+        // raw is now an index into the rawTransactions array
+        if (utxo.raw === undefined || utxo.raw === null) {
+            throw new Error('Missing raw index field in UTXO');
+        }
+
+        const rawHex = rawTransactions[utxo.raw];
+        if (!rawHex) {
+            throw new Error(`Invalid raw index ${utxo.raw} - not found in rawTransactions array`);
+        }
+
+        const raw = {
+            ...utxo,
+            raw: rawTransactions[utxo.raw],
+        };
+
+        return new UTXO(raw, isCSV);
     }
 
     /**
@@ -388,12 +424,14 @@ export class UTXOsManager {
             fetched.confirmed.map((u) => `${u.transactionId}:${u.outputIndex}`),
         );
         const spentKeys = new Set(
-            fetched.spentTransactions.map((u) => `${u.transactionId}:${u.outputIndex}`),
+            fetched.spentTransactions.map(
+                (s: SpentUTXORef) => `${s.transactionId}:${s.outputIndex}`,
+            ),
         );
 
         addressData.pendingUTXOs = addressData.pendingUTXOs.filter((u) => {
             const key = `${u.transactionId}:${u.outputIndex}`;
-            // If it’s now confirmed or known spent, remove it from pending
+            // If it's now confirmed or known spent, remove it from pending
             if (confirmedKeys.has(key) || spentKeys.has(key)) {
                 delete addressData.pendingUtxoDepth[key];
                 return false;

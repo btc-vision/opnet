@@ -17,7 +17,7 @@ export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
     public readonly deployedTransactionHash: string;
 
     public readonly deployerPubKey: Buffer;
-    public readonly deployerClassicPublicKey: Buffer;
+    public readonly deployerHashedPublicKey: Buffer;
     public readonly contractSeed: Buffer;
 
     public readonly contractSaltHash: Buffer;
@@ -41,9 +41,9 @@ export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
             ? raw.deployerPubKey
             : Buffer.from(raw.deployerPubKey, 'base64');
 
-        this.deployerClassicPublicKey = Buffer.isBuffer(raw.deployerClassicPublicKey)
-            ? raw.deployerClassicPublicKey
-            : Buffer.from(raw.deployerClassicPublicKey, 'base64');
+        this.deployerHashedPublicKey = Buffer.isBuffer(raw.deployerAddress)
+            ? raw.deployerAddress
+            : Buffer.from((raw.deployerAddress as unknown as string).replace('0x', ''), 'hex');
 
         this.contractSeed = Buffer.isBuffer(raw.contractSeed)
             ? raw.contractSeed
@@ -55,7 +55,7 @@ export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
 
         this.deployerAddress =
             !raw.deployerAddress && this.deployerPubKey
-                ? new Address(this.deployerPubKey, this.deployerClassicPublicKey)
+                ? new Address(this.deployerHashedPublicKey, this.deployerPubKey)
                 : raw.deployerAddress;
     }
 }

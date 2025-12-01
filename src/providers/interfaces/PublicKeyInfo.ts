@@ -1,7 +1,7 @@
-import { Address } from '@btc-vision/transaction';
+import { Address, MLDSASecurityLevel } from '@btc-vision/transaction';
 
 export interface PublicKeyInfo {
-    readonly mldsaPublicKey: string;
+    //readonly mldsaPublicKey: string;
     readonly mldsaAddress: string;
 
     readonly originalPubKey?: string;
@@ -16,6 +16,10 @@ export interface PublicKeyInfo {
     readonly p2pkhUncompressed?: string;
     readonly p2shp2wpkh?: string;
     readonly p2wpkh?: string;
+
+    readonly mldsaHashedPublicKey?: string;
+    readonly mldsaLevel?: MLDSASecurityLevel;
+    readonly mldsaPublicKey?: string | null;
 }
 
 export interface IPubKeyNotFoundError {

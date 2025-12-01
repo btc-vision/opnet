@@ -13,7 +13,7 @@ import { ParsedSimulatedTransaction } from './SimulatedTransaction.js';
 export interface IContract {
     readonly address: Address | string;
 
-    get p2opOrTweaked(): string;
+    get p2op(): string;
 
     currentGasParameters(): Promise<BlockGasParameters>;
 

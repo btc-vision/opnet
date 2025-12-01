@@ -7,6 +7,7 @@ import {
     BufferHelper,
     ChallengeSolution,
     IP2WSHAddress,
+    MLDSASecurityLevel,
     RawChallenge,
 } from '@btc-vision/transaction';
 import '../serialize/BigInt.js';
@@ -65,6 +66,8 @@ interface ChallengeCache {
     readonly expireAt: number;
 }
 
+const EMPTY_32BYTES_HEX_STRING = '0x' + '00'.repeat(32);
+
 /**
  * @description This class is used to provide an abstract RPC provider.
  * @abstract
@@ -112,15 +115,19 @@ export abstract class AbstractRpcProvider {
      * Get the public key information.
      * @description This method is used to get the public key information.
      * @param {string | Address} addressRaw The address or addresses to get the public key information of
+     * @param isContract
      * @returns {Promise<Address>} The public keys information
      * @example await getPublicKeyInfo('bcrt1qfqsr3m7vjxheghcvw4ks0fryqxfq8qzjf8fxes');
      * @throws {Error} If the address is invalid
      */
-    public async getPublicKeyInfo(addressRaw: string | Address): Promise<Address> {
+    public async getPublicKeyInfo(
+        addressRaw: string | Address,
+        isContract: boolean,
+    ): Promise<Address> {
         const address = addressRaw.toString();
 
         try {
-            const pubKeyInfo = await this.getPublicKeysInfo(address);
+            const pubKeyInfo = await this.getPublicKeysInfo(address, isContract);
 
             return pubKeyInfo[address] || pubKeyInfo[address.replace('0x', '')];
         } catch (e) {
@@ -571,17 +578,22 @@ export abstract class AbstractRpcProvider {
     ): Promise<CallResult | ICallRequestError> {
         const toStr: string = to.toString();
         const fromStr: string | undefined = from ? from.toHex() : undefined;
+        const fromLegacyStr: string | undefined = from ? from.tweakedToHex() : undefined;
 
         let dataStr: string = Buffer.isBuffer(data) ? this.bufferToHex(data) : data;
         if (dataStr.startsWith('0x')) {
             dataStr = dataStr.slice(2);
         }
 
-        const params: [string, string, string?, string?, SimulatedTransaction?, IAccessList?] = [
-            toStr,
-            dataStr,
-            fromStr,
-        ];
+        const params: [
+            string,
+            string,
+            string?,
+            string?,
+            string?,
+            SimulatedTransaction?,
+            IAccessList?,
+        ] = [toStr, dataStr, fromStr, fromLegacyStr];
 
         if (height) {
             if (typeof height === 'object') {
@@ -846,25 +858,23 @@ export abstract class AbstractRpcProvider {
     }
 
     /**
-     * Get the public key information.
-     * @description This method is used to get the public key information.
+     * Get the raw public key information from the API.
+     * @description Returns the raw API response without transforming to Address objects.
      * @param {string | string[] | Address | Address[]} addresses The address or addresses to get the public key information of
-     * @param logErrors
-     * @returns {Promise<AddressesInfo>} The public keys information
-     * @example await getPublicKeysInfo(['addressA', 'addressB']);
-     * @throws {Error} If the address is invalid
+     * @returns {Promise<IPublicKeyInfoResult>} The raw public keys information from the API
+     * @example await getPublicKeysInfoRaw(['addressA', 'addressB']);
+     * @throws {Error} If the address is invalid or API call fails
      */
-    public async getPublicKeysInfo(
+    public async getPublicKeysInfoRaw(
         addresses: string | string[] | Address | Address[],
-        logErrors: boolean = false,
-    ): Promise<AddressesInfo> {
+    ): Promise<IPublicKeyInfoResult> {
         const addressArray = Array.isArray(addresses) ? addresses : [addresses];
 
-        addressArray.forEach((addr) => {
+        for (const addr of addressArray) {
             if (this.validateAddress(addr, this.network) === null) {
                 throw new Error(`Invalid address: ${addr}`);
             }
-        });
+        }
 
         const method = JSONRpcMethods.PUBLIC_KEY_INFO;
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(method, [addressArray]);
@@ -873,29 +883,78 @@ export abstract class AbstractRpcProvider {
         if (data.error) {
             const errorData = (data as JsonRpcError).error;
             const errorMessage = typeof errorData === 'string' ? errorData : errorData.message;
-
             throw new Error(errorMessage);
         }
 
+        return data.result as IPublicKeyInfoResult;
+    }
+
+    /**
+     * Get the public key information and transform to Address objects.
+     * @description Fetches public key information from the API and converts results to Address instances
+     * containing both ML-DSA (quantum-resistant) and classical key data when available.
+     *
+     * The method resolves various address formats (p2tr, p2pkh, p2wpkh, p2op, raw public keys) to their
+     * corresponding public key information and constructs Address objects with the appropriate key hierarchy.
+     *
+     * For addresses with ML-DSA keys registered, the returned Address will have:
+     * - Primary content: SHA256 hash of the ML-DSA public key (mldsaHashedPublicKey)
+     * - Legacy key: The classical tweaked/original public key for Bitcoin address derivation
+     * - Original ML-DSA public key and security level attached to the Address instance
+     *
+     * For addresses without ML-DSA keys, the Address will use the tweaked x-only public key as primary content.
+     *
+     * @param {string | string[] | Address | Address[]} addresses The address(es) to look up. Accepts p2tr addresses,
+     * p2op addresses, raw public keys (32-byte x-only, 33-byte compressed, or 65-byte uncompressed), or existing Address instances.
+     * @param {boolean} [isContract=false] When true, uses tweakedPubkey as the legacy key since contracts
+     * don't have original untweaked keys. When false, prefers originalPubKey when available.
+     * @param {boolean} [logErrors=false] When true, logs errors to console for addresses that fail lookup
+     * instead of silently skipping them.
+     * @returns {Promise<AddressesInfo>} Map of input keys to Address instances. Keys that failed lookup are omitted.
+     * @example
+     * // Single address lookup
+     * const info = await provider.getPublicKeysInfo('bc1p...');
+     *
+     * @example
+     * // Multiple addresses with error logging
+     * const info = await provider.getPublicKeysInfo(['bc1p...', 'bc1q...'], false, true);
+     *
+     * @example
+     * // Contract address lookup
+     * const info = await provider.getPublicKeysInfo(contractAddress, true);
+     *
+     * @throws {Error} If any provided address fails validation before the API call
+     */
+    public async getPublicKeysInfo(
+        addresses: string | string[] | Address | Address[],
+        isContract: boolean = false,
+        logErrors: boolean = false,
+    ): Promise<AddressesInfo> {
+        const result = await this.getPublicKeysInfoRaw(addresses);
         const response: AddressesInfo = {};
 
-        const result = data.result as IPublicKeyInfoResult;
-        const keys = Object.keys(result);
-        for (const pubKey of keys) {
-            const pubKeyValue = result[pubKey];
-            if ('error' in pubKeyValue) {
-                if (logErrors) {
-                    console.error(
-                        `Error fetching public key info for ${pubKey}: ${pubKeyValue.error}`,
-                    );
-                }
+        for (const pubKey of Object.keys(result)) {
+            const info = result[pubKey];
 
+            if ('error' in info) {
+                if (logErrors) {
+                    console.error(`Error fetching public key info for ${pubKey}: ${info.error}`);
+                }
                 continue;
             }
 
-            response[pubKey] = pubKeyValue.originalPubKey
-                ? Address.fromString(pubKeyValue.mldsaPublicKey, pubKeyValue.originalPubKey)
-                : Address.fromString(pubKeyValue.mldsaPublicKey, pubKeyValue.tweakedPubkey);
+            const addressContent = info.mldsaHashedPublicKey ?? info.tweakedPubkey;
+            const legacyKey = isContract
+                ? info.tweakedPubkey
+                : (info.originalPubKey ?? info.tweakedPubkey);
+
+            const address = Address.fromString(addressContent, legacyKey);
+            if (info.mldsaPublicKey) {
+                address.originalMDLSAPublicKey = Buffer.from(info.mldsaPublicKey, 'hex');
+                address.mldsaLevel = info.mldsaLevel as MLDSASecurityLevel;
+            }
+
+            response[pubKey] = address;
         }
 
         return response;

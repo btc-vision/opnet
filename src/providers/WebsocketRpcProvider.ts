@@ -1,37 +1,1029 @@
 import { Network } from '@btc-vision/bitcoin';
+import Long from 'long';
+import { Root, Type } from 'protobufjs';
+
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
-import { JsonRpcCallResult } from './interfaces/JSONRpcResult.js';
+import { JSONRpcMethods } from './interfaces/JSONRpcMethods.js';
+import { JsonRpcCallResult, JsonRpcResult } from './interfaces/JSONRpcResult.js';
+import {
+    BlockNotification,
+    clearProtobufCache,
+    ConnectionState,
+    DEFAULT_CONFIG,
+    EpochNotification,
+    EventHandler,
+    getConnectionStateName,
+    getProtobufType,
+    InternalError,
+    InternalPendingRequest,
+    loadProtobufSchema,
+    MethodMapping,
+    OPNetError,
+    SubscriptionHandler,
+    SubscriptionType,
+    WebSocketClientConfig,
+    WebSocketClientEvent,
+    WebSocketErrorCode,
+    WebSocketRequestOpcode,
+    WebSocketResponseOpcode,
+} from './websocket/index.js';
+
+export {
+    BlockNotification,
+    EpochNotification,
+    EventHandler,
+    SubscriptionHandler,
+    WebSocketClientEvent,
+};
 
 /**
- * @description This class is used to provide a WebSocket RPC provider.
+ * JSON-RPC method to WebSocket opcode mapping
+ */
+const METHOD_MAPPINGS: Partial<Record<JSONRpcMethods, MethodMapping>> = {
+    [JSONRpcMethods.BLOCK_BY_NUMBER]: {
+        requestOpcode: WebSocketRequestOpcode.GET_BLOCK_NUMBER,
+        responseOpcode: WebSocketResponseOpcode.BLOCK_NUMBER,
+        requestType: 'GetBlockNumberRequest',
+        responseType: 'GetBlockNumberResponse',
+    },
+    [JSONRpcMethods.GET_BLOCK_BY_NUMBER]: {
+        requestOpcode: WebSocketRequestOpcode.GET_BLOCK_BY_NUMBER,
+        responseOpcode: WebSocketResponseOpcode.BLOCK,
+        requestType: 'GetBlockByNumberRequest',
+        responseType: 'BlockResponse',
+    },
+    [JSONRpcMethods.GET_BLOCK_BY_HASH]: {
+        requestOpcode: WebSocketRequestOpcode.GET_BLOCK_BY_HASH,
+        responseOpcode: WebSocketResponseOpcode.BLOCK,
+        requestType: 'GetBlockByHashRequest',
+        responseType: 'BlockResponse',
+    },
+    [JSONRpcMethods.GET_BLOCK_BY_CHECKSUM]: {
+        requestOpcode: WebSocketRequestOpcode.GET_BLOCK_BY_CHECKSUM,
+        responseOpcode: WebSocketResponseOpcode.BLOCK,
+        requestType: 'GetBlockByChecksumRequest',
+        responseType: 'BlockResponse',
+    },
+    [JSONRpcMethods.BLOCK_WITNESS]: {
+        requestOpcode: WebSocketRequestOpcode.GET_BLOCK_WITNESS,
+        responseOpcode: WebSocketResponseOpcode.BLOCK_WITNESS,
+        requestType: 'GetBlockWitnessRequest',
+        responseType: 'BlockWitnessResponse',
+    },
+    [JSONRpcMethods.GAS]: {
+        requestOpcode: WebSocketRequestOpcode.GET_GAS,
+        responseOpcode: WebSocketResponseOpcode.GAS,
+        requestType: 'GetGasRequest',
+        responseType: 'GasResponse',
+    },
+    [JSONRpcMethods.GET_TRANSACTION_BY_HASH]: {
+        requestOpcode: WebSocketRequestOpcode.GET_TRANSACTION_BY_HASH,
+        responseOpcode: WebSocketResponseOpcode.TRANSACTION,
+        requestType: 'GetTransactionByHashRequest',
+        responseType: 'TransactionResponse',
+    },
+    [JSONRpcMethods.GET_TRANSACTION_RECEIPT]: {
+        requestOpcode: WebSocketRequestOpcode.GET_TRANSACTION_RECEIPT,
+        responseOpcode: WebSocketResponseOpcode.TRANSACTION_RECEIPT,
+        requestType: 'GetTransactionReceiptRequest',
+        responseType: 'TransactionReceiptResponse',
+    },
+    [JSONRpcMethods.BROADCAST_TRANSACTION]: {
+        requestOpcode: WebSocketRequestOpcode.BROADCAST_TRANSACTION,
+        responseOpcode: WebSocketResponseOpcode.BROADCAST_RESULT,
+        requestType: 'BroadcastTransactionRequest',
+        responseType: 'BroadcastTransactionResponse',
+    },
+    [JSONRpcMethods.TRANSACTION_PREIMAGE]: {
+        requestOpcode: WebSocketRequestOpcode.GET_PREIMAGE,
+        responseOpcode: WebSocketResponseOpcode.PREIMAGE,
+        requestType: 'GetPreimageRequest',
+        responseType: 'PreimageResponse',
+    },
+    [JSONRpcMethods.GET_BALANCE]: {
+        requestOpcode: WebSocketRequestOpcode.GET_BALANCE,
+        responseOpcode: WebSocketResponseOpcode.BALANCE,
+        requestType: 'GetBalanceRequest',
+        responseType: 'BalanceResponse',
+    },
+    [JSONRpcMethods.GET_UTXOS]: {
+        requestOpcode: WebSocketRequestOpcode.GET_UTXOS,
+        responseOpcode: WebSocketResponseOpcode.UTXOS,
+        requestType: 'GetUTXOsRequest',
+        responseType: 'UTXOsResponse',
+    },
+    [JSONRpcMethods.PUBLIC_KEY_INFO]: {
+        requestOpcode: WebSocketRequestOpcode.GET_PUBLIC_KEY_INFO,
+        responseOpcode: WebSocketResponseOpcode.PUBLIC_KEY_INFO,
+        requestType: 'GetPublicKeyInfoRequest',
+        responseType: 'PublicKeyInfoResponse',
+    },
+    [JSONRpcMethods.CHAIN_ID]: {
+        requestOpcode: WebSocketRequestOpcode.GET_CHAIN_ID,
+        responseOpcode: WebSocketResponseOpcode.CHAIN_ID,
+        requestType: 'GetChainIdRequest',
+        responseType: 'ChainIdResponse',
+    },
+    [JSONRpcMethods.REORG]: {
+        requestOpcode: WebSocketRequestOpcode.GET_REORG,
+        responseOpcode: WebSocketResponseOpcode.REORG,
+        requestType: 'GetReorgRequest',
+        responseType: 'ReorgResponse',
+    },
+    [JSONRpcMethods.GET_CODE]: {
+        requestOpcode: WebSocketRequestOpcode.GET_CODE,
+        responseOpcode: WebSocketResponseOpcode.CODE,
+        requestType: 'GetCodeRequest',
+        responseType: 'CodeResponse',
+    },
+    [JSONRpcMethods.GET_STORAGE_AT]: {
+        requestOpcode: WebSocketRequestOpcode.GET_STORAGE_AT,
+        responseOpcode: WebSocketResponseOpcode.STORAGE,
+        requestType: 'GetStorageAtRequest',
+        responseType: 'StorageResponse',
+    },
+    [JSONRpcMethods.CALL]: {
+        requestOpcode: WebSocketRequestOpcode.CALL,
+        responseOpcode: WebSocketResponseOpcode.CALL_RESULT,
+        requestType: 'CallRequest',
+        responseType: 'CallResponse',
+    },
+    [JSONRpcMethods.LATEST_EPOCH]: {
+        requestOpcode: WebSocketRequestOpcode.GET_LATEST_EPOCH,
+        responseOpcode: WebSocketResponseOpcode.EPOCH,
+        requestType: 'GetLatestEpochRequest',
+        responseType: 'EpochResponse',
+    },
+    [JSONRpcMethods.GET_EPOCH_BY_NUMBER]: {
+        requestOpcode: WebSocketRequestOpcode.GET_EPOCH_BY_NUMBER,
+        responseOpcode: WebSocketResponseOpcode.EPOCH,
+        requestType: 'GetEpochByNumberRequest',
+        responseType: 'EpochResponse',
+    },
+    [JSONRpcMethods.GET_EPOCH_BY_HASH]: {
+        requestOpcode: WebSocketRequestOpcode.GET_EPOCH_BY_HASH,
+        responseOpcode: WebSocketResponseOpcode.EPOCH,
+        requestType: 'GetEpochByHashRequest',
+        responseType: 'EpochResponse',
+    },
+    [JSONRpcMethods.GET_EPOCH_TEMPLATE]: {
+        requestOpcode: WebSocketRequestOpcode.GET_EPOCH_TEMPLATE,
+        responseOpcode: WebSocketResponseOpcode.EPOCH_TEMPLATE,
+        requestType: 'GetEpochTemplateRequest',
+        responseType: 'EpochTemplateResponse',
+    },
+    [JSONRpcMethods.SUBMIT_EPOCH]: {
+        requestOpcode: WebSocketRequestOpcode.SUBMIT_EPOCH,
+        responseOpcode: WebSocketResponseOpcode.EPOCH_SUBMIT_RESULT,
+        requestType: 'SubmitEpochRequest',
+        responseType: 'SubmitEpochResponse',
+    },
+};
+
+/**
+ * @description WebSocket RPC provider that extends AbstractRpcProvider.
+ * Uses binary protobuf protocol over WebSocket for efficient communication.
  * @class WebSocketRpcProvider
  * @category Providers
  */
 export class WebSocketRpcProvider extends AbstractRpcProvider {
-    private readonly wsUrl: string;
+    private readonly config: Required<WebSocketClientConfig>;
+    private readonly pendingRequests: Map<number, InternalPendingRequest> = new Map();
+    private readonly subscriptions: Map<SubscriptionType, SubscriptionHandler> = new Map();
+    private readonly eventHandlers: Map<WebSocketClientEvent, Set<EventHandler>> = new Map();
 
-    constructor(url: string, network: Network) {
+    private socket: WebSocket | null = null;
+    private state: ConnectionState = ConnectionState.DISCONNECTED;
+    private requestId: number = 0;
+    private reconnectAttempt: number = 0;
+    private pingTimeout: ReturnType<typeof setTimeout> | null = null;
+    private sessionId: Uint8Array | null = null;
+    private userRequestedDisconnect: boolean = false;
+
+    private protoRoot: Root | null = null;
+    private protoTypes: Map<string, Type> = new Map();
+
+    constructor(
+        url: string,
+        network: Network,
+        config?: Partial<Omit<WebSocketClientConfig, 'url'>>,
+    ) {
         super(network);
 
-        this.wsUrl = this.providerUrl(url);
+        this.config = { ...DEFAULT_CONFIG, url, ...config };
     }
 
-    public _send(payload: JsonRpcPayload): Promise<JsonRpcCallResult> {
-        throw new Error('Method not implemented.');
+    /**
+     * Get the current connection state
+     */
+    public getState(): ConnectionState {
+        return this.state;
+    }
+
+    /**
+     * Check if the provider is ready to send requests
+     */
+    public isReady(): boolean {
+        return this.state === ConnectionState.READY;
+    }
+
+    /**
+     * Connect to the WebSocket server
+     */
+    public async connect(): Promise<void> {
+        if (this.state !== ConnectionState.DISCONNECTED) {
+            throw new Error(
+                `Cannot connect: current state is ${getConnectionStateName(this.state)}`,
+            );
+        }
+
+        this.state = ConnectionState.CONNECTING;
+        this.userRequestedDisconnect = false;
+
+        try {
+            // Load protobuf schema first
+            const httpUrl = this.config.url.replace(/^ws/, 'http');
+            this.protoRoot = await loadProtobufSchema(httpUrl);
+            this.protoTypes.clear();
+
+            // Connect WebSocket
+            await this.connectWebSocket();
+
+            // Perform handshake
+            await this.performHandshake();
+
+            // Start ping loop
+            this.schedulePing();
+
+            this.reconnectAttempt = 0;
+            this.emit(WebSocketClientEvent.CONNECTED, undefined);
+        } catch (error) {
+            this.state = ConnectionState.DISCONNECTED;
+            throw error;
+        }
+    }
+
+    /**
+     * Disconnect from the WebSocket server
+     */
+    public disconnect(): void {
+        if (this.state === ConnectionState.DISCONNECTED) {
+            return;
+        }
+
+        this.userRequestedDisconnect = true;
+        this.state = ConnectionState.CLOSING;
+        this.cancelPing();
+        this.cleanupPendingRequests(new Error('Connection closed'));
+
+        if (this.socket) {
+            this.socket.close(1000, 'Client disconnect');
+            this.socket = null;
+        }
+
+        this.state = ConnectionState.DISCONNECTED;
+        this.emit(WebSocketClientEvent.DISCONNECTED, undefined);
+    }
+
+    /**
+     * Register an event handler
+     */
+    public on<T>(event: WebSocketClientEvent, handler: EventHandler<T>): void {
+        let handlers = this.eventHandlers.get(event);
+        if (!handlers) {
+            handlers = new Set();
+            this.eventHandlers.set(event, handlers);
+        }
+        handlers.add(handler as EventHandler);
+    }
+
+    /**
+     * Remove an event handler
+     */
+    public off<T>(event: WebSocketClientEvent, handler: EventHandler<T>): void {
+        const handlers = this.eventHandlers.get(event);
+        if (handlers) {
+            handlers.delete(handler as EventHandler);
+        }
+    }
+
+    /**
+     * Subscribe to new blocks
+     */
+    public async subscribeBlocks(handler: SubscriptionHandler<BlockNotification>): Promise<void> {
+        if (this.state !== ConnectionState.READY) {
+            throw new Error('Not connected');
+        }
+
+        const type = this.getType('SubscribeBlocksRequest');
+        const message = type.create({});
+        const encodedPayload = type.encode(message).finish();
+
+        const requestId = this.nextRequestId();
+        const fullMessage = this.buildMessage(
+            WebSocketRequestOpcode.SUBSCRIBE_BLOCKS,
+            requestId,
+            encodedPayload,
+        );
+
+        await this.sendRequest(requestId, fullMessage);
+        this.subscriptions.set(SubscriptionType.BLOCKS, handler as SubscriptionHandler);
+    }
+
+    /**
+     * Subscribe to new epochs
+     */
+    public async subscribeEpochs(handler: SubscriptionHandler<EpochNotification>): Promise<void> {
+        if (this.state !== ConnectionState.READY) {
+            throw new Error('Not connected');
+        }
+
+        const type = this.getType('SubscribeEpochsRequest');
+        const message = type.create({});
+        const encodedPayload = type.encode(message).finish();
+
+        const requestId = this.nextRequestId();
+        const fullMessage = this.buildMessage(
+            WebSocketRequestOpcode.SUBSCRIBE_EPOCHS,
+            requestId,
+            encodedPayload,
+        );
+
+        await this.sendRequest(requestId, fullMessage);
+        this.subscriptions.set(SubscriptionType.EPOCHS, handler as SubscriptionHandler);
+    }
+
+    /**
+     * Unsubscribe from a subscription
+     */
+    public async unsubscribe(subscriptionType: SubscriptionType): Promise<void> {
+        if (this.state !== ConnectionState.READY) {
+            throw new Error('Not connected');
+        }
+
+        const type = this.getType('UnsubscribeRequest');
+        const message = type.create({ subscription_type: subscriptionType });
+        const encodedPayload = type.encode(message).finish();
+
+        const requestId = this.nextRequestId();
+        const fullMessage = this.buildMessage(
+            WebSocketRequestOpcode.UNSUBSCRIBE,
+            requestId,
+            encodedPayload,
+        );
+
+        await this.sendRequest(requestId, fullMessage);
+        this.subscriptions.delete(subscriptionType);
+    }
+
+    /**
+     * Clear the protobuf cache (useful when reconnecting to a different server)
+     */
+    public clearCache(): void {
+        clearProtobufCache();
+        this.protoTypes.clear();
+        this.protoRoot = null;
+    }
+
+    /**
+     * Implements the abstract _send method from AbstractRpcProvider.
+     * Translates JSON-RPC payloads to WebSocket binary protocol.
+     */
+    public async _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult> {
+        if (this.state !== ConnectionState.READY) {
+            throw new Error('WebSocket not connected. Call connect() first.');
+        }
+
+        const payloads = Array.isArray(payload) ? payload : [payload];
+        const results: JsonRpcResult[] = [];
+
+        for (const p of payloads) {
+            const result = await this.sendJsonRpcRequest(p);
+            results.push(result);
+        }
+
+        return results;
     }
 
     protected providerUrl(url: string): string {
         url = url.trim();
 
         if (url.endsWith('/')) {
-            return url.slice(0, -1);
+            url = url.slice(0, -1);
         }
 
-        if (url.includes('api/v1/json-rpc-ws')) {
-            return url;
-        } else {
-            return `${url}/api/v1/json-rpc-ws`;
+        // Ensure it's a WebSocket URL
+        if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
+            url = url.replace(/^http/, 'ws');
         }
+
+        return url;
+    }
+
+    /**
+     * Translate a JSON-RPC payload to a WebSocket request and send it
+     */
+    private async sendJsonRpcRequest(payload: JsonRpcPayload): Promise<JsonRpcResult> {
+        const mapping = METHOD_MAPPINGS[payload.method];
+        if (!mapping) {
+            throw new Error(`Unsupported method: ${payload.method}`);
+        }
+
+        const requestType = this.getType(mapping.requestType);
+        const params = Array.isArray(payload.params) ? payload.params : [];
+        const protoPayload = this.translateJsonRpcParams(payload.method, params);
+        const message = requestType.create(protoPayload);
+        const encodedPayload = requestType.encode(message).finish();
+
+        const requestId = this.nextRequestId();
+        const fullMessage = this.buildMessage(mapping.requestOpcode, requestId, encodedPayload);
+
+        const responseData = await this.sendRequest(requestId, fullMessage);
+        const responseType = this.getType(mapping.responseType);
+        const decoded = responseType.decode(responseData);
+        const responseObj = responseType.toObject(decoded, {
+            longs: String,
+            bytes: String,
+            defaults: true,
+        }) as Record<string, unknown>;
+
+        // Translate protobuf response back to JSON-RPC format
+        const result = this.translateProtoResponse(payload.method, responseObj);
+
+        return {
+            jsonrpc: '2.0',
+            id: payload.id ?? null,
+            result,
+        } as JsonRpcResult;
+    }
+
+    /**
+     * Translate JSON-RPC params to protobuf message fields
+     */
+    private translateJsonRpcParams(
+        method: JSONRpcMethods,
+        params: unknown[],
+    ): Record<string, unknown> {
+        switch (method) {
+            case JSONRpcMethods.BLOCK_BY_NUMBER:
+                return {};
+
+            case JSONRpcMethods.GET_BLOCK_BY_NUMBER:
+                return {
+                    block_number: Long.fromString(String(params[0])),
+                    prefetch_txs: params[1] ?? false,
+                };
+
+            case JSONRpcMethods.GET_BLOCK_BY_HASH:
+                return {
+                    block_hash: params[0],
+                    prefetch_txs: params[1] ?? false,
+                };
+
+            case JSONRpcMethods.GET_BLOCK_BY_CHECKSUM:
+                return {
+                    checksum: params[0],
+                    prefetch_txs: params[1] ?? false,
+                };
+
+            case JSONRpcMethods.BLOCK_WITNESS:
+                return {
+                    height: Long.fromString(String(params[0] ?? -1)),
+                    trusted: params[1],
+                    limit: params[2],
+                    page: params[3],
+                };
+
+            case JSONRpcMethods.GAS:
+                return {};
+
+            case JSONRpcMethods.GET_TRANSACTION_BY_HASH:
+                return { tx_hash: params[0] };
+
+            case JSONRpcMethods.GET_TRANSACTION_RECEIPT:
+                return { tx_hash: params[0] };
+
+            case JSONRpcMethods.BROADCAST_TRANSACTION:
+                return {
+                    raw_tx: params[0],
+                    psbt: params[1] ?? false,
+                };
+
+            case JSONRpcMethods.TRANSACTION_PREIMAGE:
+                return {};
+
+            case JSONRpcMethods.GET_BALANCE:
+                return {
+                    address: String(params[0]),
+                    filter_ordinals: params[1] ?? true,
+                };
+
+            case JSONRpcMethods.GET_UTXOS:
+                return {
+                    address: String(params[0]),
+                    optimize: params[1] ?? true,
+                };
+
+            case JSONRpcMethods.PUBLIC_KEY_INFO:
+                return { addresses: params[0] };
+
+            case JSONRpcMethods.CHAIN_ID:
+                return {};
+
+            case JSONRpcMethods.REORG:
+                return {
+                    from_block: params[0] ? Long.fromString(String(params[0])) : undefined,
+                    to_block: params[1] ? Long.fromString(String(params[1])) : undefined,
+                };
+
+            case JSONRpcMethods.GET_CODE:
+                return {
+                    address: String(params[0]),
+                    only_bytecode: params[1] ?? false,
+                };
+
+            case JSONRpcMethods.GET_STORAGE_AT:
+                return {
+                    address: String(params[0]),
+                    pointer: params[1],
+                    proofs: params[2] ?? true,
+                    height: params[3] ? Long.fromString(String(params[3])) : undefined,
+                };
+
+            case JSONRpcMethods.CALL:
+                return {
+                    to: String(params[0]),
+                    data: params[1],
+                    from: params[2],
+                    fromLegacy: params[3],
+                    height: params[4] ? Long.fromString(String(params[3])) : undefined,
+                    simulated_transaction: params[5],
+                    access_list: params[6],
+                };
+
+            case JSONRpcMethods.LATEST_EPOCH:
+                return {};
+
+            case JSONRpcMethods.GET_EPOCH_BY_NUMBER:
+                return {
+                    epoch_number: Long.fromString(String(params[0])),
+                    include_submissions: params[1] ?? false,
+                };
+
+            case JSONRpcMethods.GET_EPOCH_BY_HASH:
+                return {
+                    epoch_hash: params[0],
+                    include_submissions: params[1] ?? false,
+                };
+
+            case JSONRpcMethods.GET_EPOCH_TEMPLATE:
+                return {};
+
+            case JSONRpcMethods.SUBMIT_EPOCH:
+                return params[0] as Record<string, unknown>;
+
+            default:
+                return {};
+        }
+    }
+
+    /**
+     * Translate protobuf response to JSON-RPC result format
+     */
+    private translateProtoResponse(
+        method: JSONRpcMethods,
+        response: Record<string, unknown>,
+    ): unknown {
+        // Most responses can be returned as-is since they match the expected format
+        // Special handling for certain types that need conversion
+        switch (method) {
+            case JSONRpcMethods.BLOCK_BY_NUMBER:
+                return response.block_number;
+
+            case JSONRpcMethods.CHAIN_ID:
+                return response.chain_id;
+
+            case JSONRpcMethods.GET_BALANCE:
+                return response.balance;
+
+            default:
+                return response;
+        }
+    }
+
+    private connectWebSocket(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const url = this.buildWebSocketUrl();
+
+            const timeout = setTimeout(() => {
+                reject(new Error(`Connection timeout after ${this.config.connectTimeout}ms`));
+            }, this.config.connectTimeout);
+
+            try {
+                this.socket = new WebSocket(url);
+                this.socket.binaryType = 'arraybuffer';
+
+                this.socket.onopen = () => {
+                    clearTimeout(timeout);
+                    this.state = ConnectionState.CONNECTED;
+                    resolve();
+                };
+
+                this.socket.onerror = (event) => {
+                    clearTimeout(timeout);
+                    reject(new Error(`WebSocket error: ${event}`));
+                };
+
+                this.socket.onclose = (event) => {
+                    this.handleClose(event);
+                };
+
+                this.socket.onmessage = (event) => {
+                    this.handleMessage(event.data as ArrayBuffer);
+                };
+            } catch (error) {
+                clearTimeout(timeout);
+                reject(error instanceof Error ? error : new Error(String(error)));
+            }
+        });
+    }
+
+    private buildWebSocketUrl(): string {
+        let url = this.config.url.trim();
+        if (url.endsWith('/')) {
+            url = url.slice(0, -1);
+        }
+
+        // Ensure it's a WebSocket URL
+        if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
+            url = url.replace(/^http/, 'ws');
+        }
+
+        // Add the WebSocket endpoint path
+        if (!url.includes('/api/v1/ws')) {
+            url = `${url}/api/v1/ws`;
+        }
+
+        return url;
+    }
+
+    private async performHandshake(): Promise<void> {
+        this.state = ConnectionState.HANDSHAKING;
+
+        const type = this.getType('HandshakeRequest');
+        const message = type.create({
+            protocol_version: 1,
+            client_name: 'opnet-js',
+            client_version: '1.0.0',
+        });
+
+        const encodedPayload = type.encode(message).finish();
+        const requestId = this.nextRequestId();
+        const fullMessage = this.buildMessage(
+            WebSocketRequestOpcode.HANDSHAKE,
+            requestId,
+            encodedPayload,
+        );
+
+        const responseData = await this.sendRequest(
+            requestId,
+            fullMessage,
+            this.config.handshakeTimeout,
+        );
+
+        const responseType = this.getType('HandshakeResponse');
+        const decoded = responseType.decode(responseData);
+        const response = responseType.toObject(decoded, {
+            longs: String,
+            bytes: Uint8Array,
+            defaults: true,
+        }) as { session_id?: Uint8Array; server_version?: string };
+
+        if (response.session_id) {
+            this.sessionId = response.session_id;
+        }
+
+        this.state = ConnectionState.READY;
+    }
+
+    private getType(typeName: string): Type {
+        let type = this.protoTypes.get(typeName);
+        if (!type) {
+            if (!this.protoRoot) {
+                throw new Error('Protobuf schema not loaded');
+            }
+            type = getProtobufType(this.protoRoot, typeName);
+            this.protoTypes.set(typeName, type);
+        }
+        return type;
+    }
+
+    private nextRequestId(): number {
+        this.requestId = (this.requestId + 1) & 0xffffffff;
+        return this.requestId;
+    }
+
+    private buildMessage(
+        opcode: WebSocketRequestOpcode,
+        requestId: number,
+        payload: Uint8Array,
+    ): Uint8Array {
+        // Message format: [opcode (1 byte)] [requestId (4 bytes LE)] [payload]
+        const message = new Uint8Array(1 + 4 + payload.length);
+        message[0] = opcode;
+
+        // Write request ID as little-endian uint32
+        message[1] = requestId & 0xff;
+        message[2] = (requestId >> 8) & 0xff;
+        message[3] = (requestId >> 16) & 0xff;
+        message[4] = (requestId >> 24) & 0xff;
+
+        message.set(payload, 5);
+        return message;
+    }
+
+    private sendRequest(
+        requestId: number,
+        message: Uint8Array,
+        timeout: number = this.config.requestTimeout,
+    ): Promise<Uint8Array> {
+        return new Promise((resolve, reject) => {
+            if (this.pendingRequests.size >= this.config.maxPendingRequests) {
+                reject(new Error('Too many pending requests'));
+                return;
+            }
+
+            const timeoutHandle = setTimeout(() => {
+                this.pendingRequests.delete(requestId);
+                reject(new Error(`Request timeout after ${timeout}ms`));
+            }, timeout);
+
+            this.pendingRequests.set(requestId, {
+                resolve,
+                reject,
+                timeout: timeoutHandle,
+            });
+
+            this.send(message);
+        });
+    }
+
+    private send(data: Uint8Array): void {
+        if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+            throw new Error('WebSocket not connected');
+        }
+        this.socket.send(data);
+    }
+
+    private handleMessage(data: ArrayBuffer): void {
+        const buffer = new Uint8Array(data);
+        if (buffer.length < 5) {
+            console.error('Invalid message: too short');
+            return;
+        }
+
+        const opcode = buffer[0] as WebSocketResponseOpcode;
+
+        // Handle notifications (no request ID)
+        if (opcode === WebSocketResponseOpcode.NEW_BLOCK_NOTIFICATION) {
+            this.handleBlockNotification(buffer.slice(1));
+            return;
+        }
+
+        if (opcode === WebSocketResponseOpcode.NEW_EPOCH_NOTIFICATION) {
+            this.handleEpochNotification(buffer.slice(1));
+            return;
+        }
+
+        // Extract request ID (little-endian uint32)
+        const requestId = buffer[1] | (buffer[2] << 8) | (buffer[3] << 16) | (buffer[4] << 24);
+
+        const payload = buffer.slice(5);
+
+        // Handle error responses
+        if (opcode === WebSocketResponseOpcode.ERROR) {
+            this.handleErrorResponse(requestId, payload);
+            return;
+        }
+
+        // Handle regular responses
+        const pending = this.pendingRequests.get(requestId);
+        if (pending) {
+            clearTimeout(pending.timeout);
+            this.pendingRequests.delete(requestId);
+            pending.resolve(payload);
+        }
+    }
+
+    private handleErrorResponse(requestId: number, payload: Uint8Array): void {
+        const pending = this.pendingRequests.get(requestId);
+        if (!pending) return;
+
+        clearTimeout(pending.timeout);
+        this.pendingRequests.delete(requestId);
+
+        try {
+            const type = this.getType('ErrorResponse');
+            const decoded = type.decode(payload);
+            const error = type.toObject(decoded, {
+                longs: Number,
+                bytes: Uint8Array,
+                defaults: true,
+            }) as { code?: number; message?: string; data?: Uint8Array };
+
+            pending.reject(
+                new OPNetError(
+                    (error.code as WebSocketErrorCode) ?? InternalError.INTERNAL_ERROR,
+                    error.message,
+                    error.data,
+                ),
+            );
+        } catch (e) {
+            pending.reject(new Error('Failed to parse error response'));
+        }
+    }
+
+    private handleBlockNotification(payload: Uint8Array): void {
+        const handler = this.subscriptions.get(SubscriptionType.BLOCKS);
+        if (!handler) return;
+
+        try {
+            const type = this.getType('BlockNotification');
+            const decoded = type.decode(payload);
+            const block = type.toObject(decoded, {
+                longs: String,
+                defaults: true,
+            }) as {
+                block_number?: string;
+                block_hash?: string;
+                previous_block_hash?: string;
+                timestamp?: string;
+            };
+
+            const notification: BlockNotification = {
+                blockNumber: BigInt(block.block_number || '0'),
+                blockHash: block.block_hash || '',
+                previousBlockHash: block.previous_block_hash || '',
+                timestamp: BigInt(block.timestamp || '0'),
+            };
+
+            handler(notification);
+            this.emit(WebSocketClientEvent.BLOCK, notification);
+        } catch (e) {
+            console.error('Failed to parse block notification:', e);
+        }
+    }
+
+    private handleEpochNotification(payload: Uint8Array): void {
+        const handler = this.subscriptions.get(SubscriptionType.EPOCHS);
+        if (!handler) return;
+
+        try {
+            const type = this.getType('EpochNotification');
+            const decoded = type.decode(payload);
+            const epoch = type.toObject(decoded, {
+                longs: String,
+                defaults: true,
+            }) as { epoch_number?: string; epoch_hash?: string; timestamp?: string };
+
+            const notification: EpochNotification = {
+                epochNumber: BigInt(epoch.epoch_number || '0'),
+                epochHash: epoch.epoch_hash || '',
+                timestamp: BigInt(epoch.timestamp || '0'),
+            };
+
+            handler(notification);
+            this.emit(WebSocketClientEvent.EPOCH, notification);
+        } catch (e) {
+            console.error('Failed to parse epoch notification:', e);
+        }
+    }
+
+    private handleClose(event: CloseEvent): void {
+        const wasReady = this.state === ConnectionState.READY;
+        this.state = ConnectionState.DISCONNECTED;
+        this.cancelPing();
+
+        // Only auto-reconnect if:
+        // 1. Was in ready state
+        // 2. autoReconnect is enabled
+        // 3. User did not explicitly call disconnect()
+        if (wasReady && this.config.autoReconnect && !this.userRequestedDisconnect) {
+            void this.reconnect();
+        } else {
+            this.cleanupPendingRequests(
+                new Error(`Connection closed: ${event.code} ${event.reason}`),
+            );
+            this.emit(WebSocketClientEvent.DISCONNECTED, {
+                code: event.code,
+                reason: event.reason,
+            });
+        }
+    }
+
+    private async reconnect(): Promise<void> {
+        if (this.reconnectAttempt >= this.config.maxReconnectAttempts) {
+            this.emit(WebSocketClientEvent.ERROR, new Error('Max reconnection attempts exceeded'));
+            return;
+        }
+
+        this.state = ConnectionState.RECONNECTING;
+        this.reconnectAttempt++;
+
+        const delay = Math.min(
+            this.config.reconnectBaseDelay * Math.pow(2, this.reconnectAttempt - 1),
+            this.config.reconnectMaxDelay,
+        );
+        const jitter = Math.random() * 0.3 * delay;
+
+        await this.sleep(delay + jitter);
+
+        try {
+            this.state = ConnectionState.DISCONNECTED;
+            await this.connect();
+            await this.resubscribe();
+        } catch (e) {
+            console.warn(`Reconnect attempt ${this.reconnectAttempt} failed:`, e);
+            void this.reconnect();
+        }
+    }
+
+    private async resubscribe(): Promise<void> {
+        const handlers = new Map(this.subscriptions);
+        this.subscriptions.clear();
+
+        for (const [type, handler] of handlers) {
+            try {
+                if (type === SubscriptionType.BLOCKS) {
+                    await this.subscribeBlocks(handler as SubscriptionHandler<BlockNotification>);
+                } else if (type === SubscriptionType.EPOCHS) {
+                    await this.subscribeEpochs(handler as SubscriptionHandler<EpochNotification>);
+                }
+            } catch (e) {
+                console.error(`Failed to resubscribe to ${type}:`, e);
+            }
+        }
+    }
+
+    private cleanupPendingRequests(error: Error): void {
+        for (const [_id, pending] of this.pendingRequests) {
+            clearTimeout(pending.timeout);
+            pending.reject(error);
+        }
+        this.pendingRequests.clear();
+    }
+
+    private schedulePing(): void {
+        this.cancelPing();
+
+        this.pingTimeout = setTimeout(() => {
+            if (this.state === ConnectionState.READY) {
+                try {
+                    this.ping();
+                } catch (e) {
+                    console.warn('Ping failed:', e);
+                }
+
+                // Schedule next ping recursively
+                this.schedulePing();
+            }
+        }, this.config.pingInterval);
+    }
+
+    private cancelPing(): void {
+        if (this.pingTimeout) {
+            clearTimeout(this.pingTimeout);
+            this.pingTimeout = null;
+        }
+    }
+
+    private ping(): void {
+        const type = this.getType('PingRequest');
+        const message = type.create({ timestamp: Long.fromNumber(Date.now()) });
+        const encodedPayload = type.encode(message).finish();
+
+        const fullMessage = new Uint8Array(1 + encodedPayload.length);
+        fullMessage[0] = WebSocketRequestOpcode.PING;
+        fullMessage.set(encodedPayload, 1);
+
+        this.send(fullMessage);
+    }
+
+    private emit<T>(event: WebSocketClientEvent, data: T): void {
+        const handlers = this.eventHandlers.get(event);
+        if (handlers) {
+            for (const handler of handlers) {
+                try {
+                    handler(data);
+                } catch (e) {
+                    console.error(`Error in event handler for ${event}:`, e);
+                }
+            }
+        }
+    }
+
+    private sleep(ms: number): Promise<void> {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }

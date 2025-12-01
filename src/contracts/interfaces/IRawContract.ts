@@ -15,7 +15,6 @@ export interface IRawContract {
     readonly deployedTransactionId: string;
     readonly deployedTransactionHash: string;
     readonly deployerPubKey: Buffer | string;
-    readonly deployerClassicPublicKey: Buffer | string;
     readonly contractSeed: Buffer | string;
     readonly contractSaltHash: Buffer | string;
     readonly deployerAddress: Address;

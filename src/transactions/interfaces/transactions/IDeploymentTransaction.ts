@@ -30,11 +30,6 @@ export interface IDeploymentTransaction
     readonly deployerPubKey?: Buffer | string;
 
     /**
-     * @description The public key of the deployer.
-     */
-    readonly deployerClassicPubKey?: Buffer | string;
-
-    /**
      * @description The seed of the contract.
      */
     readonly contractSeed?: Buffer | string;

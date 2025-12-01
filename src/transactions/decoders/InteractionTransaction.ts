@@ -75,7 +75,7 @@ export class InteractionTransaction
             if (transaction.from) {
                 this.from = new Address(
                     Buffer.from(transaction.from as string, 'base64'),
-                    Buffer.from(transaction.classicFrom as string, 'base64'),
+                    Buffer.from(transaction.fromLegacy as string, 'base64'),
                 );
             }
         } catch {}

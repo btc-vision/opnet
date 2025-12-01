@@ -23,11 +23,14 @@ import { IAccessList } from './interfaces/IAccessList.js';
 import { EventList, ICallResultData, RawEventList } from './interfaces/ICallResult.js';
 import { OPNetEvent } from './OPNetEvent.js';
 import { TransactionHelper } from './TransactionHelpper.js';
+import { QuantumBIP32Interface } from '@btc-vision/bip32';
 
 const factory = new TransactionFactory();
 
 export interface TransactionParameters {
-    readonly signer?: Signer | ECPairInterface;
+    readonly signer: Signer | ECPairInterface | null;
+    readonly mldsaSigner: QuantumBIP32Interface | null;
+
     readonly refundTo: string;
     readonly sender?: string;
     readonly priorityFee?: bigint;
@@ -53,6 +56,9 @@ export interface TransactionParameters {
 
     readonly maxUTXOs?: number;
     readonly throwIfUTXOsLimitReached?: boolean;
+
+    readonly linkMLDSAPublicKeyToAddress?: boolean;
+    readonly revealMLDSAPublicKey?: boolean;
 
     //readonly includeAccessList?: boolean;
 }
@@ -269,6 +275,9 @@ export class CallResult<
                 note: interactionParams.note,
                 anchor: interactionParams.anchor || false,
                 txVersion: interactionParams.txVersion || 2,
+                mldsaSigner: interactionParams.mldsaSigner,
+                linkMLDSAPublicKeyToAddress: interactionParams.linkMLDSAPublicKeyToAddress ?? true,
+                revealMLDSAPublicKey: interactionParams.revealMLDSAPublicKey ?? false,
             };
 
             const transaction = await factory.signInteraction(params);
