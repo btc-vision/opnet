@@ -21,9 +21,7 @@ export class BlockWitnessAPI implements IBlockWitnessAPI {
         this.timestamp = data.timestamp;
         this.proofs = Object.freeze(data.proofs.map((proof) => stringBase64ToBuffer(proof)));
         this.identity = data.identity ? stringBase64ToBuffer(data.identity) : undefined;
-        this.publicKey = data.mldsaPublicKey
-            ? Address.fromString(data.mldsaPublicKey, data.classicPublicKey)
-            : undefined;
+        this.publicKey = data.publicKey ? Address.fromString(data.publicKey) : undefined;
     }
 }
 

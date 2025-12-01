@@ -20,7 +20,7 @@ export class DeploymentTransaction
     public readonly wasCompressed?: boolean;
 
     public readonly deployerPubKey?: Buffer;
-    public readonly deployerClassicPubKey?: Buffer;
+    public readonly deployerHashedPublicKey?: Buffer;
     public readonly deployerAddress?: Address;
 
     public readonly contractSeed?: Buffer;
@@ -34,7 +34,7 @@ export class DeploymentTransaction
         try {
             this.from = new Address(
                 Buffer.from(transaction.from as string, 'base64'),
-                Buffer.from(transaction.classicFrom as string, 'base64'),
+                Buffer.from(transaction.fromLegacy as string, 'base64'),
             );
 
             this.contractAddress = transaction.contractAddress;
@@ -46,11 +46,11 @@ export class DeploymentTransaction
             this.wasCompressed = transaction.wasCompressed;
 
             this.deployerPubKey = Buffer.from(transaction.deployerPubKey as string, 'base64');
-            this.deployerClassicPubKey = Buffer.from(
-                transaction.deployerClassicPubKey as string,
-                'base64',
+            this.deployerHashedPublicKey = Buffer.from(
+                (transaction.deployerAddress as string).replace('0x', ''),
+                'hex',
             );
-            this.deployerAddress = new Address(this.deployerClassicPubKey, this.deployerPubKey);
+            this.deployerAddress = new Address(this.deployerHashedPublicKey, this.deployerPubKey);
 
             this.contractSeed = Buffer.from(transaction.contractSeed as string, 'base64');
             this.contractSaltHash = Buffer.from(transaction.contractSaltHash as string, 'base64');

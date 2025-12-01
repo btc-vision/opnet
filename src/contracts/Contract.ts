@@ -119,7 +119,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
      * The P2OP address of the contract.
      * @returns {string} The P2OP address of the contract.
      */
-    public get p2opOrTweaked(): string {
+    public get p2op(): string {
         if (typeof this.address !== 'string') {
             return this.address.p2op(this.network);
         }
@@ -134,7 +134,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     public get contractAddress(): Promise<Address> {
         if (typeof this.address === 'string') {
             if (!this._rlAddress) {
-                this._rlAddress = this.provider.getPublicKeyInfo(this.address);
+                this._rlAddress = this.provider.getPublicKeyInfo(this.address, true);
             }
 
             return this._rlAddress;
@@ -163,7 +163,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
         if (!Array.isArray(events)) {
             const tempEvents = events;
-            events = tempEvents[this.p2opOrTweaked];
+            events = tempEvents[this.p2op];
 
             if (
                 !Array.isArray(events) &&
@@ -740,7 +740,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 ? this.decodeOutput(element.outputs, response.result)
                 : { values: [], obj: {} };
 
-            response.setTo(this.p2opOrTweaked, address);
+            response.setTo(this.p2op, address);
             response.setFromAddress(this.from);
             response.setDecoded(decoded);
             response.setCalldata(buffer);
