@@ -58,8 +58,6 @@ interface ChallengeCache {
     readonly expireAt: number;
 }
 
-const EMPTY_32BYTES_HEX_STRING = '0x' + '00'.repeat(32);
-
 /**
  * @description This class is used to provide an abstract RPC provider.
  * @abstract
@@ -937,11 +935,17 @@ export abstract class AbstractRpcProvider {
 
             const addressContent = isContract
                 ? (info.mldsaHashedPublicKey ?? info.tweakedPubkey)
-                : (info.mldsaHashedPublicKey ?? EMPTY_32BYTES_HEX_STRING);
+                : info.mldsaHashedPublicKey;
 
             const legacyKey = isContract
                 ? info.tweakedPubkey
                 : (info.originalPubKey ?? info.tweakedPubkey);
+
+            if (!addressContent) {
+                throw new Error(
+                    `No valid address content found for ${pubKey}. Use getPublicKeysInfoRaw instead.`,
+                );
+            }
 
             const address = Address.fromString(addressContent, legacyKey);
             if (info.mldsaPublicKey) {
