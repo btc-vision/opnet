@@ -329,6 +329,65 @@ export class CallResult<
     }
 
     /**
+     * Broadcasts a pre-signed interaction transaction.
+     * @param {SignedInteractionTransactionReceipt} signedTx - The signed transaction data.
+     * @returns {Promise<InteractionTransactionReceipt>} The transaction receipt with broadcast results.
+     */
+    public async sendPresignedTransaction(
+        signedTx: SignedInteractionTransactionReceipt,
+    ): Promise<InteractionTransactionReceipt> {
+        if (!signedTx.utxoTracking.isP2WDA) {
+            if (!signedTx.fundingTransactionRaw) {
+                throw new Error('Funding transaction not created');
+            }
+
+            const tx1 = await this.#provider.sendRawTransaction(
+                signedTx.fundingTransactionRaw,
+                false,
+            );
+
+            if (!tx1 || tx1.error) {
+                throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
+            }
+
+            if (!tx1.success) {
+                throw new Error(`Error sending transaction: ${tx1.result || 'Unknown error'}`);
+            }
+        }
+
+        const tx2 = await this.#provider.sendRawTransaction(
+            signedTx.interactionTransactionRaw,
+            false,
+        );
+
+        if (!tx2 || tx2.error) {
+            throw new Error(`Error sending transaction: ${tx2?.error || 'Unknown error'}`);
+        }
+
+        if (!tx2.result) {
+            throw new Error('No transaction ID returned');
+        }
+
+        if (!tx2.success) {
+            throw new Error(`Error sending transaction: ${tx2.result || 'Unknown error'}`);
+        }
+
+        this.#processUTXOTracking(signedTx);
+
+        return {
+            interactionAddress: signedTx.interactionAddress,
+            transactionId: tx2.result,
+            peerAcknowledgements: tx2.peers || 0,
+            newUTXOs: signedTx.nextUTXOs,
+            estimatedFees: signedTx.estimatedFees,
+            challengeSolution: signedTx.challengeSolution,
+            rawTransaction: signedTx.interactionTransactionRaw,
+            fundingUTXOs: signedTx.fundingUTXOs,
+            compiledTargetScript: signedTx.compiledTargetScript,
+        };
+    }
+
+    /**
      * Signs and broadcasts a bitcoin interaction transaction from a simulated contract call.
      * @param {TransactionParameters} interactionParams - The parameters for the transaction.
      * @param amountAddition - Additional satoshis to request when acquiring UTXOs.
@@ -340,56 +399,7 @@ export class CallResult<
     ): Promise<InteractionTransactionReceipt> {
         try {
             const signedTx = await this.signTransaction(interactionParams, amountAddition);
-
-            if (!signedTx.utxoTracking.isP2WDA) {
-                if (!signedTx.fundingTransactionRaw) {
-                    throw new Error('Funding transaction not created');
-                }
-
-                const tx1 = await this.#provider.sendRawTransaction(
-                    signedTx.fundingTransactionRaw,
-                    false,
-                );
-
-                if (!tx1 || tx1.error) {
-                    throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
-                }
-
-                if (!tx1.success) {
-                    throw new Error(`Error sending transaction: ${tx1.result || 'Unknown error'}`);
-                }
-            }
-
-            const tx2 = await this.#provider.sendRawTransaction(
-                signedTx.interactionTransactionRaw,
-                false,
-            );
-
-            if (!tx2 || tx2.error) {
-                throw new Error(`Error sending transaction: ${tx2?.error || 'Unknown error'}`);
-            }
-
-            if (!tx2.result) {
-                throw new Error('No transaction ID returned');
-            }
-
-            if (!tx2.success) {
-                throw new Error(`Error sending transaction: ${tx2.result || 'Unknown error'}`);
-            }
-
-            this.#processUTXOTracking(signedTx);
-
-            return {
-                interactionAddress: signedTx.interactionAddress,
-                transactionId: tx2.result,
-                peerAcknowledgements: tx2.peers || 0,
-                newUTXOs: signedTx.nextUTXOs,
-                estimatedFees: signedTx.estimatedFees,
-                challengeSolution: signedTx.challengeSolution,
-                rawTransaction: signedTx.interactionTransactionRaw,
-                fundingUTXOs: signedTx.fundingUTXOs,
-                compiledTargetScript: signedTx.compiledTargetScript,
-            };
+            return await this.sendPresignedTransaction(signedTx);
         } catch (e) {
             const msgStr = (e as Error).message;
 
