@@ -59,8 +59,29 @@ export interface TransactionParameters {
 
     readonly linkMLDSAPublicKeyToAddress?: boolean;
     readonly revealMLDSAPublicKey?: boolean;
+}
 
-    //readonly includeAccessList?: boolean;
+export interface UTXOTrackingInfo {
+    readonly csvUTXOs: UTXO[];
+    readonly p2wdaUTXOs: UTXO[];
+    readonly regularUTXOs: UTXO[];
+    readonly refundAddress: string;
+    readonly refundToAddress: string;
+    readonly csvAddress?: IP2WSHAddress;
+    readonly p2wdaAddress?: { readonly address: string; readonly witnessScript: Buffer };
+    readonly isP2WDA: boolean;
+}
+
+export interface SignedInteractionTransactionReceipt {
+    readonly fundingTransactionRaw: string | null;
+    readonly interactionTransactionRaw: string;
+    readonly nextUTXOs: UTXO[];
+    readonly estimatedFees: bigint;
+    readonly challengeSolution: RawChallenge;
+    readonly interactionAddress: string | null;
+    readonly fundingUTXOs: UTXO[];
+    readonly compiledTargetScript: string | null;
+    readonly utxoTracking: UTXOTrackingInfo;
 }
 
 export interface InteractionTransactionReceipt {
@@ -113,7 +134,7 @@ export class CallResult<
         this.#provider = provider;
         this.#rawEvents = this.parseEvents(callResult.events);
         this.accessList = callResult.accessList;
-        this.loadedStorage = callResult.loadedStorage; //this.getValuesFromAccessList();
+        this.loadedStorage = callResult.loadedStorage;
 
         if (callResult.estimatedGas) {
             this.estimatedGas = BigInt(callResult.estimatedGas);
@@ -194,15 +215,15 @@ export class CallResult<
     }
 
     /**
-     * Easily create a bitcoin interaction transaction from a simulated contract call.
+     * Signs a bitcoin interaction transaction from a simulated contract call without broadcasting.
      * @param {TransactionParameters} interactionParams - The parameters for the transaction.
-     * @param amountAddition
-     * @returns {Promise<InteractionTransactionReceipt>} The transaction hash, the transaction hex and the UTXOs used.
+     * @param amountAddition - Additional satoshis to request when acquiring UTXOs.
+     * @returns {Promise<SignedInteractionTransactionReceipt>} The signed transaction data and UTXO tracking info.
      */
-    public async sendTransaction(
+    public async signTransaction(
         interactionParams: TransactionParameters,
         amountAddition: bigint = 0n,
-    ): Promise<InteractionTransactionReceipt> {
+    ): Promise<SignedInteractionTransactionReceipt> {
         if (!this.address) {
             throw new Error('Contract address not set');
         }
@@ -219,76 +240,114 @@ export class CallResult<
             throw new Error(`Can not send transaction! Simulation reverted: ${this.revert}`);
         }
 
+        let UTXOs: UTXO[] =
+            interactionParams.utxos || (await this.acquire(interactionParams, amountAddition));
+
+        if (interactionParams.extraInputs) {
+            UTXOs = UTXOs.filter((utxo) => {
+                return (
+                    interactionParams.extraInputs?.find((input) => {
+                        return (
+                            input.outputIndex === utxo.outputIndex &&
+                            input.transactionId === utxo.transactionId
+                        );
+                    }) === undefined
+                );
+            });
+        }
+
+        if (!UTXOs || UTXOs.length === 0) {
+            throw new Error('No UTXOs found');
+        }
+
+        const priorityFee: bigint = interactionParams.priorityFee || 0n;
+        const challenge: ChallengeSolution = await this.#provider.getChallenge();
+        const params: IInteractionParameters | InteractionParametersWithoutSigner = {
+            contract: this.address.toHex(),
+            calldata: this.calldata,
+            priorityFee: priorityFee,
+            gasSatFee: this.bigintMax(this.estimatedSatGas, interactionParams.minGas || 0n),
+            feeRate: interactionParams.feeRate || this.#bitcoinFees?.conservative || 10,
+            from: interactionParams.refundTo,
+            utxos: UTXOs,
+            to: this.to,
+            network: interactionParams.network,
+            optionalInputs: interactionParams.extraInputs || [],
+            optionalOutputs: interactionParams.extraOutputs || [],
+            signer: interactionParams.signer as Signer | ECPairInterface,
+            challenge: challenge,
+            note: interactionParams.note,
+            anchor: interactionParams.anchor || false,
+            txVersion: interactionParams.txVersion || 2,
+            mldsaSigner: interactionParams.mldsaSigner,
+            linkMLDSAPublicKeyToAddress: interactionParams.linkMLDSAPublicKeyToAddress ?? true,
+            revealMLDSAPublicKey: interactionParams.revealMLDSAPublicKey ?? false,
+        };
+
+        const transaction = await factory.signInteraction(params);
+
+        const csvUTXOs = UTXOs.filter((u) => u.isCSV === true);
+        const p2wdaUTXOs = UTXOs.filter((u) => u.witnessScript && u.isCSV !== true);
+        const regularUTXOs = UTXOs.filter((u) => !u.witnessScript && u.isCSV !== true);
+
+        const refundAddress = interactionParams.sender || interactionParams.refundTo;
+        const p2wdaAddress = interactionParams.from?.p2wda(this.#provider.network);
+
+        let refundToAddress: string;
+        if (this.csvAddress && refundAddress === this.csvAddress.address) {
+            refundToAddress = this.csvAddress.address;
+        } else if (p2wdaAddress && refundAddress === p2wdaAddress.address) {
+            refundToAddress = p2wdaAddress.address;
+        } else {
+            refundToAddress = refundAddress;
+        }
+
+        const utxoTracking: UTXOTrackingInfo = {
+            csvUTXOs,
+            p2wdaUTXOs,
+            regularUTXOs,
+            refundAddress,
+            refundToAddress,
+            csvAddress: this.csvAddress,
+            p2wdaAddress: p2wdaAddress
+                ? { address: p2wdaAddress.address, witnessScript: p2wdaAddress.witnessScript }
+                : undefined,
+            isP2WDA: interactionParams.p2wda || false,
+        };
+
+        return {
+            fundingTransactionRaw: transaction.fundingTransaction,
+            interactionTransactionRaw: transaction.interactionTransaction,
+            nextUTXOs: transaction.nextUTXOs,
+            estimatedFees: transaction.estimatedFees,
+            challengeSolution: transaction.challenge,
+            interactionAddress: transaction.interactionAddress,
+            fundingUTXOs: transaction.fundingUTXOs,
+            compiledTargetScript: transaction.compiledTargetScript,
+            utxoTracking,
+        };
+    }
+
+    /**
+     * Signs and broadcasts a bitcoin interaction transaction from a simulated contract call.
+     * @param {TransactionParameters} interactionParams - The parameters for the transaction.
+     * @param amountAddition - Additional satoshis to request when acquiring UTXOs.
+     * @returns {Promise<InteractionTransactionReceipt>} The transaction receipt with broadcast results.
+     */
+    public async sendTransaction(
+        interactionParams: TransactionParameters,
+        amountAddition: bigint = 0n,
+    ): Promise<InteractionTransactionReceipt> {
         try {
-            let UTXOs: UTXO[] =
-                interactionParams.utxos || (await this.acquire(interactionParams, amountAddition));
+            const signedTx = await this.signTransaction(interactionParams, amountAddition);
 
-            if (interactionParams.extraInputs) {
-                UTXOs = UTXOs.filter((utxo) => {
-                    return (
-                        interactionParams.extraInputs?.find((input) => {
-                            return (
-                                input.outputIndex === utxo.outputIndex &&
-                                input.transactionId === utxo.transactionId
-                            );
-                        }) === undefined
-                    );
-                });
-            }
-
-            if (!UTXOs || UTXOs.length === 0) {
-                throw new Error('No UTXOs found');
-            }
-
-            let totalPointers = 0;
-            if (this.loadedStorage) {
-                for (const obj in this.loadedStorage) {
-                    totalPointers += obj.length;
-                }
-            }
-
-            // It's useless to send the access list if we don't load at least 100 pointers.
-            /*const storage =
-                interactionParams.includeAccessList === false
-                    ? totalPointers > 100
-                        ? this.loadedStorage
-                        : undefined
-                    : undefined;*/
-
-            const priorityFee: bigint = interactionParams.priorityFee || 0n;
-            const challenge: ChallengeSolution = await this.#provider.getChallenge();
-            const params: IInteractionParameters | InteractionParametersWithoutSigner = {
-                contract: this.address.toHex(),
-                calldata: this.calldata,
-                priorityFee: priorityFee,
-                gasSatFee: this.bigintMax(this.estimatedSatGas, interactionParams.minGas || 0n),
-                feeRate: interactionParams.feeRate || this.#bitcoinFees?.conservative || 10,
-                from: interactionParams.refundTo,
-                utxos: UTXOs,
-                to: this.to,
-                network: interactionParams.network,
-                optionalInputs: interactionParams.extraInputs || [],
-                optionalOutputs: interactionParams.extraOutputs || [],
-                signer: interactionParams.signer as Signer | ECPairInterface,
-                challenge: challenge,
-                //loadedStorage: storage,
-                note: interactionParams.note,
-                anchor: interactionParams.anchor || false,
-                txVersion: interactionParams.txVersion || 2,
-                mldsaSigner: interactionParams.mldsaSigner,
-                linkMLDSAPublicKeyToAddress: interactionParams.linkMLDSAPublicKeyToAddress ?? true,
-                revealMLDSAPublicKey: interactionParams.revealMLDSAPublicKey ?? false,
-            };
-
-            const transaction = await factory.signInteraction(params);
-
-            if (!interactionParams.p2wda) {
-                if (!transaction.fundingTransaction) {
+            if (!signedTx.utxoTracking.isP2WDA) {
+                if (!signedTx.fundingTransactionRaw) {
                     throw new Error('Funding transaction not created');
                 }
 
                 const tx1 = await this.#provider.sendRawTransaction(
-                    transaction.fundingTransaction,
+                    signedTx.fundingTransactionRaw,
                     false,
                 );
 
@@ -302,7 +361,7 @@ export class CallResult<
             }
 
             const tx2 = await this.#provider.sendRawTransaction(
-                transaction.interactionTransaction,
+                signedTx.interactionTransactionRaw,
                 false,
             );
 
@@ -318,110 +377,18 @@ export class CallResult<
                 throw new Error(`Error sending transaction: ${tx2.result || 'Unknown error'}`);
             }
 
-            const csvUTXOs = UTXOs.filter((u) => u.isCSV === true);
-            const p2wdaUTXOs = UTXOs.filter((u) => u.witnessScript && u.isCSV !== true);
-            const otherUTXOs = UTXOs.filter((u) => !u.witnessScript && u.isCSV !== true);
-
-            const refundAddress = interactionParams.sender || interactionParams.refundTo;
-            const p2wdaAddress = interactionParams.from?.p2wda(this.#provider.network);
-
-            // Determine which address gets the refunds
-            let refundToAddress: string;
-            if (this.csvAddress && refundAddress === this.csvAddress.address) {
-                refundToAddress = this.csvAddress.address;
-            } else if (p2wdaAddress && refundAddress === p2wdaAddress.address) {
-                refundToAddress = p2wdaAddress.address;
-            } else {
-                refundToAddress = refundAddress;
-            }
-
-            // Track spent UTXOs for each address type
-            if (this.csvAddress && csvUTXOs.length) {
-                const finalUTXOs = transaction.nextUTXOs.map((u) => {
-                    return {
-                        ...u,
-                        witnessScript: this.csvAddress?.witnessScript,
-                    };
-                });
-
-                this.#provider.utxoManager.spentUTXO(
-                    this.csvAddress.address,
-                    csvUTXOs,
-                    refundToAddress === this.csvAddress.address ? finalUTXOs : [],
-                );
-            }
-
-            if (p2wdaAddress && p2wdaUTXOs.length) {
-                const finalUTXOs = transaction.nextUTXOs.map((u) => {
-                    return {
-                        ...u,
-                        witnessScript: p2wdaAddress.witnessScript,
-                    };
-                });
-
-                this.#provider.utxoManager.spentUTXO(
-                    p2wdaAddress.address,
-                    p2wdaUTXOs,
-                    refundToAddress === p2wdaAddress.address ? finalUTXOs : [],
-                );
-            }
-
-            if (otherUTXOs.length) {
-                this.#provider.utxoManager.spentUTXO(
-                    refundAddress,
-                    otherUTXOs,
-                    refundToAddress === refundAddress ? transaction.nextUTXOs : [],
-                );
-            }
-
-            // Handle refunds to addresses that didn't spend any UTXOs
-            if (
-                this.csvAddress &&
-                refundToAddress === this.csvAddress.address &&
-                !csvUTXOs.length
-            ) {
-                const finalUTXOs = transaction.nextUTXOs.map((u) => {
-                    return {
-                        ...u,
-                        witnessScript: this.csvAddress?.witnessScript,
-                    };
-                });
-
-                this.#provider.utxoManager.spentUTXO(this.csvAddress.address, [], finalUTXOs);
-            } else if (
-                p2wdaAddress &&
-                refundToAddress === p2wdaAddress.address &&
-                !p2wdaUTXOs.length
-            ) {
-                const finalUTXOs = transaction.nextUTXOs.map((u) => {
-                    return {
-                        ...u,
-                        witnessScript: p2wdaAddress.witnessScript,
-                    };
-                });
-
-                this.#provider.utxoManager.spentUTXO(p2wdaAddress.address, [], finalUTXOs);
-            } else if (refundToAddress === refundAddress && !otherUTXOs.length) {
-                // Only if it's not CSV or p2wda
-                const isSpecialAddress =
-                    (this.csvAddress && refundToAddress === this.csvAddress.address) ||
-                    (p2wdaAddress && refundToAddress === p2wdaAddress.address);
-
-                if (!isSpecialAddress) {
-                    this.#provider.utxoManager.spentUTXO(refundAddress, [], transaction.nextUTXOs);
-                }
-            }
+            this.#processUTXOTracking(signedTx);
 
             return {
-                interactionAddress: transaction.interactionAddress,
+                interactionAddress: signedTx.interactionAddress,
                 transactionId: tx2.result,
                 peerAcknowledgements: tx2.peers || 0,
-                newUTXOs: transaction.nextUTXOs,
-                estimatedFees: transaction.estimatedFees,
-                challengeSolution: transaction.challenge,
-                rawTransaction: transaction.interactionTransaction,
-                fundingUTXOs: transaction.fundingUTXOs,
-                compiledTargetScript: transaction.compiledTargetScript,
+                newUTXOs: signedTx.nextUTXOs,
+                estimatedFees: signedTx.estimatedFees,
+                challengeSolution: signedTx.challengeSolution,
+                rawTransaction: signedTx.interactionTransactionRaw,
+                fundingUTXOs: signedTx.fundingUTXOs,
+                compiledTargetScript: signedTx.compiledTargetScript,
             };
         } catch (e) {
             const msgStr = (e as Error).message;
@@ -430,7 +397,6 @@ export class CallResult<
                 return await this.sendTransaction(interactionParams, 200_000n);
             }
 
-            // We need to clean up the UTXOs if the transaction fails
             this.#provider.utxoManager.clean();
 
             throw e;
@@ -456,6 +422,81 @@ export class CallResult<
 
     public setCalldata(calldata: Buffer): void {
         this.calldata = calldata;
+    }
+
+    #cloneUTXOWithWitnessScript(utxo: UTXO, witnessScript: Buffer): UTXO {
+        const clone = Object.assign(
+            Object.create(Object.getPrototypeOf(utxo) as object) as UTXO,
+            utxo,
+        );
+        clone.witnessScript = witnessScript;
+        return clone;
+    }
+
+    #processUTXOTracking(signedTx: SignedInteractionTransactionReceipt): void {
+        const {
+            csvUTXOs,
+            p2wdaUTXOs,
+            regularUTXOs,
+            refundAddress,
+            refundToAddress,
+            csvAddress,
+            p2wdaAddress,
+        } = signedTx.utxoTracking;
+
+        if (csvAddress && csvUTXOs.length) {
+            const finalUTXOs = signedTx.nextUTXOs.map((u) =>
+                this.#cloneUTXOWithWitnessScript(u, csvAddress.witnessScript),
+            );
+
+            this.#provider.utxoManager.spentUTXO(
+                csvAddress.address,
+                csvUTXOs,
+                refundToAddress === csvAddress.address ? finalUTXOs : [],
+            );
+        }
+
+        if (p2wdaAddress && p2wdaUTXOs.length) {
+            const finalUTXOs = signedTx.nextUTXOs.map((u) =>
+                this.#cloneUTXOWithWitnessScript(u, p2wdaAddress.witnessScript),
+            );
+
+            this.#provider.utxoManager.spentUTXO(
+                p2wdaAddress.address,
+                p2wdaUTXOs,
+                refundToAddress === p2wdaAddress.address ? finalUTXOs : [],
+            );
+        }
+
+        if (regularUTXOs.length) {
+            this.#provider.utxoManager.spentUTXO(
+                refundAddress,
+                regularUTXOs,
+                refundToAddress === refundAddress ? signedTx.nextUTXOs : [],
+            );
+        }
+
+        if (csvAddress && refundToAddress === csvAddress.address && !csvUTXOs.length) {
+            const finalUTXOs = signedTx.nextUTXOs.map((u) =>
+                this.#cloneUTXOWithWitnessScript(u, csvAddress.witnessScript),
+            );
+
+            this.#provider.utxoManager.spentUTXO(csvAddress.address, [], finalUTXOs);
+        } else if (p2wdaAddress && refundToAddress === p2wdaAddress.address && !p2wdaUTXOs.length) {
+            const finalUTXOs = signedTx.nextUTXOs.map((u) =>
+                this.#cloneUTXOWithWitnessScript(u, p2wdaAddress.witnessScript),
+            );
+
+            this.#provider.utxoManager.spentUTXO(p2wdaAddress.address, [], finalUTXOs);
+        } else if (refundToAddress === refundAddress && !regularUTXOs.length) {
+            const isSpecialAddress =
+                (csvAddress && refundToAddress === csvAddress.address) ||
+                (p2wdaAddress && refundToAddress === p2wdaAddress.address);
+
+            if (!isSpecialAddress) {
+                this.#provider.utxoManager.spentUTXO(refundAddress, [], signedTx.nextUTXOs);
+            }
+        }
     }
 
     private async acquire(
