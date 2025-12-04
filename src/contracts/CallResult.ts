@@ -80,6 +80,7 @@ export interface SignedInteractionTransactionReceipt {
     readonly challengeSolution: RawChallenge;
     readonly interactionAddress: string | null;
     readonly fundingUTXOs: UTXO[];
+    readonly fundingInputUtxos: UTXO[];
     readonly compiledTargetScript: string | null;
     readonly utxoTracking: UTXOTrackingInfo;
 }
@@ -93,6 +94,7 @@ export interface InteractionTransactionReceipt {
     readonly rawTransaction: string;
     readonly interactionAddress: string | null;
     readonly fundingUTXOs: UTXO[];
+    readonly fundingInputUtxos: UTXO[];
     readonly compiledTargetScript: string | null;
 }
 
@@ -217,7 +219,7 @@ export class CallResult<
     /**
      * Signs a bitcoin interaction transaction from a simulated contract call without broadcasting.
      * @param {TransactionParameters} interactionParams - The parameters for the transaction.
-     * @param amountAddition - Additional satoshis to request when acquiring UTXOs.
+     * @param {bigint} amountAddition - Additional satoshis to request when acquiring UTXOs.
      * @returns {Promise<SignedInteractionTransactionReceipt>} The signed transaction data and UTXO tracking info.
      */
     public async signTransaction(
@@ -323,6 +325,7 @@ export class CallResult<
             challengeSolution: transaction.challenge,
             interactionAddress: transaction.interactionAddress,
             fundingUTXOs: transaction.fundingUTXOs,
+            fundingInputUtxos: transaction.fundingInputUtxos,
             compiledTargetScript: transaction.compiledTargetScript,
             utxoTracking,
         };
@@ -383,6 +386,7 @@ export class CallResult<
             challengeSolution: signedTx.challengeSolution,
             rawTransaction: signedTx.interactionTransactionRaw,
             fundingUTXOs: signedTx.fundingUTXOs,
+            fundingInputUtxos: signedTx.fundingInputUtxos,
             compiledTargetScript: signedTx.compiledTargetScript,
         };
     }
@@ -390,7 +394,7 @@ export class CallResult<
     /**
      * Signs and broadcasts a bitcoin interaction transaction from a simulated contract call.
      * @param {TransactionParameters} interactionParams - The parameters for the transaction.
-     * @param amountAddition - Additional satoshis to request when acquiring UTXOs.
+     * @param {bigint} amountAddition - Additional satoshis to request when acquiring UTXOs.
      * @returns {Promise<InteractionTransactionReceipt>} The transaction receipt with broadcast results.
      */
     public async sendTransaction(
@@ -413,27 +417,54 @@ export class CallResult<
         }
     }
 
+    /**
+     * Set the gas estimation values.
+     * @param {bigint} estimatedGas - The estimated gas in satoshis.
+     * @param {bigint} refundedGas - The refunded gas in satoshis.
+     */
     public setGasEstimation(estimatedGas: bigint, refundedGas: bigint): void {
         this.estimatedSatGas = estimatedGas;
         this.estimatedRefundedGasInSat = refundedGas;
     }
 
+    /**
+     * Set the Bitcoin fee rates.
+     * @param {BitcoinFees} fees - The Bitcoin fee rates.
+     */
     public setBitcoinFee(fees: BitcoinFees): void {
         this.#bitcoinFees = fees;
     }
 
+    /**
+     * Set the decoded contract output properties.
+     * @param {DecodedOutput} decoded - The decoded output.
+     */
     public setDecoded(decoded: DecodedOutput): void {
         this.properties = Object.freeze(decoded.obj) as T;
     }
 
+    /**
+     * Set the contract events.
+     * @param {U} events - The contract events.
+     */
     public setEvents(events: U): void {
         this.events = events;
     }
 
+    /**
+     * Set the calldata for the transaction.
+     * @param {Buffer} calldata - The calldata buffer.
+     */
     public setCalldata(calldata: Buffer): void {
         this.calldata = calldata;
     }
 
+    /**
+     * Clone a UTXO and attach a witness script.
+     * @param {UTXO} utxo - The UTXO to clone.
+     * @param {Buffer} witnessScript - The witness script to attach.
+     * @returns {UTXO} The cloned UTXO with witness script.
+     */
     #cloneUTXOWithWitnessScript(utxo: UTXO, witnessScript: Buffer): UTXO {
         const clone = Object.assign(
             Object.create(Object.getPrototypeOf(utxo) as object) as UTXO,
@@ -443,6 +474,10 @@ export class CallResult<
         return clone;
     }
 
+    /**
+     * Process UTXO tracking after transaction broadcast.
+     * @param {SignedInteractionTransactionReceipt} signedTx - The signed transaction receipt.
+     */
     #processUTXOTracking(signedTx: SignedInteractionTransactionReceipt): void {
         const {
             csvUTXOs,
@@ -509,6 +544,12 @@ export class CallResult<
         }
     }
 
+    /**
+     * Acquire UTXOs for the transaction.
+     * @param {TransactionParameters} interactionParams - The transaction parameters.
+     * @param {bigint} amountAddition - Additional amount to request.
+     * @returns {Promise<UTXO[]>} The acquired UTXOs.
+     */
     private async acquire(
         interactionParams: TransactionParameters,
         amountAddition: bigint = 0n,
@@ -573,10 +614,22 @@ export class CallResult<
         return utxos;
     }
 
+    /**
+     * Return the maximum of two bigints.
+     * @param {bigint} a - First value.
+     * @param {bigint} b - Second value.
+     * @returns {bigint} The maximum value.
+     */
     private bigintMax(a: bigint, b: bigint): bigint {
         return a > b ? a : b;
     }
 
+    /**
+     * Fetch UTXOs from the provider.
+     * @param {bigint} amount - The amount needed.
+     * @param {TransactionParameters} interactionParams - The transaction parameters.
+     * @returns {Promise<UTXO[]>} The fetched UTXOs.
+     */
     async #fetchUTXOs(amount: bigint, interactionParams: TransactionParameters): Promise<UTXO[]> {
         if (!interactionParams.sender && !interactionParams.refundTo) {
             throw new Error('Refund address not set');
@@ -628,6 +681,10 @@ export class CallResult<
         return utxos;
     }
 
+    /**
+     * Get storage keys from access list.
+     * @returns {LoadedStorage} The loaded storage map.
+     */
     private getValuesFromAccessList(): LoadedStorage {
         const storage: LoadedStorage = {};
 
@@ -639,12 +696,22 @@ export class CallResult<
         return storage;
     }
 
+    /**
+     * Convert contract address to p2op string.
+     * @param {string} contract - The contract address hex.
+     * @returns {string} The p2op address string.
+     */
     private contractToString(contract: string): string {
         const addressCa = Address.fromString(contract);
 
         return addressCa.p2op(this.#provider.network);
     }
 
+    /**
+     * Parse raw events into EventList format.
+     * @param {RawEventList} events - The raw events.
+     * @returns {EventList} The parsed events.
+     */
     private parseEvents(events: RawEventList): EventList {
         const eventsList: EventList = {};
 
@@ -663,6 +730,11 @@ export class CallResult<
         return eventsList;
     }
 
+    /**
+     * Convert base64 string to Uint8Array.
+     * @param {string} base64 - The base64 encoded string.
+     * @returns {Uint8Array} The decoded bytes.
+     */
     private base64ToUint8Array(base64: string): Uint8Array {
         return BufferHelper.bufferToUint8Array(Buffer.from(base64, 'base64'));
     }
