@@ -34,7 +34,6 @@ export type ProviderConsumedEvent = {
 
 export type ProviderFulfilledEvent = {
     readonly providerId: bigint;
-    readonly canceled: boolean;
     readonly removalCompleted: boolean;
     readonly stakedAmount: bigint;
 };
@@ -161,6 +160,7 @@ export type GetProviderDetails = CallResult<
         lastListedTokensAtBlock: bigint;
         isPurged: boolean;
         isLiquidityProvisionAllowed: boolean;
+        toReset: boolean;
     },
     []
 >;
@@ -178,6 +178,7 @@ export type GetProviderDetailsById = CallResult<
         lastListedTokensAtBlock: bigint;
         isPurged: boolean;
         isLiquidityProvisionAllowed: boolean;
+        toReset: boolean;
     },
     []
 >;
@@ -210,6 +211,15 @@ export type QueueDetails = CallResult<
     []
 >;
 
+export type GetPoolInfoNativeSwap = CallResult<
+    {
+        poolType: number;
+        amplification: bigint;
+        pegStalenessThreshold: bigint;
+    },
+    []
+>;
+
 export type OnOP20ReceivedResult = CallResult<{ selector: Buffer }, []>;
 
 /**
@@ -226,7 +236,6 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @param token - The address of the token to reserve.
      * @param maximumAmountIn - The maximum amount of satoshis to spend.
      * @param minimumAmountOut - The minimum amount of tokens expected out.
-     * @param forLP - Whether this reservation is for LP or not (deprecated/unused).
      * @param activationDelay - Number of blocks before activation.
      * @returns {Promise<ReserveNativeSwap>}
      */
@@ -234,7 +243,6 @@ export interface INativeSwapContract extends IOP_NETContract {
         token: Address,
         maximumAmountIn: bigint,
         minimumAmountOut: bigint,
-        forLP: boolean,
         activationDelay: number,
     ): Promise<ReserveNativeSwap>;
 
@@ -279,6 +287,9 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @param antiBotEnabledFor - Number of blocks for anti-bot protection.
      * @param antiBotMaximumTokensPerReservation - Anti-bot max tokens per user.
      * @param maxReservesIn5BlocksPercent - Cap on reserves in a short window.
+     * @param poolType - Pool type (0 = standard, 1 = stable).
+     * @param amplification - StableSwap A parameter (1-10000).
+     * @param pegStalenessThreshold - Max blocks since peg update (0 = no check).
      * @returns {Promise<CreatePool>}
      */
     createPool(
@@ -290,6 +301,9 @@ export interface INativeSwapContract extends IOP_NETContract {
         antiBotEnabledFor: number,
         antiBotMaximumTokensPerReservation: bigint,
         maxReservesIn5BlocksPercent: number,
+        poolType: number,
+        amplification: bigint,
+        pegStalenessThreshold: bigint,
     ): Promise<CreatePool>;
 
     /**
@@ -417,4 +431,11 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @returns {Promise<FeesAddressResult>}
      */
     getFeesAddress(): Promise<FeesAddressResult>;
+
+    /**
+     * @description Gets pool info including stable pool settings.
+     * @param token - The address of the token.
+     * @returns {Promise<GetPoolInfo>}
+     */
+    getPoolInfo(token: Address): Promise<GetPoolInfoNativeSwap>;
 }
