@@ -69,7 +69,6 @@ const NativeSwapEvents: BitcoinInterfaceAbi = [
         name: 'ProviderFulfilled',
         values: [
             { name: 'providerId', type: ABIDataTypes.UINT256 },
-            { name: 'canceled', type: ABIDataTypes.BOOL },
             { name: 'removalCompleted', type: ABIDataTypes.BOOL },
             { name: 'stakedAmount', type: ABIDataTypes.UINT256 },
         ],
@@ -135,7 +134,6 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'token', type: ABIDataTypes.ADDRESS },
             { name: 'maximumAmountIn', type: ABIDataTypes.UINT64 },
             { name: 'minimumAmountOut', type: ABIDataTypes.UINT256 },
-            { name: 'forLP', type: ABIDataTypes.BOOL },
             { name: 'activationDelay', type: ABIDataTypes.UINT8 },
         ],
         outputs: [],
@@ -153,7 +151,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     },
 
     //=================================================
-    // LIST LIQUIDITY (Fixed: bytes for receiver)
+    // LIST LIQUIDITY
     //=================================================
     {
         name: 'listLiquidity',
@@ -179,7 +177,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     },
 
     //=================================================
-    // WITHDRAW LISTING (NEW - for withdraw mode)
+    // WITHDRAW LISTING
     //=================================================
     {
         name: 'withdrawListing',
@@ -189,7 +187,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     },
 
     //=================================================
-    // CREATE POOL (Fixed: bytes for receiver)
+    // CREATE POOL
     //=================================================
     {
         name: 'createPool',
@@ -202,6 +200,9 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'antiBotEnabledFor', type: ABIDataTypes.UINT16 },
             { name: 'antiBotMaximumTokensPerReservation', type: ABIDataTypes.UINT256 },
             { name: 'maxReservesIn5BlocksPercent', type: ABIDataTypes.UINT16 },
+            { name: 'poolType', type: ABIDataTypes.UINT8 },
+            { name: 'amplification', type: ABIDataTypes.UINT64 },
+            { name: 'pegStalenessThreshold', type: ABIDataTypes.UINT64 },
         ],
         outputs: [],
         type: BitcoinAbiTypes.Function,
@@ -345,6 +346,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'lastListedTokensAtBlock', type: ABIDataTypes.UINT64 },
             { name: 'isPurged', type: ABIDataTypes.BOOL },
             { name: 'isLiquidityProvisionAllowed', type: ABIDataTypes.BOOL },
+            { name: 'toReset', type: ABIDataTypes.BOOL },
         ],
         type: BitcoinAbiTypes.Function,
     },
@@ -367,6 +369,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'lastListedTokensAtBlock', type: ABIDataTypes.UINT64 },
             { name: 'isPurged', type: ABIDataTypes.BOOL },
             { name: 'isLiquidityProvisionAllowed', type: ABIDataTypes.BOOL },
+            { name: 'toReset', type: ABIDataTypes.BOOL },
         ],
         type: BitcoinAbiTypes.Function,
     },
@@ -443,6 +446,20 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
         name: 'getFeesAddress',
         inputs: [],
         outputs: [{ name: 'feesAddress', type: ABIDataTypes.STRING }],
+        type: BitcoinAbiTypes.Function,
+    },
+
+    //=================================================
+    // GET POOL INFO
+    //=================================================
+    {
+        name: 'getPoolInfo',
+        inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
+        outputs: [
+            { name: 'poolType', type: ABIDataTypes.UINT8 },
+            { name: 'amplification', type: ABIDataTypes.UINT64 },
+            { name: 'pegStalenessThreshold', type: ABIDataTypes.UINT64 },
+        ],
         type: BitcoinAbiTypes.Function,
     },
 
