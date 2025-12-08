@@ -122,5 +122,5 @@ appreciate your input and encourage you to help us improve OP_NET.
 ## License
 
 This project is open source and available under the
-[Apache-2.0 License](LICENSE.md). If you have any suggestions or contributions,
+[Apache-2.0 License](LICENSE). If you have any suggestions or contributions,
 please feel free to submit a pull request.
