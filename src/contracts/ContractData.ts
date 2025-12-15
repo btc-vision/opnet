@@ -53,9 +53,10 @@ export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
             ? raw.contractSaltHash
             : Buffer.from(raw.contractSaltHash, 'base64');
 
-        this.deployerAddress =
-            !raw.deployerAddress && this.deployerPubKey
-                ? new Address(this.deployerHashedPublicKey, this.deployerPubKey)
-                : raw.deployerAddress;
+        if (!raw.deployerAddress && this.deployerPubKey) {
+            this.deployerAddress = new Address(this.deployerHashedPublicKey, this.deployerPubKey);
+        } else {
+            throw new Error('Deployer address or public key is missing');
+        }
     }
 }
