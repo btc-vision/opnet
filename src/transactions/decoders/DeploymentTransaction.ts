@@ -31,6 +31,10 @@ export class DeploymentTransaction
     constructor(transaction: IDeploymentTransaction, network: Network) {
         super(transaction, network);
 
+        if (!transaction.deployerAddress) {
+            throw new Error('Deployer address is missing');
+        }
+
         try {
             this.from = new Address(
                 Buffer.from(transaction.from as string, 'base64'),

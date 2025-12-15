@@ -43,7 +43,7 @@ export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
 
         this.deployerHashedPublicKey = Buffer.isBuffer(raw.deployerAddress)
             ? raw.deployerAddress
-            : Buffer.from((raw.deployerAddress as unknown as string).replace('0x', ''), 'hex');
+            : Buffer.from((raw.deployerAddress as unknown as string).replace('0x', ''), 'base64');
 
         this.contractSeed = Buffer.isBuffer(raw.contractSeed)
             ? raw.contractSeed
