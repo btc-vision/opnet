@@ -31,7 +31,7 @@ export class DeploymentTransaction
     constructor(transaction: IDeploymentTransaction, network: Network) {
         super(transaction, network);
 
-        if (!transaction.deployerAddress) {
+        if (!transaction.deployerAddress && !transaction.revert) {
             throw new Error('Deployer address is missing');
         }
 
@@ -49,12 +49,23 @@ export class DeploymentTransaction
             this.bytecode = Buffer.from(transaction.bytecode as string, 'base64');
             this.wasCompressed = transaction.wasCompressed;
 
-            this.deployerPubKey = Buffer.from(transaction.deployerPubKey as string, 'base64');
-            this.deployerHashedPublicKey = Buffer.from(
-                (transaction.deployerAddress as string).replace('0x', ''),
-                'hex',
-            );
-            this.deployerAddress = new Address(this.deployerHashedPublicKey, this.deployerPubKey);
+            if (transaction.deployerPubKey) {
+                this.deployerPubKey = Buffer.from(transaction.deployerPubKey as string, 'base64');
+            }
+
+            if (transaction.deployerAddress) {
+                this.deployerHashedPublicKey = Buffer.from(
+                    (transaction.deployerAddress as string).replace('0x', ''),
+                    'hex',
+                );
+            }
+
+            if (this.deployerHashedPublicKey && this.deployerPubKey) {
+                this.deployerAddress = new Address(
+                    this.deployerHashedPublicKey,
+                    this.deployerPubKey,
+                );
+            }
 
             this.contractSeed = Buffer.from(transaction.contractSeed as string, 'base64');
             this.contractSaltHash = Buffer.from(transaction.contractSaltHash as string, 'base64');
