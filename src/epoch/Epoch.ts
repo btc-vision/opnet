@@ -10,7 +10,8 @@ export class EpochMiner implements IEpochMiner {
 
     constructor(data: RawEpochMiner) {
         this.solution = stringToBuffer(data.solution);
-        this.publicKey = Address.fromString(data.publicKey, data.legacyPublicKey);
+
+        this.publicKey = Address.fromString(data.mldsaPublicKey, data.legacyPublicKey);
 
         this.salt = stringToBuffer(data.salt);
         this.graffiti = data.graffiti ? stringToBuffer(data.graffiti) : undefined;

@@ -22,7 +22,7 @@ export interface IEpoch {
 
 export interface RawEpochMiner {
     readonly solution: string;
-    readonly publicKey: string;
+    readonly mldsaPublicKey: string;
     readonly legacyPublicKey: string;
     readonly salt: string;
     readonly graffiti?: string;
