@@ -1,8 +1,8 @@
 import { Network } from '@btc-vision/bitcoin';
 import Long from 'long';
 import { Root, Type } from 'protobufjs';
-import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 
+import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JSONRpcMethods } from './interfaces/JSONRpcMethods.js';
@@ -365,7 +365,7 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
 
         const type = this.getType('UnsubscribeRequest');
         const messageData = this.buildMessageByFieldId(type, {
-            2: subscriptionType, // subscriptionId field (id=2)
+            2: subscriptionType,  // subscriptionId field (id=2)
         });
         const message = type.create(messageData);
         const encodedPayload = type.encode(message).finish();
@@ -393,13 +393,19 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
     /**
      * Implements the abstract _send method from AbstractRpcProvider.
      * Translates JSON-RPC payloads to WebSocket binary protocol.
+     *
+     * Note: To match JSONRpcProvider behavior for callMultiplePayloads:
+     * - Single payload returns [result]
+     * - Array of payloads returns [[result1, result2, ...]] (wrapped in outer array)
+     * This is because callMultiplePayloads expects the batch results to be wrapped.
      */
     public async _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult> {
         if (this.state !== ConnectionState.READY) {
             throw new Error('WebSocket not connected. Call connect() first.');
         }
 
-        const payloads = Array.isArray(payload) ? payload : [payload];
+        const isArray = Array.isArray(payload);
+        const payloads = isArray ? payload : [payload];
         const results: JsonRpcResult[] = [];
 
         for (const p of payloads) {
@@ -407,7 +413,11 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
             results.push(result);
         }
 
-        return results;
+        // Match JSONRpcProvider behavior:
+        // - For single payload: return [result] (callPayloadSingle expects this)
+        // - For array payload: return [[result1, result2, ...]] (callMultiplePayloads expects this)
+        // The type cast is needed because the abstract signature doesn't capture this batch behavior
+        return isArray ? ([results] as unknown as JsonRpcCallResult) : results;
     }
 
     protected providerUrl(url: string): string {
@@ -617,10 +627,10 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
     }
 
     /**
-     * Convert OPNetType integer to string enum.
-     * Proto uses uint32, but client expects string values.
+     * Convert OPNetType proto enum value to OPNetTransactionTypes string enum.
+     * Proto enum: GENERIC=0, DEPLOYMENT=1, INTERACTION=2
      */
-    private convertOPNetTypeToString(value: number | undefined): string {
+    private convertOPNetTypeToString(value: number | undefined): OPNetTransactionTypes {
         switch (value) {
             case 1:
                 return OPNetTransactionTypes.Deployment;
@@ -793,9 +803,9 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         const type = this.getType('HandshakeRequest');
         // Build message using field numbers from proto schema (not hardcoded names)
         const messageData = this.buildMessageByFieldId(type, {
-            1: 1, // protocolVersion field (id=1)
-            2: 'opnet-js', // clientName field (id=2)
-            3: '1.0.0', // clientVersion field (id=3)
+            1: 1,              // protocolVersion field (id=1)
+            2: 'opnet-js',     // clientName field (id=2)
+            3: '1.0.0',        // clientVersion field (id=3)
         });
         const message = type.create(messageData);
 
@@ -835,32 +845,21 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
      * This ensures we use whatever field names the server's proto schema defines.
      * Handles nested messages recursively.
      */
-    private buildMessageByFieldId(
-        type: Type,
-        valuesByFieldId: Record<number, unknown>,
-    ): Record<string, unknown> {
+    private buildMessageByFieldId(type: Type, valuesByFieldId: Record<number, unknown>): Record<string, unknown> {
         const result: Record<string, unknown> = {};
         for (const [fieldIdStr, value] of Object.entries(valuesByFieldId)) {
             const fieldId = parseInt(fieldIdStr, 10);
             const field = this.getFieldById(type, fieldId);
             if (field) {
                 // Check if value is a nested field ID map (object with number keys)
-                if (
-                    value !== null &&
-                    typeof value === 'object' &&
-                    !Array.isArray(value) &&
-                    !(value instanceof Long)
-                ) {
+                if (value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Long)) {
                     const keys = Object.keys(value);
-                    const isFieldIdMap = keys.length > 0 && keys.every((k) => /^\d+$/.test(k));
+                    const isFieldIdMap = keys.length > 0 && keys.every(k => /^\d+$/.test(k));
                     if (isFieldIdMap) {
                         // Recursively build nested message
                         const nestedType = this.getNestedType(field.type);
                         if (nestedType) {
-                            result[field.name] = this.buildMessageByFieldId(
-                                nestedType,
-                                value as Record<number, unknown>,
-                            );
+                            result[field.name] = this.buildMessageByFieldId(nestedType, value as Record<number, unknown>);
                         } else {
                             result[field.name] = value;
                         }
@@ -1131,6 +1130,9 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         this.state = ConnectionState.RECONNECTING;
         this.reconnectAttempt++;
 
+        // Clear proto cache to ensure we get the latest schema on reconnect
+        this.clearCache();
+
         const delay = Math.min(
             this.config.reconnectBaseDelay * Math.pow(2, this.reconnectAttempt - 1),
             this.config.reconnectMaxDelay,
@@ -1205,11 +1207,7 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
 
         // Use consistent message format: [opcode][requestId][payload]
         const requestId = this.nextRequestId();
-        const fullMessage = this.buildMessage(
-            WebSocketRequestOpcode.PING,
-            requestId,
-            encodedPayload,
-        );
+        const fullMessage = this.buildMessage(WebSocketRequestOpcode.PING, requestId, encodedPayload);
 
         this.send(fullMessage);
     }
