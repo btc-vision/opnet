@@ -1,3 +1,4 @@
+import { RawIUTXO } from '../bitcoin/interfaces/IUTXO.js';
 import { UTXO, UTXOs } from '../bitcoin/UTXOs.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { JsonRpcPayload } from '../providers/interfaces/JSONRpc.js';
@@ -10,7 +11,6 @@ import {
     RequestUTXOsParamsWithAmount,
     SpentUTXORef,
 } from './interfaces/IUTXOsManager.js';
-import { RawIUTXO } from '../bitcoin/interfaces/IUTXO.js';
 
 const AUTO_PURGE_AFTER: number = 1000 * 60; // 1 minute
 const FETCH_COOLDOWN = 10000; // 10 seconds
@@ -152,7 +152,7 @@ export class UTXOsManager {
         optimize = true,
         mergePendingUTXOs = true,
         filterSpentUTXOs = true,
-        olderThan = undefined,
+        olderThan,
     }: RequestUTXOsParams): Promise<UTXOs> {
         const addressData = this.getAddressData(address);
         const fetchedData = await this.maybeFetchUTXOs(address, optimize, olderThan, isCSV);
@@ -229,7 +229,7 @@ export class UTXOsManager {
         mergePendingUTXOs = true,
         filterSpentUTXOs = true,
         throwErrors = false,
-        olderThan = undefined,
+        olderThan,
         maxUTXOs = 5000,
         throwIfUTXOsLimitReached = false,
     }: RequestUTXOsParamsWithAmount): Promise<UTXOs> {
