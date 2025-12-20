@@ -9,6 +9,7 @@ export type MintedEvent = {
 };
 
 export type TransferredEvent = {
+    operator: Address;
     from: Address;
     to: Address;
     amount: bigint;

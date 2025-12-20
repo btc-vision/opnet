@@ -25,6 +25,10 @@ export const OP20Events: BitcoinInterfaceAbi = [
         name: 'Transferred',
         values: [
             {
+                name: 'operator',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
                 name: 'from',
                 type: ABIDataTypes.ADDRESS,
             },
