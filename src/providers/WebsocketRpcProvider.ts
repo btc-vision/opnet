@@ -1,6 +1,7 @@
 import { Network } from '@btc-vision/bitcoin';
 import Long from 'long';
 import { Root, Type } from 'protobufjs';
+import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
@@ -364,7 +365,7 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
 
         const type = this.getType('UnsubscribeRequest');
         const messageData = this.buildMessageByFieldId(type, {
-            2: subscriptionType,  // subscriptionId field (id=2)
+            2: subscriptionType, // subscriptionId field (id=2)
         });
         const message = type.create(messageData);
         const encodedPayload = type.encode(message).finish();
@@ -454,7 +455,7 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         }) as Record<string, unknown>;
 
         // Translate protobuf response back to JSON-RPC format
-        const result = this.translateProtoResponse(payload.method, responseObj);
+        const result = this.translateProtoResponse(payload.method, responseObj, responseType);
 
         return {
             jsonrpc: '2.0',
@@ -616,23 +617,114 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
     }
 
     /**
-     * Translate protobuf response to JSON-RPC result format
+     * Convert OPNetType integer to string enum.
+     * Proto uses uint32, but client expects string values.
+     */
+    private convertOPNetTypeToString(value: number | undefined): string {
+        switch (value) {
+            case 1:
+                return OPNetTransactionTypes.Deployment;
+            case 2:
+                return OPNetTransactionTypes.Interaction;
+            case 0:
+            default:
+                return OPNetTransactionTypes.Generic;
+        }
+    }
+
+    /**
+     * Convert transaction object, converting OPNetType from integer to string.
+     * Uses field ID 19 for OPNetType per proto schema (TransactionForAPI message).
+     */
+    private convertTransaction(tx: Record<string, unknown>): Record<string, unknown> {
+        // Get the TransactionForAPI type to find field names by ID
+        const txType = this.protoRoot?.lookupType('TransactionForAPI');
+        if (!txType) {
+            return tx;
+        }
+
+        // Find the field name for OPNetType (field 19)
+        const opnetTypeField = this.getFieldById(txType, 19);
+        if (opnetTypeField && tx[opnetTypeField.name] !== undefined) {
+            tx[opnetTypeField.name] = this.convertOPNetTypeToString(
+                tx[opnetTypeField.name] as number,
+            );
+        }
+
+        return tx;
+    }
+
+    /**
+     * Convert block response, converting OPNetType in all transactions.
+     */
+    private convertBlockResponse(block: Record<string, unknown>): Record<string, unknown> {
+        // Get the BlockResponse type to find the transactions field name
+        const blockType = this.protoRoot?.lookupType('BlockResponse');
+        if (!blockType) {
+            return block;
+        }
+
+        // Find the transactions field (field 22 in proto)
+        const txField = this.getFieldById(blockType, 22);
+        if (txField && Array.isArray(block[txField.name])) {
+            block[txField.name] = (block[txField.name] as Record<string, unknown>[]).map((tx) =>
+                this.convertTransaction(tx),
+            );
+        }
+
+        return block;
+    }
+
+    /**
+     * Translate protobuf response to JSON-RPC result format.
+     * Uses field IDs to extract values (not hardcoded field names).
      */
     private translateProtoResponse(
         method: JSONRpcMethods,
         response: Record<string, unknown>,
+        responseType: Type,
     ): unknown {
         // Most responses can be returned as-is since they match the expected format
-        // Special handling for certain types that need conversion
+        // Special handling for certain types that need specific field extraction
         switch (method) {
-            case JSONRpcMethods.BLOCK_BY_NUMBER:
-                return response.block_number;
+            case JSONRpcMethods.BLOCK_BY_NUMBER: {
+                // GetBlockNumberResponse: blockNumber = field 1
+                const fieldName = this.getFieldNameById(responseType, 1);
+                return fieldName ? response[fieldName] : undefined;
+            }
 
-            case JSONRpcMethods.CHAIN_ID:
-                return response.chain_id;
+            case JSONRpcMethods.CHAIN_ID: {
+                // GetChainIdResponse: chainId = field 1
+                const fieldName = this.getFieldNameById(responseType, 1);
+                return fieldName ? response[fieldName] : undefined;
+            }
 
-            case JSONRpcMethods.GET_BALANCE:
-                return response.balance;
+            case JSONRpcMethods.GET_BALANCE: {
+                // GetBalanceResponse: balance = field 1
+                const fieldName = this.getFieldNameById(responseType, 1);
+                return fieldName ? response[fieldName] : undefined;
+            }
+
+            case JSONRpcMethods.GET_BLOCK_BY_NUMBER:
+            case JSONRpcMethods.GET_BLOCK_BY_HASH:
+            case JSONRpcMethods.GET_BLOCK_BY_CHECKSUM: {
+                // BlockResponse: convert OPNetType in transactions from int to string
+                return this.convertBlockResponse(response);
+            }
+
+            case JSONRpcMethods.GET_TRANSACTION_BY_HASH: {
+                // TransactionResponse has transaction at field 1
+                const txResponseType = this.protoRoot?.lookupType('TransactionResponse');
+                if (txResponseType) {
+                    const txField = this.getFieldById(txResponseType, 1);
+                    if (txField && response[txField.name]) {
+                        response[txField.name] = this.convertTransaction(
+                            response[txField.name] as Record<string, unknown>,
+                        );
+                    }
+                }
+                return response;
+            }
 
             default:
                 return response;
@@ -701,9 +793,9 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         const type = this.getType('HandshakeRequest');
         // Build message using field numbers from proto schema (not hardcoded names)
         const messageData = this.buildMessageByFieldId(type, {
-            1: 1,              // protocolVersion field (id=1)
-            2: 'opnet-js',     // clientName field (id=2)
-            3: '1.0.0',        // clientVersion field (id=3)
+            1: 1, // protocolVersion field (id=1)
+            2: 'opnet-js', // clientName field (id=2)
+            3: '1.0.0', // clientVersion field (id=3)
         });
         const message = type.create(messageData);
 
@@ -743,21 +835,32 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
      * This ensures we use whatever field names the server's proto schema defines.
      * Handles nested messages recursively.
      */
-    private buildMessageByFieldId(type: Type, valuesByFieldId: Record<number, unknown>): Record<string, unknown> {
+    private buildMessageByFieldId(
+        type: Type,
+        valuesByFieldId: Record<number, unknown>,
+    ): Record<string, unknown> {
         const result: Record<string, unknown> = {};
         for (const [fieldIdStr, value] of Object.entries(valuesByFieldId)) {
             const fieldId = parseInt(fieldIdStr, 10);
             const field = this.getFieldById(type, fieldId);
             if (field) {
                 // Check if value is a nested field ID map (object with number keys)
-                if (value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Long)) {
+                if (
+                    value !== null &&
+                    typeof value === 'object' &&
+                    !Array.isArray(value) &&
+                    !(value instanceof Long)
+                ) {
                     const keys = Object.keys(value);
-                    const isFieldIdMap = keys.length > 0 && keys.every(k => /^\d+$/.test(k));
+                    const isFieldIdMap = keys.length > 0 && keys.every((k) => /^\d+$/.test(k));
                     if (isFieldIdMap) {
                         // Recursively build nested message
                         const nestedType = this.getNestedType(field.type);
                         if (nestedType) {
-                            result[field.name] = this.buildMessageByFieldId(nestedType, value as Record<number, unknown>);
+                            result[field.name] = this.buildMessageByFieldId(
+                                nestedType,
+                                value as Record<number, unknown>,
+                            );
                         } else {
                             result[field.name] = value;
                         }
@@ -1102,7 +1205,11 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
 
         // Use consistent message format: [opcode][requestId][payload]
         const requestId = this.nextRequestId();
-        const fullMessage = this.buildMessage(WebSocketRequestOpcode.PING, requestId, encodedPayload);
+        const fullMessage = this.buildMessage(
+            WebSocketRequestOpcode.PING,
+            requestId,
+            encodedPayload,
+        );
 
         this.send(fullMessage);
     }
