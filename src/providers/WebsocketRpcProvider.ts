@@ -643,8 +643,13 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
     }
 
     /**
-     * Convert transaction object, converting OPNetType from integer to string.
-     * Uses field ID 19 for OPNetType per proto schema (TransactionForAPI message).
+     * Convert transaction object:
+     * 1. Converts OPNetType from integer to string enum
+     * 2. Flattens nested type-specific data (interaction/deployment) to top level
+     *
+     * Proto uses oneof for type-specific data:
+     * - field 20: interaction (InteractionTransactionData)
+     * - field 21: deployment (DeploymentTransactionData)
      */
     private convertTransaction(tx: Record<string, unknown>): Record<string, unknown> {
         // Get the TransactionForAPI type to find field names by ID
@@ -659,6 +664,25 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
             tx[opnetTypeField.name] = this.convertOPNetTypeToString(
                 tx[opnetTypeField.name] as number,
             );
+        }
+
+        // Flatten type-specific nested data to top level for client compatibility
+        // Field 20: interaction (InteractionTransactionData)
+        const interactionField = this.getFieldById(txType, 20);
+        if (interactionField && tx[interactionField.name]) {
+            const interactionData = tx[interactionField.name] as Record<string, unknown>;
+            // Merge interaction fields to top level
+            Object.assign(tx, interactionData);
+            delete tx[interactionField.name];
+        }
+
+        // Field 21: deployment (DeploymentTransactionData)
+        const deploymentField = this.getFieldById(txType, 21);
+        if (deploymentField && tx[deploymentField.name]) {
+            const deploymentData = tx[deploymentField.name] as Record<string, unknown>;
+            // Merge deployment fields to top level
+            Object.assign(tx, deploymentData);
+            delete tx[deploymentField.name];
         }
 
         return tx;
