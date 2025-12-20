@@ -363,7 +363,7 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         }
 
         const type = this.getType('UnsubscribeRequest');
-        const message = type.create({ subscription_type: subscriptionType });
+        const message = type.create({ subscriptionId: subscriptionType });
         const encodedPayload = type.encode(message).finish();
 
         const requestId = this.nextRequestId();
@@ -673,9 +673,9 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
 
         const type = this.getType('HandshakeRequest');
         const message = type.create({
-            protocol_version: 1,
-            client_name: 'opnet-js',
-            client_version: '1.0.0',
+            protocolVersion: 1,
+            clientName: 'opnet-js',
+            clientVersion: '1.0.0',
         });
 
         const encodedPayload = type.encode(message).finish();
@@ -1003,9 +1003,9 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         const message = type.create({ timestamp: Long.fromNumber(Date.now()) });
         const encodedPayload = type.encode(message).finish();
 
-        const fullMessage = new Uint8Array(1 + encodedPayload.length);
-        fullMessage[0] = WebSocketRequestOpcode.PING;
-        fullMessage.set(encodedPayload, 1);
+        // Use consistent message format: [opcode][requestId][payload]
+        const requestId = this.nextRequestId();
+        const fullMessage = this.buildMessage(WebSocketRequestOpcode.PING, requestId, encodedPayload);
 
         this.send(fullMessage);
     }
