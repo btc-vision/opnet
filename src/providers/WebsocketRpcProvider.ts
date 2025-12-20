@@ -363,7 +363,10 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         }
 
         const type = this.getType('UnsubscribeRequest');
-        const message = type.create({ subscriptionId: subscriptionType });
+        const messageData = this.buildMessageByFieldId(type, {
+            2: subscriptionType,  // subscriptionId field (id=2)
+        });
+        const message = type.create(messageData);
         const encodedPayload = type.encode(message).finish();
 
         const requestId = this.nextRequestId();
@@ -432,7 +435,9 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
 
         const requestType = this.getType(mapping.requestType);
         const params = Array.isArray(payload.params) ? payload.params : [];
-        const protoPayload = this.translateJsonRpcParams(payload.method, params);
+        // Get field ID -> value mapping, then convert to field name -> value using proto schema
+        const fieldIdMap = this.translateJsonRpcParamsToFieldIds(payload.method, params);
+        const protoPayload = this.buildMessageByFieldId(requestType, fieldIdMap);
         const message = requestType.create(protoPayload);
         const encodedPayload = requestType.encode(message).finish();
 
@@ -459,129 +464,151 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
     }
 
     /**
-     * Translate JSON-RPC params to protobuf message fields
+     * Translate JSON-RPC params to protobuf field IDs.
+     * Uses proto field numbers (stable) instead of field names (may change).
+     * Field numbers are defined in the .proto file and are part of the wire format.
      */
-    private translateJsonRpcParams(
+    private translateJsonRpcParamsToFieldIds(
         method: JSONRpcMethods,
         params: unknown[],
-    ): Record<string, unknown> {
+    ): Record<number, unknown> {
         switch (method) {
             case JSONRpcMethods.BLOCK_BY_NUMBER:
                 return {};
 
             case JSONRpcMethods.GET_BLOCK_BY_NUMBER:
+                // GetBlockByNumberRequest: requestId=1, identifier=2, includeTransactions=3
                 return {
-                    block_number: Long.fromString(String(params[0])),
-                    prefetch_txs: params[1] ?? false,
+                    2: { 1: Long.fromString(String(params[0])) }, // identifier.height
+                    3: params[1] ?? false,
                 };
 
             case JSONRpcMethods.GET_BLOCK_BY_HASH:
+                // GetBlockByNumberRequest: requestId=1, identifier=2, includeTransactions=3
                 return {
-                    block_hash: params[0],
-                    prefetch_txs: params[1] ?? false,
+                    2: { 2: params[0] }, // identifier.hash
+                    3: params[1] ?? false,
                 };
 
             case JSONRpcMethods.GET_BLOCK_BY_CHECKSUM:
+                // GetBlockByNumberRequest: requestId=1, identifier=2, includeTransactions=3
                 return {
-                    checksum: params[0],
-                    prefetch_txs: params[1] ?? false,
+                    2: { 3: params[0] }, // identifier.checksum
+                    3: params[1] ?? false,
                 };
 
             case JSONRpcMethods.BLOCK_WITNESS:
+                // GetBlockWitnessRequest: requestId=1, height=2, trusted=3, limit=4, page=5
                 return {
-                    height: Long.fromString(String(params[0] ?? -1)),
-                    trusted: params[1],
-                    limit: params[2],
-                    page: params[3],
+                    2: Long.fromString(String(params[0] ?? -1)),
+                    3: params[1],
+                    4: params[2],
+                    5: params[3],
                 };
 
             case JSONRpcMethods.GAS:
                 return {};
 
             case JSONRpcMethods.GET_TRANSACTION_BY_HASH:
-                return { tx_hash: params[0] };
+                // GetTransactionByHashRequest: requestId=1, txHash=2
+                return { 2: params[0] };
 
             case JSONRpcMethods.GET_TRANSACTION_RECEIPT:
-                return { tx_hash: params[0] };
+                // GetTransactionReceiptRequest: requestId=1, txHash=2
+                return { 2: params[0] };
 
             case JSONRpcMethods.BROADCAST_TRANSACTION:
+                // BroadcastTransactionRequest: requestId=1, transaction=2, psbt=3
                 return {
-                    raw_tx: params[0],
-                    psbt: params[1] ?? false,
+                    2: params[0],
+                    3: params[1] ?? false,
                 };
 
             case JSONRpcMethods.TRANSACTION_PREIMAGE:
                 return {};
 
             case JSONRpcMethods.GET_BALANCE:
+                // GetBalanceRequest: requestId=1, address=2, filterOrdinals=3
                 return {
-                    address: String(params[0]),
-                    filter_ordinals: params[1] ?? true,
+                    2: String(params[0]),
+                    3: params[1] ?? true,
                 };
 
             case JSONRpcMethods.GET_UTXOS:
+                // GetUTXOsRequest: requestId=1, address=2, optimize=3, pending=4
                 return {
-                    address: String(params[0]),
-                    optimize: params[1] ?? true,
+                    2: String(params[0]),
+                    3: params[1] ?? true,
                 };
 
             case JSONRpcMethods.PUBLIC_KEY_INFO:
-                return { addresses: params[0] };
+                // GetPublicKeyInfoRequest: requestId=1, addresses=2
+                return { 2: params[0] };
 
             case JSONRpcMethods.CHAIN_ID:
                 return {};
 
             case JSONRpcMethods.REORG:
+                // GetReorgRequest: requestId=1, limit=2
                 return {
-                    from_block: params[0] ? Long.fromString(String(params[0])) : undefined,
-                    to_block: params[1] ? Long.fromString(String(params[1])) : undefined,
+                    2: params[0],
                 };
 
             case JSONRpcMethods.GET_CODE:
+                // GetCodeRequest: requestId=1, contractAddress=2, full=3
                 return {
-                    address: String(params[0]),
-                    only_bytecode: params[1] ?? false,
+                    2: String(params[0]),
+                    3: params[1] ?? false,
                 };
 
             case JSONRpcMethods.GET_STORAGE_AT:
+                // GetStorageAtRequest: requestId=1, contractAddress=2, pointer=3, proofs=4
                 return {
-                    address: String(params[0]),
-                    pointer: params[1],
-                    proofs: params[2] ?? true,
-                    height: params[3] ? Long.fromString(String(params[3])) : undefined,
+                    2: String(params[0]),
+                    3: params[1],
+                    4: params[2] ?? true,
                 };
 
             case JSONRpcMethods.CALL:
+                // CallRequest: requestId=1, to=2, calldata=3, from=4, fromLegacy=5
                 return {
-                    to: String(params[0]),
-                    data: params[1],
-                    from: params[2],
-                    fromLegacy: params[3],
-                    height: params[4] ? Long.fromString(String(params[3])) : undefined,
-                    simulated_transaction: params[5],
-                    access_list: params[6],
+                    2: String(params[0]),
+                    3: params[1],
+                    4: params[2],
+                    5: params[3],
                 };
 
             case JSONRpcMethods.LATEST_EPOCH:
                 return {};
 
             case JSONRpcMethods.GET_EPOCH_BY_NUMBER:
+                // GetEpochByNumberRequest: requestId=1, epochNumber=2
                 return {
-                    epoch_number: Long.fromString(String(params[0])),
-                    include_submissions: params[1] ?? false,
+                    2: Long.fromString(String(params[0])),
                 };
 
             case JSONRpcMethods.GET_EPOCH_BY_HASH:
+                // GetEpochByHashRequest: requestId=1, epochHash=2
                 return {
-                    epoch_hash: params[0],
-                    include_submissions: params[1] ?? false,
+                    2: params[0],
                 };
 
             case JSONRpcMethods.GET_EPOCH_TEMPLATE:
                 return {};
 
-            case JSONRpcMethods.SUBMIT_EPOCH:
-                return params[0] as Record<string, unknown>;
+            case JSONRpcMethods.SUBMIT_EPOCH: {
+                // SubmitEpochRequest: requestId=1, epochNumber=2, targetHash=3, salt=4, mldsaPublicKey=5, graffiti=6, signature=7
+                // params[0] is an object with these fields
+                const submitParams = params[0] as Record<string, unknown>;
+                return {
+                    2: submitParams.epochNumber,
+                    3: submitParams.targetHash,
+                    4: submitParams.salt,
+                    5: submitParams.mldsaPublicKey,
+                    6: submitParams.graffiti,
+                    7: submitParams.signature,
+                };
+            }
 
             default:
                 return {};
@@ -672,11 +699,13 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         this.state = ConnectionState.HANDSHAKING;
 
         const type = this.getType('HandshakeRequest');
-        const message = type.create({
-            protocolVersion: 1,
-            clientName: 'opnet-js',
-            clientVersion: '1.0.0',
+        // Build message using field numbers from proto schema (not hardcoded names)
+        const messageData = this.buildMessageByFieldId(type, {
+            1: 1,              // protocolVersion field (id=1)
+            2: 'opnet-js',     // clientName field (id=2)
+            3: '1.0.0',        // clientVersion field (id=3)
         });
+        const message = type.create(messageData);
 
         const encodedPayload = type.encode(message).finish();
         const requestId = this.nextRequestId();
@@ -698,13 +727,81 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
             longs: String,
             bytes: Uint8Array,
             defaults: true,
-        }) as { session_id?: Uint8Array; server_version?: string };
+        });
 
-        if (response.session_id) {
-            this.sessionId = response.session_id;
+        // Get session_id using field number lookup
+        const sessionIdFieldName = this.getFieldNameById(responseType, 2);
+        if (sessionIdFieldName && response[sessionIdFieldName]) {
+            this.sessionId = response[sessionIdFieldName] as Uint8Array;
         }
 
         this.state = ConnectionState.READY;
+    }
+
+    /**
+     * Build a message object using proto field IDs instead of hardcoded field names.
+     * This ensures we use whatever field names the server's proto schema defines.
+     * Handles nested messages recursively.
+     */
+    private buildMessageByFieldId(type: Type, valuesByFieldId: Record<number, unknown>): Record<string, unknown> {
+        const result: Record<string, unknown> = {};
+        for (const [fieldIdStr, value] of Object.entries(valuesByFieldId)) {
+            const fieldId = parseInt(fieldIdStr, 10);
+            const field = this.getFieldById(type, fieldId);
+            if (field) {
+                // Check if value is a nested field ID map (object with number keys)
+                if (value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Long)) {
+                    const keys = Object.keys(value);
+                    const isFieldIdMap = keys.length > 0 && keys.every(k => /^\d+$/.test(k));
+                    if (isFieldIdMap) {
+                        // Recursively build nested message
+                        const nestedType = this.getNestedType(field.type);
+                        if (nestedType) {
+                            result[field.name] = this.buildMessageByFieldId(nestedType, value as Record<number, unknown>);
+                        } else {
+                            result[field.name] = value;
+                        }
+                    } else {
+                        result[field.name] = value;
+                    }
+                } else {
+                    result[field.name] = value;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Get field from proto Type by field ID number
+     */
+    private getFieldById(type: Type, fieldId: number): { name: string; type: string } | undefined {
+        for (const field of type.fieldsArray) {
+            if (field.id === fieldId) {
+                return { name: field.name, type: field.type };
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * Get field name from proto Type by field ID number
+     */
+    private getFieldNameById(type: Type, fieldId: number): string | undefined {
+        const field = this.getFieldById(type, fieldId);
+        return field?.name;
+    }
+
+    /**
+     * Get nested message Type by type name
+     */
+    private getNestedType(typeName: string): Type | undefined {
+        if (!this.protoRoot) return undefined;
+        try {
+            return getProtobufType(this.protoRoot, typeName);
+        } catch {
+            return undefined;
+        }
     }
 
     private getType(typeName: string): Type {
