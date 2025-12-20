@@ -107,7 +107,7 @@
         "buffer": "^6.0.3",
         "ecpair": "^2.1.0",
         "p-limit": "^7.0.0",
-        "protobufjs": "^7.5.4",
+        "protobufjs": "^8.0.0",
         "tiny-secp256k1": "^2.2.4",
         "typedoc-material-theme": "^1.4.0",
         "undici": "^7.14.0"
