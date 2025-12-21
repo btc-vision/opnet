@@ -34,7 +34,11 @@ export abstract class BaseThreader<TOp extends string, TData, TResult> extends L
     protected constructor(options: ThreaderOptions = {}) {
         super();
 
-        this.poolSize = options.poolSize ?? (isNode ? 6 : (navigator?.hardwareConcurrency ?? 4));
+        this.poolSize =
+            options.poolSize ??
+            (isNode
+                ? 6
+                : Math.max(Math.max(1, Math.ceil((navigator?.hardwareConcurrency ?? 8) / 2)), 6));
     }
 
     public get stats(): {
