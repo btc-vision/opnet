@@ -30,7 +30,7 @@ import {
     WebSocketResponseOpcode,
 } from './websocket/index.js';
 
-export {
+export type {
     BlockNotification,
     EpochNotification,
     EventHandler,
