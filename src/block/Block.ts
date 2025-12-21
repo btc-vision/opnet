@@ -42,13 +42,14 @@ export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas' | 'depl
 
     public readonly checksumProofs: BlockHeaderChecksumProof;
 
-    public readonly transactions: TransactionBase<OPNetTransactionTypes>[] = [];
-    public readonly deployments: Address[] = [];
+    private readonly _rawBlock: IBlock;
+    private readonly _network: Network;
 
     constructor(block: IBlock, network: Network) {
-        if (!block) {
-            throw new Error('Invalid block.');
-        }
+        if (!block) throw new Error('Invalid block.');
+
+        this._rawBlock = block;
+        this._network = network;
 
         this.height = BigInt(block.height.toString());
 
@@ -78,16 +79,33 @@ export class Block implements Omit<IBlock, 'gasUsed' | 'ema' | 'baseGas' | 'depl
         this.receiptRoot = block.receiptRoot;
 
         this.checksumProofs = block.checksumProofs;
+    }
 
-        this.transactions = TransactionParser.parseTransactions(
-            block.transactions as ITransaction[],
-            network,
-        );
+    private _transactions?: TransactionBase<OPNetTransactionTypes>[];
 
-        this.deployments = block.deployments
-            ? block.deployments.map((address) => {
-                  return Address.fromString(address);
-              })
-            : [];
+    public get transactions(): TransactionBase<OPNetTransactionTypes>[] {
+        if (!this._transactions) {
+            this._transactions = TransactionParser.parseTransactions(
+                this._rawBlock.transactions as ITransaction[],
+                this._network,
+            );
+        }
+        return this._transactions;
+    }
+
+    private _deployments?: Address[];
+
+    public get deployments(): Address[] {
+        if (!this._deployments) {
+            this._deployments = this._rawBlock.deployments
+                ? this._rawBlock.deployments.map((address) => Address.fromString(address))
+                : [];
+        }
+        return this._deployments;
+    }
+
+    // For cases where you need raw without parsing
+    public get rawTransactions(): ITransaction[] {
+        return this._rawBlock.transactions as ITransaction[];
     }
 }

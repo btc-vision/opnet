@@ -35,6 +35,8 @@ export default {
             os: import.meta.resolve('os-browserify/browser/'),
             stream: import.meta.resolve('stream-browserify'),
             process: import.meta.resolve('process/browser'),
+            'node:worker_threads': false,
+            worker_threads: false,
         },
     },
     cache: false,

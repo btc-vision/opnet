@@ -1,19 +1,24 @@
 import pLimit from 'p-limit';
-import { Agent, fetch as undiciFetch, Response, setGlobalDispatcher } from 'undici';
-import { Fetcher } from './fetcher-type.js';
+import { Agent, fetch as undiciFetch, RequestInit, Response } from 'undici';
+import { FetcherWithCleanup } from './fetcher-type.js';
 
-export function getFetcher(configs: Agent.Options): Fetcher {
+export function getFetcher(configs: Agent.Options): FetcherWithCleanup {
     const agent = new Agent(configs);
-
-    setGlobalDispatcher(agent);
-
     const limit = pLimit(500);
 
-    async function limitedFetch(...args: Parameters<typeof undiciFetch>): Promise<Response> {
-        return limit(() => undiciFetch(...args));
+    async function limitedFetch(
+        input: Parameters<typeof undiciFetch>[0],
+        init?: RequestInit,
+    ): Promise<Response> {
+        return limit(() => undiciFetch(input, { ...init, dispatcher: agent }));
     }
 
-    return limitedFetch;
+    return {
+        fetch: limitedFetch,
+        close: async () => {
+            await agent.close();
+        },
+    };
 }
 
 export default getFetcher;

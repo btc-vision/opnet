@@ -3,7 +3,8 @@ import Agent from 'undici/types/agent.js';
 import { Response } from 'undici/types/fetch';
 
 import getFetcher from '../fetch/fetch.js';
-import { Fetcher } from '../fetch/fetcher-type.js';
+import { Fetcher, FetcherWithCleanup } from '../fetch/fetcher-type.js';
+import { jsonThreader } from '../threading/JSONThreader.js';
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSONRpcResult.js';
@@ -16,6 +17,8 @@ import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSO
 export class JSONRpcProvider extends AbstractRpcProvider {
     public readonly url: string;
 
+    private _fetcherWithCleanup: FetcherWithCleanup | undefined;
+
     constructor(
         url: string,
         network: Network,
@@ -27,20 +30,25 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             pipelining: 2, // max pipelining per server
         },
         private useRESTAPI: boolean = true,
+        private readonly useThreadedParsing: boolean = true,
     ) {
         super(network);
 
         this.url = this.providerUrl(url);
     }
 
-    private _fetcher: Fetcher | undefined;
-
     private get fetcher(): Fetcher {
-        if (!this._fetcher) {
-            this._fetcher = getFetcher(this.fetcherConfigurations);
+        if (!this._fetcherWithCleanup) {
+            this._fetcherWithCleanup = getFetcher(this.fetcherConfigurations);
         }
+        return this._fetcherWithCleanup.fetch;
+    }
 
-        return this._fetcher;
+    public async close(): Promise<void> {
+        if (this._fetcherWithCleanup) {
+            await this._fetcherWithCleanup.close();
+            this._fetcherWithCleanup = undefined;
+        }
     }
 
     /**
@@ -58,11 +66,9 @@ export class JSONRpcProvider extends AbstractRpcProvider {
      * @returns {Promise<JsonRpcCallResult>} - The result of the call
      */
     public async _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult> {
-        // Create an AbortController instance
         const controller = new AbortController();
         const { signal } = controller;
 
-        // Start a timer that will abort the fetch after the timeout period
         const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
         const params = {
@@ -70,7 +76,6 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             headers: {
                 'Content-Type': 'application/json',
                 'User-Agent': 'OPNET/1.0',
-                //'Accept-Encoding': 'gzip, deflate, br',
                 Accept: 'application/json',
                 'Accept-Charset': 'utf-8',
                 'Accept-Language': 'en-US',
@@ -87,7 +92,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
                 throw new Error(`Failed to fetch: ${resp.statusText}`);
             }
 
-            const fetchedData = (await resp.json()) as JsonRpcResult | JsonRpcError;
+            const fetchedData = await this.parseResponse<JsonRpcResult | JsonRpcError>(resp);
             if (!fetchedData) {
                 throw new Error('No data fetched');
             }
@@ -117,5 +122,14 @@ export class JSONRpcProvider extends AbstractRpcProvider {
         } else {
             return `${url}/api/v1/json-rpc`;
         }
+    }
+
+    private async parseResponse<T>(resp: Response): Promise<T> {
+        if (this.useThreadedParsing) {
+            const buffer = await resp.arrayBuffer();
+            return jsonThreader.parseBuffer<T>(buffer);
+        }
+
+        return (await resp.json()) as Promise<T>;
     }
 }
