@@ -14,7 +14,31 @@ type JsonOp = 'parse' | 'stringify';
 type JsonInput = string | JsonValue | ArrayBuffer;
 type JsonOutput = string | JsonValue;
 
-const isServiceWorker = typeof self !== 'undefined' && 'clients' in self && 'registration' in self;
+declare const __IS_SERVICE_WORKER__: boolean | undefined;
+
+let _isServiceWorker: boolean | null = null;
+
+function checkIsServiceWorker(): boolean {
+    if (_isServiceWorker !== null) return _isServiceWorker;
+
+    if (typeof __IS_SERVICE_WORKER__ !== 'undefined' && __IS_SERVICE_WORKER__) {
+        _isServiceWorker = true;
+        return true;
+    }
+
+    if (
+        typeof ServiceWorkerGlobalScope !== 'undefined' &&
+        self instanceof ServiceWorkerGlobalScope
+    ) {
+        _isServiceWorker = true;
+        return true;
+    }
+
+    _isServiceWorker = false;
+    return false;
+}
+
+const isServiceWorker: boolean = checkIsServiceWorker();
 
 export class JsonThreader extends BaseThreader<JsonOp, JsonInput, JsonOutput> {
     protected readonly workerScript: WorkerScript = jsonWorkerScript;
