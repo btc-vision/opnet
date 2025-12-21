@@ -365,7 +365,7 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
 
         const type = this.getType('UnsubscribeRequest');
         const messageData = this.buildMessageByFieldId(type, {
-            2: subscriptionType,  // subscriptionId field (id=2)
+            2: subscriptionType, // subscriptionId field (id=2)
         });
         const message = type.create(messageData);
         const encodedPayload = type.encode(message).finish();
@@ -827,9 +827,9 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         const type = this.getType('HandshakeRequest');
         // Build message using field numbers from proto schema (not hardcoded names)
         const messageData = this.buildMessageByFieldId(type, {
-            1: 1,              // protocolVersion field (id=1)
-            2: 'opnet-js',     // clientName field (id=2)
-            3: '1.0.0',        // clientVersion field (id=3)
+            1: 1, // protocolVersion field (id=1)
+            2: 'opnet-js', // clientName field (id=2)
+            3: '1.0.0', // clientVersion field (id=3)
         });
         const message = type.create(messageData);
 
@@ -869,21 +869,32 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
      * This ensures we use whatever field names the server's proto schema defines.
      * Handles nested messages recursively.
      */
-    private buildMessageByFieldId(type: Type, valuesByFieldId: Record<number, unknown>): Record<string, unknown> {
+    private buildMessageByFieldId(
+        type: Type,
+        valuesByFieldId: Record<number, unknown>,
+    ): Record<string, unknown> {
         const result: Record<string, unknown> = {};
         for (const [fieldIdStr, value] of Object.entries(valuesByFieldId)) {
             const fieldId = parseInt(fieldIdStr, 10);
             const field = this.getFieldById(type, fieldId);
             if (field) {
                 // Check if value is a nested field ID map (object with number keys)
-                if (value !== null && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Long)) {
+                if (
+                    value !== null &&
+                    typeof value === 'object' &&
+                    !Array.isArray(value) &&
+                    !(value instanceof Long)
+                ) {
                     const keys = Object.keys(value);
-                    const isFieldIdMap = keys.length > 0 && keys.every(k => /^\d+$/.test(k));
+                    const isFieldIdMap = keys.length > 0 && keys.every((k) => /^\d+$/.test(k));
                     if (isFieldIdMap) {
                         // Recursively build nested message
                         const nestedType = this.getNestedType(field.type);
                         if (nestedType) {
-                            result[field.name] = this.buildMessageByFieldId(nestedType, value as Record<number, unknown>);
+                            result[field.name] = this.buildMessageByFieldId(
+                                nestedType,
+                                value as Record<number, unknown>,
+                            );
                         } else {
                             result[field.name] = value;
                         }
@@ -1231,7 +1242,11 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
 
         // Use consistent message format: [opcode][requestId][payload]
         const requestId = this.nextRequestId();
-        const fullMessage = this.buildMessage(WebSocketRequestOpcode.PING, requestId, encodedPayload);
+        const fullMessage = this.buildMessage(
+            WebSocketRequestOpcode.PING,
+            requestId,
+            encodedPayload,
+        );
 
         this.send(fullMessage);
     }

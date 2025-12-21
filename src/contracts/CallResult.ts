@@ -1,3 +1,4 @@
+import { QuantumBIP32Interface } from '@btc-vision/bip32';
 import { Network, PsbtOutputExtended, Signer } from '@btc-vision/bitcoin';
 import {
     Address,
@@ -23,7 +24,6 @@ import { IAccessList } from './interfaces/IAccessList.js';
 import { EventList, ICallResultData, RawEventList } from './interfaces/ICallResult.js';
 import { OPNetEvent } from './OPNetEvent.js';
 import { TransactionHelper } from './TransactionHelpper.js';
-import { QuantumBIP32Interface } from '@btc-vision/bip32';
 
 const factory = new TransactionFactory();
 
@@ -105,8 +105,7 @@ export interface InteractionTransactionReceipt {
 export class CallResult<
     T extends ContractDecodedObjectResult = {},
     U extends OPNetEvent<ContractDecodedObjectResult>[] = OPNetEvent<ContractDecodedObjectResult>[],
-> implements Omit<ICallResultData, 'estimatedGas' | 'events' | 'specialGas'>
-{
+> implements Omit<ICallResultData, 'estimatedGas' | 'events' | 'specialGas'> {
     public readonly result: BinaryReader;
     public readonly accessList: IAccessList;
     public readonly revert: string | undefined;

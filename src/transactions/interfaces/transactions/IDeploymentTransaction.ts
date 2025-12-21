@@ -7,8 +7,7 @@ import { ICommonTransaction } from './ICommonTransaction.js';
  * @interface IDeploymentTransaction
  * @category ITransactions
  */
-export interface IDeploymentTransaction
-    extends ICommonTransaction<OPNetTransactionTypes.Deployment> {
+export interface IDeploymentTransaction extends ICommonTransaction<OPNetTransactionTypes.Deployment> {
     /**
      * @description The p2op contract address. (SAFE)
      */
