@@ -34,7 +34,7 @@ export abstract class BaseThreader<TOp extends string, TData, TResult> extends L
     protected constructor(options: ThreaderOptions = {}) {
         super();
 
-        this.poolSize = options.poolSize ?? (isNode ? 4 : (navigator?.hardwareConcurrency ?? 4));
+        this.poolSize = options.poolSize ?? (isNode ? 6 : (navigator?.hardwareConcurrency ?? 4));
     }
 
     public get stats(): {
@@ -181,7 +181,6 @@ export abstract class BaseThreader<TOp extends string, TData, TResult> extends L
         if (this.initialized) return;
         if (this.initializing) return this.initializing;
 
-        this.info(`Initializing worker pool with ${this.poolSize} workers...`);
         this.bindCleanupHandlers();
 
         this.initializing = (async () => {
@@ -219,10 +218,6 @@ export abstract class BaseThreader<TOp extends string, TData, TResult> extends L
             }
 
             this.initialized = true;
-
-            this.info(
-                `Worker pool ready. ${this.poolSize} workers initialized in ${Date.now() - startTime}ms`,
-            );
         })();
 
         return this.initializing;
