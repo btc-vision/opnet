@@ -11,7 +11,9 @@ if (!originalFetch) {
     throw new Error('Fetch API is not available.');
 }
 
-export class Agent {}
+export class Agent {
+    async close() {}
+}
 
 const def = {
     fetch(input, init) {

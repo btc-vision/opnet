@@ -1,5 +1,6 @@
 import { Network } from '@btc-vision/bitcoin';
-import { Address, NetEvent } from '@btc-vision/transaction';
+import { NetEvent } from '@btc-vision/transaction';
+import { getP2op } from '../../cache/P2OPCache.js';
 import { CallResult } from '../../contracts/CallResult.js';
 import {
     ContractEvents,
@@ -46,7 +47,6 @@ export class TransactionReceipt implements ITransactionReceipt {
             : undefined;
 
         this.receiptProofs = receipt.receiptProofs || [];
-
         this.events = receipt.events ? this.parseEvents(receipt.events, network) : {};
 
         this.rawRevert = receipt.revert
@@ -54,7 +54,6 @@ export class TransactionReceipt implements ITransactionReceipt {
             : undefined;
 
         this.revert = this.rawRevert ? CallResult.decodeRevertData(this.rawRevert) : undefined;
-
         this.gasUsed = BigInt(receipt.gasUsed || '0x00') || 0n;
         this.specialGasUsed = BigInt(receipt.specialGasUsed || '0x00') || 0n;
     }
@@ -70,30 +69,22 @@ export class TransactionReceipt implements ITransactionReceipt {
         network: Network,
     ): ContractEvents {
         const parsedEvents: ContractEvents = {};
+
         if (!Array.isArray(events)) {
             for (const [key, value] of Object.entries(events)) {
-                const ca = Address.fromString(key);
-                const caP2op = ca.p2op(network);
+                const caP2op = getP2op(key, network);
                 const v = (value as NetEventDocument[]).map((event: NetEventDocument) => {
                     return this.decodeEvent(event);
                 });
 
                 parsedEvents[caP2op] = v;
-
                 this.rawEvents[key] = v;
             }
         } else {
             for (const event of events) {
                 const parsedEvent = this.decodeEvent(event);
                 const contractAddress = event.contractAddress;
-
-                // TODO: Add a weak cache to avoid parsing the same address multiple times?
-                const ca = Address.fromString(contractAddress);
-                const caP2op = ca.p2op(network);
-
-                if (!parsedEvents[caP2op]) {
-                    parsedEvents[caP2op] = [];
-                }
+                const caP2op = getP2op(contractAddress, network);
 
                 if (!parsedEvents[caP2op]) {
                     parsedEvents[caP2op] = [];
