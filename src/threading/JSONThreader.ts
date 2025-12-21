@@ -14,17 +14,19 @@ type JsonOp = 'parse' | 'stringify';
 type JsonInput = string | JsonValue | ArrayBuffer;
 type JsonOutput = string | JsonValue;
 
+const isServiceWorker = typeof self !== 'undefined' && 'clients' in self && 'registration' in self;
+
 export class JsonThreader extends BaseThreader<JsonOp, JsonInput, JsonOutput> {
     protected readonly workerScript: WorkerScript = jsonWorkerScript;
     private readonly threadingThreshold: number;
 
     public constructor(options: ThreaderOptions & { threadingThreshold?: number } = {}) {
         super(options);
-        this.threadingThreshold = options.threadingThreshold ?? 16_384; // 16KB default
+        this.threadingThreshold = options.threadingThreshold ?? 16_384;
     }
 
     public async parse<T = JsonValue>(json: string): Promise<T> {
-        if (json.length < this.threadingThreshold) {
+        if (isServiceWorker || json.length < this.threadingThreshold) {
             return JSON.parse(json) as T;
         }
         const result = await this.run('parse', json);
@@ -32,12 +34,10 @@ export class JsonThreader extends BaseThreader<JsonOp, JsonInput, JsonOutput> {
     }
 
     public async parseBuffer<T = JsonValue>(buffer: ArrayBuffer): Promise<T> {
-        try {
-            if (buffer.byteLength < this.threadingThreshold) {
-                const text = new TextDecoder().decode(buffer);
-                return JSON.parse(text) as T;
-            }
-        } catch {}
+        if (isServiceWorker || buffer.byteLength <= this.threadingThreshold) {
+            const text = new TextDecoder().decode(buffer);
+            return JSON.parse(text) as T;
+        }
 
         const result = await this.runWithTransfer('parse', buffer, [buffer]);
         return result as T;
@@ -45,7 +45,7 @@ export class JsonThreader extends BaseThreader<JsonOp, JsonInput, JsonOutput> {
 
     public async stringify(data: JsonValue): Promise<string> {
         const result = JSON.stringify(data);
-        if (result.length < this.threadingThreshold) {
+        if (isServiceWorker || result.length < this.threadingThreshold) {
             return result;
         }
         return (await this.run('stringify', data)) as string;
