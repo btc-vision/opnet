@@ -32,10 +32,13 @@ export class JsonThreader extends BaseThreader<JsonOp, JsonInput, JsonOutput> {
     }
 
     public async parseBuffer<T = JsonValue>(buffer: ArrayBuffer): Promise<T> {
-        if (buffer.byteLength < this.threadingThreshold) {
-            const text = new TextDecoder().decode(buffer);
-            return JSON.parse(text) as T;
-        }
+        try {
+            if (buffer.byteLength < this.threadingThreshold) {
+                const text = new TextDecoder().decode(buffer);
+                return JSON.parse(text) as T;
+            }
+        } catch {}
+
         const result = await this.runWithTransfer('parse', buffer, [buffer]);
         return result as T;
     }

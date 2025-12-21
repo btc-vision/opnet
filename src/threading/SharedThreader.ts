@@ -232,10 +232,10 @@ export abstract class BaseThreader<TOp extends string, TData, TResult> extends L
         if (now - this.lastStatsLog < this.statsInterval) return;
 
         this.lastStatsLog = now;
-        const s = this.stats;
+        /*const s = this.stats;
         this.debug(
             `Stats: ${s.processed} processed, ${s.failed} failed, ${s.pending} pending, ${s.queued} queued, ${s.available}/${s.total} workers available`,
-        );
+        );*/
     }
 
     private processQueue(): void {
