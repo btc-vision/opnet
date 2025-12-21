@@ -9,15 +9,27 @@
     },
     "exports": {
         ".": {
+            "types": "./build/index.d.ts",
             "browser": "./browser/index.js",
             "import": "./build/index.js",
-            "require": "./build/index.js",
-            "types": "./build/index.d.ts"
+            "require": "./build/index.js"
         },
         "./browser": {
+            "types": "./browser/index.d.ts",
             "import": "./browser/index.js",
-            "require": "./browser/index.js",
-            "types": "./browser/index.d.ts"
+            "require": "./browser/index.js"
+        },
+        "./browser/protobuf": {
+            "import": "./browser/protobuf.js",
+            "require": "./browser/protobuf.js"
+        },
+        "./browser/polyfills": {
+            "import": "./browser/polyfills.js",
+            "require": "./browser/polyfills.js"
+        },
+        "./browser/vendors": {
+            "import": "./browser/vendors.js",
+            "require": "./browser/vendors.js"
         }
     },
     "browser": {
@@ -52,7 +64,7 @@
         "build": "gulp build",
         "test": "jest --runInBand",
         "setup": "npm i && npm run build",
-        "browserBuild": "webpack --mode production",
+        "browserBuild": "vite build --config vite.config.browser.ts",
         "docs": "typedoc --out docs --tsconfig tsconfig.json --readme README.md --name OPNet --plugin typedoc-material-theme --themeColor '#cb9820' --exclude src/scripts/test.ts --exclude src/index.ts src"
     },
     "devDependencies": {
@@ -91,18 +103,20 @@
         "typedoc": "^0.28.15",
         "typescript": "^5.9.2",
         "typescript-eslint": "^8.39.1",
-        "vite-plugin-node-polyfill": "^0.22.1",
+        "vite": "^7.3.0",
+        "vite-plugin-dts": "^4.5.4",
+        "vite-plugin-node-polyfills": "^0.24.0",
         "webpack": "^5.101.2",
         "webpack-cli": "^6.0.1"
     },
     "dependencies": {
         "@bitcoinerlab/secp256k1": "^1.2.0",
         "@btc-vision/bip32": "^6.0.3",
-        "@btc-vision/bitcoin": "^6.4.11",
+        "@btc-vision/bitcoin": "^6.5.1",
         "@btc-vision/bitcoin-rpc": "^1.0.5",
         "@btc-vision/logger": "^1.0.7",
         "@btc-vision/post-quantum": "^0.5.3",
-        "@btc-vision/transaction": "^1.7.22",
+        "@btc-vision/transaction": "^1.7.24",
         "@noble/hashes": "^1.8.0",
         "bignumber.js": "^9.3.1",
         "buffer": "^6.0.3",
