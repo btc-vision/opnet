@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.7.26",
+    "version": "1.7.27",
     "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -9,8 +9,17 @@
     },
     "exports": {
         ".": {
+            "browser": {
+                "types": "./browser/index.d.ts",
+                "import": "./browser/index.js",
+                "require": "./browser/index.js"
+            },
+            "node": {
+                "types": "./build/index.d.ts",
+                "import": "./build/index.js",
+                "require": "./build/index.js"
+            },
             "types": "./build/index.d.ts",
-            "browser": "./browser/index.js",
             "import": "./build/index.js",
             "require": "./build/index.js"
         },
@@ -60,8 +69,8 @@
         "url": "git://github.com/btc-vision/opnet.git"
     },
     "scripts": {
-        "watch": "gulp watch",
-        "build": "gulp build",
+        "watch": "tsc --watch",
+        "build": "eslint src && tsc",
         "test": "jest --runInBand",
         "setup": "npm i && npm run build",
         "browserBuild": "vite build --config vite.config.browser.ts",
@@ -86,12 +95,6 @@
         "babel-preset-react": "^6.24.1",
         "babelify": "^10.0.0",
         "eslint": "^9.39.1",
-        "gulp": "^5.0.1",
-        "gulp-cached": "^1.1.1",
-        "gulp-clean": "^0.4.0",
-        "gulp-eslint-new": "^2.4.0",
-        "gulp-logger-new": "^1.0.1",
-        "gulp-typescript": "^6.0.0-alpha.1",
         "https-browserify": "^1.0.0",
         "os-browserify": "^0.3.0",
         "prettier": "^3.6.2",
@@ -111,15 +114,16 @@
         "@bitcoinerlab/secp256k1": "^1.2.0",
         "@btc-vision/bip32": "^6.0.3",
         "@btc-vision/bitcoin": "^6.5.1",
-        "@btc-vision/bitcoin-rpc": "^1.0.5",
-        "@btc-vision/logger": "^1.0.7",
+        "@btc-vision/bitcoin-rpc": "^1.0.6",
+        "@btc-vision/logger": "^1.0.8",
         "@btc-vision/post-quantum": "^0.5.3",
-        "@btc-vision/transaction": "^1.7.24",
+        "@btc-vision/transaction": "^1.7.25",
         "@noble/hashes": "^1.8.0",
         "bignumber.js": "^9.3.1",
         "buffer": "^6.0.3",
         "ecpair": "^2.1.0",
         "p-limit": "^7.0.0",
+        "pako": "^2.1.0",
         "protobufjs": "^8.0.0",
         "tiny-secp256k1": "^2.2.4",
         "typedoc-material-theme": "^1.4.0",
