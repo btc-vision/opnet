@@ -1,28 +1,18 @@
-const originalFetch =
-    typeof fetch === 'function'
-        ? fetch
-        : typeof window !== 'undefined' && typeof window.fetch === 'function'
-          ? window.fetch
-          : typeof self !== 'undefined' && typeof self.fetch === 'function'
-            ? self.fetch
-            : undefined;
-
-if (!originalFetch) {
-    throw new Error('Fetch API is not available.');
-}
+// Browser shim for undici - uses native fetch API
+// Must be self-contained with no external imports to avoid circular deps
 
 export class Agent {
     async close() {}
 }
 
-const def = {
-    fetch(input, init) {
-        return originalFetch(input, init);
-    },
-    setGlobalDispatcher: () => {},
-    Agent,
-};
+export function fetch(input, init) {
+    const nativeFetch = globalThis.fetch || window.fetch || self.fetch;
+    if (!nativeFetch) {
+        throw new Error('Fetch API is not available.');
+    }
+    return nativeFetch(input, init);
+}
 
-export default def;
-export const fetch = def.fetch;
-export const setGlobalDispatcher = def.setGlobalDispatcher;
+export function setGlobalDispatcher() {}
+
+export default { fetch, setGlobalDispatcher, Agent };

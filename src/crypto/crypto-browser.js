@@ -4,7 +4,12 @@ import { pbkdf2 } from '@noble/hashes/pbkdf2';
 import { sha1 } from '@noble/hashes/sha1';
 import { sha256 } from '@noble/hashes/sha256';
 import { sha512 } from '@noble/hashes/sha512';
-import { assertArgument } from 'ethers';
+
+function assertArgument(check, message, name, value) {
+    if (!check) {
+        throw new Error(`${message} (${name}: ${value})`);
+    }
+}
 
 function getGlobal() {
     if (typeof self !== 'undefined') {

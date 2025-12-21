@@ -1,7 +1,29 @@
 import { resolve } from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, Plugin } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import dts from 'vite-plugin-dts';
+
+// Strip unused bip39 wordlists (keep only English) - saves ~150KB
+function stripBip39Wordlists(): Plugin {
+    return {
+        name: 'strip-bip39-wordlists',
+        resolveId(source, importer) {
+            // Match ./wordlists/*.json except english.json
+            if (importer?.includes('bip39') &&
+                source.includes('/wordlists/') &&
+                !source.includes('english')) {
+                return { id: 'empty-wordlist', external: false };
+            }
+            return null;
+        },
+        load(id) {
+            if (id === 'empty-wordlist') {
+                return 'export default []';
+            }
+            return null;
+        },
+    };
+}
 
 export default defineConfig({
     build: {
@@ -18,45 +40,15 @@ export default defineConfig({
             output: {
                 chunkFileNames: '[name].js',
                 manualChunks: (id) => {
-                    // BTC Vision packages (check before node_modules since aliases resolve differently)
-                    if (id.includes('@btc-vision/transaction') || id.includes('/transaction/build/')) {
-                        return 'btc-vision-transaction';
-                    }
-                    if (id.includes('@btc-vision/bitcoin') || id.includes('/bitcoin/build/')) {
-                        return 'btc-vision-bitcoin';
-                    }
-                    if (id.includes('@btc-vision/bip32') || id.includes('/bip32/src/')) {
-                        return 'btc-vision-bip32';
-                    }
-                    if (id.includes('node_modules')) {
-                        // BTC Vision packages
-                        if (id.includes('@btc-vision/post-quantum')) return 'btc-vision-post-quantum';
-                        if (id.includes('@btc-vision/logger')) return 'btc-vision-logger';
-                        if (id.includes('@btc-vision/bitcoin-rpc')) return 'btc-vision-rpc';
-                        // Noble crypto
+                    if (id.includes('node_modules') || id.includes('@btc-vision/bitcoin') || id.includes('/bitcoin/build/')) {
+                        // Noble crypto - isolated, no circular deps
                         if (id.includes('@noble/curves')) return 'noble-curves';
                         if (id.includes('@noble/hashes')) return 'noble-hashes';
-                        // Protobuf
+                        // Protobuf - isolated
                         if (id.includes('protobufjs')) return 'protobuf';
-                        // Bitcoin utilities
-                        if (id.includes('bip39')) return 'bip39';
-                        if (id.includes('ecpair') || id.includes('@bitcoinerlab/secp256k1') ||
-                            id.includes('tiny-secp256k1') || id.includes('bip174') || id.includes('bech32') ||
-                            id.includes('bs58') || id.includes('typeforce') || id.includes('varuint')) {
-                            return 'bitcoin-utils';
-                        }
-                        // Validation
+                        // Validation - isolated
                         if (id.includes('valibot')) return 'valibot';
-                        // Scure
-                        if (id.includes('@scure/')) return 'scure-base';
-                        // Polyfills
-                        if (id.includes('buffer/') || id.includes('process/') || id.includes('stream-browserify') ||
-                            id.includes('readable-stream') || id.includes('safe-buffer') || id.includes('events/') ||
-                            id.includes('util/') || id.includes('inherits') || id.includes('ieee754') ||
-                            id.includes('base64-js') || id.includes('string_decoder')) {
-                            return 'polyfills';
-                        }
-                        // Other vendors
+                        // Everything else in vendors to avoid circular deps
                         return 'vendors';
                     }
                 },
@@ -66,13 +58,16 @@ export default defineConfig({
     resolve: {
         alias: {
             crypto: resolve(__dirname, 'src/crypto/crypto-browser.js'),
-            undici: resolve(__dirname, 'src/fetch/fetch-browser.js'),
+            'undici': resolve(__dirname, 'src/fetch/fetch-browser.js'),
+            'undici/types/agent.js': resolve(__dirname, 'src/fetch/fetch-browser.js'),
+            'undici/types/fetch': resolve(__dirname, 'src/fetch/fetch-browser.js'),
             zlib: resolve(__dirname, 'src/shims/zlib-browser.js'),
             worker_threads: resolve(__dirname, 'src/shims/worker_threads-browser.js'),
             vm: resolve(__dirname, 'src/shims/vm-browser.js'),
             stream: 'stream-browserify',
             buffer: 'buffer',
             '@protobufjs/inquire': resolve(__dirname, 'src/shims/inquire-browser.js'),
+            'protobufjs': resolve(__dirname, 'node_modules/protobufjs/dist/minimal/protobuf.min.js'),
             // Use source versions for proper tree-shaking (not browser bundles)
             '@btc-vision/transaction': resolve(__dirname, 'node_modules/@btc-vision/transaction/build/index.js'),
             '@btc-vision/bitcoin': resolve(__dirname, 'node_modules/@btc-vision/bitcoin/build/index.js'),
@@ -85,14 +80,15 @@ export default defineConfig({
         global: 'globalThis',
     },
     plugins: [
+        stripBip39Wordlists(),
         nodePolyfills({
             globals: {
                 Buffer: true,
                 global: true,
                 process: true,
             },
-            // Exclude heavy polyfills we don't need (zlib, vm, worker_threads handled via aliases)
-            exclude: ['fs', 'path', 'os', 'http', 'https', 'net', 'tls', 'dns', 'child_process', 'cluster', 'dgram', 'readline', 'repl', 'tty', 'perf_hooks', 'inspector', 'async_hooks', 'trace_events', 'v8', 'wasi'],
+            // Exclude heavy polyfills we don't need (crypto, zlib, vm, worker_threads handled via aliases)
+            exclude: ['crypto', 'fs', 'path', 'os', 'http', 'https', 'net', 'tls', 'dns', 'child_process', 'cluster', 'dgram', 'readline', 'repl', 'tty', 'worker_threads', 'perf_hooks', 'inspector', 'async_hooks', 'trace_events', 'v8', 'wasi', 'zlib', 'vm'],
         }),
         dts({
             outDir: 'browser',
