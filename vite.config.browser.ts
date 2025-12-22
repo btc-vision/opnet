@@ -1,7 +1,7 @@
 import { resolve } from 'path';
 import { defineConfig, Plugin } from 'vite';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import dts from 'vite-plugin-dts';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 // Strip unused bip39 wordlists (keep only English) - saves ~150KB
 function stripBip39Wordlists(): Plugin {
@@ -9,9 +9,11 @@ function stripBip39Wordlists(): Plugin {
         name: 'strip-bip39-wordlists',
         resolveId(source, importer) {
             // Match ./wordlists/*.json except english.json
-            if (importer?.includes('bip39') &&
+            if (
+                importer?.includes('bip39') &&
                 source.includes('/wordlists/') &&
-                !source.includes('english')) {
+                !source.includes('english')
+            ) {
                 return { id: 'empty-wordlist', external: false };
             }
             return null;
@@ -40,7 +42,11 @@ export default defineConfig({
             output: {
                 chunkFileNames: '[name].js',
                 manualChunks: (id) => {
-                    if (id.includes('node_modules') || id.includes('@btc-vision/bitcoin') || id.includes('/bitcoin/build/')) {
+                    if (
+                        id.includes('node_modules') ||
+                        id.includes('@btc-vision/bitcoin') ||
+                        id.includes('/bitcoin/build/')
+                    ) {
                         // Noble crypto - isolated, no circular deps
                         if (id.includes('@noble/curves')) return 'noble-curves';
                         if (id.includes('@noble/hashes')) return 'noble-hashes';
@@ -58,7 +64,7 @@ export default defineConfig({
     resolve: {
         alias: {
             crypto: resolve(__dirname, 'src/crypto/crypto-browser.js'),
-            'undici': resolve(__dirname, 'src/fetch/fetch-browser.js'),
+            undici: resolve(__dirname, 'src/fetch/fetch-browser.js'),
             'undici/types/agent.js': resolve(__dirname, 'src/fetch/fetch-browser.js'),
             'undici/types/fetch': resolve(__dirname, 'src/fetch/fetch-browser.js'),
             zlib: resolve(__dirname, 'src/shims/zlib-browser.js'),
@@ -67,11 +73,20 @@ export default defineConfig({
             stream: 'stream-browserify',
             buffer: 'buffer',
             '@protobufjs/inquire': resolve(__dirname, 'src/shims/inquire-browser.js'),
-            'protobufjs': resolve(__dirname, 'node_modules/protobufjs/dist/minimal/protobuf.min.js'),
+            protobufjs: resolve(__dirname, 'node_modules/protobufjs/dist/minimal/protobuf.min.js'),
             // Use source versions for proper tree-shaking (not browser bundles)
-            '@btc-vision/transaction': resolve(__dirname, 'node_modules/@btc-vision/transaction/build/index.js'),
-            '@btc-vision/bitcoin': resolve(__dirname, 'node_modules/@btc-vision/bitcoin/build/index.js'),
-            '@btc-vision/bip32': resolve(__dirname, 'node_modules/@btc-vision/bip32/src/cjs/index.cjs'),
+            '@btc-vision/transaction': resolve(
+                __dirname,
+                'node_modules/@btc-vision/transaction/build/index.js',
+            ),
+            '@btc-vision/bitcoin': resolve(
+                __dirname,
+                'node_modules/@btc-vision/bitcoin/build/index.js',
+            ),
+            '@btc-vision/bip32': resolve(
+                __dirname,
+                'node_modules/@btc-vision/bip32/src/cjs/index.cjs',
+            ),
         },
         mainFields: ['module', 'main'],
     },
@@ -88,7 +103,25 @@ export default defineConfig({
                 process: true,
             },
             // Exclude heavy polyfills we don't need (crypto, zlib, vm, worker_threads handled via aliases)
-            exclude: ['crypto', 'fs', 'path', 'os', 'http', 'https', 'net', 'tls', 'dns', 'child_process', 'cluster', 'dgram', 'readline', 'repl', 'tty', 'worker_threads', 'perf_hooks', 'inspector', 'async_hooks', 'trace_events', 'v8', 'wasi', 'zlib', 'vm'],
+            exclude: [
+                'crypto',
+                'fs',
+                'path',
+                'os',
+                'http',
+                'https',
+                'net',
+                'tls',
+                'dns',
+                'child_process',
+                'cluster',
+                'dgram',
+                'readline',
+                'repl',
+                'tty',
+                'zlib',
+                'vm',
+            ], //'worker_threads', 'perf_hooks', 'inspector', 'async_hooks', 'trace_events', 'v8', 'wasi',
         }),
         dts({
             outDir: 'browser',
