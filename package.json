@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.7.31",
+    "version": "1.7.32",
     "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -81,7 +81,9 @@
         "test": "jest --runInBand",
         "setup": "npm i && npm run build",
         "browserBuild": "vite build --config vite.config.browser.ts",
-        "docs": "typedoc --out docs --tsconfig tsconfig.json --readme README.md --name OPNet --plugin typedoc-material-theme --themeColor '#cb9820' --exclude src/scripts/test.ts --exclude src/index.ts src"
+        "docs": "typedoc --out docs --tsconfig tsconfig.json --readme README.md --name OPNet --plugin typedoc-material-theme --themeColor '#cb9820' --exclude src/scripts/test.ts --exclude src/index.ts src",
+        "check:circular": "madge --circular --extensions ts,tsx src/",
+        "prebuild": "npm run check:circular"
     },
     "devDependencies": {
         "@babel/core": "^7.28.3",
