@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.7.33",
+    "version": "1.7.34",
     "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -127,7 +127,7 @@
         "@btc-vision/bitcoin-rpc": "^1.0.6",
         "@btc-vision/logger": "^1.0.8",
         "@btc-vision/post-quantum": "^0.5.3",
-        "@btc-vision/transaction": "^1.7.30",
+        "@btc-vision/transaction": "^1.7.31",
         "@noble/hashes": "^1.8.0",
         "bignumber.js": "^9.3.1",
         "buffer": "^6.0.3",
