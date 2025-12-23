@@ -17,13 +17,14 @@ import {
 import { ECPairInterface } from 'ecpair';
 import { UTXO } from '../bitcoin/UTXOs.js';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
-import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { RequestUTXOsParamsWithAmount } from '../utxos/interfaces/IUTXOsManager.js';
-import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';
+import { decodeRevertData } from '../utils/RevertDecoder.js';
 import { IAccessList } from './interfaces/IAccessList.js';
 import { EventList, ICallResultData, RawEventList } from './interfaces/ICallResult.js';
+import { IProviderForCallResult } from './interfaces/IProviderForCallResult.js';
 import { OPNetEvent } from './OPNetEvent.js';
 import { TransactionHelper } from './TransactionHelpper.js';
+import { ContractDecodedObjectResult, DecodedOutput } from './types/ContractTypes.js';
 
 const factory = new TransactionFactory();
 
@@ -129,9 +130,9 @@ export class CallResult<
     #bitcoinFees: BitcoinFees | undefined;
 
     readonly #rawEvents: EventList;
-    readonly #provider: AbstractRpcProvider;
+    readonly #provider: IProviderForCallResult;
 
-    constructor(callResult: ICallResultData, provider: AbstractRpcProvider) {
+    constructor(callResult: ICallResultData, provider: IProviderForCallResult) {
         this.#provider = provider;
         this.#rawEvents = this.parseEvents(callResult.events);
         this.accessList = callResult.accessList;
@@ -165,41 +166,7 @@ export class CallResult<
     }
 
     public static decodeRevertData(revertDataBytes: Uint8Array | Buffer): string {
-        if (this.startsWithErrorSelector(revertDataBytes)) {
-            const decoder = new TextDecoder();
-            const buf = Buffer.from(revertDataBytes.subarray(8));
-
-            return decoder.decode(buf);
-        } else {
-            return `Unknown Revert: 0x${this.bytesToHexString(revertDataBytes)}`;
-        }
-    }
-
-    private static startsWithErrorSelector(revertDataBytes: Uint8Array | Buffer) {
-        const errorSelectorBytes = Uint8Array.from([0x63, 0x73, 0x9d, 0x5c]);
-
-        return (
-            revertDataBytes.length >= 4 &&
-            this.areBytesEqual(Buffer.from(revertDataBytes.subarray(0, 4)), errorSelectorBytes)
-        );
-    }
-
-    private static areBytesEqual(a: Uint8Array | Buffer, b: Uint8Array | Buffer) {
-        if (a.length !== b.length) return false;
-
-        for (let i = 0; i < a.length; i++) {
-            if (a[i] !== b[i]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static bytesToHexString(byteArray: Uint8Array): string {
-        return Array.from(byteArray, function (byte) {
-            return ('0' + (byte & 0xff).toString(16)).slice(-2);
-        }).join('');
+        return decodeRevertData(revertDataBytes);
     }
 
     public setTo(to: string, address: Address): void {

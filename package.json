@@ -123,11 +123,11 @@
     "dependencies": {
         "@bitcoinerlab/secp256k1": "^1.2.0",
         "@btc-vision/bip32": "^6.0.3",
-        "@btc-vision/bitcoin": "^6.5.3",
+        "@btc-vision/bitcoin": "^6.5.4",
         "@btc-vision/bitcoin-rpc": "^1.0.6",
         "@btc-vision/logger": "^1.0.8",
         "@btc-vision/post-quantum": "^0.5.3",
-        "@btc-vision/transaction": "^1.7.28",
+        "@btc-vision/transaction": "^1.7.29",
         "@noble/hashes": "^1.8.0",
         "bignumber.js": "^9.3.1",
         "buffer": "^6.0.3",

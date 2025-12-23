@@ -1,7 +1,7 @@
 import { Network } from '@btc-vision/bitcoin';
 import { NetEvent } from '@btc-vision/transaction';
 import { getP2op } from '../../cache/P2OPCache.js';
-import { CallResult } from '../../contracts/CallResult.js';
+import { decodeRevertData } from '../../utils/RevertDecoder.js';
 import {
     ContractEvents,
     ITransactionReceipt,
@@ -53,7 +53,7 @@ export class TransactionReceipt implements ITransactionReceipt {
             ? Buffer.from(receipt.revert as string, 'base64')
             : undefined;
 
-        this.revert = this.rawRevert ? CallResult.decodeRevertData(this.rawRevert) : undefined;
+        this.revert = this.rawRevert ? decodeRevertData(this.rawRevert) : undefined;
         this.gasUsed = BigInt(receipt.gasUsed || '0x00') || 0n;
         this.specialGasUsed = BigInt(receipt.specialGasUsed || '0x00') || 0n;
     }

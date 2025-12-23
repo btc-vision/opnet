@@ -13,6 +13,7 @@ export * from './transactions/metadata/TransactionOutput.js';
 export * from './transactions/Transaction.js';
 
 export * from './transactions/interfaces/ProofOfWorkChallenge.js';
+export * from './transactions/interfaces/ITransactionBase.js';
 export * from './transactions/interfaces/transactions/ICommonTransaction.js';
 export * from './transactions/interfaces/transactions/IDeploymentTransaction.js';
 export * from './transactions/interfaces/transactions/IInteractionTransaction.js';
@@ -45,6 +46,7 @@ export * from './epoch/SubmittedEpoch.js';
 export * from './epoch/EpochDifficultyConverter.js';
 
 /** UTXOs */
+export * from './utxos/interfaces/IProviderForUTXO.js';
 export * from './utxos/interfaces/IUTXOsManager.js';
 export * from './utxos/UTXOsManager.js';
 
@@ -54,10 +56,12 @@ export * from './transactions/TransactionParser.js';
 /** Contract */
 export * from './contracts/CallResult.js';
 export * from './contracts/Contract.js';
+export * from './contracts/types/ContractTypes.js';
 export * from './contracts/ContractData.js';
 export * from './contracts/interfaces/IAccessList.js';
 export * from './contracts/interfaces/ICallResult.js';
 export * from './contracts/interfaces/IContract.js';
+export * from './contracts/interfaces/IProviderForCallResult.js';
 export * from './contracts/interfaces/SimulatedTransaction.js';
 export * from './contracts/OPNetEvent.js';
 export * from './contracts/TypeToStr.js';
@@ -71,6 +75,7 @@ export * from './abi/interfaces/BitcoinInterfaceAbi.js';
 
 /** Utils */
 export * from './utils/BitcoinUtils.js';
+export * from './utils/RevertDecoder.js';
 export * from './utils/StringToBuffer.js';
 
 /** Storage */

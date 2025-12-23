@@ -1,6 +1,7 @@
 import { Address } from '@btc-vision/transaction';
-import { CallResult, OPNetEvent } from '../../../../opnet';
-import { IOP_NETContract } from '../opnet/IOP_NETContract';
+import { CallResult } from '../../../../contracts/CallResult.js';
+import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
+import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
 // ------------------------------------------------------------------
 // Event Definitions
