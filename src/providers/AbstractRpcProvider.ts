@@ -12,6 +12,7 @@ import {
 } from '@btc-vision/transaction';
 import '../serialize/BigInt.js';
 
+import { decodeRevertData } from '../utils/RevertDecoder.js';
 import { Block } from '../block/Block.js';
 import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters.js';
 import { parseBlockWitnesses } from '../block/BlockWitness.js';
@@ -633,7 +634,7 @@ export abstract class AbstractRpcProvider {
             let decodedError: string;
 
             try {
-                decodedError = CallResult.decodeRevertData(
+                decodedError = decodeRevertData(
                     BufferHelper.bufferToUint8Array(Buffer.from(result.revert, 'base64')),
                 );
             } catch {

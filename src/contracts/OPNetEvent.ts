@@ -1,6 +1,6 @@
 import { NetEvent } from '@btc-vision/transaction';
 import { DecodedCallResult } from '../common/CommonTypes.js';
-import { ContractDecodedObjectResult, DecodedOutput } from './Contract.js';
+import { ContractDecodedObjectResult, DecodedOutput } from './types/ContractTypes.js';
 
 export interface IDecodedEvent extends NetEvent {
     readonly values: Array<DecodedCallResult>;

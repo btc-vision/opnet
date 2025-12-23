@@ -28,13 +28,11 @@ import { IAccessList } from './interfaces/IAccessList.js';
 import { IContract } from './interfaces/IContract.js';
 import { ParsedSimulatedTransaction } from './interfaces/SimulatedTransaction.js';
 import { OPNetEvent } from './OPNetEvent.js';
+import { ContractDecodedObjectResult, DecodedOutput } from './types/ContractTypes.js';
 import { AbiTypeToStr } from './TypeToStr.js';
 
 const internal = Symbol.for('_btc_internal');
 const bitcoinAbiCoder = new ABICoder();
-
-export type ContractDecodedObjectResult = { [key: string]: DecodedCallResult };
-export type DecodedOutput = { values: Array<DecodedCallResult>; obj: ContractDecodedObjectResult };
 
 /**
  * Represents the base contract class.

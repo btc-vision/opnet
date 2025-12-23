@@ -1,7 +1,7 @@
 import { Network } from '@btc-vision/bitcoin';
 import { BigNumberish } from '../common/CommonTypes.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
-import { ITransactionBase } from './interfaces/ITransaction.js';
+import { ITransactionBase } from './interfaces/ITransactionBase.js';
 import { ProofOfWorkChallenge, RawProofOfWorkChallenge, } from './interfaces/ProofOfWorkChallenge.js';
 import { TransactionInput } from './metadata/TransactionInput.js';
 import { ITransactionOutput, TransactionOutput } from './metadata/TransactionOutput.js';

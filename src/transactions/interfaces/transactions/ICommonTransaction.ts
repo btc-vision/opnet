@@ -1,6 +1,6 @@
 import { Address } from '@btc-vision/transaction';
 import { OPNetTransactionTypes } from '../../../interfaces/opnet/OPNetTransactionTypes.js';
-import { ITransactionBase } from '../ITransaction.js';
+import { ITransactionBase } from '../ITransactionBase.js';
 import { ProofOfWorkChallenge } from '../ProofOfWorkChallenge.js';
 
 export interface ICommonTransaction<T extends OPNetTransactionTypes> extends ITransactionBase<T> {

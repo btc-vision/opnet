@@ -1,9 +1,9 @@
 import { RawIUTXO } from '../bitcoin/interfaces/IUTXO.js';
 import { UTXO, UTXOs } from '../bitcoin/UTXOs.js';
-import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
 import { JsonRpcPayload } from '../providers/interfaces/JSONRpc.js';
 import { JSONRpcMethods } from '../providers/interfaces/JSONRpcMethods.js';
 import { JsonRpcResult } from '../providers/interfaces/JSONRpcResult.js';
+import { IProviderForUTXO } from './interfaces/IProviderForUTXO.js';
 import {
     IUTXOsData,
     RawIUTXOsData,
@@ -43,7 +43,7 @@ export class UTXOsManager {
      */
     private dataByAddress: Record<string, AddressData> = {};
 
-    public constructor(private readonly provider: AbstractRpcProvider) {}
+    public constructor(private readonly provider: IProviderForUTXO) {}
 
     /**
      * Mark UTXOs as spent and track new UTXOs created by the transaction, _per address_.
