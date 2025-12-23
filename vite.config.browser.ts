@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig, Plugin, TerserOptions } from 'vite';
 import dts from 'vite-plugin-dts';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
@@ -32,7 +32,14 @@ export default defineConfig({
         outDir: 'browser',
         emptyOutDir: true,
         target: 'esnext',
-        minify: 'esbuild',
+        minify: false,
+        terserOptions: {
+            compress: {
+                sequences: false,
+                conditionals: false,
+            },
+            mangle: true,
+        } as TerserOptions,
         lib: {
             entry: resolve(__dirname, 'src/index.ts'),
             formats: ['es'],
@@ -102,7 +109,10 @@ export default defineConfig({
                 global: true,
                 process: true,
             },
-            // Exclude heavy polyfills we don't need (crypto, zlib, vm, worker_threads handled via aliases)
+            overrides: {
+                crypto: 'crypto-browserify',
+                zlib: 'pako',
+            },
             exclude: [
                 'crypto',
                 'fs',
@@ -121,7 +131,7 @@ export default defineConfig({
                 'tty',
                 'zlib',
                 'vm',
-            ], //'worker_threads', 'perf_hooks', 'inspector', 'async_hooks', 'trace_events', 'v8', 'wasi',
+            ],
         }),
         dts({
             outDir: 'browser',
