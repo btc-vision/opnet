@@ -528,26 +528,32 @@ export class UTXOsManager {
             throw new Error(`Error fetching UTXOs: ${rawUTXOs.error}`);
         }
 
-        const result: RawIUTXOsData = (rawUTXOs.result as RawIUTXOsData) || {
-            confirmed: [],
-            pending: [],
-            spentTransactions: [],
-            raw: [],
-        };
+        const rawResult = rawUTXOs.result as RawIUTXOsData | undefined | null;
+
+        // Handle malformed or missing result
+        const result: RawIUTXOsData =
+            rawResult && typeof rawResult === 'object' && Array.isArray(rawResult.confirmed)
+                ? rawResult
+                : {
+                      confirmed: [],
+                      pending: [],
+                      spentTransactions: [],
+                      raw: [],
+                  };
 
         // The raw array contains the actual transaction hex strings (base64 encoded)
         // Each UTXO has a `raw` field that is an index into this array
         const rawTransactions = result.raw || [];
 
         return {
-            confirmed: result.confirmed.map((utxo) => {
+            confirmed: (result.confirmed || []).map((utxo) => {
                 return this.parseUTXO(utxo, isCSV, rawTransactions);
             }),
-            pending: result.pending.map((utxo) => {
+            pending: (result.pending || []).map((utxo) => {
                 return this.parseUTXO(utxo, isCSV, rawTransactions);
             }),
             // spentTransactions only contain transactionId and outputIndex (no raw data needed)
-            spentTransactions: result.spentTransactions.map(
+            spentTransactions: (result.spentTransactions || []).map(
                 (spent): SpentUTXORef => ({
                     transactionId: spent.transactionId,
                     outputIndex: spent.outputIndex,
