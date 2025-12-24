@@ -89,7 +89,7 @@
         "prebuild": "npm run check:circular"
     },
     "devDependencies": {
-        "@vitest/coverage-v8": "^3.2.4",
+        "@vitest/coverage-v8": "^4.0.16",
         "@vitest/ui": "^3.2.4",
         "vitest": "^3.2.4",
         "@babel/core": "^7.28.3",
