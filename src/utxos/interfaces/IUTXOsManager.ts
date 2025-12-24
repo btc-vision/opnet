@@ -57,3 +57,16 @@ export interface RequestUTXOsParamsWithAmount extends RequestUTXOsParams {
     readonly maxUTXOs?: number;
     readonly throwIfUTXOsLimitReached?: boolean;
 }
+
+/**
+ * Parameters for batch UTXO fetching with options.
+ * Uses RequestUTXOsParams for individual address requests.
+ * Note: mergePendingUTXOs and filterSpentUTXOs in individual requests are ignored;
+ * use the top-level options instead.
+ * @interface RequestMultipleUTXOsParams
+ */
+export interface RequestMultipleUTXOsParams {
+    readonly requests: RequestUTXOsParams[];
+    readonly mergePendingUTXOs?: boolean;
+    readonly filterSpentUTXOs?: boolean;
+}

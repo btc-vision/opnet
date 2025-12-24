@@ -2,11 +2,12 @@ import { RawIUTXO } from '../bitcoin/interfaces/IUTXO.js';
 import { UTXO, UTXOs } from '../bitcoin/UTXOs.js';
 import { JsonRpcPayload } from '../providers/interfaces/JSONRpc.js';
 import { JSONRpcMethods } from '../providers/interfaces/JSONRpcMethods.js';
-import { JsonRpcResult } from '../providers/interfaces/JSONRpcResult.js';
+import { JsonRpcCallResult, JsonRpcResult } from '../providers/interfaces/JSONRpcResult.js';
 import { IProviderForUTXO } from './interfaces/IProviderForUTXO.js';
 import {
     IUTXOsData,
     RawIUTXOsData,
+    RequestMultipleUTXOsParams,
     RequestUTXOsParams,
     RequestUTXOsParamsWithAmount,
     SpentUTXORef,
@@ -59,7 +60,7 @@ export class UTXOsManager {
         const addressData = this.getAddressData(address);
         const utxoKey = (u: UTXO) => `${u.transactionId}:${u.outputIndex}`;
 
-        // Remove spent UTXOs from that address’s pending
+        // Remove spent UTXOs from that address's pending
         addressData.pendingUTXOs = addressData.pendingUTXOs.filter((utxo) => {
             return !spent.some(
                 (spentUtxo) =>
@@ -68,17 +69,9 @@ export class UTXOsManager {
             );
         });
 
-        // Also remove them from the depth map if they were pending
-        for (const spentUtxo of spent) {
-            const key = utxoKey(spentUtxo);
-            delete addressData.pendingUtxoDepth[key];
-        }
-
-        // Add spent UTXOs to the "spent" list
-        addressData.spentUTXOs.push(...spent);
-
-        // Determine the parent depth for new UTXOs. If a spent UTXO was pending,
-        // it contributes to the chain depth. If it was confirmed, depth = 0 for that.
+        // Determine the parent depth for new UTXOs BEFORE removing from depth map.
+        // If a spent UTXO was pending, it contributes to the chain depth.
+        // If it was confirmed, depth = 0 for that.
         let maxParentDepth = 0;
         for (const spentUtxo of spent) {
             const key = utxoKey(spentUtxo);
@@ -87,6 +80,15 @@ export class UTXOsManager {
                 maxParentDepth = parentDepth;
             }
         }
+
+        // Now remove them from the depth map
+        for (const spentUtxo of spent) {
+            const key = utxoKey(spentUtxo);
+            delete addressData.pendingUtxoDepth[key];
+        }
+
+        // Add spent UTXOs to the "spent" list
+        addressData.spentUTXOs.push(...spent);
 
         const newDepth = maxParentDepth + 1;
         if (newDepth > MEMPOOL_CHAIN_LIMIT) {
@@ -288,6 +290,168 @@ export class UTXOsManager {
         }
 
         return utxoUntilAmount;
+    }
+
+    /**
+     * Fetch UTXOs for multiple addresses in a single batch request.
+     *
+     * This method bypasses caching and directly fetches from the provider
+     * for all requested addresses in parallel using batch RPC calls.
+     *
+     * @param {RequestMultipleUTXOsParams} options - The batch UTXO fetch options
+     * @param {BatchUTXORequest[]} options.requests - Array of address-specific fetch parameters
+     * @param {boolean} [options.mergePendingUTXOs=true] - Merge locally pending UTXOs
+     * @param {boolean} [options.filterSpentUTXOs=true] - Filter out known-spent UTXOs
+     * @returns {Promise<Record<string, UTXOs>>} Map of address to UTXOs
+     * @throws {Error} If something goes wrong during the batch fetch
+     */
+    public async getMultipleUTXOs({
+        requests,
+        mergePendingUTXOs = true,
+        filterSpentUTXOs = true,
+    }: RequestMultipleUTXOsParams): Promise<Record<string, UTXOs>> {
+        if (requests.length === 0) {
+            return {};
+        }
+
+        // Fetch all UTXOs in a single batch call
+        const fetchedDataMap = await this.fetchMultipleUTXOs(requests);
+
+        const result: Record<string, UTXOs> = {};
+
+        for (const request of requests) {
+            const { address, isCSV = false } = request;
+            const addressData = this.getAddressData(address);
+            const fetchedData = fetchedDataMap[address];
+
+            if (!fetchedData) {
+                result[address] = [];
+                continue;
+            }
+
+            // Update cache for this address
+            addressData.lastFetchedData = fetchedData;
+            addressData.lastFetchTimestamp = Date.now();
+
+            // Sync pending state with fetched data
+            this.syncPendingDepthWithFetched(address);
+
+            const utxoKey = (utxo: UTXO) => `${utxo.transactionId}:${utxo.outputIndex}`;
+            const spentRefKey = (ref: SpentUTXORef) => `${ref.transactionId}:${ref.outputIndex}`;
+            const pendingUTXOKeys = new Set(addressData.pendingUTXOs.map(utxoKey));
+            const spentUTXOKeys = new Set(addressData.spentUTXOs.map(utxoKey));
+            const fetchedSpentKeys = new Set(fetchedData.spentTransactions.map(spentRefKey));
+
+            // Start with confirmed UTXOs
+            const combinedUTXOs: UTXOs = [];
+            const combinedKeysSet = new Set<string>();
+
+            for (const utxo of fetchedData.confirmed) {
+                const key = utxoKey(utxo);
+                if (!combinedKeysSet.has(key)) {
+                    combinedUTXOs.push(utxo);
+                    combinedKeysSet.add(key);
+                }
+            }
+
+            // Merge pending UTXOs if requested
+            if (mergePendingUTXOs) {
+                // Add currently pending
+                for (const utxo of addressData.pendingUTXOs) {
+                    const key = utxoKey(utxo);
+                    if (!combinedKeysSet.has(key)) {
+                        combinedUTXOs.push(utxo);
+                        combinedKeysSet.add(key);
+                    }
+                }
+                // Add fetched pending UTXOs that aren't already known
+                for (const utxo of fetchedData.pending) {
+                    const key = utxoKey(utxo);
+                    if (!pendingUTXOKeys.has(key) && !combinedKeysSet.has(key)) {
+                        combinedUTXOs.push(utxo);
+                        combinedKeysSet.add(key);
+                    }
+                }
+            }
+
+            // Filter out UTXOs spent locally
+            let finalUTXOs = combinedUTXOs.filter((utxo) => !spentUTXOKeys.has(utxoKey(utxo)));
+
+            // Optionally filter out UTXOs that are known spent in the fetch
+            if (filterSpentUTXOs && fetchedSpentKeys.size > 0) {
+                finalUTXOs = finalUTXOs.filter((utxo) => !fetchedSpentKeys.has(utxoKey(utxo)));
+            }
+
+            result[address] = finalUTXOs;
+        }
+
+        return result;
+    }
+
+    /**
+     * Fetch UTXOs for multiple addresses in a single batch RPC call.
+     * @private
+     */
+    private async fetchMultipleUTXOs(
+        requests: RequestUTXOsParams[],
+    ): Promise<Record<string, IUTXOsData>> {
+        const payloads: JsonRpcPayload[] = requests.map((request) => {
+            const data: [string, boolean?, string?] = [request.address, request.optimize ?? true];
+            if (request.olderThan !== undefined) {
+                data.push(request.olderThan.toString());
+            }
+
+            return this.provider.buildJsonRpcPayload(JSONRpcMethods.GET_UTXOS, data);
+        });
+
+        const rawResults: JsonRpcCallResult = await this.provider.callMultiplePayloads(payloads);
+
+        if ('error' in rawResults) {
+            throw new Error(`Error fetching UTXOs: ${rawResults.error}`);
+        }
+
+        const result: Record<string, IUTXOsData> = {};
+
+        for (let i = 0; i < rawResults.length; i++) {
+            const rawUTXOs = rawResults[i];
+            const request = requests[i];
+
+            if (!request) {
+                throw new Error('Impossible index mismatch');
+            }
+
+            if ('error' in rawUTXOs) {
+                throw new Error(`Error fetching UTXOs for ${request.address}: ${rawUTXOs.error}`);
+            }
+
+            const rawData: RawIUTXOsData = (rawUTXOs.result as RawIUTXOsData) || {
+                confirmed: [],
+                pending: [],
+                spentTransactions: [],
+                raw: [],
+            };
+
+            // The raw array contains the actual transaction hex strings (base64 encoded)
+            const rawTransactions = rawData.raw || [];
+            const isCSV = request.isCSV ?? false;
+
+            result[request.address] = {
+                confirmed: rawData.confirmed.map((utxo) => {
+                    return this.parseUTXO(utxo, isCSV, rawTransactions);
+                }),
+                pending: rawData.pending.map((utxo) => {
+                    return this.parseUTXO(utxo, isCSV, rawTransactions);
+                }),
+                spentTransactions: rawData.spentTransactions.map(
+                    (spent): SpentUTXORef => ({
+                        transactionId: spent.transactionId,
+                        outputIndex: spent.outputIndex,
+                    }),
+                ),
+            };
+        }
+
+        return result;
     }
 
     /**

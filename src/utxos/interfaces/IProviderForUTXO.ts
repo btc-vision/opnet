@@ -1,6 +1,6 @@
 import { JsonRpcPayload } from '../../providers/interfaces/JSONRpc.js';
 import { JSONRpcMethods } from '../../providers/interfaces/JSONRpcMethods.js';
-import { JsonRpcResult } from '../../providers/interfaces/JSONRpcResult.js';
+import { JsonRpcCallResult, JsonRpcResult } from '../../providers/interfaces/JSONRpcResult.js';
 
 /**
  * Interface that describes what UTXOsManager needs from a provider.
@@ -9,4 +9,5 @@ import { JsonRpcResult } from '../../providers/interfaces/JSONRpcResult.js';
 export interface IProviderForUTXO {
     buildJsonRpcPayload<T extends JSONRpcMethods>(method: T, params: unknown[]): JsonRpcPayload;
     callPayloadSingle(payload: JsonRpcPayload): Promise<JsonRpcResult>;
+    callMultiplePayloads(payloads: JsonRpcPayload[]): Promise<JsonRpcCallResult>;
 }
