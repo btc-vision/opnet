@@ -378,7 +378,7 @@ export type OnOP20Received = CallResult<
     {
         selector: Buffer;
     },
-    OPNetEvent<never>[]
+    []
 >;
 
 // ------------------------------------------------------------------
