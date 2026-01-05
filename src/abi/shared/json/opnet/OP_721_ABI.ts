@@ -41,7 +41,7 @@ export const OP721Events: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
             {
-                name: 'value',
+                name: 'amount',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -119,6 +119,29 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
         ],
     },
     {
+        name: 'collectionInfo',
+        type: BitcoinAbiTypes.Function,
+        inputs: [],
+        outputs: [
+            {
+                name: 'icon',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'banner',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'description',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'website',
+                type: ABIDataTypes.STRING,
+            },
+        ],
+    },
+    {
         name: 'tokenURI',
         type: BitcoinAbiTypes.Function,
         inputs: [
@@ -133,6 +156,12 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.STRING,
             },
         ],
+    },
+    {
+        name: 'changeMetadata',
+        type: BitcoinAbiTypes.Function,
+        inputs: [],
+        outputs: [],
     },
     {
         name: 'totalSupply',
@@ -178,6 +207,25 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
         ],
     },
     {
+        name: 'safeTransfer',
+        type: BitcoinAbiTypes.Function,
+        inputs: [
+            {
+                name: 'to',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'tokenId',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'data',
+                type: ABIDataTypes.BYTES,
+            },
+        ],
+        outputs: [],
+    },
+    {
         name: 'safeTransferFrom',
         type: BitcoinAbiTypes.Function,
         inputs: [
@@ -201,30 +249,11 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
         outputs: [],
     },
     {
-        name: 'transferFrom',
-        type: BitcoinAbiTypes.Function,
-        inputs: [
-            {
-                name: 'from',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'to',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'tokenId',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-        outputs: [],
-    },
-    {
         name: 'approve',
         type: BitcoinAbiTypes.Function,
         inputs: [
             {
-                name: 'to',
+                name: 'operator',
                 type: ABIDataTypes.ADDRESS,
             },
             {
@@ -243,12 +272,7 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
         ],
-        outputs: [
-            {
-                name: 'approved',
-                type: ABIDataTypes.ADDRESS,
-            },
-        ],
+        outputs: [],
     },
     {
         name: 'setApprovalForAll',
@@ -286,15 +310,19 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
         ],
     },
     {
-        name: 'transferBySignature',
+        name: 'approveBySignature',
         type: BitcoinAbiTypes.Function,
         inputs: [
             {
                 name: 'owner',
-                type: ABIDataTypes.ADDRESS,
+                type: ABIDataTypes.BYTES32,
             },
             {
-                name: 'to',
+                name: 'ownerTweakedPublicKey',
+                type: ABIDataTypes.BYTES32,
+            },
+            {
+                name: 'operator',
                 type: ABIDataTypes.ADDRESS,
             },
             {
@@ -313,20 +341,24 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
         outputs: [],
     },
     {
-        name: 'approveBySignature',
+        name: 'setApprovalForAllBySignature',
         type: BitcoinAbiTypes.Function,
         inputs: [
             {
                 name: 'owner',
+                type: ABIDataTypes.BYTES32,
+            },
+            {
+                name: 'ownerTweakedPublicKey',
+                type: ABIDataTypes.BYTES32,
+            },
+            {
+                name: 'operator',
                 type: ABIDataTypes.ADDRESS,
             },
             {
-                name: 'spender',
-                type: ABIDataTypes.ADDRESS,
-            },
-            {
-                name: 'tokenId',
-                type: ABIDataTypes.UINT256,
+                name: 'approved',
+                type: ABIDataTypes.BOOL,
             },
             {
                 name: 'deadline',
@@ -382,22 +414,6 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
         ],
     },
     {
-        name: 'getTransferNonce',
-        type: BitcoinAbiTypes.Function,
-        inputs: [
-            {
-                name: 'owner',
-                type: ABIDataTypes.ADDRESS,
-            },
-        ],
-        outputs: [
-            {
-                name: 'nonce',
-                type: ABIDataTypes.UINT256,
-            },
-        ],
-    },
-    {
         name: 'getApproveNonce',
         type: BitcoinAbiTypes.Function,
         inputs: [
@@ -423,6 +439,45 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
             },
         ],
         outputs: [],
+    },
+    {
+        name: 'metadata',
+        type: BitcoinAbiTypes.Function,
+        inputs: [],
+        outputs: [
+            {
+                name: 'name',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'symbol',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'icon',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'banner',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'description',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'website',
+                type: ABIDataTypes.STRING,
+            },
+            {
+                name: 'totalSupply',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'domainSeparator',
+                type: ABIDataTypes.BYTES32,
+            },
+        ],
     },
 
     ...OP721Events,
@@ -589,74 +644,6 @@ export const EXTENDED_OP721_ABI: BitcoinInterfaceAbi = [
             {
                 name: 'minReservationFee',
                 type: ABIDataTypes.UINT64,
-            },
-        ],
-    },
-
-    {
-        name: 'collectionInfo',
-        type: BitcoinAbiTypes.Function,
-        inputs: [],
-        outputs: [
-            {
-                name: 'icon',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'banner',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'description',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'website',
-                type: ABIDataTypes.STRING,
-            },
-        ],
-    },
-
-    {
-        name: 'metadata',
-        type: BitcoinAbiTypes.Function,
-        inputs: [],
-        outputs: [
-            {
-                name: 'name',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'symbol',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'icon',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'banner',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'description',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'website',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'totalSupply',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'maximumSupply',
-                type: ABIDataTypes.UINT256,
-            },
-            {
-                name: 'domainSeparator',
-                type: ABIDataTypes.BYTES32,
             },
         ],
     },
