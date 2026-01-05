@@ -371,6 +371,16 @@ export type SetBonusMultiplier = CallResult<{}, OPNetEvent<never>[]>;
  */
 export type SetDev = CallResult<{}, OPNetEvent<never>[]>;
 
+/**
+ * @description Represents the result of the onOP20Received function call.
+ */
+export type OnOP20Received = CallResult<
+    {
+        selector: string;
+    },
+    OPNetEvent<never>[]
+>;
+
 // ------------------------------------------------------------------
 // IMotoChef
 // ------------------------------------------------------------------
@@ -450,4 +460,11 @@ export interface IMotoChef extends IOwnable {
     setBonusMultiplier(bonusMultiplier: bigint): Promise<SetBonusMultiplier>;
 
     setDev(devAddress: Address): Promise<SetDev>;
+
+    onOP20Received(
+        operator: Address,
+        from: Address,
+        amount: bigint,
+        data: Uint8Array,
+    ): Promise<OnOP20Received>;
 }
