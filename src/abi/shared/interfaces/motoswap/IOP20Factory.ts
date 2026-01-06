@@ -1,0 +1,72 @@
+import { Address } from '@btc-vision/transaction';
+import { CallResult } from '../../../../contracts/CallResult.js';
+import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
+import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
+
+export type TokenDeployedEvent = {
+    readonly deployer: Address;
+    readonly token: Address;
+    readonly name: string;
+    readonly symbol: string;
+};
+
+export type FactoryPausedEvent = {
+    readonly by: Address;
+};
+
+export type FactoryUnpausedEvent = {
+    readonly by: Address;
+};
+
+export type Owner = CallResult<{ owner: Address }, []>;
+export type PauseFactory = CallResult<{ success: boolean }, [OPNetEvent<FactoryPausedEvent>]>;
+export type UnpauseFactory = CallResult<{ success: boolean }, [OPNetEvent<FactoryUnpausedEvent>]>;
+export type IsPaused = CallResult<{ isPaused: boolean }, []>;
+export type GetTokenDeployer = CallResult<{ deployer: Address }, []>;
+export type GetTokenOwner = CallResult<{ owner: Address }, []>;
+export type DeployToken = CallResult<{ success: boolean }, [OPNetEvent<TokenDeployedEvent>]>;
+export type UpdateTokenOwner = CallResult<{ success: boolean }, []>;
+export type GetUserTokens = CallResult<{ tokens: Buffer }, []>;
+export type GetDeploymentInfo = CallResult<{ has: boolean; token: Address; block: bigint }, []>;
+export type GetDeploymentsCount = CallResult<{ count: number }, []>;
+export type GetDeploymentByIndex = CallResult<
+    { deployer: Address; token: Address; block: bigint },
+    []
+>;
+export type OnOP20Received = CallResult<{ selector: Buffer }, []>;
+
+export interface IOP20Factory extends IOP_NETContract {
+    owner(): Promise<Owner>;
+    pauseFactory(): Promise<PauseFactory>;
+    unpauseFactory(): Promise<UnpauseFactory>;
+    isPaused(): Promise<IsPaused>;
+    getTokenDeployer(tokenAddress: Address): Promise<GetTokenDeployer>;
+    getTokenOwner(tokenAddress: Address): Promise<GetTokenOwner>;
+
+    deployToken(
+        maxSupply: bigint,
+        decimals: number,
+        name: string,
+        symbol: string,
+        initialMintTo: Address,
+        initialMintAmount: bigint,
+        freeMintSupply: bigint,
+        freeMintPerTx: bigint,
+        tokenOwner: Address,
+    ): Promise<DeployToken>;
+
+    updateTokenOwner(tokenAddress: Address, newOwner: Address): Promise<UpdateTokenOwner>;
+    getUserTokens(deployer: Address): Promise<GetUserTokens>;
+    getDeploymentInfo(deployer: Address): Promise<GetDeploymentInfo>;
+    getDeploymentsCount(): Promise<GetDeploymentsCount>;
+    getDeploymentByIndex(index: number): Promise<GetDeploymentByIndex>;
+
+    onOP20Received(
+        operator: Address,
+        from: Address,
+        amount: bigint,
+        data: Buffer,
+    ): Promise<OnOP20Received>;
+}
+
+export default IOP20Factory;
