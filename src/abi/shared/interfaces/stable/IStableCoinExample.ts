@@ -1,8 +1,17 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
-import { BurnedEvent } from '../opnet/IOP20Contract.js';
 import { IOP20SContract } from '../opnet/IOP20SContract.js';
+
+export type MintedEventStable = {
+    readonly to: Address;
+    readonly amount: bigint;
+};
+
+export type BurnedEventStable = {
+    readonly from: Address;
+    readonly amount: bigint;
+};
 
 export type BlacklistedEventStable = {
     readonly account: Address;
@@ -47,7 +56,9 @@ export type PauserChangedEventStable = {
     readonly newPauser: Address;
 };
 
-export type BurnFromStable = CallResult<{}, [OPNetEvent<BurnedEvent>]>;
+export type MintStable = CallResult<{}, [OPNetEvent<MintedEventStable>]>;
+
+export type BurnFromStable = CallResult<{}, [OPNetEvent<BurnedEventStable>]>;
 
 export type BlacklistStable = CallResult<{}, [OPNetEvent<BlacklistedEventStable>]>;
 
@@ -93,6 +104,14 @@ export type PauserStable = CallResult<{ pauser: Address }, []>;
  */
 export interface IStableCoinContract extends IOP20SContract {
     /**
+     * @description Mints tokens to the specified address. Only callable by minter.
+     * @param to - The address to mint tokens to.
+     * @param amount - The amount of tokens to mint.
+     * @returns {Promise<MintStable>}
+     */
+    mint(to: Address, amount: bigint): Promise<MintStable>;
+
+    /**
      * @description Burns tokens from the specified address. Only callable by minter.
      * @param from - The address to burn tokens from.
      * @param amount - The amount of tokens to burn.
@@ -123,26 +142,26 @@ export interface IStableCoinContract extends IOP20SContract {
 
     /**
      * @description Pauses the contract. Only callable by pauser.
-     * @returns {Promise<Pause>}
+     * @returns {Promise<PauseStable>}
      */
     pause(): Promise<PauseStable>;
 
     /**
      * @description Unpauses the contract. Only callable by pauser.
-     * @returns {Promise<Unpause>}
+     * @returns {Promise<UnpauseStable>}
      */
     unpause(): Promise<UnpauseStable>;
 
     /**
      * @description Checks if the contract is paused.
-     * @returns {Promise<IsPaused>}
+     * @returns {Promise<IsPausedStable>}
      */
     isPaused(): Promise<IsPausedStable>;
 
     /**
      * @description Initiates ownership transfer. Only callable by owner.
      * @param newOwner - The new owner address.
-     * @returns {Promise<TransferOwnership>}
+     * @returns {Promise<TransferOwnershipStable>}
      */
     transferOwnership(newOwner: Address): Promise<TransferOwnershipStable>;
 
@@ -175,7 +194,7 @@ export interface IStableCoinContract extends IOP20SContract {
 
     /**
      * @description Gets the current owner address.
-     * @returns {Promise<Owner>}
+     * @returns {Promise<OwnerStable>}
      */
     owner(): Promise<OwnerStable>;
 

@@ -1,7 +1,6 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
-import { DomainSeparator } from './IOP20Contract.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
 
 // ------------------------------------------------------------------
@@ -17,7 +16,7 @@ export type TransferredEventNFT = {
 export type ApprovedEventNFT = {
     readonly owner: Address;
     readonly spender: Address;
-    readonly value: bigint;
+    readonly amount: bigint;
 };
 
 export type ApprovedForAllEventNFT = {
@@ -42,7 +41,7 @@ export type NameNFT = CallResult<
     {
         name: string;
     },
-    OPNetEvent<never>[]
+    []
 >;
 
 /**
@@ -52,7 +51,7 @@ export type SymbolNFT = CallResult<
     {
         symbol: string;
     },
-    OPNetEvent<never>[]
+    []
 >;
 
 /**
@@ -62,7 +61,20 @@ export type MaxSupplyNFT = CallResult<
     {
         maxSupply: bigint;
     },
-    OPNetEvent<never>[]
+    []
+>;
+
+/**
+ * @description Represents the result of the collectionInfo function call.
+ */
+export type CollectionInfo = CallResult<
+    {
+        icon: string;
+        banner: string;
+        description: string;
+        website: string;
+    },
+    []
 >;
 
 /**
@@ -72,8 +84,13 @@ export type TokenURI = CallResult<
     {
         uri: string;
     },
-    OPNetEvent<never>[]
+    []
 >;
+
+/**
+ * @description Represents the result of the changeMetadata function call.
+ */
+export type ChangeMetadata = CallResult<{}, []>;
 
 /**
  * @description Represents the result of the totalSupply function call.
@@ -82,7 +99,7 @@ export type TotalSupplyNFT = CallResult<
     {
         totalSupply: bigint;
     },
-    OPNetEvent<never>[]
+    []
 >;
 
 /**
@@ -92,7 +109,7 @@ export type BalanceOfNFT = CallResult<
     {
         balance: bigint;
     },
-    OPNetEvent<never>[]
+    []
 >;
 
 /**
@@ -102,38 +119,33 @@ export type OwnerOfNFT = CallResult<
     {
         owner: Address;
     },
-    OPNetEvent<never>[]
+    []
 >;
+
+/**
+ * @description Represents the result of the safeTransfer function call.
+ */
+export type SafeTransferNFT = CallResult<{}, [OPNetEvent<TransferredEventNFT>]>;
 
 /**
  * @description Represents the result of the safeTransferFrom function call.
  */
-export type SafeTransferFromNFT = CallResult<{}, OPNetEvent<TransferredEventNFT>[]>;
-
-/**
- * @description Represents the result of the transferFrom function call.
- */
-export type TransferFromNFT = CallResult<{}, OPNetEvent<TransferredEventNFT>[]>;
+export type SafeTransferFromNFT = CallResult<{}, [OPNetEvent<TransferredEventNFT>]>;
 
 /**
  * @description Represents the result of the approve function call.
  */
-export type ApproveNFT = CallResult<{}, OPNetEvent<ApprovedEventNFT>[]>;
+export type ApproveNFT = CallResult<{}, [OPNetEvent<ApprovedEventNFT>]>;
 
 /**
  * @description Represents the result of the getApproved function call.
  */
-export type GetApprovedNFT = CallResult<
-    {
-        approved: Address;
-    },
-    OPNetEvent<never>[]
->;
+export type GetApprovedNFT = CallResult<{}, []>;
 
 /**
  * @description Represents the result of the setApprovalForAll function call.
  */
-export type SetApprovalForAllNFT = CallResult<{}, OPNetEvent<ApprovedForAllEventNFT>[]>;
+export type SetApprovalForAllNFT = CallResult<{}, [OPNetEvent<ApprovedForAllEventNFT>]>;
 
 /**
  * @description Represents the result of the isApprovedForAll function call.
@@ -142,23 +154,33 @@ export type IsApprovedForAllNFT = CallResult<
     {
         approved: boolean;
     },
-    OPNetEvent<never>[]
+    []
 >;
-
-/**
- * @description Represents the result of the transferBySignature function call.
- */
-export type TransferBySignatureNFT = CallResult<{}, OPNetEvent<TransferredEventNFT>[]>;
 
 /**
  * @description Represents the result of the approveBySignature function call.
  */
-export type ApproveBySignatureNFT = CallResult<{}, OPNetEvent<ApprovedEventNFT>[]>;
+export type ApproveBySignatureNFT = CallResult<{}, [OPNetEvent<ApprovedEventNFT>]>;
+
+/**
+ * @description Represents the result of the setApprovalForAllBySignature function call.
+ */
+export type SetApprovalForAllBySignatureNFT = CallResult<{}, [OPNetEvent<ApprovedForAllEventNFT>]>;
 
 /**
  * @description Represents the result of the burn function call.
  */
-export type BurnNFT = CallResult<{}, OPNetEvent<TransferredEventNFT>[]>;
+export type BurnNFT = CallResult<{}, [OPNetEvent<TransferredEventNFT>]>;
+
+/**
+ * @description Represents the result of the domainSeparator function call.
+ */
+export type DomainSeparatorNFT = CallResult<
+    {
+        domainSeparator: Uint8Array;
+    },
+    []
+>;
 
 /**
  * @description Represents the result of the tokenOfOwnerByIndex function call.
@@ -167,17 +189,7 @@ export type TokenOfOwnerByIndex = CallResult<
     {
         tokenId: bigint;
     },
-    OPNetEvent<never>[]
->;
-
-/**
- * @description Represents the result of the getTransferNonce function call.
- */
-export type GetTransferNonce = CallResult<
-    {
-        nonce: bigint;
-    },
-    OPNetEvent<never>[]
+    []
 >;
 
 /**
@@ -187,13 +199,13 @@ export type GetApproveNonce = CallResult<
     {
         nonce: bigint;
     },
-    OPNetEvent<never>[]
+    []
 >;
 
 /**
  * @description Represents the result of the setBaseURI function call.
  */
-export type SetBaseURI = CallResult<{}, OPNetEvent<URIEventNFT>[]>;
+export type SetBaseURI = CallResult<{}, [OPNetEvent<URIEventNFT>]>;
 
 /**
  * @description Represents the result of the metadata function call.
@@ -207,67 +219,82 @@ export type MetadataNFT = CallResult<
         description: string;
         website: string;
         totalSupply: bigint;
-        maximumSupply: bigint;
         domainSeparator: Uint8Array;
     },
-    OPNetEvent<never>[]
->;
-
-/**
- * @description Represents the result of the collectionInfo function call.
- */
-export type CollectionInfo = CallResult<
-    {
-        icon: string;
-        banner: string;
-        description: string;
-        website: string;
-    },
-    OPNetEvent<never>[]
+    []
 >;
 
 // ------------------------------------------------------------------
-// IOP721
+// IOP721Contract
 // ------------------------------------------------------------------
-export interface IOP721 extends IOP_NETContract {
+export interface IOP721Contract extends IOP_NETContract {
     name(): Promise<NameNFT>;
+
     symbol(): Promise<SymbolNFT>;
+
     maxSupply(): Promise<MaxSupplyNFT>;
-    tokenURI(tokenId: bigint): Promise<TokenURI>;
+
     collectionInfo(): Promise<CollectionInfo>;
+
+    tokenURI(tokenId: bigint): Promise<TokenURI>;
+
+    changeMetadata(): Promise<ChangeMetadata>;
+
     totalSupply(): Promise<TotalSupplyNFT>;
-    metadata(): Promise<MetadataNFT>;
+
     balanceOf(owner: Address): Promise<BalanceOfNFT>;
+
     ownerOf(tokenId: bigint): Promise<OwnerOfNFT>;
+
+    safeTransfer(to: Address, tokenId: bigint, data: Uint8Array): Promise<SafeTransferNFT>;
+
     safeTransferFrom(
         from: Address,
         to: Address,
         tokenId: bigint,
         data: Uint8Array,
     ): Promise<SafeTransferFromNFT>;
-    transferFrom(from: Address, to: Address, tokenId: bigint): Promise<TransferFromNFT>;
-    approve(to: Address, tokenId: bigint): Promise<ApproveNFT>;
+
+    approve(operator: Address, tokenId: bigint): Promise<ApproveNFT>;
+
     getApproved(tokenId: bigint): Promise<GetApprovedNFT>;
+
     setApprovalForAll(operator: Address, approved: boolean): Promise<SetApprovalForAllNFT>;
+
     isApprovedForAll(owner: Address, operator: Address): Promise<IsApprovedForAllNFT>;
-    transferBySignature(
-        owner: Address,
-        to: Address,
-        tokenId: bigint,
-        deadline: bigint,
-        signature: Uint8Array,
-    ): Promise<TransferBySignatureNFT>;
+
     approveBySignature(
-        owner: Address,
-        spender: Address,
+        owner: Uint8Array,
+        ownerTweakedPublicKey: Uint8Array,
+        operator: Address,
         tokenId: bigint,
         deadline: bigint,
         signature: Uint8Array,
     ): Promise<ApproveBySignatureNFT>;
+
+    setApprovalForAllBySignature(
+        owner: Uint8Array,
+        ownerTweakedPublicKey: Uint8Array,
+        operator: Address,
+        approved: boolean,
+        deadline: bigint,
+        signature: Uint8Array,
+    ): Promise<SetApprovalForAllBySignatureNFT>;
+
     burn(tokenId: bigint): Promise<BurnNFT>;
-    domainSeparator(): Promise<DomainSeparator>;
+
+    domainSeparator(): Promise<DomainSeparatorNFT>;
+
     tokenOfOwnerByIndex(owner: Address, index: bigint): Promise<TokenOfOwnerByIndex>;
-    getTransferNonce(owner: Address): Promise<GetTransferNonce>;
+
     getApproveNonce(owner: Address): Promise<GetApproveNonce>;
+
     setBaseURI(baseURI: string): Promise<SetBaseURI>;
+
+    metadata(): Promise<MetadataNFT>;
 }
+
+/**
+ * @deprecated Use IOP721Contract instead
+ */
+export type IOP721 = IOP721Contract;

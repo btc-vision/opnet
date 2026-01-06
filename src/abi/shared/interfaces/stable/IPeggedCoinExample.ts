@@ -1,15 +1,26 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
-import { BurnedEvent } from '../opnet/IOP20Contract.js';
 import { IOP20SContract } from '../opnet/IOP20SContract.js';
+
+export type MintedEventPegged = {
+    readonly to: Address;
+    readonly amount: bigint;
+};
+
+export type BurnedEventPegged = {
+    readonly from: Address;
+    readonly amount: bigint;
+};
 
 export type CustodianChangedEventPegged = {
     readonly previousCustodian: Address;
     readonly newCustodian: Address;
 };
 
-export type BurnFromPegged = CallResult<{}, [OPNetEvent<BurnedEvent>]>;
+export type MintPegged = CallResult<{}, [OPNetEvent<MintedEventPegged>]>;
+
+export type BurnFromPegged = CallResult<{}, [OPNetEvent<BurnedEventPegged>]>;
 
 export type TransferCustodianPegged = CallResult<{}, []>;
 
@@ -28,6 +39,14 @@ export type PendingCustodianPegged = CallResult<{ pendingCustodian: Address }, [
  * @category Contracts
  */
 export interface IPeggedTokenContract extends IOP20SContract {
+    /**
+     * @description Mints tokens to the specified address. Only callable by custodian.
+     * @param to - The address to mint tokens to.
+     * @param amount - The amount of tokens to mint.
+     * @returns {Promise<MintPegged>}
+     */
+    mint(to: Address, amount: bigint): Promise<MintPegged>;
+
     /**
      * @description Burns tokens from the specified address. Only callable by custodian.
      * @param from - The address to burn tokens from.

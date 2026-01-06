@@ -38,6 +38,14 @@ export const MultiOracleStablecoinEvents: BitcoinInterfaceAbi = [
         ],
         type: BitcoinAbiTypes.Event,
     },
+    {
+        name: 'Minted',
+        values: [
+            { name: 'to', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
 ];
 
 export const MultiOracleStablecoin_ABI: BitcoinInterfaceAbi = [
@@ -62,6 +70,15 @@ export const MultiOracleStablecoin_ABI: BitcoinInterfaceAbi = [
     {
         name: 'aggregatePrice',
         inputs: [{ name: 'oracles', type: ABIDataTypes.ARRAY_OF_ADDRESSES }],
+        outputs: [],
+        type: BitcoinAbiTypes.Function,
+    },
+    {
+        name: 'mint',
+        inputs: [
+            { name: 'to', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+        ],
         outputs: [],
         type: BitcoinAbiTypes.Function,
     },

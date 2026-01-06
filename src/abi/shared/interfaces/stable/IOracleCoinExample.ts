@@ -25,6 +25,11 @@ export type PriceAggregatedEvent = {
     readonly blockNumber: bigint;
 };
 
+export type MintedEventOracle = {
+    readonly to: Address;
+    readonly amount: bigint;
+};
+
 export type AddOracle = CallResult<{}, [OPNetEvent<OracleAddedEvent>]>;
 
 export type RemoveOracle = CallResult<{}, [OPNetEvent<OracleRemovedEvent>]>;
@@ -32,6 +37,8 @@ export type RemoveOracle = CallResult<{}, [OPNetEvent<OracleRemovedEvent>]>;
 export type SubmitPrice = CallResult<{}, [OPNetEvent<PriceSubmittedEvent>]>;
 
 export type AggregatePrice = CallResult<{}, [OPNetEvent<PriceAggregatedEvent>]>;
+
+export type MintOracle = CallResult<{}, [OPNetEvent<MintedEventOracle>]>;
 
 export type OracleCount = CallResult<{ count: bigint }, []>;
 
@@ -81,6 +88,14 @@ export interface IMultiOracleStablecoinContract extends IOP20SContract {
     aggregatePrice(oracles: Address[]): Promise<AggregatePrice>;
 
     /**
+     * @description Mints tokens to the specified address. Only callable by admin.
+     * @param to - The address to mint tokens to.
+     * @param amount - The amount of tokens to mint.
+     * @returns {Promise<MintOracle>}
+     */
+    mint(to: Address, amount: bigint): Promise<MintOracle>;
+
+    /**
      * @description Gets the number of active oracles.
      * @returns {Promise<OracleCount>}
      */
@@ -108,7 +123,7 @@ export interface IMultiOracleStablecoinContract extends IOP20SContract {
 
     /**
      * @description Gets the admin address.
-     * @returns {Promise<Admin>}
+     * @returns {Promise<AdminMultiOracleStable>}
      */
     admin(): Promise<AdminMultiOracleStable>;
 }

@@ -689,7 +689,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
         outputs: [],
     },
     {
-        name: 'withdrawAndHarvested',
+        name: 'withdrawAndHarvest',
         type: BitcoinAbiTypes.Function,
         inputs: [
             {
@@ -721,6 +721,34 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
             },
         ],
         outputs: [],
+    },
+    {
+        name: 'onOP20Received',
+        type: BitcoinAbiTypes.Function,
+        inputs: [
+            {
+                name: 'operator',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'from',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+            {
+                name: 'data',
+                type: ABIDataTypes.BYTES,
+            },
+        ],
+        outputs: [
+            {
+                name: 'selector',
+                type: ABIDataTypes.BYTES4,
+            },
+        ],
     },
     {
         name: 'setMotoPerBlock',
