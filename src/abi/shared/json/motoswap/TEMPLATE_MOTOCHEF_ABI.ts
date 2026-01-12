@@ -125,7 +125,7 @@ const TemplateMotoChefOverrides: BitcoinInterfaceAbi = [
         ],
     },
     {
-        name: 'totalMotoStaked',
+        name: 'totalUserTokenStaked',
         type: BitcoinAbiTypes.Function,
         inputs: [],
         outputs: [{ name: 'totalStaked', type: ABIDataTypes.UINT256 }],

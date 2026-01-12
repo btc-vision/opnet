@@ -26,7 +26,7 @@ export type GetFeeDistributionBps = CallResult<
     },
     OPNetEvent<never>[]
 >;
-export type TotalMotoStaked = CallResult<{ totalStaked: bigint }, OPNetEvent<never>[]>;
+export type TotalUserTokenStaked = CallResult<{ totalStaked: bigint }, OPNetEvent<never>[]>;
 
 export interface ITemplateMotoChef extends Omit<IMotoChef, 'initialize'> {
     initialize(
@@ -57,7 +57,7 @@ export interface ITemplateMotoChef extends Omit<IMotoChef, 'initialize'> {
     opnetFeeRecipient(): Promise<OpnetFeeRecipient>;
     btcFeePercentage(): Promise<BtcFeePercentage>;
     getFeeDistributionBps(): Promise<GetFeeDistributionBps>;
-    totalMotoStaked(): Promise<TotalMotoStaked>;
+    totalUserTokenStaked(): Promise<TotalUserTokenStaked>;
 }
 
 export default ITemplateMotoChef;
