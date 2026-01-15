@@ -17,7 +17,7 @@ const provider = new JSONRpcProvider('https://regtest.opnet.org', networks.regte
 
 // Interact with a token contract
 const token = getContract<IOP20Contract>(
-    'bcrt1q...',  // contract address
+    'op1...',  // contract address
     OP_20_ABI,
     provider,
     networks.regtest
