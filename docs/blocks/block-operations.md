@@ -381,6 +381,63 @@ console.log('Deployments:', deployments.length);
 
 ---
 
+## Building Indexers
+
+When building indexers that process blocks and transactions, **threading is highly recommended** for performance.
+
+### Why Use Threading?
+
+- **Block processing is CPU-intensive**: Parsing transactions, decoding events, and updating state
+- **I/O bound operations**: Fetching blocks from the network while processing others
+- **Database writes**: Writing indexed data shouldn't block fetching
+- **Parallel transaction processing**: Transactions within a block can often be processed concurrently
+
+### Recommended Architecture
+
+```typescript
+// Conceptual indexer architecture with worker threads
+import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
+
+// Main thread: fetches blocks and dispatches to workers
+// Worker threads: process blocks, decode transactions, index data
+
+interface IndexerConfig {
+    workerCount: number;      // Number of worker threads (recommend: CPU cores - 1)
+    batchSize: number;        // Blocks per batch
+    queueSize: number;        // Max blocks in processing queue
+}
+
+// Fetch blocks in main thread
+async function fetchBlocks(provider: JSONRpcProvider, start: bigint, end: bigint) {
+    const blockNumbers: number[] = [];
+    for (let i = start; i <= end; i++) {
+        blockNumbers.push(Number(i));
+    }
+    return provider.getBlocks(blockNumbers);
+}
+
+// Process blocks in worker threads
+// Each worker handles: transaction parsing, event decoding, database writes
+```
+
+### Key Recommendations
+
+1. **Separate fetching from processing**: Use main thread for I/O, workers for CPU work
+
+2. **Batch block fetches**: Fetch multiple blocks at once with `getBlocks()`
+
+3. **Use worker pools**: Distribute block processing across multiple threads
+
+4. **Queue management**: Implement backpressure to avoid memory issues
+
+5. **Database connection pooling**: Each worker should have its own DB connection
+
+6. **Handle reorgs**: Implement rollback logic for chain reorganizations
+
+> **Performance Tip**: For high-throughput indexers, consider using separate processes for fetching, processing, and database operations, communicating via message queues.
+
+---
+
 ## Best Practices
 
 1. **Use Batch Requests**: Use `getBlocks()` for multiple blocks
@@ -392,6 +449,8 @@ console.log('Deployments:', deployments.length);
 4. **Handle Missing Blocks**: Blocks may not exist for future numbers
 
 5. **Monitor with WebSocket**: Use WebSocket for real-time updates
+
+6. **Use Threading for Indexers**: Process blocks in parallel for performance
 
 ---
 
