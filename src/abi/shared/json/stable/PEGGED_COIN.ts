@@ -5,6 +5,22 @@ import { OP_20S_ABI } from '../opnet/OP_20S_ABI.js';
 
 export const PeggedTokenEvents: BitcoinInterfaceAbi = [
     {
+        name: 'Minted',
+        values: [
+            { name: 'to', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Burned',
+        values: [
+            { name: 'from', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
         name: 'CustodianChanged',
         values: [
             { name: 'previousCustodian', type: ABIDataTypes.ADDRESS },
@@ -15,6 +31,15 @@ export const PeggedTokenEvents: BitcoinInterfaceAbi = [
 ];
 
 export const PeggedToken_ABI: BitcoinInterfaceAbi = [
+    {
+        name: 'mint',
+        inputs: [
+            { name: 'to', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+        ],
+        outputs: [],
+        type: BitcoinAbiTypes.Function,
+    },
     {
         name: 'burnFrom',
         inputs: [

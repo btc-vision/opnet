@@ -5,6 +5,22 @@ import { OP_20S_ABI } from '../opnet/OP_20S_ABI.js';
 
 export const StableCoinEvents: BitcoinInterfaceAbi = [
     {
+        name: 'Minted',
+        values: [
+            { name: 'to', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Burned',
+        values: [
+            { name: 'from', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
         name: 'Blacklisted',
         values: [
             { name: 'account', type: ABIDataTypes.ADDRESS },

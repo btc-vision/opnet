@@ -1,7 +1,7 @@
 import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
-import { IOP721, TransferredEventNFT, URIEventNFT } from './IOP721Contract.js';
+import { IOP721Contract, TransferredEventNFT, URIEventNFT } from './IOP721Contract.js';
 
 // ------------------------------------------------------------------
 // Event Definitions
@@ -35,7 +35,7 @@ export type ReservationExpiredEventNFT = {
 /**
  * @description Represents the result of the setMintEnabled function call.
  */
-export type SetMintEnabled = CallResult<{}, OPNetEvent<MintStatusChangedEventNFT>[]>;
+export type SetMintEnabled = CallResult<{}, [OPNetEvent<MintStatusChangedEventNFT>]>;
 
 /**
  * @description Represents the result of the isMintEnabled function call.
@@ -44,7 +44,7 @@ export type IsMintEnabled = CallResult<
     {
         enabled: boolean;
     },
-    OPNetEvent<never>[]
+    []
 >;
 
 /**
@@ -55,21 +55,23 @@ export type ReserveNFT = CallResult<
         readonly remainingPayment: bigint;
         readonly reservationBlock: bigint;
     },
-    OPNetEvent<ReservationCreatedEventNFT>[]
+    [OPNetEvent<ReservationCreatedEventNFT>]
 >;
 
 /**
  * @description Represents the result of the claim function call.
+ * Emits 1 ReservationClaimed event followed by N Transferred events (one per NFT minted).
  */
 export type ClaimNFT = CallResult<
     {},
-    OPNetEvent<ReservationClaimedEventNFT | TransferredEventNFT>[]
+    [OPNetEvent<ReservationClaimedEventNFT>, ...OPNetEvent<TransferredEventNFT>[]]
 >;
 
 /**
  * @description Represents the result of the purgeExpired function call.
+ * Emits 0-N ReservationExpired events (one per expired block processed).
  */
-export type PurgeExpiredNFT = CallResult<{}, OPNetEvent<ReservationExpiredEventNFT>[]>;
+export type PurgeExpiredNFT = CallResult<{}, [...OPNetEvent<ReservationExpiredEventNFT>[]]>;
 
 /**
  * @description Represents the result of the getStatus function call.
@@ -85,20 +87,21 @@ export type GetStatus = CallResult<
         reservationFeePercent: bigint;
         minReservationFee: bigint;
     },
-    OPNetEvent<never>[]
+    []
 >;
 
 /**
  * @description Represents the result of the airdrop function call.
+ * Emits N Transferred events (one per NFT minted).
  */
-export type AirdropNFT = CallResult<{}, OPNetEvent<TransferredEventNFT>[]>;
+export type AirdropNFT = CallResult<{}, [...OPNetEvent<TransferredEventNFT>[]]>;
 
 /**
  * @description Represents the result of the setTokenURI function call.
  */
-export type SetTokenURI = CallResult<{}, OPNetEvent<URIEventNFT>[]>;
+export type SetTokenURI = CallResult<{}, [OPNetEvent<URIEventNFT>]>;
 
-export interface IExtendedOP721 extends IOP721 {
+export interface IExtendedOP721Contract extends IOP721Contract {
     setMintEnabled(enabled: boolean): Promise<SetMintEnabled>;
     isMintEnabled(): Promise<IsMintEnabled>;
     airdrop(addresses: Address[], amounts: number[]): Promise<AirdropNFT>;
@@ -108,3 +111,8 @@ export interface IExtendedOP721 extends IOP721 {
     getStatus(): Promise<GetStatus>;
     setTokenURI(tokenId: bigint, uri: string): Promise<SetTokenURI>;
 }
+
+/**
+ * @deprecated Use IExtendedOP721Contract instead
+ */
+export type IExtendedOP721 = IExtendedOP721Contract;

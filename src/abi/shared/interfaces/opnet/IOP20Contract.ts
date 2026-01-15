@@ -1,40 +1,181 @@
-import { Address, AddressMap } from '@btc-vision/transaction';
+import { Address } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
 
-export type MintedEvent = {
-    to: Address;
-    amount: bigint;
-};
-
+// ------------------------------------------------------------------
+// Event Definitions
+// ------------------------------------------------------------------
 export type TransferredEvent = {
-    operator: Address;
-    from: Address;
-    to: Address;
-    amount: bigint;
-};
-
-export type BurnedEvent = {
-    from: Address;
-    amount: bigint;
+    readonly operator: Address;
+    readonly from: Address;
+    readonly to: Address;
+    readonly amount: bigint;
 };
 
 export type ApprovedEvent = {
-    owner: Address;
-    spender: Address;
-    value: bigint;
+    readonly owner: Address;
+    readonly spender: Address;
+    readonly amount: bigint;
 };
 
-export type Name = CallResult<{ name: string }, []>;
-export type BalanceOf = CallResult<{ balance: bigint }, []>;
-export type SymbolOf = CallResult<{ symbol: string }, []>;
-export type TotalSupply = CallResult<{ totalSupply: bigint }, []>;
-export type MaxSupply = CallResult<{ maximumSupply: bigint }, []>;
-export type Decimals = CallResult<{ decimals: number }, []>;
-export type TokenIcon = CallResult<{ icon: string }, []>;
-export type DomainSeparator = CallResult<{ domainSeparator: Uint8Array }, []>;
-export type NonceOf = CallResult<{ nonce: bigint }, []>;
+export type BurnedEvent = {
+    readonly from: Address;
+    readonly amount: bigint;
+};
+
+// ------------------------------------------------------------------
+// Call Results
+// ------------------------------------------------------------------
+
+/**
+ * @description Represents the result of the name function call.
+ */
+export type Name = CallResult<
+    {
+        name: string;
+    },
+    []
+>;
+
+/**
+ * @description Represents the result of the symbol function call.
+ */
+export type SymbolOf = CallResult<
+    {
+        symbol: string;
+    },
+    []
+>;
+
+/**
+ * @description Represents the result of the icon function call.
+ */
+export type TokenIcon = CallResult<
+    {
+        icon: string;
+    },
+    []
+>;
+
+/**
+ * @description Represents the result of the decimals function call.
+ */
+export type Decimals = CallResult<
+    {
+        decimals: number;
+    },
+    []
+>;
+
+/**
+ * @description Represents the result of the totalSupply function call.
+ */
+export type TotalSupply = CallResult<
+    {
+        totalSupply: bigint;
+    },
+    []
+>;
+
+/**
+ * @description Represents the result of the maximumSupply function call.
+ */
+export type MaxSupply = CallResult<
+    {
+        maximumSupply: bigint;
+    },
+    []
+>;
+
+/**
+ * @description Represents the result of the domainSeparator function call.
+ */
+export type DomainSeparator = CallResult<
+    {
+        domainSeparator: Uint8Array;
+    },
+    []
+>;
+
+/**
+ * @description Represents the result of the balanceOf function call.
+ */
+export type BalanceOf = CallResult<
+    {
+        balance: bigint;
+    },
+    []
+>;
+
+/**
+ * @description Represents the result of the nonceOf function call.
+ */
+export type NonceOf = CallResult<
+    {
+        nonce: bigint;
+    },
+    []
+>;
+
+/**
+ * @description Represents the result of the allowance function call.
+ */
+export type Allowance = CallResult<
+    {
+        remaining: bigint;
+    },
+    []
+>;
+
+/**
+ * @description Represents the result of the transfer function call.
+ */
+export type Transfer = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
+
+/**
+ * @description Represents the result of the transferFrom function call.
+ */
+export type TransferFrom = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
+
+/**
+ * @description Represents the result of the safeTransfer function call.
+ */
+export type SafeTransfer = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
+
+/**
+ * @description Represents the result of the safeTransferFrom function call.
+ */
+export type SafeTransferFrom = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
+
+/**
+ * @description Represents the result of the increaseAllowance function call.
+ */
+export type IncreaseAllowance = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
+
+/**
+ * @description Represents the result of the decreaseAllowance function call.
+ */
+export type DecreaseAllowance = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
+
+/**
+ * @description Represents the result of the increaseAllowanceBySignature function call.
+ */
+export type IncreaseAllowanceBySignature = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
+
+/**
+ * @description Represents the result of the decreaseAllowanceBySignature function call.
+ */
+export type DecreaseAllowanceBySignature = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
+
+/**
+ * @description Represents the result of the burn function call.
+ */
+export type Burn = CallResult<{}, [OPNetEvent<BurnedEvent>]>;
+
+/**
+ * @description Represents the result of the metadata function call.
+ */
 export type TokenMetadata = CallResult<
     {
         name: string;
@@ -47,25 +188,11 @@ export type TokenMetadata = CallResult<
     []
 >;
 
-export type SafeTransfer = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
-export type Transfer = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
-export type TransferFrom = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
-export type SafeTransferFrom = CallResult<{}, [OPNetEvent<TransferredEvent>]>;
-export type IncreaseAllowance = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
-export type DecreaseAllowance = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
-export type IncreaseAllowanceBySignature = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
-export type DecreaseAllowanceBySignature = CallResult<{}, [OPNetEvent<ApprovedEvent>]>;
-export type Allowance = CallResult<{ remaining: bigint }, []>;
-export type Burn = CallResult<{}, [OPNetEvent<BurnedEvent>]>;
-export type Mint = CallResult<{}, [OPNetEvent<MintedEvent>]>;
-export type Airdrop = CallResult<{}, OPNetEvent<MintedEvent>[]>;
-export type AirdropWithAmount = CallResult<{}, OPNetEvent<MintedEvent>[]>;
-
 /**
  * @description This interface represents the OP20 base contract.
  * @interface IOP20Contract
  * @extends {IOP_NETContract}
- * @cathegory Contracts
+ * @category Contracts
  *
  * @example
  * import { Address } from '@btc-vision/transaction';
@@ -95,11 +222,13 @@ export type AirdropWithAmount = CallResult<{}, OPNetEvent<MintedEvent>[]>;
  * console.log('Balance:', balanceExample.properties.balance);
  */
 export interface IOP20Contract extends IOP_NETContract {
-    balanceOf(account: Address): Promise<BalanceOf>;
-
     name(): Promise<Name>;
 
     symbol(): Promise<SymbolOf>;
+
+    icon(): Promise<TokenIcon>;
+
+    decimals(): Promise<Decimals>;
 
     totalSupply(): Promise<TotalSupply>;
 
@@ -107,17 +236,17 @@ export interface IOP20Contract extends IOP_NETContract {
 
     domainSeparator(): Promise<DomainSeparator>;
 
+    balanceOf(owner: Address): Promise<BalanceOf>;
+
     nonceOf(owner: Address): Promise<NonceOf>;
 
-    decimals(): Promise<Decimals>;
+    allowance(owner: Address, spender: Address): Promise<Allowance>;
 
-    icon(): Promise<TokenIcon>;
-
-    transfer(to: Address, amount: bigint, data: Uint8Array): Promise<Transfer>;
-
-    safeTransfer(to: Address, amount: bigint, data: Uint8Array): Promise<SafeTransfer>;
+    transfer(to: Address, amount: bigint): Promise<Transfer>;
 
     transferFrom(from: Address, to: Address, amount: bigint): Promise<TransferFrom>;
+
+    safeTransfer(to: Address, amount: bigint, data: Uint8Array): Promise<SafeTransfer>;
 
     safeTransferFrom(
         from: Address,
@@ -130,10 +259,9 @@ export interface IOP20Contract extends IOP_NETContract {
 
     decreaseAllowance(spender: Address, amount: bigint): Promise<DecreaseAllowance>;
 
-    metadata(): Promise<TokenMetadata>;
-
     increaseAllowanceBySignature(
-        owner: Address,
+        owner: Uint8Array,
+        ownerTweakedPublicKey: Uint8Array,
         spender: Address,
         amount: bigint,
         deadline: bigint,
@@ -141,20 +269,15 @@ export interface IOP20Contract extends IOP_NETContract {
     ): Promise<IncreaseAllowanceBySignature>;
 
     decreaseAllowanceBySignature(
-        owner: Address,
+        owner: Uint8Array,
+        ownerTweakedPublicKey: Uint8Array,
         spender: Address,
         amount: bigint,
         deadline: bigint,
         signature: Uint8Array,
     ): Promise<DecreaseAllowanceBySignature>;
 
-    allowance(owner: Address, spender: Address): Promise<Allowance>;
+    burn(amount: bigint): Promise<Burn>;
 
-    burn(value: bigint): Promise<Burn>;
-
-    mint(address: Address, value: bigint): Promise<Mint>;
-
-    airdrop(map: AddressMap<bigint>): Promise<Airdrop>;
-
-    airdropWithAmount(amount: bigint, addresses: Address[]): Promise<AirdropWithAmount>;
+    metadata(): Promise<TokenMetadata>;
 }
