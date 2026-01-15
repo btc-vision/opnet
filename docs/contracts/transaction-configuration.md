@@ -71,7 +71,7 @@ interface TransactionParameters {
     // Optional: ML-DSA options
     readonly linkMLDSAPublicKeyToAddress?: boolean;
     readonly revealMLDSAPublicKey?: boolean;
-    readonly p2wda?: boolean;
+    // p2wda?: boolean;  // UNUSED - internal only
 }
 ```
 
@@ -83,9 +83,11 @@ The `feeRate` specifies how many satoshis per virtual byte to pay for the transa
 
 ### Automatic Fee
 
+If you omit `feeRate` or set it to `0`, the provider automatically fetches the current recommended fee rate:
+
 ```typescript
 const params: TransactionParameters = {
-    feeRate: 0,  // Provider estimates fee
+    // feeRate omitted - automatically fetched from provider
     // ...
 };
 ```
@@ -104,14 +106,14 @@ const params: TransactionParameters = {
 ```typescript
 const gasParams = await provider.gasParameters();
 
-// Fee recommendations from mempool
-const economyFee = gasParams.bitcoin.economyFee;    // ~1 hour
-const hourFee = gasParams.bitcoin.hourFee;          // ~1 hour
-const halfHourFee = gasParams.bitcoin.halfHourFee;  // ~30 min
-const fastestFee = gasParams.bitcoin.fastestFee;    // Next block
+// Fee recommendations
+const lowFee = gasParams.bitcoin.recommended.low;           // Low priority
+const mediumFee = gasParams.bitcoin.recommended.medium;     // Medium priority
+const highFee = gasParams.bitcoin.recommended.high;         // Next block
+const conservativeFee = gasParams.bitcoin.conservative;     // Conservative
 
 const params: TransactionParameters = {
-    feeRate: halfHourFee,
+    feeRate: mediumFee,
     // ...
 };
 ```
@@ -174,17 +176,6 @@ const params: TransactionParameters = {
     mldsaSigner: wallet.mldsaKeypair,
     linkMLDSAPublicKeyToAddress: true,  // Link quantum key
     revealMLDSAPublicKey: true,         // Reveal in TX
-    // ...
-};
-```
-
-### P2WDA (Pay-to-Witness-Data-Address)
-
-```typescript
-const params: TransactionParameters = {
-    signer: wallet.keypair,
-    mldsaSigner: wallet.mldsaKeypair,
-    p2wda: true,  // Use P2WDA output format
     // ...
 };
 ```
@@ -474,7 +465,7 @@ async function fullConfigurationExample() {
         from: wallet.address,
 
         // Fees
-        feeRate: gasParams.bitcoin.halfHourFee,
+        feeRate: gasParams.bitcoin.recommended.medium,
         priorityFee: 1000n,
 
         // UTXOs

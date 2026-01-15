@@ -366,7 +366,7 @@ enum AddressTypes {
     P2TR = 'P2TR',                              // Taproot (bc1p...)
     P2WPKH = 'P2WPKH',                          // SegWit (bc1q...)
     P2WSH = 'P2WSH',                            // SegWit script
-    P2WDA = 'P2WDA',                            // Witness data auth
+    // P2WDA = 'P2WDA',                         // UNUSED - internal only
 }
 ```
 

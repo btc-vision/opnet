@@ -20,7 +20,7 @@ This guide covers offline signing for cold wallet security. OPNet provides built
 Offline signing keeps your private keys on a device that never connects to the internet. The workflow uses binary serialization to transfer transaction data between devices:
 
 1. **Online device**: Simulate transaction, serialize to binary
-2. **Transfer**: Move binary data via USB/QR code to offline device
+2. **Transfer**: Move binary data by any means to offline device
 3. **Offline device**: Deserialize, verify, and sign
 4. **Transfer**: Move signed transaction back to online device
 5. **Online device**: Broadcast to network
@@ -36,7 +36,7 @@ sequenceDiagram
     participant Network as OPNet Network
 
     Online->>Online: 1. Simulate & serialize (toOfflineBuffer)
-    Online->>Offline: 2. Transfer binary via USB/QR
+    Online->>Offline: 2. Transfer binary data
     Offline->>Offline: 3. Reconstruct (fromOfflineBuffer)
     Offline->>Offline: 4. Sign transaction
     Offline->>Online: 5. Transfer signed TX
@@ -77,7 +77,8 @@ async function prepareForOfflineSigning() {
     // Step 1: Simulate the contract call
     const simulation = await token.transfer(
         Address.fromString('0xRecipient...'),
-        100_00000000n  // 100 tokens
+        100_00000000n,  // 100 tokens
+        Buffer.alloc(0),
     );
 
     if (simulation.revert) {

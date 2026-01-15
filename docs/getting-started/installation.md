@@ -253,7 +253,6 @@ OPNet supports multiple Bitcoin networks:
 | Network | URL | Network Object |
 |---------|-----|----------------|
 | Mainnet | `https://mainnet.opnet.org` | `networks.bitcoin` |
-| Testnet | `https://testnet2.opnet.org` | `networks.testnet` |
 | Regtest | `https://regtest.opnet.org` | `networks.regtest` |
 
 ```typescript
@@ -264,12 +263,6 @@ import { networks } from '@btc-vision/bitcoin';
 const mainnetProvider = new JSONRpcProvider(
     'https://mainnet.opnet.org',
     networks.bitcoin
-);
-
-// Testnet
-const testnetProvider = new JSONRpcProvider(
-    'https://testnet2.opnet.org',
-    networks.testnet
 );
 
 // Regtest (development)

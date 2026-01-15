@@ -252,6 +252,7 @@ console.log('Value:', result.properties.value);
 // Write value
 const setResult = await myContract.setValue(123n, {
     signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
     refundTo: wallet.p2tr,
     feeRate: 10,
 });

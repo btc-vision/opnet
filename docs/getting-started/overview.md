@@ -156,13 +156,6 @@ console.log('Proposer:', epoch.proposer?.publicKey);
 
 ## OPNet Protocol
 
-OPNet enables smart contracts on Bitcoin Layer 1 through:
-
-1. **UTXO-Based Execution**: Contracts are triggered by Bitcoin transactions
-2. **Deterministic Execution**: All nodes execute contracts identically
-3. **Proof of Work Consensus**: Epoch mining ensures agreement on state
-4. **Native Bitcoin Integration**: Contracts can send/receive BTC
-
 ### How Contract Calls Work
 
 ```mermaid
@@ -194,7 +187,6 @@ OPNet operates on multiple Bitcoin networks:
 | Network | Purpose | RPC URL |
 |---------|---------|---------|
 | **Mainnet** | Production | `https://mainnet.opnet.org` |
-| **Testnet** | Testing with test BTC | `https://testnet2.opnet.org` |
 | **Regtest** | Local development | `https://regtest.opnet.org` |
 
 ```typescript
@@ -249,22 +241,6 @@ import {
     BitcoinUtils,
     RevertDecoder,
 } from 'opnet';
-```
-
-### Module Organization
-
-```
-opnet/
-├── providers/          # RPC communication
-├── contracts/          # Contract interaction
-├── abi/               # ABI types and pre-built ABIs
-│   └── shared/        # Standard contract interfaces
-├── transactions/      # Transaction parsing
-├── blocks/            # Block data
-├── epochs/            # Epoch consensus
-├── utxos/             # UTXO management
-├── utils/             # Utilities
-└── storage/           # Contract storage access
 ```
 
 ---

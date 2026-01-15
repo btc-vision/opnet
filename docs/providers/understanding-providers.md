@@ -110,20 +110,6 @@ flowchart TD
     D --> F[Standard operations]
 ```
 
-### Decision Matrix
-
-| Use Case | Recommended Provider |
-|----------|---------------------|
-| Read contract data | JSONRpcProvider |
-| Send transactions | JSONRpcProvider |
-| Monitor new blocks | WebSocketRpcProvider |
-| Epoch mining | WebSocketRpcProvider |
-| Batch operations | JSONRpcProvider |
-| Simple scripts | JSONRpcProvider |
-| Trading bots | WebSocketRpcProvider |
-| Backend services | JSONRpcProvider |
-| Real-time dashboards | WebSocketRpcProvider |
-
 ---
 
 ## Network Selection
@@ -135,7 +121,6 @@ import { networks } from '@btc-vision/bitcoin';
 
 // Available networks
 const mainnet = networks.bitcoin;   // Production
-const testnet = networks.testnet;   // Testing with test BTC
 const regtest = networks.regtest;   // Local development
 ```
 
@@ -144,7 +129,6 @@ const regtest = networks.regtest;   // Local development
 | Network | RPC URL | WebSocket URL | Use Case |
 |---------|---------|---------------|----------|
 | Mainnet | `https://mainnet.opnet.org` | `wss://mainnet.opnet.org/ws` | Production |
-| Testnet | `https://testnet2.opnet.org` | `wss://testnet2.opnet.org/ws` | Integration testing |
 | Regtest | `https://regtest.opnet.org` | `wss://regtest.opnet.org/ws` | Development |
 
 ### Complete Setup Example
@@ -159,11 +143,6 @@ const config = {
         rpc: 'https://mainnet.opnet.org',
         ws: 'wss://mainnet.opnet.org/ws',
         network: networks.bitcoin,
-    },
-    testnet: {
-        rpc: 'https://testnet2.opnet.org',
-        ws: 'wss://testnet2.opnet.org/ws',
-        network: networks.testnet,
     },
     regtest: {
         rpc: 'https://regtest.opnet.org',

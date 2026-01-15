@@ -182,11 +182,21 @@ const utxos = await utxoManager.getUTXOsForAmount({
     feeRate: 10,
 });
 
-// Use in contract call
-const result = await contract.transfer(recipient, amount, {
+// Simulate first
+const simulation = await contract.transfer(recipient, amount, Buffer.alloc(0));
+
+if (simulation.revert) {
+    throw new Error(`Transfer would fail: ${simulation.revert}`);
+}
+
+// Send with specific UTXOs
+const result = await simulation.sendTransaction({
     signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
     refundTo: wallet.p2tr,
     feeRate: 10,
+    network: network,
+    maximumAllowedSatToSpend: 10000n,
     utxos: utxos, // Provide specific UTXOs
 });
 

@@ -118,6 +118,7 @@ const result = await router.swapExactTokensForTokens(
     deadline,
     {
         signer: wallet.keypair,
+        mldsaSigner: wallet.mldsaKeypair,
         refundTo: wallet.p2tr,
         feeRate: 10,
     }
@@ -209,6 +210,18 @@ const staking = getContract<IMotoswapStakingContract>(
 
 Native BTC to token swap mechanism with liquidity provider queue system.
 
+> **⚠️ WARNING: Examples Are Simplified**
+>
+> The NativeSwap examples below are **incomplete and for demonstration purposes only**. They do NOT include:
+>
+> - **Reorg protection** - Bitcoin reorganizations can invalidate reservations
+> - **Confirmation tracking** - Waiting for sufficient confirmations before swapping
+> - **Error recovery** - Handling failed or stuck reservations
+> - **Race condition handling** - Multiple users competing for same liquidity
+> - **Timeout management** - Reservations expire and must be handled
+>
+> **Production implementations require significant additional logic to be user-safe.** These examples demonstrate the basic API usage only. Consult the OPNet team or review production implementations before deploying.
+
 ```typescript
 import {
     NativeSwapAbi,
@@ -228,7 +241,7 @@ const nativeSwap = getContract<INativeSwapContract>(
 
 | Method | Parameters | Description |
 |--------|------------|-------------|
-| `reserve(token, maximumAmountIn, minimumAmountOut, activationDelay)` | `Address, bigint, bigint, number` | Reserve tokens for swap |
+| `reserve(token, maximumAmountIn, minimumAmountOut, forLP, activationDelay)` | `Address, bigint, bigint, boolean, number` | Reserve tokens for swap |
 | `swap(token)` | `Address` | Execute swap after reservation |
 | `getQuote(token, satoshisIn)` | `Address, bigint` | Get swap quote |
 | `getReserve(token)` | `Address` | Get pool reserves |
@@ -301,43 +314,195 @@ interface ProviderFulfilledEvent {
 ### Example: Get Quote and Reserve
 
 ```typescript
-// Get quote for 100,000 satoshis
-const token = Address.fromString('bc1p...token...');
-const satoshisIn = 100000n;
+import {
+    INativeSwapContract,
+    OPNetEvent,
+    ReservationCreatedEvent,
+    TransactionOutputFlags,
+    TransactionParameters,
+} from 'opnet';
+import { PsbtOutputExtended } from '@btc-vision/bitcoin';
 
-const quote = await nativeSwap.getQuote(token, satoshisIn);
+// Fee recipient address (required for reservations)
+const FEE_RECIPIENT = 'bcrt1q...fee-address...';
+
+// Get quote for 100,000 satoshis
+const token = Address.fromString('0x...token...');
+const maximumAmountIn = 100_000n;
+
+const quote = await nativeSwap.getQuote(token, maximumAmountIn);
 console.log('Tokens out:', quote.properties.tokensOut);
 console.log('Required sats:', quote.properties.requiredSatoshis);
 console.log('Price:', quote.properties.price);
 
-// Reserve tokens (with 2 block activation delay)
+// Calculate minimum output with 5% slippage
+const minimumAmountOut = quote.properties.tokensOut * 95n / 100n;
+
+// Create fee output (required)
+const feeOutput: PsbtOutputExtended = {
+    address: FEE_RECIPIENT,
+    value: 10_000,
+};
+
+// Set transaction details with fee output
+nativeSwap.setTransactionDetails({
+    inputs: [],
+    outputs: [
+        {
+            to: feeOutput.address,
+            value: BigInt(feeOutput.value),
+            index: 1,
+            scriptPubKey: undefined,
+            flags: TransactionOutputFlags.hasTo,
+        },
+    ],
+});
+
+// Reserve tokens
+// Parameters: token, maximumAmountIn, minimumAmountOut, forLP, activationDelay
 const simulation = await nativeSwap.reserve(
     token,
-    satoshisIn,
-    quote.properties.tokensOut * 95n / 100n, // 5% slippage
-    2
+    maximumAmountIn,
+    minimumAmountOut,
+    false,  // forLP - set true if reserving for LP position
+    0,      // activationDelay - blocks to wait before swap
 );
 
-if (!simulation.revert) {
-    const result = await simulation.sendTransaction({
-        signer: wallet.keypair,
-        mldsaSigner: wallet.mldsaSigner,
-        refundTo: wallet.p2tr,
-        maximumAllowedSatToSpend: 100000n,
-        network: network,
-        feeRate: 10,
-    });
-    console.log('Reserved:', result.transactionId);
+if (simulation.revert) {
+    throw new Error(`Reservation failed: ${simulation.revert}`);
 }
+
+// Get reserved amount from event
+const event = simulation.events[
+    simulation.events.length - 1
+] as OPNetEvent<ReservationCreatedEvent>;
+
+console.log('Expected tokens out:', event.properties.expectedAmountOut);
+
+// Send transaction with fee output
+const params: TransactionParameters = {
+    signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
+    refundTo: wallet.address.p2tr(network),
+    priorityFee: 0n,
+    feeRate: 10,
+    maximumAllowedSatToSpend: 10_000n,
+    network: network,
+    extraOutputs: [feeOutput],  // Include fee output
+};
+
+const result = await simulation.sendTransaction(params);
+console.log('Reserved:', result.transactionId);
+console.log('Tokens reserved:', event.properties.expectedAmountOut);
+```
+
+### Example: Execute Swap After Reservation
+
+After reserving tokens, you must execute the swap by sending BTC to the liquidity providers.
+
+```typescript
+import {
+    INativeSwapContract,
+    JSONRpcProvider,
+    Swap,
+    TransactionOutputFlags,
+    TransactionParameters,
+} from 'opnet';
+import { PsbtOutputExtended } from '@btc-vision/bitcoin';
+
+interface Recipient {
+    address: string;
+    amount: bigint;
+}
+
+// Get recipients from reservation transaction
+async function getRecipients(
+    provider: JSONRpcProvider,
+    contract: INativeSwapContract,
+    reservationTxId: string,
+): Promise<Recipient[]> {
+    const tx = await provider.getTransactionReceipt(reservationTxId);
+    const decodedEvents = contract.decodeEvents(tx.events);
+
+    return decodedEvents
+        .filter((event) => event.type === 'LiquidityReserved')
+        .map((event) => ({
+            amount: (event.properties as any).satoshisAmount,
+            address: (event.properties as any).depositAddress,
+        }));
+}
+
+// Execute swap
+async function executeSwap(
+    provider: JSONRpcProvider,
+    wallet: Wallet,
+    contract: INativeSwapContract,
+    token: Address,
+    recipients: Recipient[],
+): Promise<string> {
+    // Build outputs for LP payments
+    const outputs: PsbtOutputExtended[] = [];
+    const transactionOutputs = [];
+    const totalAmount = recipients.reduce((acc, r) => acc + r.amount, 0n);
+
+    for (let i = 0; i < recipients.length; i++) {
+        const recipient = recipients[i];
+
+        transactionOutputs.push({
+            to: recipient.address,
+            value: recipient.amount,
+            index: i + 1,
+            flags: TransactionOutputFlags.hasTo,
+            scriptPubKey: undefined,
+        });
+
+        outputs.push({
+            address: recipient.address,
+            value: Number(recipient.amount),
+        });
+    }
+
+    // Set transaction details with recipient outputs
+    contract.setTransactionDetails({
+        inputs: [],
+        outputs: transactionOutputs,
+    });
+
+    // Execute swap
+    const simulation: Swap = await contract.swap(token);
+
+    if (simulation.revert) {
+        throw new Error(`Swap failed: ${simulation.revert}`);
+    }
+
+    const params: TransactionParameters = {
+        signer: wallet.keypair,
+        mldsaSigner: wallet.mldsaKeypair,
+        refundTo: wallet.address.p2tr(provider.getNetwork()),
+        priorityFee: 0n,
+        feeRate: 10,
+        maximumAllowedSatToSpend: totalAmount + 10_000n,
+        network: provider.getNetwork(),
+        extraOutputs: outputs,  // Include LP payment outputs
+    };
+
+    const tx = await simulation.sendTransaction(params);
+    return tx.transactionId;
+}
+
+// Usage
+const recipients = await getRecipients(provider, nativeSwap, reservationTxId);
+const swapTxId = await executeSwap(provider, wallet, nativeSwap, token, recipients);
+console.log('Swap executed:', swapTxId);
 ```
 
 ### Example: List Liquidity
 
 ```typescript
-const token = Address.fromString('bc1p...token...');
-const receiverPubKey = Buffer.from('...33 byte pubkey...');
-const receiverAddress = 'bc1p...your-btc-address...';
-const amount = 1000000000000n; // Amount to list
+const token = Address.fromString('0x...token...');
+const receiverPubKey = Buffer.from('...33 byte compressed pubkey...');
+const receiverAddress = 'bcrt1p...your-btc-address...';
+const amount = 1_000_000_000_000n; // Amount to list
 const usePriorityQueue = true;
 
 const simulation = await nativeSwap.listLiquidity(
@@ -345,14 +510,18 @@ const simulation = await nativeSwap.listLiquidity(
     receiverPubKey,
     receiverAddress,
     amount,
-    usePriorityQueue
+    usePriorityQueue,
 );
+
+if (simulation.revert) {
+    throw new Error(`List liquidity failed: ${simulation.revert}`);
+}
 
 const result = await simulation.sendTransaction({
     signer: wallet.keypair,
-    mldsaSigner: wallet.mldsaSigner,
-    refundTo: wallet.p2tr,
-    maximumAllowedSatToSpend: 50000n,
+    mldsaSigner: wallet.mldsaKeypair,
+    refundTo: wallet.address.p2tr(network),
+    maximumAllowedSatToSpend: 50_000n,
     network: network,
     feeRate: 10,
 });
@@ -430,6 +599,7 @@ async function executeSwap(
         amountIn,
         {
             signer: wallet.keypair,
+            mldsaSigner: wallet.mldsaKeypair,
             refundTo: wallet.p2tr,
             feeRate: 10,
         }
@@ -458,6 +628,7 @@ async function executeSwap(
         deadline,
         {
             signer: wallet.keypair,
+            mldsaSigner: wallet.mldsaKeypair,
             refundTo: wallet.p2tr,
             feeRate: 10,
         }

@@ -46,17 +46,20 @@ flowchart LR
 OPNet uses SHA-1 collision mining for epoch consensus. Miners must find a solution where:
 
 ```
-SHA1(targetHash || salt) produces a valid collision with the epoch target
+preimage = checksumRoot XOR mldsaPublicKey XOR salt
+hash = SHA1(preimage)
+matchingBits(hash, SHA1(checksumRoot)) >= minDifficulty
 ```
 
 ```mermaid
 flowchart TD
     A[Epoch Target] --> B[Miner generates salt]
-    B --> C[Calculate SHA1]
-    C --> D{Meets difficulty?}
-    D -->|No| B
-    D -->|Yes| E[Submit Solution]
-    E --> F[Epoch Proposer]
+    B --> C[XOR with public key]
+    C --> D[Calculate SHA1]
+    D --> E{Matching bits >= difficulty?}
+    E -->|No| B
+    E -->|Yes| F[Submit Solution]
+    F --> G[Epoch Proposer]
 ```
 
 ---

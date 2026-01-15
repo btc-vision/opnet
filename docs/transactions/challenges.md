@@ -107,15 +107,20 @@ const contract = getContract<IOP20Contract>(
 );
 
 // The challenge is automatically fetched when sending transactions
-const result = await contract.transfer(
-    recipientAddress,
-    amount,
-    {
-        signer: wallet.keypair,
-        refundTo: wallet.p2tr,
-        feeRate: 10,
-    }
-);
+const simulation = await contract.transfer(recipientAddress, amount, Buffer.alloc(0));
+
+if (simulation.revert) {
+    throw new Error(`Transfer would fail: ${simulation.revert}`);
+}
+
+const result = await simulation.sendTransaction({
+    signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
+    refundTo: wallet.p2tr,
+    feeRate: 10,
+    network: network,
+    maximumAllowedSatToSpend: 10000n,
+});
 ```
 
 ### Manual Challenge Management
@@ -208,7 +213,8 @@ async function executeWithFreshChallenge<T>(
 // Usage
 const result = await executeWithFreshChallenge(provider, async (challenge) => {
     // Use challenge in transaction
-    return await contract.transfer(recipient, amount, txParams);
+    const simulation = await contract.transfer(recipient, amount, Buffer.alloc(0));
+    return simulation;
 });
 ```
 

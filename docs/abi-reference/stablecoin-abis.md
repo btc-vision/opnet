@@ -58,6 +58,7 @@ await collateralToken.increaseAllowance(coinAddress, collateralAmount, txParams)
 // Mint stablecoin
 const result = await oracleCoin.mint(collateralAmount, {
     signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
     refundTo: wallet.p2tr,
     feeRate: 10,
 });

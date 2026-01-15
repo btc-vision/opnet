@@ -1,22 +1,38 @@
 # Sending Bitcoin
 
-This guide covers building and sending Bitcoin transactions on OPNet.
+This guide covers building and sending Bitcoin transactions using `TransactionFactory` from `@btc-vision/transaction`.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Simple Bitcoin Transfer](#simple-bitcoin-transfer)
+- [Splitting UTXOs](#splitting-utxos)
+- [Consolidating UTXOs](#consolidating-utxos)
+- [Multi-Address UTXO Fetching](#multi-address-utxo-fetching)
+- [Fee Estimation](#fee-estimation)
+- [Adding Notes to Transactions](#adding-notes-to-transactions)
+- [Broadcasting Transactions](#broadcasting-transactions)
+- [Complete Examples](#complete-examples)
+- [Best Practices](#best-practices)
+
+---
 
 ## Overview
 
-Bitcoin transactions on OPNet are built using UTXOs as inputs and specifying outputs for recipients and change.
+Bitcoin transactions on OPNet are built using `TransactionFactory.createBTCTransfer()`. This method handles all the complexity of UTXO selection, fee calculation, and change output creation.
 
 ```mermaid
 sequenceDiagram
     participant W as Wallet
-    participant U as UTXOsManager
-    participant T as Transaction Builder
+    participant U as UTXOManager
+    participant F as TransactionFactory
     participant N as Network
 
     W->>U: Get UTXOs
     U-->>W: Available UTXOs
-    W->>T: Build transaction
-    T->>T: Sign transaction
+    W->>F: createBTCTransfer()
+    F-->>W: Signed transaction
     W->>N: Broadcast
     N-->>W: Transaction ID
 ```
@@ -26,20 +42,32 @@ sequenceDiagram
 ## Prerequisites
 
 ```typescript
+import { networks } from '@btc-vision/bitcoin';
 import {
     AddressTypes,
-    TransactionFactory,
+    IFundingTransactionParameters,
     Mnemonic,
     MLDSASecurityLevel,
-    UTXO,
+    TransactionFactory,
+    OPNetLimitedProvider,
 } from '@btc-vision/transaction';
 import { JSONRpcProvider } from 'opnet';
-import { networks, Psbt } from '@btc-vision/bitcoin';
 
+// Setup network and providers
 const network = networks.regtest;
 const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
-const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
-const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
+const limitedProvider = new OPNetLimitedProvider('https://regtest.opnet.org');
+
+// Create wallet from mnemonic
+const mnemonic = new Mnemonic(
+    'your twenty four word seed phrase goes here ...',
+    '',
+    network,
+    MLDSASecurityLevel.LEVEL2,
+);
+const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);
+
+// Create transaction factory
 const factory = new TransactionFactory();
 ```
 
@@ -53,483 +81,500 @@ const factory = new TransactionFactory();
 async function sendBitcoin(
     recipient: string,
     amount: bigint,
-    wallet: Wallet,
-    feeRate: number = 10
 ): Promise<string> {
-    // Get UTXOs
+    // Get UTXOs for the transfer
     const utxos = await provider.utxoManager.getUTXOsForAmount({
         address: wallet.p2tr,
         amount: amount + 10000n,  // Add buffer for fees
+        mergePendingUTXOs: true,
+        filterSpentUTXOs: true,
         throwErrors: true,
     });
 
-    // Calculate total input value
-    const inputValue = utxos.reduce((sum, u) => sum + u.value, 0n);
+    // Build funding transaction parameters
+    const params: IFundingTransactionParameters = {
+        amount: amount,
+        feeRate: 10,
+        from: wallet.p2tr,
+        to: recipient,
+        utxos: utxos,
+        signer: wallet.keypair,
+        network: network,
+        priorityFee: 0n,
+        gasSatFee: 0n,
+    };
 
-    // Build PSBT
-    const psbt = new Psbt({ network });
+    // Create the transfer
+    const result = await factory.createBTCTransfer(params);
 
-    // Add inputs
-    for (const utxo of utxos) {
-        psbt.addInput({
-            hash: utxo.transactionId,
-            index: utxo.outputIndex,
-            witnessUtxo: {
-                script: utxo.scriptPubKey.toBuffer(),
-                value: Number(utxo.value),
-            },
-            tapInternalKey: wallet.internalPubkey,
-        });
+    // Broadcast the transaction
+    const broadcast = await provider.sendRawTransaction(result.tx, false);
+
+    if (!broadcast || broadcast.error) {
+        throw new Error(`Broadcast failed: ${broadcast?.error}`);
     }
 
-    // Add recipient output
-    psbt.addOutput({
-        address: recipient,
-        value: Number(amount),
-    });
+    // Track spent UTXOs for future transactions
+    provider.utxoManager.spentUTXO(wallet.p2tr, result.inputUtxos, result.nextUTXOs);
 
-    // Calculate fee (estimate 150 vB per input + 50 vB base)
-    const estimatedSize = 50 + utxos.length * 150;
-    const fee = BigInt(estimatedSize * feeRate);
-
-    // Add change output
-    const change = inputValue - amount - fee;
-    if (change > 546n) {  // Dust threshold
-        psbt.addOutput({
-            address: wallet.p2tr,
-            value: Number(change),
-        });
-    }
-
-    // Sign all inputs
-    for (let i = 0; i < utxos.length; i++) {
-        psbt.signTaprootInput(i, wallet.keypair);
-    }
-
-    // Finalize and extract
-    psbt.finalizeAllInputs();
-    const tx = psbt.extractTransaction();
-
-    // Broadcast
-    const result = await provider.sendRawTransaction(tx.toHex());
-
-    // Track spent UTXOs
-    provider.utxoManager.spentUTXO(wallet.p2tr, utxos, []);
-
-    return result.txid;
+    return broadcast.result;
 }
 
 // Usage
 const txId = await sendBitcoin(
     'bcrt1p...recipient...',
     50000n,  // 50,000 satoshis
-    wallet
 );
 console.log('Transaction sent:', txId);
 ```
 
 ---
 
-## Multi-Output Transaction
+## Splitting UTXOs
 
-### Send to Multiple Recipients
+Split a large UTXO into multiple smaller outputs using `splitInputsInto`.
 
 ```typescript
-interface PaymentOutput {
-    address: string;
-    amount: bigint;
-}
+import { BitcoinUtils } from 'opnet';
 
-async function sendToMultiple(
-    payments: PaymentOutput[],
-    wallet: Wallet,
-    feeRate: number = 10
+async function splitUTXOs(
+    recipient: string,
+    totalAmount: bigint,
+    splitCount: number,
 ): Promise<string> {
-    // Calculate total needed
-    const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0n);
-
-    // Get UTXOs
     const utxos = await provider.utxoManager.getUTXOsForAmount({
         address: wallet.p2tr,
-        amount: totalAmount + 20000n,  // Buffer for fees
+        amount: totalAmount + 50000n,  // Extra buffer for fees with many outputs
+        mergePendingUTXOs: true,
+        filterSpentUTXOs: true,
         throwErrors: true,
     });
 
-    const inputValue = utxos.reduce((sum, u) => sum + u.value, 0n);
+    const params: IFundingTransactionParameters = {
+        amount: totalAmount,
+        feeRate: 1.5,
+        from: wallet.p2tr,
+        to: recipient,
+        utxos: utxos,
+        signer: wallet.keypair,
+        network: network,
+        priorityFee: 0n,
+        gasSatFee: 0n,
+        splitInputsInto: splitCount,  // Split into this many outputs
+    };
 
-    // Build PSBT
-    const psbt = new Psbt({ network });
+    const result = await factory.createBTCTransfer(params);
+    const broadcast = await limitedProvider.broadcastTransaction(result.tx, false);
 
-    // Add inputs
-    for (const utxo of utxos) {
-        psbt.addInput({
-            hash: utxo.transactionId,
-            index: utxo.outputIndex,
-            witnessUtxo: {
-                script: utxo.scriptPubKey.toBuffer(),
-                value: Number(utxo.value),
-            },
-            tapInternalKey: wallet.internalPubkey,
-        });
+    if (!broadcast) {
+        throw new Error('Could not broadcast transaction');
     }
 
-    // Add payment outputs
-    for (const payment of payments) {
-        psbt.addOutput({
-            address: payment.address,
-            value: Number(payment.amount),
-        });
+    return broadcast.result;
+}
+
+// Usage: Split 5 BTC into 500 UTXOs
+const amount = BitcoinUtils.expandToDecimals(5, 8);  // 5 BTC in satoshis
+const txId = await splitUTXOs(wallet.p2tr, amount - 10000n, 500);
+console.log('Split transaction:', txId);
+```
+
+---
+
+## Consolidating UTXOs
+
+Merge multiple small UTXOs into a single larger output.
+
+```typescript
+async function consolidateUTXOs(
+    destinationAddress: string,
+    maxUTXOs: number = 100,
+): Promise<string> {
+    // Fetch all available UTXOs
+    const utxos = await provider.utxoManager.getUTXOs({
+        address: wallet.p2tr,
+        optimize: false,
+        mergePendingUTXOs: false,
+        filterSpentUTXOs: true,
+    });
+
+    // Limit number of UTXOs to consolidate
+    const selectedUTXOs = utxos.slice(0, maxUTXOs);
+    const total = selectedUTXOs.reduce((acc, utxo) => acc + utxo.value, 0n);
+
+    console.log(`Consolidating ${selectedUTXOs.length} UTXOs with total value ${total} sats`);
+
+    // Estimate fees - start with minimal fee and adjust if needed
+    let fees = 1n;
+
+    const params: IFundingTransactionParameters = {
+        amount: total - fees,
+        feeRate: 10,
+        from: wallet.p2tr,
+        to: destinationAddress,
+        utxos: selectedUTXOs,
+        signer: wallet.keypair,
+        network: network,
+        priorityFee: 0n,
+        gasSatFee: 0n,
+    };
+
+    const result = await factory.createBTCTransfer(params);
+
+    // Actual fees are calculated by the factory
+    console.log(`Transaction size: ${result.tx.length / 2} bytes`);
+    console.log(`Estimated fees: ${result.estimatedFees} sats`);
+
+    const broadcast = await provider.sendRawTransaction(result.tx, false);
+
+    if (!broadcast || broadcast.error) {
+        throw new Error(`Broadcast failed: ${broadcast?.error}`);
     }
 
-    // Calculate fee
-    const estimatedSize = 50 + utxos.length * 150 + payments.length * 40;
-    const fee = BigInt(estimatedSize * feeRate);
-
-    // Add change
-    const change = inputValue - totalAmount - fee;
-    if (change > 546n) {
-        psbt.addOutput({
-            address: wallet.p2tr,
-            value: Number(change),
-        });
-    }
-
-    // Sign and finalize
-    for (let i = 0; i < utxos.length; i++) {
-        psbt.signTaprootInput(i, wallet.keypair);
-    }
-    psbt.finalizeAllInputs();
-
-    const tx = psbt.extractTransaction();
-    const result = await provider.sendRawTransaction(tx.toHex());
-
-    provider.utxoManager.spentUTXO(wallet.p2tr, utxos, []);
-
-    return result.txid;
+    return broadcast.result;
 }
 
 // Usage
-const txId = await sendToMultiple([
-    { address: 'bcrt1p...addr1...', amount: 10000n },
-    { address: 'bcrt1p...addr2...', amount: 20000n },
-    { address: 'bcrt1p...addr3...', amount: 15000n },
-], wallet);
+const txId = await consolidateUTXOs(wallet.p2tr, 50);
+console.log('Consolidation transaction:', txId);
+```
+
+---
+
+## Multi-Address UTXO Fetching
+
+Fetch UTXOs from multiple addresses at once using `OPNetLimitedProvider`.
+
+```typescript
+import {
+    FetchUTXOParamsMultiAddress,
+    OPNetLimitedProvider,
+    UTXO,
+} from '@btc-vision/transaction';
+import { BitcoinUtils } from 'opnet';
+
+async function fetchMultiAddressUTXOs(): Promise<UTXO[]> {
+    const limitedProvider = new OPNetLimitedProvider('https://regtest.opnet.org');
+
+    const params: FetchUTXOParamsMultiAddress = {
+        addresses: [wallet.p2tr, wallet.p2wpkh],
+        minAmount: 10n,
+        requestedAmount: BitcoinUtils.expandToDecimals(1, 8),  // 1 BTC
+        optimized: true,
+        usePendingUTXO: true,
+    };
+
+    const utxos = await limitedProvider.fetchUTXOMultiAddr(params);
+
+    if (!utxos || !utxos.length) {
+        throw new Error('No UTXOs found');
+    }
+
+    const total = utxos.reduce((acc, utxo) => acc + utxo.value, 0n);
+    console.log(`Found ${utxos.length} UTXOs with total ${total} sats`);
+
+    return utxos;
+}
 ```
 
 ---
 
 ## Fee Estimation
 
-### Get Recommended Fees
+### Get Network Fee Rates
 
 ```typescript
 async function getRecommendedFees(): Promise<{
-    fastest: number;
-    halfHour: number;
-    hour: number;
-    economy: number;
+    high: number;
+    medium: number;
+    low: number;
+    conservative: number;
 }> {
     const gasParams = await provider.gasParameters();
 
     return {
-        fastest: gasParams.bitcoin.fastestFee,
-        halfHour: gasParams.bitcoin.halfHourFee,
-        hour: gasParams.bitcoin.hourFee,
-        economy: gasParams.bitcoin.economyFee,
+        high: gasParams.bitcoin.recommended.high,
+        medium: gasParams.bitcoin.recommended.medium,
+        low: gasParams.bitcoin.recommended.low,
+        conservative: gasParams.bitcoin.conservative,
     };
 }
 
 // Usage
 const fees = await getRecommendedFees();
-console.log('Fastest fee:', fees.fastest, 'sat/vB');
-
-// Use appropriate fee rate
-const urgentTx = await sendBitcoin(recipient, amount, wallet, fees.fastest);
-const normalTx = await sendBitcoin(recipient, amount, wallet, fees.halfHour);
+console.log('Fee rates (sat/vB):');
+console.log('  High:', fees.high);
+console.log('  Medium:', fees.medium);
+console.log('  Low:', fees.low);
+console.log('  Conservative:', fees.conservative);
 ```
 
-### Calculate Transaction Size
+### Use Automatic Fee Rate
+
+Set `feeRate: 0` to automatically use network-recommended fees:
 
 ```typescript
-function estimateTransactionSize(
-    inputCount: number,
-    outputCount: number,
-    inputType: 'p2tr' | 'p2wpkh' | 'p2pkh' = 'p2tr'
-): number {
-    // Base size (version + locktime + input/output counts)
-    let size = 10;
-
-    // Input sizes by type
-    const inputSizes = {
-        p2tr: 58,    // Taproot
-        p2wpkh: 68,  // Native SegWit
-        p2pkh: 148,  // Legacy
-    };
-
-    size += inputCount * inputSizes[inputType];
-
-    // Output size (approximately 34 bytes for P2TR/P2WPKH)
-    size += outputCount * 34;
-
-    return size;
-}
-
-function calculateFee(
-    inputCount: number,
-    outputCount: number,
-    feeRate: number
-): bigint {
-    const size = estimateTransactionSize(inputCount, outputCount);
-    return BigInt(Math.ceil(size * feeRate));
-}
-
-// Usage
-const fee = calculateFee(3, 2, 10);
-console.log('Estimated fee:', fee, 'sats');
+const params: IFundingTransactionParameters = {
+    amount: 50000n,
+    feeRate: 0,  // Automatic fee rate
+    from: wallet.p2tr,
+    to: recipient,
+    utxos: utxos,
+    signer: wallet.keypair,
+    network: network,
+    priorityFee: 0n,
+    gasSatFee: 0n,
+};
 ```
 
 ---
 
-## Transaction with OP_RETURN
+## Adding Notes to Transactions
 
-### Add Data to Transaction
+Add an OP_RETURN note to your transaction:
 
 ```typescript
-async function sendWithData(
-    recipient: string,
-    amount: bigint,
-    data: string | Buffer,
-    wallet: Wallet,
-    feeRate: number = 10
-): Promise<string> {
-    const utxos = await provider.utxoManager.getUTXOsForAmount({
-        address: wallet.p2tr,
-        amount: amount + 20000n,
-        throwErrors: true,
-    });
-
-    const inputValue = utxos.reduce((sum, u) => sum + u.value, 0n);
-
-    const psbt = new Psbt({ network });
-
-    // Add inputs
-    for (const utxo of utxos) {
-        psbt.addInput({
-            hash: utxo.transactionId,
-            index: utxo.outputIndex,
-            witnessUtxo: {
-                script: utxo.scriptPubKey.toBuffer(),
-                value: Number(utxo.value),
-            },
-            tapInternalKey: wallet.internalPubkey,
-        });
-    }
-
-    // Add recipient output
-    psbt.addOutput({
-        address: recipient,
-        value: Number(amount),
-    });
-
-    // Add OP_RETURN output with data
-    const dataBuffer = typeof data === 'string' ? Buffer.from(data) : data;
-    const embed = bitcoin.payments.embed({ data: [dataBuffer] });
-
-    psbt.addOutput({
-        script: embed.output!,
-        value: 0,
-    });
-
-    // Calculate fee and add change
-    const estimatedSize = 50 + utxos.length * 150 + 80 + dataBuffer.length;
-    const fee = BigInt(estimatedSize * feeRate);
-    const change = inputValue - amount - fee;
-
-    if (change > 546n) {
-        psbt.addOutput({
-            address: wallet.p2tr,
-            value: Number(change),
-        });
-    }
-
-    // Sign and broadcast
-    for (let i = 0; i < utxos.length; i++) {
-        psbt.signTaprootInput(i, wallet.keypair);
-    }
-    psbt.finalizeAllInputs();
-
-    const tx = psbt.extractTransaction();
-    const result = await provider.sendRawTransaction(tx.toHex());
-
-    return result.txid;
-}
-
-// Usage
-const txId = await sendWithData(
-    recipient,
-    10000n,
-    'Hello OPNet!',
-    wallet
-);
+const params: IFundingTransactionParameters = {
+    amount: 50000n,
+    feeRate: 10,
+    from: wallet.p2tr,
+    to: recipient,
+    utxos: utxos,
+    signer: wallet.keypair,
+    network: network,
+    priorityFee: 0n,
+    gasSatFee: 0n,
+    note: 'Hello from OPNet!',  // String or Buffer
+};
 ```
 
 ---
 
 ## Broadcasting Transactions
 
-### Single Transaction
+### Using JSONRpcProvider
 
 ```typescript
-const result = await provider.sendRawTransaction(rawTxHex);
-console.log('Transaction ID:', result.txid);
+const broadcast = await provider.sendRawTransaction(rawTxHex, false);
+
+if (broadcast.error) {
+    console.error('Broadcast failed:', broadcast.error);
+} else {
+    console.log('Transaction ID:', broadcast.result);
+    console.log('Peers notified:', broadcast.peers);
+}
 ```
 
-### Multiple Transactions
+### Using OPNetLimitedProvider
 
 ```typescript
-const transactions = [
-    { tx: rawTx1, psbt: null },
-    { tx: rawTx2, psbt: null },
-];
+const broadcast = await limitedProvider.broadcastTransaction(rawTxHex, false);
 
-const results = await provider.sendRawTransactions(transactions);
-
-for (const result of results) {
-    console.log('TX ID:', result.txid);
+if (!broadcast) {
+    throw new Error('Could not broadcast transaction');
 }
+
+console.log('Broadcast result:', broadcast);
 ```
 
 ---
 
-## Complete Bitcoin Service
+## Complete Examples
+
+### Full Transfer Service
 
 ```typescript
-class BitcoinService {
-    private provider: JSONRpcProvider;
-    private wallet: Wallet;
-    private network: Network;
+import { networks } from '@btc-vision/bitcoin';
+import {
+    IFundingTransactionParameters,
+    TransactionFactory,
+    Wallet,
+} from '@btc-vision/transaction';
+import { JSONRpcProvider } from 'opnet';
+
+class BitcoinTransferService {
+    private readonly factory = new TransactionFactory();
 
     constructor(
-        provider: JSONRpcProvider,
-        wallet: Wallet,
-        network: Network
-    ) {
-        this.provider = provider;
-        this.wallet = wallet;
-        this.network = network;
-    }
+        private readonly provider: JSONRpcProvider,
+        private readonly wallet: Wallet,
+        private readonly network: typeof networks.bitcoin,
+    ) {}
 
     async getBalance(): Promise<bigint> {
         return this.provider.getBalance(this.wallet.p2tr);
     }
 
-    async getRecommendedFee(priority: 'fast' | 'normal' | 'slow'): Promise<number> {
-        const gasParams = await this.provider.gasParameters();
-
-        switch (priority) {
-            case 'fast':
-                return gasParams.bitcoin.fastestFee;
-            case 'normal':
-                return gasParams.bitcoin.halfHourFee;
-            case 'slow':
-                return gasParams.bitcoin.economyFee;
-        }
-    }
-
     async send(
         recipient: string,
         amount: bigint,
-        priority: 'fast' | 'normal' | 'slow' = 'normal'
-    ): Promise<string> {
-        const feeRate = await this.getRecommendedFee(priority);
-
+        feeRate: number = 10,
+    ): Promise<{ txId: string; fees: bigint }> {
         const utxos = await this.provider.utxoManager.getUTXOsForAmount({
             address: this.wallet.p2tr,
             amount: amount + 20000n,
+            mergePendingUTXOs: true,
+            filterSpentUTXOs: true,
             throwErrors: true,
         });
 
-        const inputValue = utxos.reduce((sum, u) => sum + u.value, 0n);
+        const params: IFundingTransactionParameters = {
+            amount: amount,
+            feeRate: feeRate,
+            from: this.wallet.p2tr,
+            to: recipient,
+            utxos: utxos,
+            signer: this.wallet.keypair,
+            network: this.network,
+            priorityFee: 0n,
+            gasSatFee: 0n,
+        };
 
-        const psbt = new Psbt({ network: this.network });
+        const result = await this.factory.createBTCTransfer(params);
+        const broadcast = await this.provider.sendRawTransaction(result.tx, false);
 
-        for (const utxo of utxos) {
-            psbt.addInput({
-                hash: utxo.transactionId,
-                index: utxo.outputIndex,
-                witnessUtxo: {
-                    script: utxo.scriptPubKey.toBuffer(),
-                    value: Number(utxo.value),
-                },
-                tapInternalKey: this.wallet.internalPubkey,
-            });
+        if (!broadcast || broadcast.error) {
+            throw new Error(`Broadcast failed: ${broadcast?.error}`);
         }
 
-        psbt.addOutput({
-            address: recipient,
-            value: Number(amount),
+        // Update UTXO tracking
+        this.provider.utxoManager.spentUTXO(
+            this.wallet.p2tr,
+            result.inputUtxos,
+            result.nextUTXOs,
+        );
+
+        return {
+            txId: broadcast.result,
+            fees: result.estimatedFees,
+        };
+    }
+
+    async split(
+        amount: bigint,
+        splitCount: number,
+        feeRate: number = 10,
+    ): Promise<string> {
+        const utxos = await this.provider.utxoManager.getUTXOsForAmount({
+            address: this.wallet.p2tr,
+            amount: amount + 50000n,
+            mergePendingUTXOs: true,
+            filterSpentUTXOs: true,
+            throwErrors: true,
         });
 
-        const estimatedSize = 50 + utxos.length * 150 + 80;
-        const fee = BigInt(Math.ceil(estimatedSize * feeRate));
-        const change = inputValue - amount - fee;
+        const params: IFundingTransactionParameters = {
+            amount: amount,
+            feeRate: feeRate,
+            from: this.wallet.p2tr,
+            to: this.wallet.p2tr,
+            utxos: utxos,
+            signer: this.wallet.keypair,
+            network: this.network,
+            priorityFee: 0n,
+            gasSatFee: 0n,
+            splitInputsInto: splitCount,
+        };
 
-        if (change > 546n) {
-            psbt.addOutput({
-                address: this.wallet.p2tr,
-                value: Number(change),
-            });
+        const result = await this.factory.createBTCTransfer(params);
+        const broadcast = await this.provider.sendRawTransaction(result.tx, false);
+
+        if (!broadcast || broadcast.error) {
+            throw new Error(`Broadcast failed: ${broadcast?.error}`);
         }
 
-        for (let i = 0; i < utxos.length; i++) {
-            psbt.signTaprootInput(i, this.wallet.keypair);
+        return broadcast.result;
+    }
+
+    async consolidate(maxUTXOs: number = 100): Promise<string> {
+        const utxos = await this.provider.utxoManager.getUTXOs({
+            address: this.wallet.p2tr,
+            optimize: false,
+            mergePendingUTXOs: false,
+            filterSpentUTXOs: true,
+        });
+
+        const selectedUTXOs = utxos.slice(0, maxUTXOs);
+        const total = selectedUTXOs.reduce((acc, utxo) => acc + utxo.value, 0n);
+
+        const params: IFundingTransactionParameters = {
+            amount: total - 1000n,  // Reserve for fees
+            feeRate: 10,
+            from: this.wallet.p2tr,
+            to: this.wallet.p2tr,
+            utxos: selectedUTXOs,
+            signer: this.wallet.keypair,
+            network: this.network,
+            priorityFee: 0n,
+            gasSatFee: 0n,
+        };
+
+        const result = await this.factory.createBTCTransfer(params);
+        const broadcast = await this.provider.sendRawTransaction(result.tx, false);
+
+        if (!broadcast || broadcast.error) {
+            throw new Error(`Broadcast failed: ${broadcast?.error}`);
         }
-        psbt.finalizeAllInputs();
 
-        const tx = psbt.extractTransaction();
-        const result = await this.provider.sendRawTransaction(tx.toHex());
-
-        this.provider.utxoManager.spentUTXO(this.wallet.p2tr, utxos, []);
-
-        return result.txid;
+        return broadcast.result;
     }
 }
 
 // Usage
-const btcService = new BitcoinService(provider, wallet, network);
+const network = networks.regtest;
+const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const mnemonic = new Mnemonic(
+    'your twenty four word seed phrase goes here ...',
+    '',
+    network,
+    MLDSASecurityLevel.LEVEL2,
+);
+const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);
 
-const balance = await btcService.getBalance();
+const service = new BitcoinTransferService(provider, wallet, network);
+
+// Check balance
+const balance = await service.getBalance();
 console.log('Balance:', balance, 'sats');
 
-const txId = await btcService.send(
-    'bcrt1p...recipient...',
-    50000n,
-    'normal'
-);
-console.log('Sent:', txId);
+// Send Bitcoin
+const { txId, fees } = await service.send('bcrt1p...recipient...', 50000n);
+console.log('Sent! TxID:', txId, 'Fees:', fees);
+
+// Split UTXOs
+const splitTxId = await service.split(1000000n, 10);
+console.log('Split! TxID:', splitTxId);
+
+// Consolidate UTXOs
+const consolidateTxId = await service.consolidate(50);
+console.log('Consolidated! TxID:', consolidateTxId);
 ```
 
 ---
 
 ## Best Practices
 
-1. **Use Appropriate Fee Rates**: Check network conditions before sending
+1. **Always Buffer for Fees**: When fetching UTXOs, add extra satoshis to cover transaction fees
 
-2. **Handle Dust**: Don't create outputs below 546 satoshis
+2. **Track UTXO State**: Call `spentUTXO()` after successful broadcasts to keep local state in sync
 
-3. **Track UTXOs**: Always update UTXO state after transactions
+3. **Handle Broadcast Errors**: Always check for errors in broadcast responses
 
-4. **Verify Before Broadcast**: Double-check amounts and addresses
+4. **Use Appropriate Fee Rates**: Query network conditions before sending time-sensitive transactions
 
-5. **Handle Errors**: Network issues can cause broadcast failures
+5. **Avoid Dust Outputs**: The minimum output value is 330 satoshis (dust threshold)
+
+6. **Consolidate Regularly**: Merge small UTXOs to reduce future transaction fees
+
+7. **Split for Concurrency**: Split UTXOs when you need to send multiple transactions in parallel
 
 ---
 
 ## Next Steps
 
+- [UTXOs](./utxos.md) - Understanding UTXOs
 - [UTXO Optimization](./utxo-optimization.md) - Consolidation strategies
 - [Balances](./balances.md) - Balance queries
-- [Transaction Configuration](../contracts/transaction-configuration.md) - Advanced options
 
 ---
 

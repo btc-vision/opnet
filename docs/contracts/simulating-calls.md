@@ -125,7 +125,7 @@ const decimals = await token.decimals();
 console.log('Decimals:', decimals.properties.decimals);  // number
 
 // Transfer result (simulation)
-const transfer = await token.transfer(recipient, amount);
+const transfer = await token.transfer(recipient, amount, Buffer.alloc(0));
 console.log('Success:', transfer.properties.success);  // boolean
 ```
 
@@ -149,7 +149,7 @@ console.log('Success:', transfer.properties.success);  // boolean
 Always check for reverts before proceeding:
 
 ```typescript
-const result = await token.transfer(recipient, amount);
+const result = await token.transfer(recipient, amount, Buffer.alloc(0));
 
 if (result.revert) {
     // Call would fail
@@ -217,27 +217,27 @@ token.setSimulatedHeight(undefined);
 Access lists track which storage slots a call reads/writes:
 
 ```typescript
-const result = await token.transfer(recipient, amount);
+const result = await token.transfer(recipient, amount, Buffer.alloc(0));
 
 // Access list shows storage accessed
 console.log('Access list:', result.accessList);
 
 // Use access list to optimize future calls
 token.setAccessList(result.accessList);
-const optimizedResult = await token.transfer(recipient, amount);
+const optimizedResult = await token.transfer(recipient, amount, Buffer.alloc(0));
 ```
 
 ### Using Access Lists for Optimization
 
 ```typescript
 // First call discovers access patterns
-const firstCall = await token.transfer(recipient, amount);
+const firstCall = await token.transfer(recipient, amount, Buffer.alloc(0));
 
 // Set access list for subsequent calls
 token.setAccessList(firstCall.accessList);
 
 // Subsequent calls can be more efficient
-const secondCall = await token.transfer(recipient2, amount2);
+const secondCall = await token.transfer(recipient2, amount2, Buffer.alloc(0));
 ```
 
 ---
@@ -514,7 +514,7 @@ async function safeTransfer(
     }
 
     // Simulate transfer
-    const transfer = await token.transfer(recipient, amount);
+    const transfer = await token.transfer(recipient, amount, Buffer.alloc(0));
 
     if (transfer.revert) {
         console.error('Transfer would fail:', transfer.revert);
@@ -638,7 +638,7 @@ async function getBalance(token: IOP20Contract, address: Address): Promise<bigin
 
 ```typescript
 // Always simulate first
-const simulation = await contract.transfer(to, amount);
+const simulation = await contract.transfer(to, amount, Buffer.alloc(0));
 
 // Only send if simulation succeeds
 if (!simulation.revert) {

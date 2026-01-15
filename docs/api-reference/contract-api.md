@@ -249,7 +249,7 @@ interface TransactionParameters {
 
     // Options
     readonly note?: string | Buffer;     // Transaction note
-    readonly p2wda?: boolean;            // Use P2WDA address
+    // p2wda?: boolean;                  // UNUSED - internal only
     readonly txVersion?: SupportedTransactionVersion;  // TX version
     readonly anchor?: boolean;           // Anchor transaction
 
@@ -379,7 +379,7 @@ if (balance.revert) {
 
 ```typescript
 // First simulate the call
-const simulation = await contract.transfer(recipient, amount);
+const simulation = await contract.transfer(recipient, amount, Buffer.alloc(0));
 
 // Check for revert before sending
 if (simulation.revert) {

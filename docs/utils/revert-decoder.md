@@ -42,7 +42,7 @@ if (tx.rawRevert) {
 ### From Contract Call
 
 ```typescript
-const result = await contract.transfer(recipient, amount);
+const result = await contract.transfer(recipient, amount, Buffer.alloc(0));
 
 if (result.revert) {
     console.log('Call reverted:', result.revert);
@@ -172,7 +172,7 @@ async function safeContractCall<T>(
 
 // Usage
 const outcome = await safeContractCall(() =>
-    contract.transfer(recipient, amount)
+    contract.transfer(recipient, amount, Buffer.alloc(0))
 );
 
 if (outcome.success) {
@@ -284,7 +284,7 @@ function logRevert(
 }
 
 // Usage
-const result = await contract.transfer(recipient, amount);
+const result = await contract.transfer(recipient, amount, Buffer.alloc(0));
 logRevert('Transfer', result.revert, result.rawRevert);
 ```
 
@@ -335,11 +335,11 @@ async function executeBatchWithRevertHandling(
 const results = await executeBatchWithRevertHandling([
     {
         name: 'Transfer to Alice',
-        execute: () => contract.transfer(alice, 100n),
+        execute: () => contract.transfer(alice, 100n, Buffer.alloc(0)),
     },
     {
         name: 'Transfer to Bob',
-        execute: () => contract.transfer(bob, 200n),
+        execute: () => contract.transfer(bob, 200n, Buffer.alloc(0)),
     },
 ]);
 
@@ -427,7 +427,7 @@ const revertService = new RevertService();
 revertService.addMapping('already claimed', 'You have already claimed');
 
 // Use with contract result
-const result = await contract.transfer(recipient, amount);
+const result = await contract.transfer(recipient, amount, Buffer.alloc(0));
 const error = revertService.extractFromResult(result);
 
 if (error) {

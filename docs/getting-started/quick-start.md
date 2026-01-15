@@ -50,9 +50,8 @@ testConnection();
 
 | Network | URL |
 |---------|-----|
-| Regtest | `https://regtest.opnet.org` |
-| Testnet | `https://testnet2.opnet.org` |
 | Mainnet | `https://mainnet.opnet.org` |
+| Regtest | `https://regtest.opnet.org` |
 
 ---
 
@@ -231,7 +230,7 @@ async function transferTokens() {
     const amount = 100_00000000n;  // 100 tokens
 
     // Step 1: Simulate the transfer
-    const simulation = await token.transfer(recipient, amount);
+    const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
 
     // Check if simulation succeeded
     if (simulation.revert) {
@@ -347,7 +346,7 @@ async function main() {
         const amount = 1000000n;  // Amount to send
 
         // Simulate first
-        const simulation = await token.transfer(recipient, amount);
+        const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
 
         if (simulation.revert) {
             console.error('Transfer would fail:', simulation.revert);
@@ -357,6 +356,7 @@ async function main() {
         // Send transaction
         const params: TransactionParameters = {
             signer: wallet.keypair,
+            mldsaSigner: wallet.mldsaKeypair,
             refundTo: wallet.p2tr,
             maximumAllowedSatToSpend: 10000n,
             feeRate: 10,
@@ -444,7 +444,7 @@ console.log('Amount:', amount.toString());
 
 ```typescript
 try {
-    const simulation = await token.transfer(recipient, amount);
+    const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
 
     if (simulation.revert) {
         throw new Error(`Simulation failed: ${simulation.revert}`);

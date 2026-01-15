@@ -61,71 +61,91 @@ interface EpochTemplate {
 
 ### Understanding the Target
 
-The `epochTarget` is the hash that miners must find a collision for. A valid solution requires:
+Mining requires finding a SHA-1 collision against the target hash. The algorithm:
 
-```
-SHA1(epochTarget || salt) = collision that meets difficulty
-```
+1. Compute preimage: `checksumRoot XOR mldsaPublicKey XOR salt` (each 32 bytes)
+2. Compute hash: `SHA1(preimage)`
+3. Count matching bits between `hash` and `SHA1(checksumRoot)`
+4. Valid if `matchingBits >= minDifficulty`
 
 ### Basic Mining Loop
 
 ```typescript
 import { createHash } from 'crypto';
 
+function calculatePreimage(
+    checksumRoot: Buffer,
+    mldsaPublicKey: Buffer,
+    salt: Buffer
+): Buffer {
+    const target32 = Buffer.alloc(32);
+    const pubKey32 = Buffer.alloc(32);
+    const salt32 = Buffer.alloc(32);
+
+    checksumRoot.copy(target32, 0, 0, Math.min(32, checksumRoot.length));
+    mldsaPublicKey.copy(pubKey32, 0, 0, Math.min(32, mldsaPublicKey.length));
+    salt.copy(salt32, 0, 0, Math.min(32, salt.length));
+
+    const preimage = Buffer.alloc(32);
+    for (let i = 0; i < 32; i++) {
+        preimage[i] = target32[i] ^ pubKey32[i] ^ salt32[i];
+    }
+
+    return preimage;
+}
+
+function countMatchingBits(hash1: Buffer, hash2: Buffer): number {
+    let matchingBits = 0;
+    const minLength = Math.min(hash1.length, hash2.length);
+
+    for (let i = 0; i < minLength; i++) {
+        const byte1 = hash1[i];
+        const byte2 = hash2[i];
+
+        if (byte1 === byte2) {
+            matchingBits += 8;
+        } else {
+            for (let bit = 7; bit >= 0; bit--) {
+                if (((byte1 >> bit) & 1) === ((byte2 >> bit) & 1)) {
+                    matchingBits++;
+                } else {
+                    return matchingBits;
+                }
+            }
+        }
+    }
+
+    return matchingBits;
+}
+
 async function mineEpoch(
     provider: JSONRpcProvider,
-    minerPublicKey: Buffer
-): Promise<{ salt: Buffer; solution: Buffer } | null> {
+    mldsaPublicKey: Buffer
+): Promise<{ salt: Buffer; matchingBits: number } | null> {
     const template = await provider.getEpochTemplate();
-    const target = template.epochTarget;
+    const checksumRoot = template.epochTarget;
+    const targetHash = createHash('sha1').update(checksumRoot).digest();
+    const minDifficulty = 20; // Minimum matching bits required
 
     let attempts = 0;
-    const maxAttempts = 1000000; // Limit for demo
+    const maxAttempts = 1000000;
 
     while (attempts < maxAttempts) {
-        // Generate random salt (32 bytes)
-        const salt = crypto.getRandomValues(new Uint8Array(32));
-        const saltBuffer = Buffer.from(salt);
+        const salt = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
 
-        // Calculate SHA-1 hash
-        const data = Buffer.concat([target, saltBuffer]);
-        const hash = createHash('sha1').update(data).digest();
+        const preimage = calculatePreimage(checksumRoot, mldsaPublicKey, salt);
+        const hash = createHash('sha1').update(preimage).digest();
 
-        // Check if meets difficulty (simplified)
-        if (meetsTargetDifficulty(hash, template)) {
-            return {
-                salt: saltBuffer,
-                solution: hash,
-            };
+        const matchingBits = countMatchingBits(hash, targetHash);
+
+        if (matchingBits >= minDifficulty) {
+            return { salt, matchingBits };
         }
 
         attempts++;
     }
 
     return null;
-}
-
-function meetsTargetDifficulty(
-    hash: Buffer,
-    template: EpochTemplate
-): boolean {
-    // Difficulty check - leading zeros required
-    // Actual implementation depends on network difficulty
-    const leadingZeros = countLeadingZeros(hash);
-    return leadingZeros >= 4; // Simplified example
-}
-
-function countLeadingZeros(hash: Buffer): number {
-    let zeros = 0;
-    for (const byte of hash) {
-        if (byte === 0) {
-            zeros += 8;
-        } else {
-            zeros += Math.clz32(byte) - 24;
-            break;
-        }
-    }
-    return zeros;
 }
 ```
 
@@ -200,9 +220,12 @@ class MiningService {
     private provider: JSONRpcProvider;
     private isRunning: boolean = false;
     private currentTemplate: EpochTemplate | null = null;
+    private mldsaPublicKey: Buffer;
+    private minDifficulty: number = 20;
 
-    constructor(provider: JSONRpcProvider) {
+    constructor(provider: JSONRpcProvider, mldsaPublicKey: Buffer) {
         this.provider = provider;
+        this.mldsaPublicKey = mldsaPublicKey;
     }
 
     async refreshTemplate(): Promise<EpochTemplate> {
@@ -215,10 +238,9 @@ class MiningService {
     }
 
     async startMining(
-        minerPublicKey: Buffer,
         onSolutionFound: (solution: {
             salt: Buffer;
-            hash: Buffer;
+            matchingBits: number;
             epochNumber: bigint;
         }) => void,
         hashesPerBatch: number = 10000
@@ -226,24 +248,18 @@ class MiningService {
         this.isRunning = true;
 
         while (this.isRunning) {
-            // Refresh template periodically
             const template = await this.refreshTemplate();
 
-            // Mine batch
-            const result = await this.mineBatch(
-                template,
-                hashesPerBatch
-            );
+            const result = await this.mineBatch(template, hashesPerBatch);
 
             if (result) {
                 onSolutionFound({
                     salt: result.salt,
-                    hash: result.hash,
+                    matchingBits: result.matchingBits,
                     epochNumber: template.epochNumber,
                 });
             }
 
-            // Small delay to prevent tight loop
             await new Promise(r => setTimeout(r, 100));
         }
     }
@@ -252,52 +268,76 @@ class MiningService {
         this.isRunning = false;
     }
 
+    private calculatePreimage(checksumRoot: Buffer, salt: Buffer): Buffer {
+        const target32 = Buffer.alloc(32);
+        const pubKey32 = Buffer.alloc(32);
+        const salt32 = Buffer.alloc(32);
+
+        checksumRoot.copy(target32, 0, 0, Math.min(32, checksumRoot.length));
+        this.mldsaPublicKey.copy(pubKey32, 0, 0, Math.min(32, this.mldsaPublicKey.length));
+        salt.copy(salt32, 0, 0, Math.min(32, salt.length));
+
+        const preimage = Buffer.alloc(32);
+        for (let i = 0; i < 32; i++) {
+            preimage[i] = target32[i] ^ pubKey32[i] ^ salt32[i];
+        }
+
+        return preimage;
+    }
+
+    private countMatchingBits(hash1: Buffer, hash2: Buffer): number {
+        let matchingBits = 0;
+        const minLength = Math.min(hash1.length, hash2.length);
+
+        for (let i = 0; i < minLength; i++) {
+            if (hash1[i] === hash2[i]) {
+                matchingBits += 8;
+            } else {
+                for (let bit = 7; bit >= 0; bit--) {
+                    if (((hash1[i] >> bit) & 1) === ((hash2[i] >> bit) & 1)) {
+                        matchingBits++;
+                    } else {
+                        return matchingBits;
+                    }
+                }
+            }
+        }
+
+        return matchingBits;
+    }
+
     private async mineBatch(
         template: EpochTemplate,
         batchSize: number
-    ): Promise<{ salt: Buffer; hash: Buffer } | null> {
-        const target = template.epochTarget;
+    ): Promise<{ salt: Buffer; matchingBits: number } | null> {
+        const checksumRoot = template.epochTarget;
+        const targetHash = createHash('sha1').update(checksumRoot).digest();
 
         for (let i = 0; i < batchSize; i++) {
-            const salt = Buffer.from(
-                crypto.getRandomValues(new Uint8Array(32))
-            );
+            const salt = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
 
-            const data = Buffer.concat([target, salt]);
-            const hash = createHash('sha1').update(data).digest();
+            const preimage = this.calculatePreimage(checksumRoot, salt);
+            const hash = createHash('sha1').update(preimage).digest();
 
-            if (this.meetsRequirements(hash)) {
-                return { salt, hash };
+            const matchingBits = this.countMatchingBits(hash, targetHash);
+
+            if (matchingBits >= this.minDifficulty) {
+                return { salt, matchingBits };
             }
         }
 
         return null;
     }
-
-    private meetsRequirements(hash: Buffer): boolean {
-        // Check leading zeros (simplified difficulty check)
-        let zeros = 0;
-        for (const byte of hash) {
-            if (byte === 0) {
-                zeros += 8;
-            } else {
-                zeros += Math.clz32(byte) - 24;
-                break;
-            }
-        }
-        return zeros >= 20; // Adjust based on network difficulty
-    }
 }
 
 // Usage
-const miningService = new MiningService(provider);
+const miningService = new MiningService(provider, wallet.mldsaKeypair.publicKey);
 
-const minerKey = Buffer.from('your-public-key', 'hex');
-
-miningService.startMining(minerKey, async (solution) => {
+miningService.startMining(async (solution) => {
     console.log('Solution found!');
     console.log('  Epoch:', solution.epochNumber);
     console.log('  Salt:', solution.salt.toString('hex'));
+    console.log('  Matching bits:', solution.matchingBits);
 
     // Submit the solution
     // await submitSolution(solution);

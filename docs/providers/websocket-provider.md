@@ -355,26 +355,6 @@ try {
 
 ---
 
-## When to Use WebSocket Provider
-
-### Use WebSocket When:
-
-- Building real-time dashboards
-- Monitoring new blocks as they arrive
-- Implementing epoch mining
-- Creating trading bots
-- Need instant block notifications
-- Running long-lived processes
-
-### Use JSON-RPC When:
-
-- Simple one-off queries
-- Serverless functions
-- Scripts that run and exit
-- Don't need real-time updates
-
----
-
 ## Best Practices
 
 1. **Handle Disconnections**: Set up reconnection handlers

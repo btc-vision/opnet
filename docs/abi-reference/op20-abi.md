@@ -145,15 +145,24 @@ console.log('Balance:', balance.properties.balance);
 const recipient = Address.fromString('bc1p...');
 const amount = 1000000000n; // 10 tokens with 8 decimals
 
-const result = await token.transfer(recipient, amount, {
+// Simulate first
+const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
+
+if (simulation.revert) {
+    throw new Error(`Transfer would fail: ${simulation.revert}`);
+}
+
+// Send transaction
+const result = await simulation.sendTransaction({
     signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
     refundTo: wallet.p2tr,
     feeRate: 10,
+    network: network,
+    maximumAllowedSatToSpend: 10000n,
 });
 
-if (result.success) {
-    console.log('Transfer successful!');
-}
+console.log('Transfer successful! TX:', result.transactionId);
 ```
 
 ### Approve Spending
@@ -162,10 +171,19 @@ if (result.success) {
 const spender = Address.fromString('bc1p...router...');
 const allowance = 1000000000000n; // Large allowance
 
-const result = await token.increaseAllowance(spender, allowance, {
+const simulation = await token.increaseAllowance(spender, allowance);
+
+if (simulation.revert) {
+    throw new Error(`Approve failed: ${simulation.revert}`);
+}
+
+const result = await simulation.sendTransaction({
     signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
     refundTo: wallet.p2tr,
     feeRate: 10,
+    network: network,
+    maximumAllowedSatToSpend: 10000n,
 });
 ```
 
@@ -177,10 +195,19 @@ const recipient = Address.fromString('bc1p...recipient...');
 const amount = 500000000n;
 
 // Requires prior approval
-const result = await token.transferFrom(owner, recipient, amount, {
+const simulation = await token.transferFrom(owner, recipient, amount);
+
+if (simulation.revert) {
+    throw new Error(`TransferFrom failed: ${simulation.revert}`);
+}
+
+const result = await simulation.sendTransaction({
     signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
     refundTo: wallet.p2tr,
     feeRate: 10,
+    network: network,
+    maximumAllowedSatToSpend: 10000n,
 });
 ```
 

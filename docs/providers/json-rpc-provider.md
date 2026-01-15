@@ -120,12 +120,6 @@ const mainnetProvider = new JSONRpcProvider(
     networks.bitcoin
 );
 
-// Testing
-const testnetProvider = new JSONRpcProvider(
-    'https://testnet2.opnet.org',
-    networks.testnet
-);
-
 // Development
 const regtestProvider = new JSONRpcProvider(
     'https://regtest.opnet.org',
@@ -138,7 +132,6 @@ const regtestProvider = new JSONRpcProvider(
 | Network | URL | Description |
 |---------|-----|-------------|
 | Mainnet | `https://mainnet.opnet.org` | Production network |
-| Testnet | `https://testnet2.opnet.org` | Test network with test BTC |
 | Regtest | `https://regtest.opnet.org` | Development/regression testing |
 
 ---

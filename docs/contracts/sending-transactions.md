@@ -53,7 +53,7 @@ Sending a transaction involves three steps:
 ### 1. Simulate the Call
 
 ```typescript
-const simulation = await token.transfer(recipient, amount);
+const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
 
 // Check if it would succeed
 if (simulation.revert) {
@@ -333,7 +333,7 @@ async function transferTokens() {
     const amount = 100_00000000n;  // 100 tokens
 
     // Step 1: Simulate
-    const simulation = await token.transfer(recipient, amount);
+    const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
 
     if (simulation.revert) {
         throw new Error(`Transfer would fail: ${simulation.revert}`);
@@ -408,7 +408,7 @@ async function batchTransfer(
     params: TransactionParameters
 ) {
     for (const { address, amount } of recipients) {
-        const simulation = await token.transfer(address, amount);
+        const simulation = await token.transfer(address, amount, Buffer.alloc(0));
 
         if (simulation.revert) {
             console.error(`Transfer to ${address.toHex()} would fail`);
@@ -434,7 +434,7 @@ async function batchTransfer(
 ```typescript
 async function safeTransfer() {
     try {
-        const simulation = await token.transfer(recipient, amount);
+        const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
 
         if (simulation.revert) {
             console.error('Simulation failed:', simulation.revert);
@@ -503,10 +503,10 @@ const params: TransactionParameters = {
 ```typescript
 // Increase fee rate during congestion
 const gasParams = await provider.gasParameters();
-const recommendedFee = gasParams.bitcoin.fastestFee;
+const highFee = gasParams.bitcoin.recommended.high;
 
 const params: TransactionParameters = {
-    feeRate: recommendedFee,
+    feeRate: highFee,
     // ...
 };
 ```

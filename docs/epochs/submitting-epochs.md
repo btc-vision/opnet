@@ -192,83 +192,119 @@ import { createHash } from 'crypto';
 
 class EpochMiner {
     private provider: JSONRpcProvider;
-    private publicKey: Address;
+    private mldsaPublicKey: Buffer;
+    private minDifficulty: number = 20;
 
-    constructor(provider: JSONRpcProvider, publicKey: Address) {
+    constructor(provider: JSONRpcProvider, mldsaPublicKey: Buffer) {
         this.provider = provider;
-        this.publicKey = publicKey;
+        this.mldsaPublicKey = mldsaPublicKey;
     }
 
     async mineAndSubmit(
         graffiti?: string
     ): Promise<SubmittedEpoch | null> {
-        // Get current template
         const template = await this.provider.getEpochTemplate();
         console.log('Mining epoch:', template.epochNumber);
 
-        // Mine for solution
-        const solution = await this.findSolution(template.epochTarget);
+        const checksumRoot = template.epochTarget;
+        const targetHash = createHash('sha1').update(checksumRoot).digest();
+
+        const solution = await this.findSolution(checksumRoot, targetHash);
 
         if (!solution) {
             console.log('No solution found');
             return null;
         }
 
-        console.log('Solution found, submitting...');
+        console.log(`Solution found with ${solution.matchingBits} matching bits`);
 
-        // Build submission
         const params: EpochSubmissionParams = {
+            epochNumber: template.epochNumber,
+            targetHash: checksumRoot,
             salt: solution.salt,
-            solution: solution.hash,
-            publicKey: this.publicKey,
+            mldsaPublicKey: this.mldsaPublicKey,
+            signature: this.signSolution(solution.salt), // Sign with ML-DSA key
         };
 
         if (graffiti) {
             params.graffiti = Buffer.from(graffiti.slice(0, 32), 'utf8');
         }
 
-        // Submit
         return this.provider.submitEpoch(params);
     }
 
+    private calculatePreimage(
+        checksumRoot: Buffer,
+        salt: Buffer
+    ): Buffer {
+        const target32 = Buffer.alloc(32);
+        const pubKey32 = Buffer.alloc(32);
+        const salt32 = Buffer.alloc(32);
+
+        checksumRoot.copy(target32, 0, 0, Math.min(32, checksumRoot.length));
+        this.mldsaPublicKey.copy(pubKey32, 0, 0, Math.min(32, this.mldsaPublicKey.length));
+        salt.copy(salt32, 0, 0, Math.min(32, salt.length));
+
+        const preimage = Buffer.alloc(32);
+        for (let i = 0; i < 32; i++) {
+            preimage[i] = target32[i] ^ pubKey32[i] ^ salt32[i];
+        }
+
+        return preimage;
+    }
+
+    private countMatchingBits(hash1: Buffer, hash2: Buffer): number {
+        let matchingBits = 0;
+        const minLength = Math.min(hash1.length, hash2.length);
+
+        for (let i = 0; i < minLength; i++) {
+            if (hash1[i] === hash2[i]) {
+                matchingBits += 8;
+            } else {
+                for (let bit = 7; bit >= 0; bit--) {
+                    if (((hash1[i] >> bit) & 1) === ((hash2[i] >> bit) & 1)) {
+                        matchingBits++;
+                    } else {
+                        return matchingBits;
+                    }
+                }
+            }
+        }
+
+        return matchingBits;
+    }
+
     private async findSolution(
-        target: Buffer
-    ): Promise<{ salt: Buffer; hash: Buffer } | null> {
+        checksumRoot: Buffer,
+        targetHash: Buffer
+    ): Promise<{ salt: Buffer; matchingBits: number } | null> {
         const maxAttempts = 10000000;
 
         for (let i = 0; i < maxAttempts; i++) {
-            const salt = Buffer.from(
-                crypto.getRandomValues(new Uint8Array(32))
-            );
+            const salt = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
 
-            const data = Buffer.concat([target, salt]);
-            const hash = createHash('sha1').update(data).digest();
+            const preimage = this.calculatePreimage(checksumRoot, salt);
+            const hash = createHash('sha1').update(preimage).digest();
 
-            if (this.meetsDifficulty(hash)) {
-                return { salt, hash };
+            const matchingBits = this.countMatchingBits(hash, targetHash);
+
+            if (matchingBits >= this.minDifficulty) {
+                return { salt, matchingBits };
             }
         }
 
         return null;
     }
 
-    private meetsDifficulty(hash: Buffer): boolean {
-        // Count leading zero bits
-        let zeros = 0;
-        for (const byte of hash) {
-            if (byte === 0) {
-                zeros += 8;
-            } else {
-                zeros += Math.clz32(byte) - 24;
-                break;
-            }
-        }
-        return zeros >= 20; // Adjust based on network
+    private signSolution(salt: Buffer): Buffer {
+        // Sign with ML-DSA private key
+        // Implementation depends on your ML-DSA library
+        return Buffer.alloc(0); // Placeholder
     }
 }
 
 // Usage
-const miner = new EpochMiner(provider, minerAddress);
+const miner = new EpochMiner(provider, wallet.mldsaKeypair.publicKey);
 const result = await miner.mineAndSubmit('MyMiner v1.0');
 
 if (result?.status === 'success') {
@@ -285,12 +321,13 @@ if (result?.status === 'success') {
 ```typescript
 class CompetitiveMiner {
     private provider: JSONRpcProvider;
-    private publicKey: Address;
+    private mldsaPublicKey: Buffer;
     private isRunning: boolean = false;
+    private minDifficulty: number = 20;
 
-    constructor(provider: JSONRpcProvider, publicKey: Address) {
+    constructor(provider: JSONRpcProvider, mldsaPublicKey: Buffer) {
         this.provider = provider;
-        this.publicKey = publicKey;
+        this.mldsaPublicKey = mldsaPublicKey;
     }
 
     async startMining(graffiti?: string): Promise<void> {
@@ -302,24 +339,25 @@ class CompetitiveMiner {
 
             console.log(`Mining epoch ${startEpoch}...`);
 
-            // Mine in batches, checking for epoch changes
+            const checksumRoot = template.epochTarget;
+            const targetHash = createHash('sha1').update(checksumRoot).digest();
+
             while (this.isRunning) {
-                // Check if epoch changed
                 const current = await this.provider.getEpochTemplate();
                 if (current.epochNumber !== startEpoch) {
                     console.log('Epoch changed, restarting...');
                     break;
                 }
 
-                // Try to find solution
-                const solution = await this.mineBatch(template.epochTarget, 100000);
+                const solution = await this.mineBatch(checksumRoot, targetHash, 100000);
 
                 if (solution) {
-                    // Submit immediately
                     const params: EpochSubmissionParams = {
+                        epochNumber: template.epochNumber,
+                        targetHash: checksumRoot,
                         salt: solution.salt,
-                        solution: solution.hash,
-                        publicKey: this.publicKey,
+                        mldsaPublicKey: this.mldsaPublicKey,
+                        signature: this.signSolution(solution.salt),
                         graffiti: graffiti
                             ? Buffer.from(graffiti.slice(0, 32), 'utf8')
                             : undefined,
@@ -337,7 +375,7 @@ class CompetitiveMiner {
                         console.error('Submission error:', error);
                     }
 
-                    break; // Move to next epoch
+                    break;
                 }
             }
         }
@@ -347,41 +385,72 @@ class CompetitiveMiner {
         this.isRunning = false;
     }
 
+    private calculatePreimage(checksumRoot: Buffer, salt: Buffer): Buffer {
+        const target32 = Buffer.alloc(32);
+        const pubKey32 = Buffer.alloc(32);
+        const salt32 = Buffer.alloc(32);
+
+        checksumRoot.copy(target32, 0, 0, Math.min(32, checksumRoot.length));
+        this.mldsaPublicKey.copy(pubKey32, 0, 0, Math.min(32, this.mldsaPublicKey.length));
+        salt.copy(salt32, 0, 0, Math.min(32, salt.length));
+
+        const preimage = Buffer.alloc(32);
+        for (let i = 0; i < 32; i++) {
+            preimage[i] = target32[i] ^ pubKey32[i] ^ salt32[i];
+        }
+
+        return preimage;
+    }
+
+    private countMatchingBits(hash1: Buffer, hash2: Buffer): number {
+        let matchingBits = 0;
+        const minLength = Math.min(hash1.length, hash2.length);
+
+        for (let i = 0; i < minLength; i++) {
+            if (hash1[i] === hash2[i]) {
+                matchingBits += 8;
+            } else {
+                for (let bit = 7; bit >= 0; bit--) {
+                    if (((hash1[i] >> bit) & 1) === ((hash2[i] >> bit) & 1)) {
+                        matchingBits++;
+                    } else {
+                        return matchingBits;
+                    }
+                }
+            }
+        }
+
+        return matchingBits;
+    }
+
     private async mineBatch(
-        target: Buffer,
+        checksumRoot: Buffer,
+        targetHash: Buffer,
         batchSize: number
-    ): Promise<{ salt: Buffer; hash: Buffer } | null> {
+    ): Promise<{ salt: Buffer; matchingBits: number } | null> {
         for (let i = 0; i < batchSize; i++) {
-            const salt = Buffer.from(
-                crypto.getRandomValues(new Uint8Array(32))
-            );
+            const salt = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
 
-            const data = Buffer.concat([target, salt]);
-            const hash = createHash('sha1').update(data).digest();
+            const preimage = this.calculatePreimage(checksumRoot, salt);
+            const hash = createHash('sha1').update(preimage).digest();
 
-            if (this.meetsDifficulty(hash)) {
-                return { salt, hash };
+            const matchingBits = this.countMatchingBits(hash, targetHash);
+
+            if (matchingBits >= this.minDifficulty) {
+                return { salt, matchingBits };
             }
         }
         return null;
     }
 
-    private meetsDifficulty(hash: Buffer): boolean {
-        let zeros = 0;
-        for (const byte of hash) {
-            if (byte === 0) {
-                zeros += 8;
-            } else {
-                zeros += Math.clz32(byte) - 24;
-                break;
-            }
-        }
-        return zeros >= 20;
+    private signSolution(salt: Buffer): Buffer {
+        // Sign with ML-DSA private key
+        return Buffer.alloc(0); // Placeholder
     }
 }
 
 // Usage
-const competitiveMiner = new CompetitiveMiner(provider, minerAddress);
+const competitiveMiner = new CompetitiveMiner(provider, wallet.mldsaKeypair.publicKey);
 competitiveMiner.startMining('CompetitiveMiner');
 
 // Later: stop mining

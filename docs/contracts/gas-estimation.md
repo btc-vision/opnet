@@ -13,7 +13,7 @@ OPNet uses a gas system where computational operations cost gas units paid in sa
 Every contract call returns gas information directly:
 
 ```typescript
-const result = await contract.transfer(recipient, amount);
+const result = await contract.transfer(recipient, amount, Buffer.alloc(0));
 
 // Gas consumed (in gas units)
 console.log('Gas used:', result.estimatedGas);
@@ -60,31 +60,36 @@ Get current network gas parameters:
 const gasParams = await provider.gasParameters();
 
 console.log('Gas per sat:', gasParams.gasPerSat);
-console.log('Base fee:', gasParams.baseFee);
-console.log('Gas limit:', gasParams.gasLimit);
+console.log('Base gas:', gasParams.baseGas);
+console.log('Target gas limit:', gasParams.targetGasLimit);
 
 // Bitcoin fee rates (sat/vB)
-console.log('Fast fee:', gasParams.bitcoin.fastestFee);
-console.log('Economy fee:', gasParams.bitcoin.economyFee);
+console.log('High fee:', gasParams.bitcoin.recommended.high);
+console.log('Medium fee:', gasParams.bitcoin.recommended.medium);
+console.log('Low fee:', gasParams.bitcoin.recommended.low);
+console.log('Conservative:', gasParams.bitcoin.conservative);
 ```
 
 ### BlockGasParameters Structure
 
 ```typescript
 interface BlockGasParameters {
-    gasPerSat: bigint;     // Gas units per satoshi
-    baseFee: bigint;       // Minimum gas price
-    gasLimit: bigint;      // Maximum gas per block
-    bitcoin: BitcoinFees;  // Bitcoin fee estimates
+    blockNumber: bigint;      // Current block number
+    gasUsed: bigint;          // Gas used in block
+    targetGasLimit: bigint;   // Target gas limit
+    ema: bigint;              // Exponential moving average
+    baseGas: bigint;          // Base gas price
+    gasPerSat: bigint;        // Gas units per satoshi
+    bitcoin: BitcoinFees;     // Bitcoin fee estimates
 }
 
 interface BitcoinFees {
-    fastestFee: number;    // sat/vB for next block
-    halfHourFee: number;   // sat/vB for ~30 min
-    hourFee: number;       // sat/vB for ~1 hour
-    economyFee: number;    // sat/vB for economy
-    minimumFee: number;    // Minimum accepted
-    conservative: number;  // Conservative estimate
+    conservative: number;     // Conservative fee estimate
+    recommended: {
+        low: number;          // Low priority
+        medium: number;       // Medium priority
+        high: number;         // High priority (next block)
+    };
 }
 ```
 
@@ -129,7 +134,7 @@ async function transferWithGasCheck(): Promise<void> {
 
     // Simulate transfer
     const recipient: Address = Address.fromString('0x...');
-    const simulation = await token.transfer(recipient, 100_00000000n);
+    const simulation = await token.transfer(recipient, 100_00000000n, Buffer.alloc(0));
 
     // Check for revert
     if (simulation.revert) {
@@ -149,7 +154,7 @@ async function transferWithGasCheck(): Promise<void> {
         mldsaSigner: null,
         refundTo: wallet.p2tr,
         maximumAllowedSatToSpend: 100_000n,
-        feeRate: gasParams.bitcoin.halfHourFee,
+        feeRate: gasParams.bitcoin.recommended.medium,
         network: network,
     };
 
@@ -173,16 +178,16 @@ Choose appropriate fee rates based on urgency:
 ```typescript
 const gasParams = await provider.gasParameters();
 
-// Non-urgent: use economy fee
+// Non-urgent: use low fee
 const economyParams: TransactionParameters = {
     ...baseParams,
-    feeRate: gasParams.bitcoin.economyFee,
+    feeRate: gasParams.bitcoin.recommended.low,
 };
 
-// Urgent: use fastest fee
+// Urgent: use high fee (next block)
 const urgentParams: TransactionParameters = {
     ...baseParams,
-    feeRate: gasParams.bitcoin.fastestFee,
+    feeRate: gasParams.bitcoin.recommended.high,
 };
 ```
 
@@ -194,13 +199,13 @@ Use access lists to optimize repeated operations:
 
 ```typescript
 // First call discovers storage access patterns
-const firstCall = await contract.transfer(recipient, amount);
+const firstCall = await contract.transfer(recipient, amount, Buffer.alloc(0));
 
 // Set access list for subsequent calls
 contract.setAccessList(firstCall.accessList);
 
 // Subsequent calls may use less gas
-const optimizedCall = await contract.transfer(recipient2, amount2);
+const optimizedCall = await contract.transfer(recipient2, amount2, Buffer.alloc(0));
 ```
 
 ---

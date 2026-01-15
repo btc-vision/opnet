@@ -57,6 +57,7 @@ const result = await factory.deployToken(
     1000000000000000n, // 10M tokens
     {
         signer: wallet.keypair,
+        mldsaSigner: wallet.mldsaKeypair,
         refundTo: wallet.p2tr,
         feeRate: 10,
     }
@@ -106,6 +107,7 @@ const result = await factory.deployPool(
     1000000n, // Reward rate per block
     {
         signer: wallet.keypair,
+        mldsaSigner: wallet.mldsaKeypair,
         refundTo: wallet.p2tr,
         feeRate: 10,
     }
@@ -189,6 +191,7 @@ async function deployAndConfigureToken(
         config.maxSupply,
         {
             signer: wallet.keypair,
+            mldsaSigner: wallet.mldsaKeypair,
             refundTo: wallet.p2tr,
             feeRate: 10,
         }
@@ -207,6 +210,7 @@ async function deployAndConfigureToken(
 
         await token.mint(config.mintTo, config.initialMint, {
             signer: wallet.keypair,
+            mldsaSigner: wallet.mldsaKeypair,
             refundTo: wallet.p2tr,
             feeRate: 10,
         });

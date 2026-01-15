@@ -202,7 +202,7 @@ token.setSender(wallet.address);
 ### Why Set Sender?
 
 The sender address affects:
-- **msg.sender in contract**: Contract sees this as the caller
+- **Caller identification**: Contract sees this as the caller address
 - **Balance simulations**: Proper balance checking for transfers
 - **Authorization checks**: Contracts can verify caller permissions
 
