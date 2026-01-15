@@ -1,0 +1,494 @@
+# Transaction Configuration
+
+This guide provides a comprehensive reference for all transaction configuration options.
+
+## Overview
+
+Transaction configuration controls how Bitcoin transactions are built and signed. Understanding these options is crucial for optimizing costs and ensuring successful transactions.
+
+---
+
+## TransactionParameters Reference
+
+```typescript
+interface TransactionParameters {
+    // Required: Signing
+    readonly signer: Signer | ECPairInterface | null;
+    readonly mldsaSigner: QuantumBIP32Interface | null;
+
+    // Required: Addresses
+    readonly refundTo: string;
+    readonly maximumAllowedSatToSpend: bigint;
+    readonly network: Network;
+
+    // Optional: Fees
+    feeRate?: number;
+    readonly priorityFee?: bigint;
+
+    // Optional: UTXOs
+    readonly utxos?: UTXO[];
+    readonly extraInputs?: UTXO[];
+    readonly extraOutputs?: PsbtOutputExtended[];
+
+    // Optional: Address overrides
+    readonly sender?: string;
+    readonly from?: Address;
+
+    // Optional: Transaction options
+    readonly minGas?: bigint;
+    readonly note?: string | Buffer;
+    readonly txVersion?: SupportedTransactionVersion;
+    readonly anchor?: boolean;
+    readonly dontUseCSVUtxos?: boolean;
+    readonly maxUTXOs?: number;
+    readonly throwIfUTXOsLimitReached?: boolean;
+
+    // Optional: ML-DSA options
+    readonly linkMLDSAPublicKeyToAddress?: boolean;
+    readonly revealMLDSAPublicKey?: boolean;
+    readonly p2wda?: boolean;
+}
+```
+
+---
+
+## Mining Fee (feeRate)
+
+The `feeRate` specifies how many satoshis per virtual byte to pay for the transaction.
+
+### Automatic Fee
+
+```typescript
+const params: TransactionParameters = {
+    feeRate: 0,  // Provider estimates fee
+    // ...
+};
+```
+
+### Manual Fee
+
+```typescript
+const params: TransactionParameters = {
+    feeRate: 10,  // 10 sat/vB
+    // ...
+};
+```
+
+### Getting Recommended Fees
+
+```typescript
+const gasParams = await provider.gasParameters();
+
+// Fee recommendations from mempool
+const economyFee = gasParams.bitcoin.economyFee;    // ~1 hour
+const hourFee = gasParams.bitcoin.hourFee;          // ~1 hour
+const halfHourFee = gasParams.bitcoin.halfHourFee;  // ~30 min
+const fastestFee = gasParams.bitcoin.fastestFee;    // Next block
+
+const params: TransactionParameters = {
+    feeRate: halfHourFee,
+    // ...
+};
+```
+
+---
+
+## Priority Fee
+
+An additional fee added to prioritize the transaction:
+
+```typescript
+const params: TransactionParameters = {
+    feeRate: 10,
+    priorityFee: 5000n,  // Additional 5000 sats
+    // ...
+};
+```
+
+**Use priority fee when:**
+- Transaction is time-sensitive
+- Network is congested
+- You need faster confirmation
+
+---
+
+## ML-DSA Recipient Specification
+
+ML-DSA provides quantum-resistant signatures. Configure ML-DSA options for future-proof security.
+
+### Basic ML-DSA Usage
+
+```typescript
+const wallet = Wallet.fromWif(
+    'cPrivateKey...',
+    'mldsaPrivateKeyHex',  // 128 hex chars
+    network
+);
+
+const params: TransactionParameters = {
+    signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
+    // ...
+};
+```
+
+### Linking ML-DSA to Address
+
+```typescript
+const params: TransactionParameters = {
+    signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
+    linkMLDSAPublicKeyToAddress: true,  // Link quantum key
+    revealMLDSAPublicKey: true,         // Reveal in TX
+    // ...
+};
+```
+
+### P2WDA (Pay-to-Witness-Data-Address)
+
+```typescript
+const params: TransactionParameters = {
+    signer: wallet.keypair,
+    mldsaSigner: wallet.mldsaKeypair,
+    p2wda: true,  // Use P2WDA output format
+    // ...
+};
+```
+
+---
+
+## Multiple Private Keys
+
+For advanced scenarios requiring multiple signers:
+
+```typescript
+import { ECPairFactory } from 'ecpair';
+import * as ecc from '@bitcoinerlab/secp256k1';
+
+const ECPair = ECPairFactory(ecc);
+
+// Create multiple keypairs
+const keypair1 = ECPair.fromWIF('cKey1...', network);
+const keypair2 = ECPair.fromWIF('cKey2...', network);
+
+// Use primary signer
+const params: TransactionParameters = {
+    signer: keypair1,
+    // For multisig, additional signing happens at PSBT level
+    // ...
+};
+```
+
+---
+
+## Custom UTXOs
+
+Specify exactly which UTXOs to use:
+
+### Fetch and Filter UTXOs
+
+```typescript
+const allUtxos = await provider.utxoManager.getUTXOs({
+    address: wallet.p2tr,
+    optimize: true,
+});
+
+// Filter for specific UTXOs
+const selectedUtxos = allUtxos.filter((utxo) => utxo.value >= 10000n);
+
+const params: TransactionParameters = {
+    utxos: selectedUtxos,
+    // ...
+};
+```
+
+### UTXO Structure
+
+```typescript
+interface UTXO {
+    transactionId: string;      // Previous TX hash
+    outputIndex: number;        // Output index
+    value: bigint;              // Satoshi value
+    scriptPubKey: ScriptPubKey; // Locking script
+    nonWitnessUtxo?: Buffer;    // Previous TX data
+    witnessScript?: Buffer;     // For P2WSH
+    redeemScript?: Buffer;      // For P2SH
+    isCSV?: boolean;            // CheckSequenceVerify
+}
+```
+
+---
+
+## Refund Address
+
+The address where change is sent:
+
+```typescript
+const params: TransactionParameters = {
+    refundTo: wallet.p2tr,  // Taproot address for change
+    // ...
+};
+```
+
+**Best practices:**
+- Use your own address
+- Prefer Taproot (p2tr) for lower fees
+- Never use exchange addresses
+
+---
+
+## Extra Inputs and Outputs
+
+Add custom inputs and outputs to the transaction:
+
+### Extra Inputs
+
+```typescript
+// Add additional UTXOs as inputs
+const extraInput: UTXO = {
+    transactionId: 'abc123...',
+    outputIndex: 0,
+    value: 50000n,
+    scriptPubKey: { /* ... */ },
+};
+
+const params: TransactionParameters = {
+    extraInputs: [extraInput],
+    // ...
+};
+```
+
+### Extra Outputs
+
+```typescript
+import { PsbtOutputExtended } from '@btc-vision/bitcoin';
+
+// Add additional outputs (e.g., treasury payment)
+const extraOutput: PsbtOutputExtended = {
+    address: treasuryAddress,
+    value: 1000,  // 1000 sats
+};
+
+const params: TransactionParameters = {
+    extraOutputs: [extraOutput],
+    // ...
+};
+```
+
+### Using Extra UTXOs in Simulations
+
+When your contract needs to see extra outputs:
+
+```typescript
+import { TransactionOutputFlags } from 'opnet';
+
+// Tell contract about the extra output
+contract.setTransactionDetails({
+    inputs: [],
+    outputs: [
+        {
+            to: treasuryAddress,
+            value: 1000n,
+            index: 1,
+            scriptPubKey: undefined,
+            flags: TransactionOutputFlags.hasTo,
+        },
+    ],
+});
+
+// Now simulate with awareness of extra outputs
+const simulation = await contract.claim();
+
+// Include the extra output in transaction
+const params: TransactionParameters = {
+    extraOutputs: [{ address: treasuryAddress, value: 1000 }],
+    // ...
+};
+```
+
+---
+
+## Additional Options
+
+### Minimum Gas
+
+Ensure minimum gas is allocated:
+
+```typescript
+const params: TransactionParameters = {
+    minGas: 50000n,  // At least 50k gas
+    // ...
+};
+```
+
+### Transaction Note (OP_RETURN)
+
+Add arbitrary data to the transaction:
+
+```typescript
+const params: TransactionParameters = {
+    note: 'My transaction note',
+    // or
+    note: Buffer.from('hex data', 'hex'),
+    // ...
+};
+```
+
+### UTXO Limits
+
+Control UTXO selection:
+
+```typescript
+const params: TransactionParameters = {
+    maxUTXOs: 10,                    // Use at most 10 UTXOs
+    throwIfUTXOsLimitReached: true,  // Error if limit hit
+    dontUseCSVUtxos: false,          // Allow CSV UTXOs
+    // ...
+};
+```
+
+### Transaction Version
+
+Specify transaction version:
+
+```typescript
+import { SupportedTransactionVersion } from '@btc-vision/transaction';
+
+const params: TransactionParameters = {
+    txVersion: SupportedTransactionVersion.V1,
+    // ...
+};
+```
+
+### Anchor Transactions
+
+For CPFP (Child Pays For Parent):
+
+```typescript
+const params: TransactionParameters = {
+    anchor: true,  // Create anchor output
+    // ...
+};
+```
+
+---
+
+## Complete Example
+
+```typescript
+import {
+    getContract,
+    IOP20Contract,
+    JSONRpcProvider,
+    OP_20_ABI,
+    TransactionParameters,
+} from 'opnet';
+import { Address, Wallet } from '@btc-vision/transaction';
+import { networks, PsbtOutputExtended } from '@btc-vision/bitcoin';
+
+async function fullConfigurationExample() {
+    const network = networks.regtest;
+    const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+
+    const wallet = Wallet.fromWif(
+        'cPrivateKey...',
+        'mldsaKey...',
+        network
+    );
+
+    const token = getContract<IOP20Contract>(
+        Address.fromString('0x...'),
+        OP_20_ABI,
+        provider,
+        network,
+        wallet.address
+    );
+
+    // Get fee recommendation
+    const gasParams = await provider.gasParameters();
+
+    // Get UTXOs
+    const utxos = await provider.utxoManager.getUTXOs({
+        address: wallet.p2tr,
+        optimize: true,
+    });
+
+    // Treasury payment
+    const treasuryOutput: PsbtOutputExtended = {
+        address: 'bcrt1q...',
+        value: 1000,
+    };
+
+    // Full configuration
+    const params: TransactionParameters = {
+        // Signing
+        signer: wallet.keypair,
+        mldsaSigner: wallet.mldsaKeypair,
+        linkMLDSAPublicKeyToAddress: true,
+        revealMLDSAPublicKey: true,
+
+        // Addresses
+        refundTo: wallet.p2tr,
+        from: wallet.address,
+
+        // Fees
+        feeRate: gasParams.bitcoin.halfHourFee,
+        priorityFee: 1000n,
+
+        // UTXOs
+        utxos: utxos,
+        maximumAllowedSatToSpend: 50000n,
+        maxUTXOs: 10,
+        dontUseCSVUtxos: false,
+
+        // Extra outputs
+        extraOutputs: [treasuryOutput],
+
+        // Options
+        minGas: 50000n,
+        note: 'Token transfer',
+
+        // Network
+        network: network,
+    };
+
+    // Simulate and send
+    const simulation = await token.transfer(
+        Address.fromString('0x...'),
+        100_00000000n
+    );
+
+    if (!simulation.revert) {
+        const receipt = await simulation.sendTransaction(params);
+        console.log('TX:', receipt.transactionId);
+    }
+
+    await provider.close();
+}
+```
+
+---
+
+## Best Practices
+
+1. **Start Simple**: Use minimal configuration first, add options as needed
+
+2. **Test on Regtest**: Verify configuration on regtest before mainnet
+
+3. **Monitor Fees**: Check current fee rates before sending
+
+4. **Limit Spending**: Always set `maximumAllowedSatToSpend`
+
+5. **Track UTXOs**: Update UTXO list after each transaction
+
+---
+
+## Next Steps
+
+- [Gas Estimation](./gas-estimation.md) - Understanding gas costs
+- [Offline Signing](./offline-signing.md) - Sign without provider
+- [Contract Code](./contract-code.md) - Fetching contract bytecode
+
+---
+
+[← Previous: Sending Transactions](./sending-transactions.md) | [Next: Gas Estimation →](./gas-estimation.md)

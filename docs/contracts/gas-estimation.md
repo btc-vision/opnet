@@ -1,0 +1,219 @@
+# Gas Estimation
+
+Understanding gas costs for OPNet transactions.
+
+## Overview
+
+OPNet uses a gas system where computational operations cost gas units paid in satoshis. The `CallResult` object automatically provides all gas estimates.
+
+---
+
+## CallResult Gas Properties
+
+Every contract call returns gas information directly:
+
+```typescript
+const result = await contract.transfer(recipient, amount);
+
+// Gas consumed (in gas units)
+console.log('Gas used:', result.estimatedGas);
+
+// Gas refunded (in gas units)
+console.log('Refunded gas:', result.refundedGas);
+
+// Cost in satoshis (already calculated)
+console.log('Cost in sats:', result.estimatedSatGas);
+
+// Refunded amount in satoshis
+console.log('Refunded sats:', result.estimatedRefundedGasInSat);
+```
+
+**Key Properties:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `estimatedGas` | `bigint \| undefined` | Gas units consumed |
+| `refundedGas` | `bigint \| undefined` | Gas units refunded |
+| `estimatedSatGas` | `bigint` | Cost in satoshis (pre-calculated) |
+| `estimatedRefundedGasInSat` | `bigint` | Refund in satoshis |
+
+---
+
+## Transaction Fees
+
+After sending a transaction, the receipt includes actual fees:
+
+```typescript
+const receipt = await simulation.sendTransaction(params);
+
+// Actual fees paid in satoshis
+console.log('Fees paid:', receipt.estimatedFees, 'sats');
+```
+
+---
+
+## Network Gas Parameters
+
+Get current network gas parameters:
+
+```typescript
+const gasParams = await provider.gasParameters();
+
+console.log('Gas per sat:', gasParams.gasPerSat);
+console.log('Base fee:', gasParams.baseFee);
+console.log('Gas limit:', gasParams.gasLimit);
+
+// Bitcoin fee rates (sat/vB)
+console.log('Fast fee:', gasParams.bitcoin.fastestFee);
+console.log('Economy fee:', gasParams.bitcoin.economyFee);
+```
+
+### BlockGasParameters Structure
+
+```typescript
+interface BlockGasParameters {
+    gasPerSat: bigint;     // Gas units per satoshi
+    baseFee: bigint;       // Minimum gas price
+    gasLimit: bigint;      // Maximum gas per block
+    bitcoin: BitcoinFees;  // Bitcoin fee estimates
+}
+
+interface BitcoinFees {
+    fastestFee: number;    // sat/vB for next block
+    halfHourFee: number;   // sat/vB for ~30 min
+    hourFee: number;       // sat/vB for ~1 hour
+    economyFee: number;    // sat/vB for economy
+    minimumFee: number;    // Minimum accepted
+    conservative: number;  // Conservative estimate
+}
+```
+
+---
+
+## Complete Example
+
+```typescript
+import {
+    getContract,
+    IOP20Contract,
+    JSONRpcProvider,
+    OP_20_ABI,
+    TransactionParameters,
+} from 'opnet';
+import { Address, Wallet } from '@btc-vision/transaction';
+import { Network, networks } from '@btc-vision/bitcoin';
+
+async function transferWithGasCheck(): Promise<void> {
+    const network: Network = networks.regtest;
+    const provider: JSONRpcProvider = new JSONRpcProvider(
+        'https://regtest.opnet.org',
+        network
+    );
+    const wallet: Wallet = Wallet.fromWif('cVk...', undefined, network);
+
+    const tokenAddress: Address = Address.fromString('0x...');
+    const token: IOP20Contract = getContract<IOP20Contract>(
+        tokenAddress,
+        OP_20_ABI,
+        provider,
+        network,
+        wallet.address
+    );
+
+    // Simulate transfer
+    const recipient: Address = Address.fromString('0x...');
+    const simulation = await token.transfer(recipient, 100_00000000n);
+
+    // Check for revert
+    if (simulation.revert) {
+        console.error('Would fail:', simulation.revert);
+        return;
+    }
+
+    // Gas is already calculated in satoshis
+    console.log('Gas cost:', simulation.estimatedSatGas, 'sats');
+
+    // Get fee rate for transaction
+    const gasParams = await provider.gasParameters();
+
+    // Send transaction
+    const params: TransactionParameters = {
+        signer: wallet.keypair,
+        mldsaSigner: null,
+        refundTo: wallet.p2tr,
+        maximumAllowedSatToSpend: 100_000n,
+        feeRate: gasParams.bitcoin.halfHourFee,
+        network: network,
+    };
+
+    const receipt = await simulation.sendTransaction(params);
+
+    console.log('TX ID:', receipt.transactionId);
+    console.log('Fees paid:', receipt.estimatedFees, 'sats');
+
+    await provider.close();
+}
+
+transferWithGasCheck().catch(console.error);
+```
+
+---
+
+## Fee Selection
+
+Choose appropriate fee rates based on urgency:
+
+```typescript
+const gasParams = await provider.gasParameters();
+
+// Non-urgent: use economy fee
+const economyParams: TransactionParameters = {
+    ...baseParams,
+    feeRate: gasParams.bitcoin.economyFee,
+};
+
+// Urgent: use fastest fee
+const urgentParams: TransactionParameters = {
+    ...baseParams,
+    feeRate: gasParams.bitcoin.fastestFee,
+};
+```
+
+---
+
+## Access List Optimization
+
+Use access lists to optimize repeated operations:
+
+```typescript
+// First call discovers storage access patterns
+const firstCall = await contract.transfer(recipient, amount);
+
+// Set access list for subsequent calls
+contract.setAccessList(firstCall.accessList);
+
+// Subsequent calls may use less gas
+const optimizedCall = await contract.transfer(recipient2, amount2);
+```
+
+---
+
+## Best Practices
+
+1. **Check `simulation.revert`** before sending transactions
+2. **Use `estimatedSatGas`** - it's already calculated for you
+3. **Check `receipt.estimatedFees`** after sending for actual cost
+4. **Adjust `feeRate`** based on urgency using `gasParameters().bitcoin`
+5. **Use access lists** for repeated operations on same contract
+
+---
+
+## Next Steps
+
+- [Contract Code](./contract-code.md) - Fetching contract bytecode
+- [Offline Signing](./offline-signing.md) - Sign transactions offline
+- [OP20 Examples](../examples/op20-examples.md) - Complete token examples
+
+---
+
+[← Previous: Transaction Configuration](./transaction-configuration.md) | [Next: Contract Code →](./contract-code.md)
