@@ -2,6 +2,24 @@
 
 Complete reference for TypeScript types and interfaces.
 
+## Table of Contents
+
+- [Common Types](#common-types)
+- [Network](#network)
+- [Address](#address)
+- [Transaction Types](#transaction-types)
+- [Block Types](#block-types)
+- [Contract Types](#contract-types)
+- [Storage Types](#storage-types)
+- [Public Key Types](#public-key-types)
+- [UTXO Types](#utxo-types)
+- [Epoch Types](#epoch-types)
+- [Challenge Types](#challenge-types)
+- [ABI Types](#abi-types)
+- [ML-DSA Types](#ml-dsa-types)
+
+---
+
 ## Common Types
 
 ### BigNumberish

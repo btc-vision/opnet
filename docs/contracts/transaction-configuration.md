@@ -2,6 +2,31 @@
 
 This guide provides a comprehensive reference for all transaction configuration options.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [TransactionParameters Reference](#transactionparameters-reference)
+- [Mining Fee (feeRate)](#mining-fee-feerate)
+- [Priority Fee](#priority-fee)
+- [ML-DSA Recipient Specification](#ml-dsa-recipient-specification)
+- [Multiple Private Keys](#multiple-private-keys)
+- [Custom UTXOs](#custom-utxos)
+- [Refund Address](#refund-address)
+- [Extra Inputs and Outputs](#extra-inputs-and-outputs)
+  - [Extra Inputs](#extra-inputs)
+  - [Extra Outputs](#extra-outputs)
+  - [Using Extra UTXOs in Simulations](#using-extra-utxos-in-simulations)
+- [Additional Options](#additional-options)
+  - [Minimum Gas](#minimum-gas)
+  - [Transaction Note (OP_RETURN)](#transaction-note-op_return)
+  - [UTXO Limits](#utxo-limits)
+  - [Transaction Version](#transaction-version)
+  - [Anchor Transactions](#anchor-transactions)
+- [Complete Example](#complete-example)
+- [Best Practices](#best-practices)
+
+---
+
 ## Overview
 
 Transaction configuration controls how Bitcoin transactions are built and signed. Understanding these options is crucial for optimizing costs and ensuring successful transactions.
@@ -119,11 +144,20 @@ ML-DSA provides quantum-resistant signatures. Configure ML-DSA options for futur
 ### Basic ML-DSA Usage
 
 ```typescript
-const wallet = Wallet.fromWif(
-    'cPrivateKey...',
-    'mldsaPrivateKeyHex',  // 128 hex chars
-    network
+import {
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+} from '@btc-vision/transaction';
+
+// Create wallet with ML-DSA support from mnemonic
+const mnemonic = new Mnemonic(
+    'your twenty four word seed phrase goes here ...',
+    '',                            // BIP39 passphrase
+    network,
+    MLDSASecurityLevel.LEVEL2,     // Quantum security level
 );
+const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
 const params: TransactionParameters = {
     signer: wallet.keypair,
@@ -225,14 +259,15 @@ The address where change is sent:
 
 ```typescript
 const params: TransactionParameters = {
-    refundTo: wallet.p2tr,  // Taproot address for change
+    refundTo: wallet.p2tr,  // Address for change (any type)
     // ...
 };
 ```
 
 **Best practices:**
 - Use your own address
-- Prefer Taproot (p2tr) for lower fees
+- Any address type works (P2TR, P2WPKH, P2PKH, etc.)
+- P2TR (Taproot) offers slightly lower fees
 - Never use exchange addresses
 
 ---
@@ -383,18 +418,25 @@ import {
     OP_20_ABI,
     TransactionParameters,
 } from 'opnet';
-import { Address, Wallet } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+} from '@btc-vision/transaction';
 import { networks, PsbtOutputExtended } from '@btc-vision/bitcoin';
 
 async function fullConfigurationExample() {
     const network = networks.regtest;
     const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
 
-    const wallet = Wallet.fromWif(
-        'cPrivateKey...',
-        'mldsaKey...',
-        network
+    const mnemonic = new Mnemonic(
+        'your twenty four word seed phrase goes here ...',
+        '',
+        network,
+        MLDSASecurityLevel.LEVEL2,
     );
+    const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
     const token = getContract<IOP20Contract>(
         Address.fromString('0x...'),

@@ -1,8 +1,33 @@
 # Offline Signing
 
-Offline signing allows you to build and sign transactions without an active network connection. This is useful for cold wallet setups and air-gapped security.
+This guide covers offline signing for cold wallet security. OPNet provides built-in binary serialization to transfer transaction data between online and offline devices.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Workflow](#workflow)
+- [Online Phase: Prepare Transaction Data](#online-phase-prepare-transaction-data)
+- [Offline Phase: Sign Transaction](#offline-phase-sign-transaction)
+- [Broadcast Phase: Send to Network](#broadcast-phase-send-to-network)
+- [Binary Serialization Format](#binary-serialization-format)
+- [Security Considerations](#security-considerations)
+- [Best Practices](#best-practices)
+
+---
 
 ## Overview
+
+Offline signing keeps your private keys on a device that never connects to the internet. The workflow uses binary serialization to transfer transaction data between devices:
+
+1. **Online device**: Simulate transaction, serialize to binary
+2. **Transfer**: Move binary data via USB/QR code to offline device
+3. **Offline device**: Deserialize, verify, and sign
+4. **Transfer**: Move signed transaction back to online device
+5. **Online device**: Broadcast to network
+
+---
+
+## Workflow
 
 ```mermaid
 sequenceDiagram
@@ -10,135 +35,17 @@ sequenceDiagram
     participant Offline as Offline Device
     participant Network as OPNet Network
 
-    Online->>Online: Prepare unsigned TX
-    Online->>Offline: Transfer unsigned TX
-    Offline->>Offline: Sign TX
-    Offline->>Online: Transfer signed TX
-    Online->>Network: Broadcast
+    Online->>Online: 1. Simulate & serialize (toOfflineBuffer)
+    Online->>Offline: 2. Transfer binary via USB/QR
+    Offline->>Offline: 3. Reconstruct (fromOfflineBuffer)
+    Offline->>Offline: 4. Sign transaction
+    Offline->>Online: 5. Transfer signed TX
+    Online->>Network: 6. Broadcast
 ```
-
----
-
-## Building Transactions Offline
-
-The transaction building process can be split into preparation and signing phases.
 
 ### Online Phase: Prepare Transaction Data
 
-```typescript
-// On online device: gather all necessary data
-const preparationData = {
-    contractAddress: contractAddress.toHex(),
-    calldata: contract.encodeCalldata('transfer', [recipient, amount]),
-    utxos: await provider.utxoManager.getUTXOs({ address: wallet.p2tr }),
-    challenge: await provider.getChallenge(),
-    gasParams: await provider.gasParameters(),
-    network: 'regtest',
-};
-
-// Export to file or QR code
-const jsonData = JSON.stringify(preparationData);
-```
-
-### Offline Phase: Sign Transaction
-
-```typescript
-// On offline device: sign without network
-import { TransactionFactory } from '@btc-vision/transaction';
-
-const factory = new TransactionFactory();
-
-// Reconstruct from preparation data
-const signedTx = await factory.signInteraction({
-    from: wallet.p2tr,
-    to: preparationData.contractAddress,
-    calldata: Buffer.from(preparationData.calldata, 'hex'),
-    utxos: preparationData.utxos,
-    signer: wallet.keypair,
-    network: networks[preparationData.network],
-    feeRate: 10,
-    challenge: preparationData.challenge,
-    // ... other params
-});
-```
-
----
-
-## signTransaction() Method
-
-The `CallResult` provides a method to get a signed transaction without broadcasting:
-
-```typescript
-// Simulate to get CallResult
-const simulation = await contract.transfer(recipient, amount);
-
-// Get signed transaction without broadcasting
-const signedTx = await simulation.signTransaction({
-    signer: wallet.keypair,
-    mldsaSigner: wallet.mldsaKeypair,
-    refundTo: wallet.p2tr,
-    maximumAllowedSatToSpend: 10000n,
-    feeRate: 10,
-    network: network,
-});
-
-// signedTx contains raw transaction hex
-console.log('Signed TX:', signedTx.interactionTransactionRaw);
-```
-
-### SignedInteractionTransactionReceipt
-
-```typescript
-interface SignedInteractionTransactionReceipt {
-    fundingTransactionRaw: string | null;    // Funding TX if needed
-    interactionTransactionRaw: string;       // Main interaction TX
-    nextUTXOs: UTXO[];                       // UTXOs after TX
-    estimatedFees: bigint;                   // Estimated fees
-    challengeSolution: RawChallenge;         // PoW challenge
-    interactionAddress: string | null;       // Contract address
-    fundingUTXOs: UTXO[];                    // UTXOs used for funding
-    fundingInputUtxos: UTXO[];               // Input UTXOs
-    compiledTargetScript: string | null;     // Target script
-}
-```
-
----
-
-## Broadcasting Separately
-
-After signing offline, broadcast from an online device:
-
-```typescript
-// On online device: broadcast the signed transaction
-const result = await provider.sendRawTransaction(
-    signedTx.interactionTransactionRaw,
-    signedTx.fundingTransactionRaw  // Include funding TX if present
-);
-
-console.log('Broadcast result:', result);
-```
-
-### Broadcast Multiple Signed Transactions
-
-```typescript
-// If you have multiple signed transactions
-const transactions = [
-    { tx: signedTx1.interactionTransactionRaw, psbt: signedTx1.fundingTransactionRaw },
-    { tx: signedTx2.interactionTransactionRaw, psbt: signedTx2.fundingTransactionRaw },
-];
-
-const results = await provider.sendRawTransactions(transactions);
-
-for (const result of results) {
-    console.log('TX ID:', result.txid);
-}
-```
-
----
-
-## Complete Offline Signing Example
-
-### Step 1: Prepare on Online Device
+On your online device, simulate the call and serialize all required data:
 
 ```typescript
 // online-prepare.ts
@@ -146,143 +53,226 @@ import {
     getContract,
     IOP20Contract,
     JSONRpcProvider,
-    OP_20_ABI,
+    OP_20_ABI
 } from 'opnet';
 import { Address } from '@btc-vision/transaction';
 import { networks } from '@btc-vision/bitcoin';
 import * as fs from 'fs';
 
-async function prepareTransaction() {
+async function prepareForOfflineSigning() {
     const network = networks.regtest;
     const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
 
-    // Your address (derived from public key)
+    // Your PUBLIC address (no private key needed here)
     const myAddress = Address.fromString('0x...');
 
     const token = getContract<IOP20Contract>(
-        Address.fromString('0x...'),
+        Address.fromString('0xTokenContract...'),
         OP_20_ABI,
         provider,
         network,
         myAddress
     );
 
-    // Gather all data needed for offline signing
-    const preparationData = {
-        // Contract info
-        tokenAddress: token.p2op,
-        recipientAddress: '0x...',
-        amount: '10000000000',  // String for JSON
-
-        // Network data
-        utxos: await provider.utxoManager.getUTXOs({
-            address: 'bcrt1p...', // Your p2tr address
-        }),
-        challenge: await provider.getChallenge(),
-        gasParams: await provider.gasParameters(),
-
-        // Simulation result
-        calldata: token.encodeCalldata('transfer', [
-            Address.fromString('0x...'),
-            10000000000n,
-        ]).toString('hex'),
-
-        // Network
-        network: 'regtest',
-    };
-
-    // Save to file for transfer to offline device
-    fs.writeFileSync(
-        'unsigned-tx.json',
-        JSON.stringify(preparationData, null, 2)
+    // Step 1: Simulate the contract call
+    const simulation = await token.transfer(
+        Address.fromString('0xRecipient...'),
+        100_00000000n  // 100 tokens
     );
 
-    console.log('Preparation data saved to unsigned-tx.json');
+    if (simulation.revert) {
+        throw new Error(`Simulation failed: ${simulation.revert}`);
+    }
+
+    // Step 2: Serialize to binary buffer
+    // This fetches UTXOs, challenge, and all required data automatically
+    const offlineBuffer = await simulation.toOfflineBuffer(
+        'bcrt1p...',  // Your p2tr address for UTXOs
+        50000n        // Satoshis needed for transaction
+    );
+
+    // Step 3: Save binary file for transfer to offline device
+    fs.writeFileSync('offline-tx.bin', offlineBuffer);
+
+    // Or encode as hex for QR code
+    const hexData = offlineBuffer.toString('hex');
+    console.log('Hex length:', hexData.length);
+
+    console.log('Offline data saved to offline-tx.bin');
+    console.log('Transfer this file to your offline device');
+
     await provider.close();
 }
 
-prepareTransaction();
+prepareForOfflineSigning();
 ```
 
-### Step 2: Sign on Offline Device
+### Offline Phase: Sign Transaction
+
+On your offline device with the private key:
 
 ```typescript
-// offline-sign.ts
-import { Wallet, TransactionFactory } from '@btc-vision/transaction';
+// offline-sign.ts (run on offline device)
+import { CallResult } from 'opnet';
+import { AddressTypes, Mnemonic, MLDSASecurityLevel } from '@btc-vision/transaction';
 import { networks } from '@btc-vision/bitcoin';
 import * as fs from 'fs';
 
-async function signTransaction() {
-    // Load preparation data
-    const data = JSON.parse(
-        fs.readFileSync('unsigned-tx.json', 'utf-8')
+async function signOffline() {
+    // Step 1: Load binary data from USB/file
+    const buffer = fs.readFileSync('offline-tx.bin');
+
+    // Or from hex string (e.g., from QR code)
+    // const buffer = Buffer.from(hexString, 'hex');
+
+    // Step 2: Reconstruct the CallResult
+    const simulation = CallResult.fromOfflineBuffer(buffer);
+
+    // Step 3: Verify transaction details before signing!
+    console.log('=== VERIFY TRANSACTION ===');
+    console.log('Contract:', simulation.to);
+    console.log('Estimated gas (sat):', simulation.estimatedSatGas.toString());
+    console.log('========================');
+
+    // Step 4: Initialize wallet with mnemonic
+    // PRIVATE KEY ONLY EXISTS ON THIS OFFLINE DEVICE
+    const network = networks.regtest;
+    const mnemonic = new Mnemonic(
+        'your twenty four word seed phrase goes here ...',
+        '',
+        network,
+        MLDSASecurityLevel.LEVEL2,
     );
+    const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
-    const network = networks[data.network];
-
-    // Your wallet (private key stored offline)
-    const wallet = Wallet.fromWif('cPrivateKey...', undefined, network);
-
-    const factory = new TransactionFactory();
-
-    // Build and sign transaction
-    const signedTx = await factory.signInteraction({
-        from: wallet.p2tr,
-        to: data.tokenAddress,
-        calldata: Buffer.from(data.calldata, 'hex'),
-        utxos: data.utxos,
+    // Step 5: Sign the transaction
+    const signedTx = await simulation.signTransaction({
         signer: wallet.keypair,
         mldsaSigner: wallet.mldsaKeypair,
-        network: network,
-        feeRate: 10,
-        priorityFee: 0n,
         refundTo: wallet.p2tr,
-        challenge: data.challenge,
+        maximumAllowedSatToSpend: 50000n,
+        feeRate: 10,
+        network: network,
     });
 
-    // Save signed transaction
+    // Step 6: Save signed transaction for transfer back to online device
+    // IMPORTANT: Include spent UTXOs so the online device can track them
     const signedData = {
-        interactionTx: signedTx.interactionTransactionRaw,
         fundingTx: signedTx.fundingTransactionRaw,
+        interactionTx: signedTx.interactionTransactionRaw,
         estimatedFees: signedTx.estimatedFees.toString(),
+        // Include spent UTXOs for UTXO manager tracking
+        spentUtxos: signedTx.fundingInputUtxos.map(u => ({
+            transactionId: u.transactionId,
+            outputIndex: u.outputIndex,
+            value: u.value.toString(),
+        })),
+        // Include new UTXOs created by the transaction
+        newUtxos: signedTx.nextUTXOs.map(u => ({
+            transactionId: u.transactionId,
+            outputIndex: u.outputIndex,
+            value: u.value.toString(),
+            scriptPubKey: u.scriptPubKey,
+        })),
     };
 
-    fs.writeFileSync(
-        'signed-tx.json',
-        JSON.stringify(signedData, null, 2)
-    );
+    fs.writeFileSync('signed-tx.json', JSON.stringify(signedData, null, 2));
 
     console.log('Signed transaction saved to signed-tx.json');
+    console.log('Transfer this file back to your online device');
 }
 
-signTransaction();
+signOffline();
 ```
 
-### Step 3: Broadcast on Online Device
+### Broadcast Phase: Send to Network
+
+Back on your online device, broadcast the signed transaction and update UTXO tracking:
 
 ```typescript
 // online-broadcast.ts
-import { JSONRpcProvider } from 'opnet';
+import { JSONRpcProvider, UTXO } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 import * as fs from 'fs';
+
+// Type for serialized signed transaction data
+interface SerializedSignedTx {
+    fundingTx: string | null;
+    interactionTx: string;
+    estimatedFees: string;
+    spentUtxos: SerializedUTXO[];
+    newUtxos: SerializedUTXOWithScript[];
+}
+
+interface SerializedUTXO {
+    transactionId: string;
+    outputIndex: number;
+    value: string;
+}
+
+interface SerializedUTXOWithScript extends SerializedUTXO {
+    scriptPubKey: { hex: string; address?: string };
+}
 
 async function broadcastTransaction() {
     const network = networks.regtest;
     const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
 
+    // Your address (same as used in preparation)
+    const myP2TR = 'bcrt1p...';
+
     // Load signed transaction
-    const signedData = JSON.parse(
+    const signedData: SerializedSignedTx = JSON.parse(
         fs.readFileSync('signed-tx.json', 'utf-8')
     );
 
-    // Broadcast
+    // Broadcast funding transaction first (if present)
+    if (signedData.fundingTx) {
+        const fundingResult = await provider.sendRawTransaction(
+            signedData.fundingTx,
+            false
+        );
+
+        if (!fundingResult.success) {
+            throw new Error(`Funding TX failed: ${fundingResult.error}`);
+        }
+        console.log('Funding TX broadcast');
+    }
+
+    // Broadcast interaction transaction
     const result = await provider.sendRawTransaction(
         signedData.interactionTx,
-        signedData.fundingTx
+        false
     );
 
+    if (!result.success) {
+        throw new Error(`Transaction failed: ${result.error}`);
+    }
+
     console.log('Transaction broadcast!');
-    console.log('TX ID:', result.txid);
+    console.log('TX ID:', result.result);
+
+    // IMPORTANT: Update UTXO manager to track spent/new UTXOs
+    // Option 1: Clean the cache to force refetch (simplest)
+    provider.utxoManager.clean();
+
+    // Option 2: Manually track spent and new UTXOs (more precise)
+    const spentUtxos: UTXO[] = signedData.spentUtxos.map((u) => ({
+        transactionId: u.transactionId,
+        outputIndex: u.outputIndex,
+        value: BigInt(u.value),
+        scriptPubKey: { hex: '', address: myP2TR },
+    }));
+
+    const newUtxos: UTXO[] = signedData.newUtxos.map((u) => ({
+        transactionId: u.transactionId,
+        outputIndex: u.outputIndex,
+        value: BigInt(u.value),
+        scriptPubKey: u.scriptPubKey,
+    }));
+
+    // Mark UTXOs as spent and register new ones
+    provider.utxoManager.spentUTXO(myP2TR, spentUtxos, newUtxos);
 
     await provider.close();
 }
@@ -292,26 +282,67 @@ broadcastTransaction();
 
 ---
 
+## Binary Serialization Format
+
+The `CallResultSerializer` uses efficient binary encoding for compact data transfer. The serialized data includes:
+
+```typescript
+interface OfflineCallResultData {
+    readonly calldata: Buffer;              // Contract calldata
+    readonly to: string;                    // Contract p2tr address
+    readonly contractAddress: string;       // Contract hex address
+    readonly estimatedSatGas: bigint;       // Estimated gas in satoshis
+    readonly estimatedRefundedGasInSat: bigint;
+    readonly revert?: string;               // Revert message if any
+    readonly result: Buffer;                // Simulation result
+    readonly accessList: IAccessList;       // Storage access list
+    readonly bitcoinFees?: BitcoinFees;     // Current fee rates
+    readonly network: NetworkName;          // mainnet/testnet/regtest
+    readonly estimatedGas?: bigint;         // Gas units
+    readonly refundedGas?: bigint;          // Refunded gas
+    readonly challenge: RawChallenge;       // PoW challenge data
+    readonly challengeOriginalPublicKey: Buffer; // 33-byte compressed public key
+    readonly utxos: UTXO[];                 // UTXOs for signing
+    readonly csvAddress?: IP2WSHAddress;    // CSV address if applicable
+}
+```
+
+You can also use the serializer directly:
+
+```typescript
+import { CallResultSerializer, NetworkName } from 'opnet';
+
+// Serialize
+const buffer = CallResultSerializer.serialize(offlineData);
+
+// Deserialize
+const data = CallResultSerializer.deserialize(buffer);
+```
+
+---
+
 ## Security Considerations
 
 ### 1. Never Expose Private Keys
 
 ```typescript
-// Good: Private key stays offline
-const wallet = Wallet.fromWif(privateKey, undefined, network);
+// Good: Mnemonic/private key stays offline
+const mnemonic = new Mnemonic(seedPhrase, '', network, MLDSASecurityLevel.LEVEL2);
+const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
-// Bad: Transmitting private key
-const data = { privateKey: '...' };  // NEVER do this
+// Bad: Transmitting private key or mnemonic
+const data = { mnemonic: '...' };  // NEVER do this
 ```
 
 ### 2. Verify Transaction Before Signing
 
 ```typescript
 // On offline device, verify transaction details
+const simulation = CallResult.fromOfflineBuffer(buffer);
+
 console.log('Signing transaction:');
-console.log('  To:', data.tokenAddress);
-console.log('  Amount:', data.amount);
-console.log('  UTXOs:', data.utxos.length);
+console.log('  Contract:', simulation.to);
+console.log('  Gas cost:', simulation.estimatedSatGas.toString(), 'sats');
 
 // Confirm before signing
 ```
@@ -330,15 +361,19 @@ const signedTx = applySignature(unsignedTx, signature);
 
 ## Best Practices
 
-1. **Air-Gapped Signing**: Use physically isolated device for signing
+1. **Offline Signing**: Use a physically isolated device for signing
 
 2. **Verify All Details**: Double-check recipient and amount before signing
 
-3. **Backup UTXOs**: Keep track of UTXOs used to avoid double-spending
+3. **Binary Format**: Use `toOfflineBuffer()` for efficient, compact data transfer
 
-4. **Time-Sensitive**: Challenges expire, so don't delay too long between preparation and signing
+4. **Time-Sensitive**: Challenges expire, so don't delay too long between preparation and signing (typically ~10 seconds cache)
 
 5. **Test First**: Test the workflow on regtest before mainnet
+
+6. **QR Codes**: For smaller transactions, consider encoding the binary as hex for QR code transfer
+
+7. **UTXO Tracking**: The offline data includes UTXOs; ensure they haven't been spent between preparation and broadcast
 
 ---
 
@@ -350,4 +385,4 @@ const signedTx = applySignature(unsignedTx, signature);
 
 ---
 
-[← Previous: Contract Code](./contract-code.md) | [Next: OP20 Examples →](../examples/op20-examples.md)
+[Previous: Contract Code](./contract-code.md) | [Next: OP20 Examples](../examples/op20-examples.md)

@@ -2,6 +2,25 @@
 
 Complete API reference for OPNet providers.
 
+## Table of Contents
+
+- [AbstractRpcProvider](#abstractrpcprovider)
+- [Constructor](#constructor)
+  - [JSONRpcProvider](#jsonrpcprovider)
+  - [WebSocketRpcProvider](#websocketrpcprovider)
+- [JSONRpcProvider Methods](#jsonrpcprovider-methods)
+- [Block Methods](#block-methods)
+- [Transaction Methods](#transaction-methods)
+- [Epoch Methods](#epoch-methods)
+- [Contract Methods](#contract-methods)
+- [Balance Methods](#balance-methods)
+- [UTXO Methods](#utxo-methods)
+- [Public Key Methods](#public-key-methods)
+- [WebSocket Methods](#websocket-methods-websocketrpcprovider-only)
+- [Properties](#properties)
+
+---
+
 ## AbstractRpcProvider
 
 Base class for all providers. Both JSONRpcProvider and WebSocketRpcProvider extend this class.

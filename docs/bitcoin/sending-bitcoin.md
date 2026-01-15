@@ -27,8 +27,10 @@ sequenceDiagram
 
 ```typescript
 import {
+    AddressTypes,
     TransactionFactory,
-    Wallet,
+    Mnemonic,
+    MLDSASecurityLevel,
     UTXO,
 } from '@btc-vision/transaction';
 import { JSONRpcProvider } from 'opnet';
@@ -36,7 +38,8 @@ import { networks, Psbt } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
 const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
-const wallet = Wallet.fromWif('cPrivateKey...', undefined, network);
+const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
+const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 const factory = new TransactionFactory();
 ```
 
