@@ -2,6 +2,22 @@
 
 This guide covers DEX interactions using the MotoSwap protocol, including liquidity management and token swaps.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Contract Architecture](#contract-architecture)
+- [Setup](#setup)
+- [Pool Discovery](#pool-discovery)
+- [Create New Pool](#create-new-pool)
+- [Price Quotes](#price-quotes)
+- [Swap Execution](#swap-execution)
+- [Liquidity Management](#liquidity-management)
+- [Price Impact Calculation](#price-impact-calculation)
+- [Complete DEX Service](#complete-dex-service)
+- [Best Practices](#best-practices)
+
+---
+
 ## Overview
 
 MotoSwap is a decentralized exchange (DEX) on OPNet that follows the automated market maker (AMM) model similar to Uniswap V2.
@@ -80,7 +96,13 @@ import {
     TransactionParameters,
     BitcoinUtils,
 } from 'opnet';
-import { Address, Wallet } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+    Wallet,
+} from '@btc-vision/transaction';
 import { Network, networks } from '@btc-vision/bitcoin';
 
 const network: Network = networks.regtest;
@@ -88,7 +110,8 @@ const provider: JSONRpcProvider = new JSONRpcProvider(
     'https://regtest.opnet.org',
     network
 );
-const wallet: Wallet = Wallet.fromWif('cPrivateKey...', undefined, network);
+const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
+const wallet: Wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
 // Router contract
 const routerAddress: Address = Address.fromString('0x...');

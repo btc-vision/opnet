@@ -100,7 +100,13 @@ import {
     OP_20_ABI,
     TransactionParameters,
 } from 'opnet';
-import { Address, Wallet } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+    Wallet,
+} from '@btc-vision/transaction';
 import { Network, networks } from '@btc-vision/bitcoin';
 
 async function transferWithGasCheck(): Promise<void> {
@@ -109,7 +115,8 @@ async function transferWithGasCheck(): Promise<void> {
         'https://regtest.opnet.org',
         network
     );
-    const wallet: Wallet = Wallet.fromWif('cVk...', undefined, network);
+    const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
+    const wallet: Wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
     const tokenAddress: Address = Address.fromString('0x...');
     const token: IOP20Contract = getContract<IOP20Contract>(

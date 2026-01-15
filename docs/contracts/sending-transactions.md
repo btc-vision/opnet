@@ -2,6 +2,26 @@
 
 This guide covers how to send transactions to smart contracts, including transaction building, signing, and broadcasting.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Transaction Flow](#transaction-flow)
+- [TransactionParameters](#transactionparameters)
+- [Signer Configuration](#signer-configuration)
+  - [ECDSA Signer](#ecdsa-signer-required-for-most-operations)
+  - [ML-DSA Quantum Signer](#ml-dsa-quantum-signer-optional)
+- [Fee Configuration](#fee-configuration)
+- [UTXO Selection](#utxo-selection)
+- [Transaction Result](#transaction-result)
+- [Complete Examples](#complete-examples)
+  - [Basic Token Transfer](#basic-token-transfer)
+  - [Approve and TransferFrom](#approve-and-transferfrom)
+  - [Multiple Transfers (Batch)](#multiple-transfers-batch)
+- [Error Handling](#error-handling)
+- [Best Practices](#best-practices)
+
+---
+
 ## Overview
 
 ```mermaid
@@ -114,13 +134,24 @@ interface TransactionParameters {
 ### ECDSA Signer (Required for most operations)
 
 ```typescript
-import { Wallet } from '@btc-vision/transaction';
+import {
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+} from '@btc-vision/transaction';
 
-const wallet = Wallet.fromWif(privateKeyWif, undefined, network);
+// Create wallet from mnemonic (includes both ECDSA and ML-DSA keys)
+const mnemonic = new Mnemonic(
+    'your twenty four word seed phrase goes here ...',
+    '',                            // BIP39 passphrase
+    network,
+    MLDSASecurityLevel.LEVEL2,     // Quantum security level
+);
+const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
 const params: TransactionParameters = {
     signer: wallet.keypair,
-    mldsaSigner: null,
+    mldsaSigner: null,  // Omit for non-quantum transactions
     // ... other params
 };
 ```
@@ -128,15 +159,20 @@ const params: TransactionParameters = {
 ### ML-DSA Quantum Signer (Optional)
 
 ```typescript
-const wallet = Wallet.fromWif(
-    privateKeyWif,
-    mldsaPrivateKeyHex,  // Optional quantum key
-    network
+import { AddressTypes, Mnemonic, MLDSASecurityLevel } from '@btc-vision/transaction';
+
+// The mnemonic-derived wallet automatically includes ML-DSA keys
+const mnemonic = new Mnemonic(
+    'your twenty four word seed phrase goes here ...',
+    '',
+    network,
+    MLDSASecurityLevel.LEVEL2,
 );
+const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
 const params: TransactionParameters = {
     signer: wallet.keypair,
-    mldsaSigner: wallet.mldsaKeypair,
+    mldsaSigner: wallet.mldsaKeypair,  // ML-DSA key from mnemonic
     // ... other params
 };
 ```
@@ -271,13 +307,19 @@ import {
     OP_20_ABI,
     TransactionParameters,
 } from 'opnet';
-import { Address, Wallet } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+} from '@btc-vision/transaction';
 import { networks } from '@btc-vision/bitcoin';
 
 async function transferTokens() {
     const network = networks.regtest;
     const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
-    const wallet = Wallet.fromWif('cVk...', undefined, network);
+    const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
+    const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
     const token = getContract<IOP20Contract>(
         Address.fromString('0x...'),

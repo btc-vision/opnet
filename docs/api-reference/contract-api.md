@@ -2,6 +2,18 @@
 
 Complete API reference for contract interactions.
 
+## Table of Contents
+
+- [getContract Factory](#getcontract-factory)
+- [BaseContractProperties](#basecontractproperties)
+- [CallResult](#callresult)
+- [OPNetEvent](#opnetevent)
+- [TransactionParameters](#transactionparameters)
+- [InteractionTransactionReceipt](#interactiontransactionreceipt)
+- [SignedInteractionTransactionReceipt](#signedinteractiontransactionreceipt)
+
+---
+
 ## getContract Factory
 
 ### Signature
@@ -215,7 +227,7 @@ interface TransactionParameters {
     readonly mldsaSigner: QuantumBIP32Interface | null;
 
     // Addresses
-    readonly refundTo: string;           // P2TR refund address
+    readonly refundTo: string;           // Address for change/refund (any type)
     readonly sender?: string;            // Sender address (optional)
     readonly from?: Address;             // From address object
 

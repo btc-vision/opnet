@@ -2,6 +2,29 @@
 
 The `JSONRpcProvider` is the primary way to communicate with OPNet nodes using HTTP-based JSON-RPC protocol.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Setting Up HTTP Connections](#setting-up-http-connections)
+- [Constructor Parameters](#constructor-parameters)
+- [Network Configuration](#network-configuration)
+- [REST API vs JSON-RPC Mode](#rest-api-vs-json-rpc-mode)
+- [Threaded Parsing](#threaded-parsing)
+- [Complete Configuration Example](#complete-configuration-example)
+- [Provider Methods](#provider-methods)
+  - [Block Methods](#block-methods)
+  - [Transaction Methods](#transaction-methods)
+  - [Contract Methods](#contract-methods)
+  - [Balance Methods](#balance-methods)
+  - [Public Key Methods](#public-key-methods)
+  - [Epoch Methods](#epoch-methods)
+- [UTXO Manager](#utxo-manager)
+- [Error Handling](#error-handling)
+- [Resource Cleanup](#resource-cleanup)
+- [Best Practices](#best-practices)
+
+---
+
 ## Overview
 
 ```mermaid

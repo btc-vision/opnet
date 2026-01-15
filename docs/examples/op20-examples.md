@@ -2,6 +2,19 @@
 
 This guide provides comprehensive examples for working with OP20 (fungible) tokens.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Setup](#setup)
+- [Method Data Encoding](#method-data-encoding)
+- [Transfer Example](#transfer-example)
+- [Approve/TransferFrom Pattern](#approvetransferfrom-pattern)
+- [Airdrop Example (Batch Transfers)](#airdrop-example-batch-transfers)
+- [Balance Checking with Decimals](#balance-checking-with-decimals)
+- [Complete Token Service](#complete-token-service)
+
+---
+
 ## Overview
 
 OP20 is OPNet's fungible token standard, similar to ERC20 on Ethereum.
@@ -34,7 +47,13 @@ import {
     TransactionParameters,
     BitcoinUtils,
 } from 'opnet';
-import { Address, Wallet } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+    Wallet,
+} from '@btc-vision/transaction';
 import { Network, networks } from '@btc-vision/bitcoin';
 
 const network: Network = networks.regtest;
@@ -42,7 +61,8 @@ const provider: JSONRpcProvider = new JSONRpcProvider(
     'https://regtest.opnet.org',
     network
 );
-const wallet: Wallet = Wallet.fromWif('cPrivateKey...', undefined, network);
+const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
+const wallet: Wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
 const tokenAddress: Address = Address.fromString('0x...');
 const token: IOP20Contract = getContract<IOP20Contract>(

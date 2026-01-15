@@ -164,9 +164,15 @@ The sender address is used for simulating calls as a specific user:
 ### At Construction
 
 ```typescript
-import { Address, Wallet } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+} from '@btc-vision/transaction';
 
-const wallet = Wallet.fromWif(privateKey, undefined, network);
+const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
+const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
 // Set sender at construction
 const token = getContract<IOP20Contract>(
@@ -237,13 +243,19 @@ import {
     JSONRpcProvider,
     OP_20_ABI,
 } from 'opnet';
-import { Address, Wallet } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+} from '@btc-vision/transaction';
 import { networks } from '@btc-vision/bitcoin';
 
 async function main() {
     const network = networks.regtest;
     const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
-    const wallet = Wallet.fromWif('cVk...', undefined, network);
+    const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
+    const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
     const tokenAddress = Address.fromString('0x...');
 

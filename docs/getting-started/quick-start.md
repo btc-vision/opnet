@@ -58,31 +58,63 @@ testConnection();
 
 ## Step 2: Create a Wallet
 
-To interact with contracts, you need a wallet:
+To interact with contracts, you need a wallet. OPNet extends BIP32 to provide seamless ML-DSA (quantum-resistant) key management alongside traditional ECDSA keys. This means a single mnemonic seed phrase generates both key types automatically.
+
+> **Important**: Using WIF (Wallet Import Format) is **NOT recommended**. Always use the `Mnemonic` class for proper key derivation and ML-DSA support.
+
+> **OPWallet Compatibility**: Use `deriveUnisat()` to match OPWallet's derivation path. This ensures your addresses match what OPWallet generates from the same seed phrase.
 
 ```typescript
-import { Wallet, Address } from '@btc-vision/transaction';
+import {
+    Mnemonic,
+    MnemonicStrength,
+    MLDSASecurityLevel,
+    AddressTypes,
+} from '@btc-vision/transaction';
 import { networks } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
 
-// Option 1: Create from WIF (Wallet Import Format)
-const wallet = Wallet.fromWif(
-    'YOUR_PRIVATE_KEY_WIF',      // e.g., 'cNfsPt...'
-    'YOUR_MLDSA_QUANTUM_KEY',    // Optional quantum-resistant key
-    network
+// Option 1: Generate a new mnemonic (24 words for maximum security)
+const mnemonic = Mnemonic.generate(
+    MnemonicStrength.MAXIMUM,      // 24 words (256-bit entropy)
+    '',                            // BIP39 passphrase (optional)
+    network,                       // Network
+    MLDSASecurityLevel.LEVEL2,     // Quantum security level
+);
+console.log('Seed phrase:', mnemonic.phrase);
+
+// Option 2: Import from existing seed phrase
+const existingMnemonic = new Mnemonic(
+    'your twenty four word seed phrase goes here ...',
+    '',                            // BIP39 passphrase
+    network,
+    MLDSASecurityLevel.LEVEL2,
 );
 
-// Option 2: Generate a new wallet
-const newWallet = Wallet.new(network);
-console.log('New wallet address:', newWallet.p2tr);
+// RECOMMENDED: Use deriveUnisat() to match OPWallet derivation
+const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
-// Wallet properties
+// Alternative: Standard derivation (different path than OPWallet)
+const walletStandard = mnemonic.derive(0);
+
+// Wallet properties (both ECDSA and ML-DSA keys derived from same mnemonic)
 console.log('Taproot address:', wallet.p2tr);
 console.log('SegWit address:', wallet.p2wpkh);
-console.log('Keypair:', wallet.keypair);
+console.log('Keypair:', wallet.keypair);              // ECDSA keypair
 console.log('Address object:', wallet.address);
+console.log('ML-DSA keypair:', wallet.mldsaKeypair);  // Quantum-resistant keypair
 ```
+
+### Why Mnemonic Over WIF?
+
+| Feature | Mnemonic | WIF |
+|---------|----------|-----|
+| ML-DSA key derivation | Automatic | Manual (error-prone) |
+| OPWallet compatibility | Yes (with `deriveUnisat`) | No |
+| Multiple accounts | Easy (`derive(0)`, `derive(1)`, ...) | Requires separate keys |
+| Backup | Single seed phrase | Multiple private keys |
+| Quantum-resistant | Built-in | Requires separate management |
 
 ---
 
@@ -97,7 +129,13 @@ import {
     JSONRpcProvider,
     OP_20_ABI,
 } from 'opnet';
-import { Address, Wallet } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+    Wallet,
+} from '@btc-vision/transaction';
 import { Network, networks } from '@btc-vision/bitcoin';
 
 const network: Network = networks.regtest;
@@ -106,8 +144,9 @@ const provider: JSONRpcProvider = new JSONRpcProvider(
     network
 );
 
-// Your wallet
-const wallet: Wallet = Wallet.fromWif('YOUR_WIF', undefined, network);
+// Your wallet (from mnemonic) - use deriveUnisat for OPWallet compatibility
+const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
+const wallet: Wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);
 
 // Contract address (the token you want to interact with)
 const tokenAddress: Address = Address.fromString(
@@ -238,7 +277,12 @@ import {
     OP_20_ABI,
     TransactionParameters,
 } from 'opnet';
-import { Address, Wallet } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+} from '@btc-vision/transaction';
 import { networks } from '@btc-vision/bitcoin';
 
 async function main() {
@@ -254,12 +298,15 @@ async function main() {
     console.log('Connected to block:', blockNumber);
 
     // ============ Setup Wallet ============
-    // IMPORTANT: Replace with your actual private key
-    const wallet = Wallet.fromWif(
-        'cVkWbHmoCx6jS8AyPNQqvFr8V9r2qzDHJLaxGDQgDJfxT73w7Vqs',
-        undefined,
-        network
+    // IMPORTANT: Replace with your actual seed phrase
+    // Use deriveUnisat for OPWallet-compatible derivation
+    const mnemonic = new Mnemonic(
+        'your twenty four word seed phrase goes here ...',
+        '',                            // BIP39 passphrase
+        network,
+        MLDSASecurityLevel.LEVEL2,
     );
+    const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);
     console.log('Wallet address:', wallet.p2tr);
 
     // ============ Get Balance ============

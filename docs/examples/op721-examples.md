@@ -2,6 +2,23 @@
 
 This guide provides comprehensive examples for working with OP721 (non-fungible) tokens.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Setup](#setup)
+- [Collection Information](#collection-information)
+- [Ownership Queries](#ownership-queries)
+- [Transfer Examples](#transfer-examples)
+- [Approval Management](#approval-management)
+- [Extended NFT Features](#extended-nft-features)
+- [Reserve and Claim Pattern](#reserve-and-claim-pattern)
+- [Airdrop Example (Batch Distribution)](#airdrop-example-batch-distribution)
+- [Set Token URI (Owner Only)](#set-token-uri-owner-only)
+- [Burn NFT](#burn-nft)
+- [Complete NFT Service](#complete-nft-service)
+
+---
+
 ## Overview
 
 OP721 is OPNet's NFT standard, similar to ERC721 on Ethereum. It supports individual token ownership, metadata, and advanced features like reservations and minting.
@@ -47,7 +64,13 @@ import {
     EXTENDED_OP721_ABI,
     TransactionParameters,
 } from 'opnet';
-import { Address, Wallet } from '@btc-vision/transaction';
+import {
+    Address,
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+    Wallet,
+} from '@btc-vision/transaction';
 import { Network, networks } from '@btc-vision/bitcoin';
 
 const network: Network = networks.regtest;
@@ -55,7 +78,8 @@ const provider: JSONRpcProvider = new JSONRpcProvider(
     'https://regtest.opnet.org',
     network
 );
-const wallet: Wallet = Wallet.fromWif('cPrivateKey...', undefined, network);
+const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
+const wallet: Wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
 // Standard OP721 contract
 const nftAddress: Address = Address.fromString('0x...');

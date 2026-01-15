@@ -2,6 +2,35 @@
 
 BinaryWriter and BinaryReader are low-level utilities for encoding and decoding binary data used in OPNet smart contract calldata.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+- [BinaryWriter](#binarywriter)
+  - [Constructor](#constructor)
+  - [Primitive Methods](#primitive-methods)
+  - [String Methods](#string-methods)
+  - [Bytes Methods](#bytes-methods)
+  - [Address Methods](#address-methods)
+  - [Array Methods](#array-methods)
+  - [Map Methods](#map-methods)
+  - [Buffer Output](#buffer-output)
+  - [Utility Methods](#utility-methods)
+- [BinaryReader](#binaryreader)
+  - [Constructor](#constructor-1)
+  - [Primitive Methods](#primitive-methods-1)
+  - [String Methods](#string-methods-1)
+  - [Bytes Methods](#bytes-methods-1)
+  - [Address Methods](#address-methods-1)
+  - [Array Methods](#array-methods-1)
+  - [Map Methods](#map-methods-1)
+  - [Utility Methods](#utility-methods-1)
+- [Complete Examples](#complete-examples)
+- [Type Sizes](#type-sizes)
+- [Best Practices](#best-practices)
+
+---
+
 ## Overview
 
 ```mermaid

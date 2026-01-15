@@ -2,6 +2,22 @@
 
 This guide covers deploying smart contracts to the OPNet network.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Basic Deployment](#basic-deployment)
+- [Deployment with Constructor](#deployment-with-constructor)
+- [IDeploymentParameters Reference](#ideploymentparameters-reference)
+- [Calldata Construction](#calldata-construction)
+- [Deployment Result](#deployment-result)
+- [Batch Deployment](#batch-deployment)
+- [Verify Deployment](#verify-deployment)
+- [Complete Deployment Service](#complete-deployment-service)
+- [Best Practices](#best-practices)
+
+---
+
 ## Overview
 
 Contract deployment on OPNet involves creating a funding transaction and a reveal transaction that contains the contract bytecode.
@@ -27,11 +43,14 @@ sequenceDiagram
 
 ```typescript
 import {
+    AddressTypes,
     BinaryWriter,
     IDeploymentParameters,
     TransactionFactory,
     Wallet,
     UTXO,
+    Mnemonic,
+    MLDSASecurityLevel,
 } from '@btc-vision/transaction';
 import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
@@ -39,7 +58,8 @@ import * as fs from 'fs';
 
 const network = networks.regtest;
 const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
-const wallet = Wallet.fromWif('cPrivateKey...', 'mldsaPrivateKey...', network);
+const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
+const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 const factory = new TransactionFactory();
 ```
 

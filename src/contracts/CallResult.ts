@@ -1,5 +1,5 @@
 import { QuantumBIP32Interface } from '@btc-vision/bip32';
-import { Network, PsbtOutputExtended, Signer } from '@btc-vision/bitcoin';
+import { Network, networks, PsbtOutputExtended, Signer } from '@btc-vision/bitcoin';
 import {
     Address,
     BinaryReader,
@@ -17,8 +17,9 @@ import {
 import { ECPairInterface } from 'ecpair';
 import { UTXO } from '../bitcoin/UTXOs.js';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
-import { RequestUTXOsParamsWithAmount } from '../utxos/interfaces/IUTXOsManager.js';
 import { decodeRevertData } from '../utils/RevertDecoder.js';
+import { RequestUTXOsParamsWithAmount } from '../utxos/interfaces/IUTXOsManager.js';
+import { CallResultSerializer, NetworkName } from './CallResultSerializer.js';
 import { IAccessList } from './interfaces/IAccessList.js';
 import { EventList, ICallResultData, RawEventList } from './interfaces/ICallResult.js';
 import { IProviderForCallResult } from './interfaces/IProviderForCallResult.js';
@@ -60,6 +61,8 @@ export interface TransactionParameters {
 
     readonly linkMLDSAPublicKeyToAddress?: boolean;
     readonly revealMLDSAPublicKey?: boolean;
+
+    readonly challenge?: ChallengeSolution;
 }
 
 export interface UTXOTrackingInfo {
@@ -109,7 +112,7 @@ export class CallResult<
 > implements Omit<ICallResultData, 'estimatedGas' | 'events' | 'specialGas'> {
     public readonly result: BinaryReader;
     public readonly accessList: IAccessList;
-    public readonly revert: string | undefined;
+    public revert: string | undefined;
 
     public calldata: Buffer | undefined;
     public loadedStorage: LoadedStorage | undefined;
@@ -131,6 +134,7 @@ export class CallResult<
 
     readonly #rawEvents: EventList;
     readonly #provider: IProviderForCallResult;
+    readonly #resultBase64: string;
 
     constructor(callResult: ICallResultData, provider: IProviderForCallResult) {
         this.#provider = provider;
@@ -155,10 +159,16 @@ export class CallResult<
             this.revert = CallResult.decodeRevertData(revert);
         }
 
-        this.result =
-            typeof callResult.result === 'string'
-                ? new BinaryReader(this.base64ToUint8Array(callResult.result))
-                : callResult.result;
+        // Store original result for serialization
+        if (typeof callResult.result === 'string') {
+            this.#resultBase64 = callResult.result;
+            this.result = new BinaryReader(this.base64ToUint8Array(callResult.result));
+        } else {
+            // If already a BinaryReader, we can't easily get the base64 back
+            // This shouldn't happen in normal flow
+            this.#resultBase64 = '';
+            this.result = callResult.result;
+        }
     }
 
     public get rawEvents(): EventList {
@@ -167,6 +177,110 @@ export class CallResult<
 
     public static decodeRevertData(revertDataBytes: Uint8Array | Buffer): string {
         return decodeRevertData(revertDataBytes);
+    }
+
+    /**
+     * Reconstructs a CallResult from offline serialized buffer.
+     * Use this on a device to sign transactions offline.
+     * @param {Buffer | string} input - The serialized offline data as Buffer or hex string.
+     * @returns {CallResult} A CallResult instance ready for offline signing.
+     *
+     * @example
+     * ```typescript
+     * // Offline device: reconstruct from buffer
+     * const buffer = fs.readFileSync('offline-tx.bin');
+     * const simulation = CallResult.fromOfflineBuffer(buffer);
+     *
+     * // Now sign offline
+     * const signedTx = await simulation.signTransaction({
+     *     signer: wallet.keypair,
+     *     // ... other params
+     * });
+     * ```
+     */
+    public static fromOfflineBuffer(input: Buffer | string): CallResult {
+        const buffer = typeof input === 'string' ? Buffer.from(input, 'hex') : input;
+        const data = CallResultSerializer.deserialize(buffer);
+
+        // Resolve network
+        const network = CallResult.resolveNetwork(data.network);
+
+        // Create ChallengeSolution from serialized RawChallenge
+        // Use the original public key (33 bytes) instead of the tweaked key (32 bytes)
+        const challengeWithOriginalKey = {
+            ...data.challenge,
+            legacyPublicKey: '0x' + data.challengeOriginalPublicKey.toString('hex'),
+        };
+        const challengeSolution = new ChallengeSolution(challengeWithOriginalKey);
+
+        // Create offline provider
+        const offlineProvider: IProviderForCallResult = {
+            network,
+            utxoManager: {
+                getUTXOsForAmount: () => Promise.resolve(data.utxos),
+                spentUTXO: () => {},
+                clean: () => {},
+            },
+            getChallenge: () => Promise.resolve(challengeSolution),
+            sendRawTransaction: () => {
+                return Promise.reject(
+                    new Error(
+                        'Cannot broadcast from offline CallResult. Export signed transaction and broadcast online.',
+                    ),
+                );
+            },
+            getCSV1ForAddress: () => {
+                if (!data.csvAddress) {
+                    throw new Error('CSV address not available in offline data');
+                }
+                return data.csvAddress;
+            },
+        };
+
+        // Create ICallResultData
+        // Note: revert is set directly below to avoid double-decoding
+        const callResultData: ICallResultData = {
+            result: data.result.toString('base64'),
+            accessList: data.accessList,
+            events: {},
+            revert: undefined,
+            estimatedGas: data.estimatedGas?.toString(),
+            specialGas: data.refundedGas?.toString(),
+        };
+
+        const callResult = new CallResult(callResultData, offlineProvider);
+
+        // Restore state
+        // Set revert directly since it's already decoded (not base64 bytes)
+        callResult.revert = data.revert;
+        callResult.calldata = data.calldata;
+        callResult.to = data.to;
+        callResult.address = Address.fromString(data.contractAddress);
+        callResult.estimatedSatGas = data.estimatedSatGas;
+        callResult.estimatedRefundedGasInSat = data.estimatedRefundedGasInSat;
+        callResult.csvAddress = data.csvAddress;
+
+        if (data.bitcoinFees) {
+            callResult.setBitcoinFee(data.bitcoinFees);
+        }
+
+        return callResult;
+    }
+
+    /**
+     * Resolves a NetworkName enum to a Network object.
+     */
+    private static resolveNetwork(networkName: NetworkName): Network {
+        switch (networkName) {
+            case NetworkName.Mainnet:
+                return networks.bitcoin;
+            case NetworkName.Testnet:
+                return networks.testnet;
+            case NetworkName.Regtest:
+                return networks.regtest;
+            default:
+                return networks.regtest;
+        }
     }
 
     public setTo(to: string, address: Address): void {
@@ -229,7 +343,8 @@ export class CallResult<
         }
 
         const priorityFee: bigint = interactionParams.priorityFee || 0n;
-        const challenge: ChallengeSolution = await this.#provider.getChallenge();
+        const challenge: ChallengeSolution =
+            interactionParams.challenge || (await this.#provider.getChallenge());
         const params: IInteractionParameters | InteractionParametersWithoutSigner = {
             contract: this.address.toHex(),
             calldata: this.calldata,
@@ -423,6 +538,87 @@ export class CallResult<
      */
     public setCalldata(calldata: Buffer): void {
         this.calldata = calldata;
+    }
+
+    /**
+     * Serializes this CallResult to a Buffer.
+     * Call this on an online device after simulation, then transfer the result
+     * to an offline device for signing.
+     *
+     * @param {string} refundAddress - The address to fetch UTXOs from (your p2tr address).
+     * @param {bigint} amount - The amount of satoshis needed for the transaction.
+     * @returns {Promise<Buffer>} Serialized buffer ready for offline signing.
+     *
+     * @example
+     * ```typescript
+     * // Online device: prepare for offline signing
+     * const simulation = await contract.transfer(recipient, amount);
+     * const offlineBuffer = await simulation.toOfflineBuffer(wallet.p2tr, 50000n);
+     *
+     * // Save to file or encode as base64 for QR code
+     * fs.writeFileSync('offline-tx.bin', offlineBuffer);
+     * // Or: const qrData = offlineBuffer.toString('base64');
+     * ```
+     */
+    public async toOfflineBuffer(refundAddress: string, amount: bigint): Promise<Buffer> {
+        if (!this.calldata) {
+            throw new Error('Calldata not set');
+        }
+
+        if (!this.to) {
+            throw new Error('Contract address not set');
+        }
+
+        if (!this.address) {
+            throw new Error('Contract Address object not set');
+        }
+
+        if (this.revert) {
+            throw new Error(`Cannot serialize reverted simulation: ${this.revert}`);
+        }
+
+        // Fetch UTXOs and challenge while online
+        const utxos = await this.#provider.utxoManager.getUTXOsForAmount({
+            address: refundAddress,
+            amount: amount + this.estimatedSatGas + 10000n, // Add buffer for fees
+            throwErrors: true,
+        });
+
+        const challengeSolution = await this.#provider.getChallenge();
+
+        // Get network name
+        const networkName = this.#getNetworkName();
+
+        return CallResultSerializer.serialize({
+            calldata: this.calldata,
+            to: this.to,
+            contractAddress: this.address.toHex(),
+            estimatedSatGas: this.estimatedSatGas,
+            estimatedRefundedGasInSat: this.estimatedRefundedGasInSat,
+            revert: this.revert,
+            result: Buffer.from(this.#resultBase64, 'base64'),
+            accessList: this.accessList,
+            bitcoinFees: this.#bitcoinFees,
+            network: networkName,
+            estimatedGas: this.estimatedGas,
+            refundedGas: this.refundedGas,
+            challenge: challengeSolution.toRaw(),
+            challengeOriginalPublicKey: challengeSolution.publicKey.originalPublicKeyBuffer(),
+            utxos,
+            csvAddress: this.csvAddress,
+        });
+    }
+
+    /**
+     * Gets the NetworkName enum from the provider's network.
+     * @returns {NetworkName} The network name enum value.
+     */
+    #getNetworkName(): NetworkName {
+        const network = this.#provider.network;
+        if (network === networks.bitcoin) return NetworkName.Mainnet;
+        if (network === networks.testnet) return NetworkName.Testnet;
+        if (network === networks.regtest) return NetworkName.Regtest;
+        return NetworkName.Regtest; // Default fallback
     }
 
     /**
