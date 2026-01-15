@@ -55,6 +55,7 @@ export * from './transactions/TransactionParser.js';
 
 /** Contract */
 export * from './contracts/CallResult.js';
+export * from './contracts/CallResultSerializer.js';
 export * from './contracts/Contract.js';
 export * from './contracts/types/ContractTypes.js';
 export * from './contracts/ContractData.js';
