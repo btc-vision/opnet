@@ -92,15 +92,13 @@ async function prepareForOfflineSigning() {
         50000n        // Satoshis needed for transaction
     );
 
-    // Step 3: Save binary file for transfer to offline device
+    // Step 3: Transfer buffer to offline device (your choice how)
+    // Example: write to file
     fs.writeFileSync('offline-tx.bin', offlineBuffer);
 
-    // Or encode as hex for QR code
+    // Example: encode as hex string
     const hexData = offlineBuffer.toString('hex');
-    console.log('Hex length:', hexData.length);
-
-    console.log('Offline data saved to offline-tx.bin');
-    console.log('Transfer this file to your offline device');
+    console.log('Buffer size:', offlineBuffer.length, 'bytes');
 
     await provider.close();
 }
@@ -115,15 +113,31 @@ On your offline device with the private key:
 ```typescript
 // offline-sign.ts (run on offline device)
 import { CallResult } from 'opnet';
-import { AddressTypes, Mnemonic, MLDSASecurityLevel } from '@btc-vision/transaction';
-import { networks } from '@btc-vision/bitcoin';
+import {
+    AddressTypes,
+    Mnemonic,
+    MLDSASecurityLevel,
+    Wallet,
+} from '@btc-vision/transaction';
+import { networks, Network } from '@btc-vision/bitcoin';
 import * as fs from 'fs';
 
+// Initialize wallet from mnemonic - ONLY ON OFFLINE DEVICE
+const network: Network = networks.regtest;
+const mnemonic: Mnemonic = new Mnemonic(
+    'your twenty four word seed phrase goes here ...',
+    '',
+    network,
+    MLDSASecurityLevel.LEVEL2,
+);
+const wallet: Wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);
+
 async function signOffline() {
-    // Step 1: Load binary data from USB/file
+    // Step 1: Load binary data (however you transferred it)
+    // Example: from file
     const buffer = fs.readFileSync('offline-tx.bin');
 
-    // Or from hex string (e.g., from QR code)
+    // Example: from hex string
     // const buffer = Buffer.from(hexString, 'hex');
 
     // Step 2: Reconstruct the CallResult
@@ -135,18 +149,7 @@ async function signOffline() {
     console.log('Estimated gas (sat):', simulation.estimatedSatGas.toString());
     console.log('========================');
 
-    // Step 4: Initialize wallet with mnemonic
-    // PRIVATE KEY ONLY EXISTS ON THIS OFFLINE DEVICE
-    const network = networks.regtest;
-    const mnemonic = new Mnemonic(
-        'your twenty four word seed phrase goes here ...',
-        '',
-        network,
-        MLDSASecurityLevel.LEVEL2,
-    );
-    const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
-
-    // Step 5: Sign the transaction
+    // Step 4: Sign the transaction
     const signedTx = await simulation.signTransaction({
         signer: wallet.keypair,
         mldsaSigner: wallet.mldsaKeypair,
@@ -156,8 +159,8 @@ async function signOffline() {
         network: network,
     });
 
-    // Step 6: Save signed transaction for transfer back to online device
-    // IMPORTANT: Include spent UTXOs so the online device can track them
+    // Step 5: Prepare signed transaction data for transfer back
+    // Include spent UTXOs so the online device can track them
     const signedData = {
         fundingTx: signedTx.fundingTransactionRaw,
         interactionTx: signedTx.interactionTransactionRaw,
@@ -177,10 +180,10 @@ async function signOffline() {
         })),
     };
 
+    // Example: write to file
     fs.writeFileSync('signed-tx.json', JSON.stringify(signedData, null, 2));
 
-    console.log('Signed transaction saved to signed-tx.json');
-    console.log('Transfer this file back to your online device');
+    console.log('Signed transaction ready for broadcast');
 }
 
 signOffline();
@@ -348,16 +351,6 @@ console.log('  Gas cost:', simulation.estimatedSatGas.toString(), 'sats');
 // Confirm before signing
 ```
 
-### 3. Use Hardware Wallets
-
-For maximum security, use hardware wallet integration:
-
-```typescript
-// Hardware wallet signing (conceptual)
-const signature = await hardwareWallet.sign(unsignedTx);
-const signedTx = applySignature(unsignedTx, signature);
-```
-
 ---
 
 ## Best Practices
@@ -372,9 +365,7 @@ const signedTx = applySignature(unsignedTx, signature);
 
 5. **Test First**: Test the workflow on regtest before mainnet
 
-6. **QR Codes**: For smaller transactions, consider encoding the binary as hex for QR code transfer
-
-7. **UTXO Tracking**: The offline data includes UTXOs; ensure they haven't been spent between preparation and broadcast
+6. **UTXO Tracking**: The offline data includes UTXOs; ensure they haven't been spent between preparation and broadcast
 
 ---
 
