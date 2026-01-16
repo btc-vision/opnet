@@ -26,12 +26,10 @@ const TemplateMotoChefOverrides: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
         inputs: [
             { name: 'userTokenAddress', type: ABIDataTypes.ADDRESS },
-            { name: 'devAddress', type: ABIDataTypes.ADDRESS },
             { name: 'tokenPerBlock', type: ABIDataTypes.UINT256 },
             { name: 'bonusEndBlock', type: ABIDataTypes.UINT256 },
             { name: 'bonusMultiplier', type: ABIDataTypes.UINT256 },
             { name: 'BTCAllocPoint', type: ABIDataTypes.UINT256 },
-            { name: 'lpTokenAddress', type: ABIDataTypes.ADDRESS },
             { name: 'tokenAllocPoint', type: ABIDataTypes.UINT256 },
             { name: 'userBTCFeePercentage', type: ABIDataTypes.UINT256 },
             { name: 'userFeeRecipient', type: ABIDataTypes.STRING },

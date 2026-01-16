@@ -49,7 +49,7 @@ export const MotoChefFactoryAbi: BitcoinInterfaceAbi = [
     {
         name: 'initialize',
         type: BitcoinAbiTypes.Function,
-        inputs: [{ name: 'motoTokenAddress', type: ABIDataTypes.ADDRESS }],
+        inputs: [],
         outputs: [{ name: 'success', type: ABIDataTypes.BOOL }],
     },
     {
@@ -108,7 +108,6 @@ export const MotoChefFactoryAbi: BitcoinInterfaceAbi = [
         name: 'deployMotoChef',
         type: BitcoinAbiTypes.Function,
         inputs: [
-            { name: 'devAddress', type: ABIDataTypes.ADDRESS },
             { name: 'tokenPerBlock', type: ABIDataTypes.UINT256 },
             { name: 'bonusEndBlock', type: ABIDataTypes.UINT256 },
             { name: 'bonusMultiplier', type: ABIDataTypes.UINT256 },

@@ -51,7 +51,7 @@ export type OnOP20Received = CallResult<{ selector: Buffer }, []>;
 
 export interface IMotoChefFactory extends IOP_NETContract {
     owner(): Promise<Owner>;
-    initialize(motoTokenAddress: Address): Promise<InitializeFactory>;
+    initialize(): Promise<InitializeFactory>;
     pauseFactory(): Promise<PauseFactory>;
     unpauseFactory(): Promise<UnpauseFactory>;
     isPaused(): Promise<IsPaused>;
@@ -71,7 +71,6 @@ export interface IMotoChefFactory extends IOP_NETContract {
     ): Promise<DeployToken>;
 
     deployMotoChef(
-        devAddress: Address,
         tokenPerBlock: bigint,
         bonusEndBlock: bigint,
         bonusMultiplier: bigint,

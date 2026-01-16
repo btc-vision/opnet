@@ -31,12 +31,10 @@ export type TotalUserTokenStaked = CallResult<{ totalStaked: bigint }, OPNetEven
 export interface ITemplateMotoChef extends Omit<IMotoChef, 'initialize'> {
     initialize(
         userTokenAddress: Address,
-        devAddress: Address,
         tokenPerBlock: bigint,
         bonusEndBlock: bigint,
         bonusMultiplier: bigint,
         BTCAllocPoint: bigint,
-        lpTokenAddress: Address,
         tokenAllocPoint: bigint,
         userBTCFeePercentage: bigint,
         userFeeRecipient: string,
