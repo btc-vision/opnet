@@ -9,6 +9,27 @@
 
 The official client library for building Bitcoin-based applications on OPNet. Full TypeScript support with type-safe contract interactions.
 
+## Security Audit
+
+<p align="center">
+  <a href="https://verichains.io">
+    <img src="https://raw.githubusercontent.com/btc-vision/contract-logo/refs/heads/main/public-assets/verichains.png" alt="Verichains" width="100"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://verichains.io">
+    <img src="https://img.shields.io/badge/Security%20Audit-Verichains-4C35E0?style=for-the-badge" alt="Audited by Verichains"/>
+  </a>
+  <a href="./SECURITY.md">
+    <img src="https://img.shields.io/badge/Security-Report-22C55E?style=for-the-badge" alt="Security Report"/>
+  </a>
+</p>
+
+This library has been professionally audited by [Verichains](https://verichains.io).
+
+See [SECURITY.md](./SECURITY.md) for details.
+
 ## Installation
 
 ```bash
@@ -104,15 +125,29 @@ npm install
 npm run build
 ```
 
-## Links
-
-- [OPNet Website](https://opnet.org)
-- [GitHub](https://github.com/btc-vision/opnet)
-
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests: `npm test`
+5. Submit a pull request
+
+See the [pull request template](./.github/PULL_REQUEST_TEMPLATE.md) for requirements.
+
+## Reporting Issues
+
+- **Bugs**: Use the [bug report template](https://github.com/btc-vision/opnet/issues/new?template=bug_report.yml)
+- **Security**: See [SECURITY.md](./SECURITY.md) - do not open public issues for vulnerabilities
 
 ## License
 
 [Apache-2.0](LICENSE)
+
+## Links
+
+- [OPNet](https://opnet.org)
+- [Documentation](./docs/)
+- [GitHub](https://github.com/btc-vision/opnet)
+- [npm](https://www.npmjs.com/package/opnet)
+- [Verichains](https://verichains.io)

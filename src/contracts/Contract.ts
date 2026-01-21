@@ -8,7 +8,9 @@ import {
     AddressVerificator,
     BinaryReader,
     BinaryWriter,
+    ExtendedAddressMap,
     NetEvent,
+    SchnorrSignature,
 } from '@btc-vision/transaction';
 import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
@@ -575,6 +577,76 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 break;
             }
 
+            case ABIDataTypes.EXTENDED_ADDRESS: {
+                if (!value) throw new Error(`Expected value to be of type Address (${name})`);
+                if (!('equals' in (value as Address))) {
+                    throw new Error(
+                        `Expected value to be of type Address (${name}) was ${typeof value}`,
+                    );
+                }
+
+                writer.writeExtendedAddress(value as Address);
+                break;
+            }
+
+            case ABIDataTypes.EXTENDED_ADDRESS_UINT256_TUPLE: {
+                writer.writeExtendedAddressMapU256(value as ExtendedAddressMap<bigint>);
+                break;
+            }
+
+            case ABIDataTypes.SCHNORR_SIGNATURE: {
+                const sig = value as SchnorrSignature;
+                if (!sig.address || !sig.signature) {
+                    throw new Error(
+                        `Expected value to be of type SchnorrSignature with address and signature (${name})`,
+                    );
+                }
+
+                writer.writeSchnorrSignature(sig.address, sig.signature);
+                break;
+            }
+
+            case ABIDataTypes.ARRAY_OF_EXTENDED_ADDRESSES: {
+                if (!(value instanceof Array)) {
+                    throw new Error(`Expected value to be of type Array (${name})`);
+                }
+
+                writer.writeExtendedAddressArray(value as Address[]);
+                break;
+            }
+
+            case ABIDataTypes.INT8: {
+                if (typeof value !== 'number') {
+                    throw new Error(`Expected value to be of type number (${name})`);
+                }
+                writer.writeI8(value);
+                break;
+            }
+
+            case ABIDataTypes.INT16: {
+                if (typeof value !== 'number') {
+                    throw new Error(`Expected value to be of type number (${name})`);
+                }
+                writer.writeI16(value);
+                break;
+            }
+
+            case ABIDataTypes.INT32: {
+                if (typeof value !== 'number') {
+                    throw new Error(`Expected value to be of type number (${name})`);
+                }
+                writer.writeI32(value);
+                break;
+            }
+
+            case ABIDataTypes.INT64: {
+                if (typeof value !== 'bigint') {
+                    throw new Error(`Expected value to be of type bigint (${name})`);
+                }
+                writer.writeI64(value);
+                break;
+            }
+
             default: {
                 throw new Error(`Unsupported type: ${type} (${name})`);
             }
@@ -674,6 +746,38 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
                 }
                 case ABIDataTypes.ARRAY_OF_BUFFERS: {
                     decodedResult = reader.readArrayOfBuffer();
+                    break;
+                }
+                case ABIDataTypes.EXTENDED_ADDRESS: {
+                    decodedResult = reader.readExtendedAddress();
+                    break;
+                }
+                case ABIDataTypes.EXTENDED_ADDRESS_UINT256_TUPLE: {
+                    decodedResult = reader.readExtendedAddressMapU256();
+                    break;
+                }
+                case ABIDataTypes.SCHNORR_SIGNATURE: {
+                    decodedResult = reader.readSchnorrSignature();
+                    break;
+                }
+                case ABIDataTypes.ARRAY_OF_EXTENDED_ADDRESSES: {
+                    decodedResult = reader.readExtendedAddressArray();
+                    break;
+                }
+                case ABIDataTypes.INT8: {
+                    decodedResult = reader.readI8();
+                    break;
+                }
+                case ABIDataTypes.INT16: {
+                    decodedResult = reader.readI16();
+                    break;
+                }
+                case ABIDataTypes.INT32: {
+                    decodedResult = reader.readI32();
+                    break;
+                }
+                case ABIDataTypes.INT64: {
+                    decodedResult = reader.readI64();
                     break;
                 }
                 default: {
