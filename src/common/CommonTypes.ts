@@ -1,4 +1,4 @@
-import { Address, AddressMap } from '@btc-vision/transaction';
+import { Address, AddressMap, ExtendedAddressMap, SchnorrSignature } from '@btc-vision/transaction';
 
 export type PointerLike = bigint | string;
 
@@ -14,7 +14,10 @@ export type DecodedCallResult =
     | Array<boolean>
     | Array<number>
     | Array<Uint8Array>
-    | AddressMap<bigint>;
+    | Array<Address>
+    | AddressMap<bigint>
+    | ExtendedAddressMap<bigint>
+    | SchnorrSignature;
 
 export type Numeric = number | bigint;
 
