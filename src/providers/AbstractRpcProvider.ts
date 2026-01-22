@@ -11,8 +11,6 @@ import {
     RawChallenge,
 } from '@btc-vision/transaction';
 import '../serialize/BigInt.js';
-
-import { decodeRevertData } from '../utils/RevertDecoder.js';
 import { Block } from '../block/Block.js';
 import { BlockGasParameters, IBlockGasParametersInput } from '../block/BlockGasParameters.js';
 import { parseBlockWitnesses } from '../block/BlockWitness.js';
@@ -25,20 +23,12 @@ import { TransactionOutputFlags } from '../contracts/enums/TransactionFlags.js';
 import { IAccessList } from '../contracts/interfaces/IAccessList.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
-import {
-    ParsedSimulatedTransaction,
-    SimulatedTransaction,
-} from '../contracts/interfaces/SimulatedTransaction.js';
+import { ParsedSimulatedTransaction, SimulatedTransaction, } from '../contracts/interfaces/SimulatedTransaction.js';
 import { Epoch } from '../epoch/Epoch.js';
 import { EpochWithSubmissions } from '../epoch/EpochSubmission.js';
 import { EpochTemplate } from '../epoch/EpochTemplate.js';
 import { EpochSubmissionParams } from '../epoch/interfaces/EpochSubmissionParams.js';
-import {
-    RawEpoch,
-    RawEpochTemplate,
-    RawEpochWithSubmissions,
-    RawSubmittedEpoch,
-} from '../epoch/interfaces/IEpoch.js';
+import { RawEpoch, RawEpochTemplate, RawEpochWithSubmissions, RawSubmittedEpoch, } from '../epoch/interfaces/IEpoch.js';
 import { SubmittedEpoch } from '../epoch/SubmittedEpoch.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
@@ -49,6 +39,8 @@ import { ITransactionReceipt } from '../transactions/interfaces/ITransactionRece
 import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.js';
 import { TransactionBase } from '../transactions/Transaction.js';
 import { TransactionParser } from '../transactions/TransactionParser.js';
+
+import { decodeRevertData } from '../utils/RevertDecoder.js';
 import { UTXOsManager } from '../utxos/UTXOsManager.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JSONRpcMethods } from './interfaces/JSONRpcMethods.js';
@@ -1073,7 +1065,7 @@ export abstract class AbstractRpcProvider {
      * @returns {Promise<SubmittedEpoch>} The submission result
      * @example await submitEpoch({
      *     epochNumber: 123n,
-     *     targetHash: Buffer.from('00000000000000000000000000000000', 'hex'),
+     *     checksumRoot: Buffer.from('00000000000000000000000000000000', 'hex'), // 32 bytes
      *     salt: Buffer.from('0a0a0a0a0a0a00a', 'hex'),
      *     mldsaPublicKey: Address.dead(),
      *     graffiti: Buffer.from('Hello, world!'),
@@ -1085,7 +1077,7 @@ export abstract class AbstractRpcProvider {
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.SUBMIT_EPOCH, [
             {
                 epochNumber: params.epochNumber.toString(),
-                targetHash: this.bufferToHex(params.targetHash),
+                checksumRoot: this.bufferToHex(params.checksumRoot),
                 salt: this.bufferToHex(params.salt),
                 mldsaPublicKey: this.bufferToHex(params.mldsaPublicKey),
                 signature: this.bufferToHex(params.signature),
