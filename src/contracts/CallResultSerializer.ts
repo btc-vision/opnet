@@ -366,7 +366,7 @@ export class CallResultSerializer {
             verification: {
                 epochHash,
                 epochRoot,
-                checksumRoot: targetHash,
+                targetHash: targetHash,
                 targetChecksum,
                 startBlock,
                 endBlock,
