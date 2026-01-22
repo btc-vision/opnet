@@ -89,9 +89,6 @@
         "prebuild": "npm run check:circular"
     },
     "devDependencies": {
-        "@vitest/coverage-v8": "^4.0.17",
-        "@vitest/ui": "^4.0.17",
-        "vitest": "^4.0.17",
         "@babel/core": "^7.28.6",
         "@babel/plugin-proposal-class-properties": "^7.18.6",
         "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
@@ -104,6 +101,8 @@
         "@types/node": "^25.0.9",
         "@types/sha.js": "^2.4.4",
         "@types/ws": "^8.18.1",
+        "@vitest/coverage-v8": "^4.0.17",
+        "@vitest/ui": "^4.0.17",
         "assert": "^2.1.0",
         "babel-loader": "^10.0.0",
         "babel-plugin-transform-import-meta": "^2.3.3",
@@ -124,7 +123,8 @@
         "typescript-eslint": "^8.53.1",
         "vite": "^7.3.1",
         "vite-plugin-dts": "^4.5.4",
-        "vite-plugin-node-polyfills": "^0.25.0"
+        "vite-plugin-node-polyfills": "^0.25.0",
+        "vitest": "^4.0.17"
     },
     "dependencies": {
         "@bitcoinerlab/secp256k1": "^1.2.0",
