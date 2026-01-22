@@ -1,4 +1,4 @@
-import { Address } from '@btc-vision/transaction';
+import { Address, AddressMap } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { OPNetEvent } from '../../../../contracts/OPNetEvent.js';
 import { IOP_NETContract } from './IOP_NETContract.js';
@@ -21,6 +21,11 @@ export type ApprovedEvent = {
 
 export type BurnedEvent = {
     readonly from: Address;
+    readonly amount: bigint;
+};
+
+export type MintedEvent = {
+    readonly to: Address;
     readonly amount: bigint;
 };
 
@@ -174,6 +179,16 @@ export type DecreaseAllowanceBySignature = CallResult<{}, [OPNetEvent<ApprovedEv
 export type Burn = CallResult<{}, [OPNetEvent<BurnedEvent>]>;
 
 /**
+ * @description Represents the result of the mint function call.
+ */
+export type Mint = CallResult<{}, OPNetEvent<MintedEvent>[]>;
+
+/**
+ * @description Represents the result of the airdrop function call.
+ */
+export type Airdrop = CallResult<{}, OPNetEvent<MintedEvent>[]>;
+
+/**
  * @description Represents the result of the metadata function call.
  */
 export type TokenMetadata = CallResult<
@@ -280,4 +295,8 @@ export interface IOP20Contract extends IOP_NETContract {
     burn(amount: bigint): Promise<Burn>;
 
     metadata(): Promise<TokenMetadata>;
+
+    mint(address: Address, amount: bigint): Promise<Mint>;
+
+    airdrop(addressAndAmount: AddressMap<bigint>): Promise<Airdrop>;
 }

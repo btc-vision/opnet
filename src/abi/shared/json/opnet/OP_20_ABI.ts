@@ -55,6 +55,20 @@ export const OP20Events: BitcoinInterfaceAbi = [
         ],
         type: BitcoinAbiTypes.Event,
     },
+    {
+        name: 'Minted',
+        values: [
+            {
+                name: 'to',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
 ];
 
 /**
@@ -313,6 +327,33 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
             },
         ],
         type: BitcoinAbiTypes.Function,
+    },
+
+    {
+        name: 'mint',
+        type: BitcoinAbiTypes.Function,
+        inputs: [
+            {
+                name: 'address',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'amount',
+                type: ABIDataTypes.UINT256,
+            },
+        ],
+        outputs: [],
+    },
+    {
+        name: 'airdrop',
+        type: BitcoinAbiTypes.Function,
+        inputs: [
+            {
+                name: 'addressAndAmount',
+                type: ABIDataTypes.ADDRESS_UINT256_TUPLE,
+            },
+        ],
+        outputs: [],
     },
 
     // Events
