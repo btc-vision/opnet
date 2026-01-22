@@ -48,6 +48,8 @@ export interface OfflineCallResultData {
  * @category Contracts
  */
 export class CallResultSerializer {
+    private static readonly FEE_PRECISION = 1000000;
+
     /**
      * Serializes offline data to a Buffer.
      * @param {OfflineCallResultData} data - The data to serialize.
@@ -266,8 +268,6 @@ export class CallResultSerializer {
         return accessList;
     }
 
-    private static readonly FEE_PRECISION = 1000000;
-
     private static writeBitcoinFees(writer: BinaryWriter, fees: BitcoinFees): void {
         // Multiply by 1000000 to preserve 6 decimal places of precision
         writer.writeU64(BigInt(Math.round(fees.conservative * this.FEE_PRECISION)));
@@ -366,7 +366,7 @@ export class CallResultSerializer {
             verification: {
                 epochHash,
                 epochRoot,
-                targetHash,
+                checksumRoot: targetHash,
                 targetChecksum,
                 startBlock,
                 endBlock,

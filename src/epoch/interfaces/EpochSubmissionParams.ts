@@ -1,6 +1,6 @@
 export interface EpochSubmissionParams {
     readonly epochNumber: bigint;
-    readonly targetHash: Buffer;
+    readonly checksumRoot: Buffer;
     readonly salt: Buffer;
     readonly mldsaPublicKey: Buffer;
     readonly signature: Buffer;

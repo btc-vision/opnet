@@ -1,11 +1,10 @@
-import { describe, expect, it, beforeEach } from 'vitest';
-import { CallResultSerializer, NetworkName, OfflineCallResultData } from '../build/contracts/CallResultSerializer.js';
-import { CallResult } from '../build/contracts/CallResult.js';
+import type { IP2WSHAddress, RawChallenge } from '@btc-vision/transaction';
+import { describe, expect, it } from 'vitest';
 import { UTXO } from '../build/bitcoin/UTXOs.js';
 import { BitcoinFees } from '../build/block/BlockGasParameters.js';
+import { CallResult } from '../build/contracts/CallResult.js';
+import { CallResultSerializer, NetworkName, OfflineCallResultData, } from '../build/contracts/CallResultSerializer.js';
 import { IAccessList } from '../build/contracts/interfaces/IAccessList.js';
-import type { RawChallenge } from '@btc-vision/transaction';
-import type { IP2WSHAddress } from '@btc-vision/transaction';
 
 /**
  * Creates a mock RawChallenge for testing
@@ -22,7 +21,7 @@ function createMockRawChallenge(overrides: Partial<RawChallenge> = {}): RawChall
         verification: {
             epochHash: '0x' + 'e'.repeat(64),
             epochRoot: '0x' + 'f'.repeat(64),
-            targetHash: '0x' + '1'.repeat(64),
+            checksumRoot: '0x' + '1'.repeat(64),
             targetChecksum: '0x' + '2'.repeat(64),
             startBlock: '100',
             endBlock: '200',
@@ -86,7 +85,9 @@ function createMockCompressedPublicKey(): Buffer {
     return Buffer.from('02' + 'ab'.repeat(32), 'hex');
 }
 
-function createMockOfflineData(overrides: Partial<OfflineCallResultData> = {}): OfflineCallResultData {
+function createMockOfflineData(
+    overrides: Partial<OfflineCallResultData> = {},
+): OfflineCallResultData {
     return {
         calldata: Buffer.from('test-calldata'),
         to: 'bcrt1p...',
@@ -96,17 +97,14 @@ function createMockOfflineData(overrides: Partial<OfflineCallResultData> = {}): 
         result: Buffer.from('test-result'),
         accessList: {
             '0xcontract1': {
-                'slot1': 'value1',
-                'slot2': 'value2',
+                slot1: 'value1',
+                slot2: 'value2',
             },
         },
         network: NetworkName.Regtest,
         challenge: createMockRawChallenge(),
         challengeOriginalPublicKey: createMockCompressedPublicKey(),
-        utxos: [
-            createMockUTXO('tx1', 0, 10000n),
-            createMockUTXO('tx2', 1, 20000n),
-        ],
+        utxos: [createMockUTXO('tx1', 0, 10000n), createMockUTXO('tx2', 1, 20000n)],
         ...overrides,
     };
 }
@@ -373,7 +371,7 @@ describe('CallResultSerializer - Access List', () => {
     it('should preserve single contract with single slot', () => {
         const accessList: IAccessList = {
             '0xcontract1': {
-                'slot1': 'value1',
+                slot1: 'value1',
             },
         };
         const data = createMockOfflineData({ accessList });
@@ -387,16 +385,16 @@ describe('CallResultSerializer - Access List', () => {
     it('should preserve multiple contracts with multiple slots', () => {
         const accessList: IAccessList = {
             '0xcontract1': {
-                'slot1': 'value1',
-                'slot2': 'value2',
-                'slot3': 'value3',
+                slot1: 'value1',
+                slot2: 'value2',
+                slot3: 'value3',
             },
             '0xcontract2': {
-                'slotA': 'valueA',
-                'slotB': 'valueB',
+                slotA: 'valueA',
+                slotB: 'valueB',
             },
             '0xcontract3': {
-                'slotX': 'valueX',
+                slotX: 'valueX',
             },
         };
         const data = createMockOfflineData({ accessList });
@@ -467,7 +465,9 @@ describe('CallResultSerializer - Challenge', () => {
         expect(result.challenge.verification.epochHash).toBe(challenge.verification.epochHash);
         expect(result.challenge.verification.epochRoot).toBe(challenge.verification.epochRoot);
         expect(result.challenge.verification.targetHash).toBe(challenge.verification.targetHash);
-        expect(result.challenge.verification.targetChecksum).toBe(challenge.verification.targetChecksum);
+        expect(result.challenge.verification.targetChecksum).toBe(
+            challenge.verification.targetChecksum,
+        );
         expect(result.challenge.verification.startBlock).toBe(challenge.verification.startBlock);
         expect(result.challenge.verification.endBlock).toBe(challenge.verification.endBlock);
         expect(result.challenge.verification.proofs).toEqual(challenge.verification.proofs);
@@ -478,7 +478,7 @@ describe('CallResultSerializer - Challenge', () => {
             verification: {
                 epochHash: '0x1',
                 epochRoot: '0x2',
-                targetHash: '0x3',
+                checksumRoot: '0x3',
                 targetChecksum: '0x4',
                 startBlock: '1',
                 endBlock: '2',
@@ -499,7 +499,7 @@ describe('CallResultSerializer - Challenge', () => {
             verification: {
                 epochHash: '0x1',
                 epochRoot: '0x2',
-                targetHash: '0x3',
+                checksumRoot: '0x3',
                 targetChecksum: '0x4',
                 startBlock: '1',
                 endBlock: '2',
@@ -540,8 +540,12 @@ describe('CallResultSerializer - Challenge', () => {
         const result = CallResultSerializer.deserialize(buffer);
 
         expect(result.challenge.submission).toBeDefined();
-        expect(result.challenge.submission?.mldsaPublicKey).toBe(challenge.submission?.mldsaPublicKey);
-        expect(result.challenge.submission?.legacyPublicKey).toBe(challenge.submission?.legacyPublicKey);
+        expect(result.challenge.submission?.mldsaPublicKey).toBe(
+            challenge.submission?.mldsaPublicKey,
+        );
+        expect(result.challenge.submission?.legacyPublicKey).toBe(
+            challenge.submission?.legacyPublicKey,
+        );
         expect(result.challenge.submission?.solution).toBe(challenge.submission?.solution);
         expect(result.challenge.submission?.graffiti).toBe(challenge.submission?.graffiti);
         expect(result.challenge.submission?.signature).toBe(challenge.submission?.signature);
@@ -880,7 +884,7 @@ describe('CallResultSerializer - Edge Cases', () => {
     });
 
     it('should handle max U256 gas values', () => {
-        const maxU256 = (2n ** 256n) - 1n;
+        const maxU256 = 2n ** 256n - 1n;
         const data = createMockOfflineData({
             estimatedSatGas: maxU256,
             estimatedRefundedGasInSat: maxU256,
@@ -924,11 +928,11 @@ describe('CallResultSerializer - Complete Integration', () => {
             result: Buffer.from('result-data-\x00\x01\x02'),
             accessList: {
                 '0xcontract1': {
-                    'slot1': 'value1',
-                    'slot2': 'value2',
+                    slot1: 'value1',
+                    slot2: 'value2',
                 },
                 '0xcontract2': {
-                    'slotA': 'valueA',
+                    slotA: 'valueA',
                 },
             },
             bitcoinFees: {
@@ -964,9 +968,18 @@ describe('CallResultSerializer - Complete Integration', () => {
                 },
             },
             utxos: [
-                createMockUTXO('tx1', 0, 10000n, { isCSV: true, witnessScript: Buffer.from('ws1') }),
-                createMockUTXO('tx2', 1, 20000n, { isCSV: false, redeemScript: Buffer.from('rs2') }),
-                createMockUTXO('tx3', 2, 30000n, { witnessScript: Buffer.from('ws3'), redeemScript: Buffer.from('rs3') }),
+                createMockUTXO('tx1', 0, 10000n, {
+                    isCSV: true,
+                    witnessScript: Buffer.from('ws1'),
+                }),
+                createMockUTXO('tx2', 1, 20000n, {
+                    isCSV: false,
+                    redeemScript: Buffer.from('rs2'),
+                }),
+                createMockUTXO('tx3', 2, 30000n, {
+                    witnessScript: Buffer.from('ws3'),
+                    redeemScript: Buffer.from('rs3'),
+                }),
             ],
             challengeOriginalPublicKey: createMockCompressedPublicKey(),
             csvAddress: {
@@ -996,8 +1009,12 @@ describe('CallResultSerializer - Complete Integration', () => {
         expect(result.challenge.epochNumber).toBe(complexData.challenge.epochNumber);
         expect(result.challenge.graffiti).toBe(complexData.challenge.graffiti);
         expect(result.challenge.difficulty).toBe(complexData.challenge.difficulty);
-        expect(result.challenge.verification.proofs).toEqual(complexData.challenge.verification.proofs);
-        expect(result.challenge.submission?.signature).toBe(complexData.challenge.submission?.signature);
+        expect(result.challenge.verification.proofs).toEqual(
+            complexData.challenge.verification.proofs,
+        );
+        expect(result.challenge.submission?.signature).toBe(
+            complexData.challenge.submission?.signature,
+        );
 
         // UTXOs verification
         expect(result.utxos).toHaveLength(3);
@@ -1053,7 +1070,7 @@ describe('CallResultSerializer - Buffer Size', () => {
                 verification: {
                     epochHash: '',
                     epochRoot: '',
-                    targetHash: '',
+                    checksumRoot: '',
                     targetChecksum: '',
                     startBlock: '',
                     endBlock: '',
@@ -1125,7 +1142,8 @@ describe('CallResult.fromOfflineBuffer', () => {
 
     it('should restore contract addresses correctly', () => {
         const to = 'bcrt1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297';
-        const contractAddress = '0xaabbccdd11223344556677889900aabbccddeeff00112233445566778899aabb';
+        const contractAddress =
+            '0xaabbccdd11223344556677889900aabbccddeeff00112233445566778899aabb';
         const data = createMockOfflineData({ to, contractAddress });
         const buffer = CallResultSerializer.serialize(data);
 
@@ -1173,8 +1191,8 @@ describe('CallResult.fromOfflineBuffer', () => {
 
     it('should restore access list correctly', () => {
         const accessList: IAccessList = {
-            '0xcontract1': { 'slot1': 'value1', 'slot2': 'value2' },
-            '0xcontract2': { 'slotA': 'valueA' },
+            '0xcontract1': { slot1: 'value1', slot2: 'value2' },
+            '0xcontract2': { slotA: 'valueA' },
         };
         const data = createMockOfflineData({ accessList });
         const buffer = CallResultSerializer.serialize(data);
@@ -1207,7 +1225,11 @@ describe('CallResult.fromOfflineBuffer', () => {
         // Access the offline provider through internal mechanism
         // The offline provider returns the serialized UTXOs
         // This tests the getUTXOsForAmount mock
-        const provider = (callResult as unknown as { provider: { utxoManager: { getUTXOsForAmount: () => Promise<UTXO[]> } } }).provider;
+        const provider = (
+            callResult as unknown as {
+                provider: { utxoManager: { getUTXOsForAmount: () => Promise<UTXO[]> } };
+            }
+        ).provider;
         if (provider?.utxoManager?.getUTXOsForAmount) {
             const fetchedUtxos = await provider.utxoManager.getUTXOsForAmount();
             expect(fetchedUtxos).toEqual(utxos);
@@ -1308,10 +1330,7 @@ describe('CallResult.fromOfflineBuffer', () => {
                 difficulty: 9999,
             }),
             challengeOriginalPublicKey: createMockCompressedPublicKey(),
-            utxos: [
-                createMockUTXO('tx1', 0, 500000n),
-                createMockUTXO('tx2', 1, 1000000n),
-            ],
+            utxos: [createMockUTXO('tx1', 0, 500000n), createMockUTXO('tx2', 1, 1000000n)],
             csvAddress: {
                 address: 'bcrt1q-csv-complex',
                 witnessScript: Buffer.from('complex-witness-script'),
