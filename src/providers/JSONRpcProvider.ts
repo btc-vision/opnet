@@ -4,7 +4,7 @@ import { Response } from 'undici/types/fetch';
 
 import getFetcher from '../fetch/fetch.js';
 import { Fetcher, FetcherWithCleanup } from '../fetch/fetcher-type.js';
-import { jsonThreader } from '../threading/JSONThreader.js';
+import { jsonThreader, JsonValue } from '../threading/JSONThreader.js';
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSONRpcResult.js';
@@ -31,6 +31,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
         },
         private useRESTAPI: boolean = true,
         private readonly useThreadedParsing: boolean = true,
+        private readonly useThreadedHttp: boolean = false,
     ) {
         super(network);
 
@@ -66,6 +67,29 @@ export class JSONRpcProvider extends AbstractRpcProvider {
      * @returns {Promise<JsonRpcCallResult>} - The result of the call
      */
     public async _send(payload: JsonRpcPayload | JsonRpcPayload[]): Promise<JsonRpcCallResult> {
+        // Use threaded HTTP - full request runs in worker thread
+        if (this.useThreadedHttp) {
+            const fetchedData = await jsonThreader.fetch<JsonRpcResult | JsonRpcError>({
+                url: this.url,
+                payload: payload as unknown as JsonValue,
+                timeout: this.timeout,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'OPNET/1.0',
+                    Accept: 'application/json',
+                    'Accept-Charset': 'utf-8',
+                    'Accept-Language': 'en-US',
+                },
+            });
+
+            if (!fetchedData) {
+                throw new Error('No data fetched');
+            }
+
+            return [fetchedData];
+        }
+
+        // Fallback: main thread HTTP with optional threaded JSON parsing
         const controller = new AbortController();
         const { signal } = controller;
 

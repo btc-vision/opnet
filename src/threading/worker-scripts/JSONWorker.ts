@@ -4,12 +4,12 @@ export const jsonWorkerScript: WorkerScript = `
     (async () => {
         let parentPort = null;
         let isBrowser = typeof self !== 'undefined' && typeof self.onmessage !== 'undefined';
-        
+
         if (!isBrowser) {
             const wt = await import('node:worker_threads');
             parentPort = wt.parentPort;
         }
-        
+
         const send = (msg) => {
             if (isBrowser) {
                 postMessage(msg);
@@ -19,37 +19,68 @@ export const jsonWorkerScript: WorkerScript = `
                 console.error('[JsonWorker] No way to send message:', msg);
             }
         };
-        
-        const handler = (e) => {
+
+        const handler = async (e) => {
             // Node: e is the message directly
             // Browser: e is MessageEvent, e.data is the message
             const msg = isBrowser ? e.data : e;
-                        
+
             // Handle raw ArrayBuffer (shouldn't happen but defensive)
             if (msg instanceof ArrayBuffer) {
                 console.error('[JsonWorker] Received raw ArrayBuffer instead of message object. Length:', msg.byteLength);
                 return;
             }
-            
+
             const { id, op, data } = msg ?? {};
-            
+
             if (typeof id !== 'number') {
                 console.error('[JsonWorker] Invalid message, missing id. Got:', msg);
                 return;
             }
-            
+
             try {
                 let result;
                 if (op === 'parse') {
                     if (data === undefined || data === null) {
                         throw new Error('No data provided for parse operation');
                     }
-                    const text = data instanceof ArrayBuffer 
-                        ? new TextDecoder().decode(data) 
+                    const text = data instanceof ArrayBuffer
+                        ? new TextDecoder().decode(data)
                         : data;
                     result = JSON.parse(text);
                 } else if (op === 'stringify') {
                     result = JSON.stringify(data);
+                } else if (op === 'fetch') {
+                    const { url, payload, timeout, headers } = data;
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), timeout || 20000);
+
+                    try {
+                        const resp = await fetch(url, {
+                            method: 'POST',
+                            headers: headers || {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify(payload),
+                            signal: controller.signal,
+                        });
+
+                        clearTimeout(timeoutId);
+
+                        if (!resp.ok) {
+                            throw new Error('HTTP ' + resp.status + ': ' + resp.statusText);
+                        }
+
+                        const text = await resp.text();
+                        result = JSON.parse(text);
+                    } catch (err) {
+                        clearTimeout(timeoutId);
+                        if (err.name === 'AbortError') {
+                            throw new Error('Request timed out after ' + (timeout || 20000) + 'ms');
+                        }
+                        throw err;
+                    }
                 } else {
                     throw new Error('Unknown operation: ' + op);
                 }
@@ -60,7 +91,7 @@ export const jsonWorkerScript: WorkerScript = `
                 send({ id, error });
             }
         };
-        
+
         if (isBrowser) {
             self.onmessage = handler;
             self.onerror = (err) => {
