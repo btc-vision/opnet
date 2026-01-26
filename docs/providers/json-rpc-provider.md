@@ -10,6 +10,7 @@ The `JSONRpcProvider` is the primary way to communicate with OPNet nodes using H
 - [Network Configuration](#network-configuration)
 - [REST API vs JSON-RPC Mode](#rest-api-vs-json-rpc-mode)
 - [Threaded Parsing](#threaded-parsing)
+- [Threaded HTTP](#threaded-http)
 - [Complete Configuration Example](#complete-configuration-example)
 - [Provider Methods](#provider-methods)
   - [Block Methods](#block-methods)
@@ -79,7 +80,8 @@ constructor(
     timeout?: number,
     fetcherConfigurations?: Agent.Options,
     useRESTAPI?: boolean,
-    useThreadedParsing?: boolean
+    useThreadedParsing?: boolean,
+    useThreadedHttp?: boolean
 )
 ```
 
@@ -93,6 +95,7 @@ constructor(
 | `fetcherConfigurations` | `Agent.Options` | *see below* | HTTP agent configuration |
 | `useRESTAPI` | `boolean` | `true` | Use REST API format for requests |
 | `useThreadedParsing` | `boolean` | `true` | Parse responses in worker thread |
+| `useThreadedHttp` | `boolean` | `true` | Perform entire HTTP request in worker thread |
 
 ### Default Fetcher Configuration
 
@@ -222,6 +225,64 @@ const provider = new JSONRpcProvider(
 
 ---
 
+## Threaded HTTP
+
+Beyond threaded parsing, the provider can offload the **entire HTTP request** (network I/O + JSON parsing) to a worker thread, completely freeing the main thread:
+
+```typescript
+// Enable threaded HTTP (default)
+const provider = new JSONRpcProvider(
+    url,
+    network,
+    20_000,
+    undefined,
+    true,
+    true,
+    true  // useThreadedHttp = true
+);
+
+// Disable threaded HTTP (uses main thread for HTTP, optional threaded parsing)
+const provider = new JSONRpcProvider(
+    url,
+    network,
+    20_000,
+    undefined,
+    true,
+    true,
+    false  // useThreadedHttp = false
+);
+```
+
+**How it works:**
+
+```mermaid
+sequenceDiagram
+    participant Main as Main Thread
+    participant Worker as Worker Thread
+    participant Node as OPNet Node
+
+    Main->>Worker: fetch request
+    Worker->>Node: HTTP POST
+    Node-->>Worker: JSON response
+    Worker->>Worker: JSON.parse()
+    Worker-->>Main: Parsed result
+```
+
+**When to use threaded HTTP:**
+- High-frequency RPC calls
+- Real-time applications where main thread responsiveness is critical
+- Browser environments to prevent UI blocking
+- Production environments
+
+**When to disable:**
+- Debugging network issues
+- Service worker contexts (automatic fallback provided)
+- When you need fine-grained control over HTTP requests
+
+For detailed documentation on the threading system, see [Threaded HTTP](./threaded-http.md).
+
+---
+
 ## Complete Configuration Example
 
 ```typescript
@@ -238,7 +299,8 @@ const provider = new JSONRpcProvider(
         pipelining: 4,               // More pipelining
     },
     true,                            // Use REST API
-    true                             // Use threaded parsing
+    true,                            // Use threaded parsing
+    true                             // Use threaded HTTP
 );
 
 async function main() {
@@ -464,8 +526,9 @@ const provider = new JSONRpcProvider(
         connections: 256,
         pipelining: 4,
     },
-    true,
-    true
+    true,   // REST API
+    true,   // Threaded parsing
+    true    // Threaded HTTP
 );
 ```
 
@@ -474,6 +537,7 @@ const provider = new JSONRpcProvider(
 ## Next Steps
 
 - [WebSocket Provider](./websocket-provider.md) - Real-time subscriptions
+- [Threaded HTTP](./threaded-http.md) - Deep dive into worker thread HTTP
 - [Internal Caching](./internal-caching.md) - Provider caching behavior
 - [Advanced Configuration](./advanced-configuration.md) - Error handling and retry logic
 

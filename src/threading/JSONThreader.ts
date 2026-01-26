@@ -10,8 +10,15 @@ export type JsonValue =
     | JsonValue[]
     | { [key: string]: JsonValue };
 
-type JsonOp = 'parse' | 'stringify';
-type JsonInput = string | JsonValue | ArrayBuffer;
+export interface FetchRequest {
+    url: string;
+    payload: JsonValue;
+    timeout?: number;
+    headers?: Record<string, string>;
+}
+
+type JsonOp = 'parse' | 'stringify' | 'fetch';
+type JsonInput = string | JsonValue | ArrayBuffer | FetchRequest;
 type JsonOutput = string | JsonValue;
 
 declare const __IS_SERVICE_WORKER__: boolean | undefined;
@@ -73,6 +80,46 @@ export class JsonThreader extends BaseThreader<JsonOp, JsonInput, JsonOutput> {
             return result;
         }
         return (await this.run('stringify', data)) as string;
+    }
+
+    public async fetch<T = JsonValue>(request: FetchRequest): Promise<T> {
+        if (isServiceWorker) {
+            // Fallback to main thread fetch in service worker context
+            const controller = new AbortController();
+            const timeoutId = setTimeout(
+                () => controller.abort(),
+                request.timeout || 20_000,
+            );
+
+            try {
+                const resp = await fetch(request.url, {
+                    method: 'POST',
+                    headers: request.headers || {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                    },
+                    body: JSON.stringify(request.payload),
+                    signal: controller.signal,
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!resp.ok) {
+                    throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+                }
+
+                return (await resp.json()) as T;
+            } catch (err) {
+                clearTimeout(timeoutId);
+                if ((err as Error).name === 'AbortError') {
+                    throw new Error(`Request timed out after ${request.timeout || 20_000}ms`);
+                }
+                throw err;
+            }
+        }
+
+        const result = await this.run('fetch', request);
+        return result as T;
     }
 }
 

@@ -21,7 +21,7 @@ function createMockRawChallenge(overrides: Partial<RawChallenge> = {}): RawChall
         verification: {
             epochHash: '0x' + 'e'.repeat(64),
             epochRoot: '0x' + 'f'.repeat(64),
-            checksumRoot: '0x' + '1'.repeat(64),
+            targetHash: '0x' + '1'.repeat(64),
             targetChecksum: '0x' + '2'.repeat(64),
             startBlock: '100',
             endBlock: '200',
@@ -478,7 +478,7 @@ describe('CallResultSerializer - Challenge', () => {
             verification: {
                 epochHash: '0x1',
                 epochRoot: '0x2',
-                checksumRoot: '0x3',
+                targetHash: '0x3',
                 targetChecksum: '0x4',
                 startBlock: '1',
                 endBlock: '2',
@@ -499,7 +499,7 @@ describe('CallResultSerializer - Challenge', () => {
             verification: {
                 epochHash: '0x1',
                 epochRoot: '0x2',
-                checksumRoot: '0x3',
+                targetHash: '0x3',
                 targetChecksum: '0x4',
                 startBlock: '1',
                 endBlock: '2',
@@ -1070,7 +1070,7 @@ describe('CallResultSerializer - Buffer Size', () => {
                 verification: {
                     epochHash: '',
                     epochRoot: '',
-                    checksumRoot: '',
+                    targetHash: '',
                     targetChecksum: '',
                     startBlock: '',
                     endBlock: '',
@@ -1150,7 +1150,7 @@ describe('CallResult.fromOfflineBuffer', () => {
         const callResult = CallResult.fromOfflineBuffer(buffer);
 
         expect(callResult.to).toBe(to);
-        expect(callResult.address.toHex()).toBe(contractAddress);
+        expect(callResult.address?.toHex()).toBe(contractAddress);
     });
 
     it('should restore gas estimates correctly', () => {
@@ -1342,7 +1342,7 @@ describe('CallResult.fromOfflineBuffer', () => {
 
         expect(callResult.calldata).toEqual(complexData.calldata);
         expect(callResult.to).toBe(complexData.to);
-        expect(callResult.address.toHex()).toBe(complexData.contractAddress);
+        expect(callResult.address?.toHex()).toBe(complexData.contractAddress);
         expect(callResult.estimatedSatGas).toBe(complexData.estimatedSatGas);
         expect(callResult.estimatedRefundedGasInSat).toBe(complexData.estimatedRefundedGasInSat);
         expect(callResult.accessList).toEqual(complexData.accessList);
