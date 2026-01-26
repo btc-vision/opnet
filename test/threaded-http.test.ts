@@ -1,15 +1,13 @@
-import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
-import { JsonThreader } from '../src/threading/JSONThreader.js';
-import type { FetchRequest } from '../src/threading/JSONThreader.js';
 import fs from 'fs';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { FetchRequest } from '../src/threading/JSONThreader.js';
+import { JsonThreader } from '../src/threading/JSONThreader.js';
 
 describe('Threaded HTTP - Worker Script Analysis', () => {
     let workerScript: string;
 
     beforeEach(async () => {
-        const { jsonWorkerScript } = await import(
-            '../src/threading/worker-scripts/JSONWorker.js'
-        );
+        const { jsonWorkerScript } = await import('../src/threading/worker-scripts/JSONWorker.js');
         workerScript = jsonWorkerScript;
     });
 
@@ -145,7 +143,9 @@ describe('Threaded HTTP - JSONThreader.fetch() Method', () => {
         });
 
         it('should have fetch method with generic return type', () => {
-            expect(source).toContain('public async fetch<T = JsonValue>(request: FetchRequest): Promise<T>');
+            expect(source).toContain(
+                'public async fetch<T = JsonValue>(request: FetchRequest): Promise<T>',
+            );
         });
 
         it('should have service worker fallback', () => {
@@ -204,8 +204,8 @@ describe('Threaded HTTP - JSONRpcProvider Integration', () => {
             expect(source).toContain('useThreadedHttp: boolean');
         });
 
-        it('should default useThreadedHttp to true', () => {
-            expect(source).toContain('useThreadedHttp: boolean = true');
+        it('should default useThreadedHttp to false', () => {
+            expect(source).toContain('useThreadedHttp: boolean = false');
         });
     });
 
@@ -237,7 +237,9 @@ describe('Threaded HTTP - JSONRpcProvider Integration', () => {
         });
 
         it('should have fallback when useThreadedHttp is false', () => {
-            expect(source).toContain('// Fallback: main thread HTTP with optional threaded JSON parsing');
+            expect(source).toContain(
+                '// Fallback: main thread HTTP with optional threaded JSON parsing',
+            );
         });
 
         it('should keep original fetcher logic in fallback', () => {
@@ -247,7 +249,7 @@ describe('Threaded HTTP - JSONRpcProvider Integration', () => {
 
     describe('imports', () => {
         it('should import JsonValue from JSONThreader', () => {
-            expect(source).toContain("import { jsonThreader, JsonValue }");
+            expect(source).toContain('import { jsonThreader, JsonValue }');
         });
     });
 });
