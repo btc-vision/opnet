@@ -1,5 +1,22 @@
 # Changelog
 
+## [v1.8.1-beta.4] - 2026-01-26
+
+### Features
+
+- Upgrade/deps add http threader ([#121](https://github.com/btc-vision/opnet/pull/121)) by @BlobMaster41
+
+### Bug Fixes
+
+- Upgrade/deps add http threader ([#121](https://github.com/btc-vision/opnet/pull/121)) by @BlobMaster41
+
+### Documentation
+
+- Upgrade/deps add http threader ([#121](https://github.com/btc-vision/opnet/pull/121)) by @BlobMaster41
+
+
+
+
 ## [v1.8.1-beta.3] - 2026-01-22
 
 - No changes
