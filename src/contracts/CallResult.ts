@@ -357,7 +357,7 @@ export class CallResult<
             network: interactionParams.network,
             optionalInputs: interactionParams.extraInputs || [],
             optionalOutputs: interactionParams.extraOutputs || [],
-            signer: interactionParams.signer as Signer | ECPairInterface,
+            signer: interactionParams.signer,
             challenge: challenge,
             note: interactionParams.note,
             anchor: interactionParams.anchor || false,
