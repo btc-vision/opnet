@@ -25,7 +25,7 @@ export class TransactionOutput {
     public readonly index: number;
 
     public readonly scriptPubKey: ScriptPubKey;
-    public readonly script: Array<number | Buffer> | null;
+    public readonly script: Array<number | Uint8Array> | null;
 
     constructor(data: ITransactionOutput) {
         this.value = this.convertValue(data.value);

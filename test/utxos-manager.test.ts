@@ -81,8 +81,8 @@ function createMockProvider(): IProviderForUTXO & {
     mockCallMultiplePayloads: ReturnType<typeof vi.fn>;
     mockBuildJsonRpcPayload: ReturnType<typeof vi.fn>;
 } {
-    const mockCallPayloadSingle = vi.fn<[JsonRpcPayload], Promise<JsonRpcResult>>();
-    const mockCallMultiplePayloads = vi.fn<[JsonRpcPayload[]], Promise<JsonRpcCallResult>>();
+    const mockCallPayloadSingle = vi.fn<(payload: JsonRpcPayload) => Promise<JsonRpcResult>>();
+    const mockCallMultiplePayloads = vi.fn<(payloads: JsonRpcPayload[]) => Promise<JsonRpcCallResult>>();
     const mockBuildJsonRpcPayload = vi.fn((method, params) => ({
         method,
         params,

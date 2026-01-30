@@ -14,7 +14,7 @@ import {
     SupportedTransactionVersion,
     TransactionFactory,
 } from '@btc-vision/transaction';
-import { ECPairInterface } from 'ecpair';
+import { UniversalSigner } from '@btc-vision/ecpair';
 import { UTXO } from '../bitcoin/UTXOs.js';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
 import { decodeRevertData } from '../utils/RevertDecoder.js';
@@ -30,7 +30,7 @@ import { ContractDecodedObjectResult, DecodedOutput } from './types/ContractType
 const factory = new TransactionFactory();
 
 export interface TransactionParameters {
-    readonly signer: Signer | ECPairInterface | null;
+    readonly signer: Signer | UniversalSigner | null;
     readonly mldsaSigner: QuantumBIP32Interface | null;
 
     readonly refundTo: string;
@@ -72,7 +72,7 @@ export interface UTXOTrackingInfo {
     readonly refundAddress: string;
     readonly refundToAddress: string;
     readonly csvAddress?: IP2WSHAddress;
-    readonly p2wdaAddress?: { readonly address: string; readonly witnessScript: Buffer };
+    readonly p2wdaAddress?: { readonly address: string; readonly witnessScript: Uint8Array };
     readonly isP2WDA: boolean;
 }
 
@@ -209,7 +209,7 @@ export class CallResult<
         // Use the original public key (33 bytes) instead of the tweaked key (32 bytes)
         const challengeWithOriginalKey = {
             ...data.challenge,
-            legacyPublicKey: '0x' + data.challengeOriginalPublicKey.toString('hex'),
+            legacyPublicKey: '0x' + Buffer.from(data.challengeOriginalPublicKey).toString('hex'),
         };
         const challengeSolution = new ChallengeSolution(challengeWithOriginalKey);
 
@@ -345,7 +345,8 @@ export class CallResult<
         const priorityFee: bigint = interactionParams.priorityFee || 0n;
         const challenge: ChallengeSolution =
             interactionParams.challenge || (await this.#provider.getChallenge());
-        const params: IInteractionParameters | InteractionParametersWithoutSigner = {
+
+        const sharedParams = {
             contract: this.address.toHex(),
             calldata: this.calldata,
             priorityFee: priorityFee,
@@ -357,15 +358,22 @@ export class CallResult<
             network: interactionParams.network,
             optionalInputs: interactionParams.extraInputs || [],
             optionalOutputs: interactionParams.extraOutputs || [],
-            signer: interactionParams.signer,
-            challenge: challenge,
             note: interactionParams.note,
             anchor: interactionParams.anchor || false,
             txVersion: interactionParams.txVersion || 2,
-            mldsaSigner: interactionParams.mldsaSigner,
             linkMLDSAPublicKeyToAddress: interactionParams.linkMLDSAPublicKeyToAddress ?? true,
             revealMLDSAPublicKey: interactionParams.revealMLDSAPublicKey ?? false,
         };
+
+        const params =
+            interactionParams.signer !== null
+                ? {
+                      ...sharedParams,
+                      signer: interactionParams.signer,
+                      challenge: challenge,
+                      mldsaSigner: interactionParams.mldsaSigner,
+                  }
+                : sharedParams;
 
         const transaction = await factory.signInteraction(params);
 
@@ -627,7 +635,7 @@ export class CallResult<
      * @param {Buffer} witnessScript - The witness script to attach.
      * @returns {UTXO} The cloned UTXO with witness script.
      */
-    #cloneUTXOWithWitnessScript(utxo: UTXO, witnessScript: Buffer): UTXO {
+    #cloneUTXOWithWitnessScript(utxo: UTXO, witnessScript: Uint8Array): UTXO {
         const clone = Object.assign(
             Object.create(Object.getPrototypeOf(utxo) as object) as UTXO,
             utxo,
@@ -727,7 +735,7 @@ export class CallResult<
         const feeRate = interactionParams.feeRate;
         const priority = interactionParams.priorityFee ?? 0n;
         const addedOuts = interactionParams.extraOutputs ?? [];
-        const totalOuts = BigInt(addedOuts.reduce((s, o) => s + o.value, 0));
+        const totalOuts = BigInt(addedOuts.reduce((s, o) => s + Number(o.value), 0));
 
         const gasFee = this.bigintMax(this.estimatedSatGas, interactionParams.minGas ?? 0n);
         const preWant =

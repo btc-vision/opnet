@@ -37,7 +37,7 @@ export interface OfflineCallResultData {
     readonly estimatedGas?: bigint;
     readonly refundedGas?: bigint;
     readonly challenge: RawChallenge;
-    readonly challengeOriginalPublicKey: Buffer;
+    readonly challengeOriginalPublicKey: Uint8Array;
     readonly utxos: UTXO[];
     readonly csvAddress?: IP2WSHAddress;
 }

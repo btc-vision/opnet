@@ -10,10 +10,10 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
     public readonly outputIndex: number;
     public readonly value: bigint;
     public readonly scriptPubKey: ScriptPubKey;
-    public readonly nonWitnessUtxo?: Buffer | string;
+    public readonly nonWitnessUtxo?: Uint8Array | string;
 
-    public witnessScript?: Buffer | string;
-    public redeemScript?: Buffer | string;
+    public witnessScript?: Uint8Array | string;
+    public redeemScript?: Uint8Array | string;
 
     public isCSV?: boolean;
 
