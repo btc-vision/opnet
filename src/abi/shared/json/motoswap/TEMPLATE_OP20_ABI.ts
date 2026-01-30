@@ -1,8 +1,8 @@
 import { ABIDataTypes } from '@btc-vision/transaction';
 import { BitcoinAbiTypes } from '../../../BitcoinAbiTypes.js';
 import { BitcoinInterfaceAbi } from '../../../interfaces/BitcoinInterfaceAbi.js';
-import { OP_NET_ABI } from '../opnet/OP_NET_ABI.js';
 import { OP_20_ABI } from '../opnet/OP_20_ABI.js';
+import { OP_NET_ABI } from '../opnet/OP_NET_ABI.js';
 
 export const TemplateOP20Events: BitcoinInterfaceAbi = [
     {

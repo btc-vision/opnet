@@ -1,12 +1,11 @@
 import { QuantumBIP32Interface } from '@btc-vision/bip32';
 import { Network, networks, PsbtOutputExtended, Signer } from '@btc-vision/bitcoin';
+import { UniversalSigner } from '@btc-vision/ecpair';
 import {
     Address,
     BinaryReader,
     BufferHelper,
     ChallengeSolution,
-    IInteractionParameters,
-    InteractionParametersWithoutSigner,
     IP2WSHAddress,
     LoadedStorage,
     NetEvent,
@@ -14,7 +13,6 @@ import {
     SupportedTransactionVersion,
     TransactionFactory,
 } from '@btc-vision/transaction';
-import { UniversalSigner } from '@btc-vision/ecpair';
 import { UTXO } from '../bitcoin/UTXOs.js';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
 import { decodeRevertData } from '../utils/RevertDecoder.js';
