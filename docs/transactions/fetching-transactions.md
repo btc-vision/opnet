@@ -115,7 +115,7 @@ interface TransactionBase {
     pow?: ProofOfWorkChallenge;
 
     // Receipt data (inherited from TransactionReceipt)
-    receipt?: Buffer;
+    receipt?: Uint8Array;
     receiptProofs: string[];
     events: ContractEvents;
     revert?: string;
@@ -131,17 +131,17 @@ Contract interaction transactions have additional properties:
 ```typescript
 interface InteractionTransaction extends TransactionBase {
     // Contract details
-    calldata?: Buffer;           // Function calldata
+    calldata?: Uint8Array;       // Function calldata
     contractAddress?: string;    // Target contract
     contractPublicKey: Address;  // Contract's public key
 
     // Sender details
     from?: Address;              // Sender address (taproot)
-    senderPubKeyHash: Buffer;    // Sender's public key hash
-    interactionPubKey: Buffer;   // Interaction public key
+    senderPubKeyHash: Uint8Array; // Sender's public key hash
+    interactionPubKey: Uint8Array; // Interaction public key
 
     // Metadata
-    contractSecret: Buffer;      // Contract secret
+    contractSecret: Uint8Array;  // Contract secret
     wasCompressed: boolean;      // Was calldata compressed
 }
 ```
@@ -158,7 +158,7 @@ if (tx.OPNetType === OPNetTransactionTypes.Interaction) {
 
     console.log('Contract:', interactionTx.contractAddress);
     console.log('From:', interactionTx.from?.toHex());
-    console.log('Calldata:', interactionTx.calldata?.toString('hex'));
+    console.log('Calldata:', toHex(interactionTx.calldata ?? new Uint8Array(0)));
     console.log('Was compressed:', interactionTx.wasCompressed);
 }
 ```
@@ -174,14 +174,14 @@ interface DeploymentTransaction extends TransactionBase {
     // Deployment details
     contractAddress: string;     // Deployed contract address
     contractPublicKey: Address;  // Contract's public key
-    bytecode: Buffer;            // Contract bytecode
+    bytecode: Uint8Array;        // Contract bytecode
 
     // Deployer details
     from?: Address;              // Deployer address
-    deployerPubKeyHash: Buffer;  // Deployer's public key hash
+    deployerPubKeyHash: Uint8Array; // Deployer's public key hash
 
     // Initialization
-    constructorCalldata?: Buffer; // Constructor arguments
+    constructorCalldata?: Uint8Array; // Constructor arguments
 }
 ```
 
@@ -211,9 +211,9 @@ if (tx.OPNetType === OPNetTransactionTypes.Deployment) {
 interface TransactionInput {
     txId: string;           // Source transaction ID
     outputIndex: number;    // Source output index
-    scriptSig: Buffer;      // Script signature
+    scriptSig: Uint8Array;  // Script signature
     sequence: number;       // Sequence number
-    witness: Buffer[];      // Witness data
+    witness: Uint8Array[];  // Witness data
     flags: number;          // Input flags
 }
 ```
@@ -223,7 +223,7 @@ interface TransactionInput {
 ```typescript
 interface TransactionOutput {
     value: bigint;          // Output value in satoshis
-    scriptPubKey: Buffer;   // Output script
+    scriptPubKey: Uint8Array; // Output script
     index: number;          // Output index
     flags: number;          // Output flags
 }

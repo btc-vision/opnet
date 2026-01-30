@@ -125,7 +125,7 @@ const decimals = await token.decimals();
 console.log('Decimals:', decimals.properties.decimals);  // number
 
 // Transfer result (simulation)
-const transfer = await token.transfer(recipient, amount, Buffer.alloc(0));
+const transfer = await token.transfer(recipient, amount, new Uint8Array(0));
 console.log('Success:', transfer.properties.success);  // boolean
 ```
 
@@ -149,7 +149,7 @@ console.log('Success:', transfer.properties.success);  // boolean
 Always check for reverts before proceeding:
 
 ```typescript
-const result = await token.transfer(recipient, amount, Buffer.alloc(0));
+const result = await token.transfer(recipient, amount, new Uint8Array(0));
 
 if (result.revert) {
     // Call would fail
@@ -217,27 +217,27 @@ token.setSimulatedHeight(undefined);
 Access lists track which storage slots a call reads/writes:
 
 ```typescript
-const result = await token.transfer(recipient, amount, Buffer.alloc(0));
+const result = await token.transfer(recipient, amount, new Uint8Array(0));
 
 // Access list shows storage accessed
 console.log('Access list:', result.accessList);
 
 // Use access list to optimize future calls
 token.setAccessList(result.accessList);
-const optimizedResult = await token.transfer(recipient, amount, Buffer.alloc(0));
+const optimizedResult = await token.transfer(recipient, amount, new Uint8Array(0));
 ```
 
 ### Using Access Lists for Optimization
 
 ```typescript
 // First call discovers access patterns
-const firstCall = await token.transfer(recipient, amount, Buffer.alloc(0));
+const firstCall = await token.transfer(recipient, amount, new Uint8Array(0));
 
 // Set access list for subsequent calls
 token.setAccessList(firstCall.accessList);
 
 // Subsequent calls can be more efficient
-const secondCall = await token.transfer(recipient2, amount2, Buffer.alloc(0));
+const secondCall = await token.transfer(recipient2, amount2, new Uint8Array(0));
 ```
 
 ---
@@ -255,19 +255,19 @@ interface ParsedSimulatedTransaction {
 }
 
 interface StrippedTransactionInput {
-    readonly txId: Buffer;
+    readonly txId: Uint8Array;
     readonly outputIndex: number;
-    readonly scriptSig: Buffer;
-    readonly witnesses: Buffer[];
+    readonly scriptSig: Uint8Array;
+    readonly witnesses: Uint8Array[];
     readonly flags: number;
-    readonly coinbase?: Buffer;
+    readonly coinbase?: Uint8Array;
 }
 
 interface StrippedTransactionOutput {
     readonly value: bigint;
     readonly index: number;          // IMPORTANT: index 0 is reserved
     readonly flags: number;
-    readonly scriptPubKey?: Buffer;
+    readonly scriptPubKey?: Uint8Array;
     readonly to?: string;            // P2OP/P2TR address string
 }
 ```
@@ -357,13 +357,14 @@ For contracts that verify specific input transactions:
 
 ```typescript
 import { TransactionInputFlags } from 'opnet';
+import { fromHex } from '@btc-vision/bitcoin';
 
 contract.setTransactionDetails({
     inputs: [
         {
-            txId: Buffer.from('previous_tx_hash_hex', 'hex'),
+            txId: fromHex('previous_tx_hash_hex'),
             outputIndex: 0,
-            scriptSig: Buffer.alloc(0),
+            scriptSig: new Uint8Array(0),
             witnesses: [],
             flags: 0,
         },
@@ -388,6 +389,7 @@ For non-standard outputs:
 
 ```typescript
 import { TransactionOutputFlags } from 'opnet';
+import { fromHex } from '@btc-vision/bitcoin';
 
 contract.setTransactionDetails({
     inputs: [],
@@ -395,7 +397,7 @@ contract.setTransactionDetails({
         {
             value: 10000n,
             index: 1,
-            scriptPubKey: Buffer.from('76a914...88ac', 'hex'),  // P2PKH script
+            scriptPubKey: fromHex('76a914...88ac'),  // P2PKH script
             to: undefined,
             flags: TransactionOutputFlags.hasScriptPubKey,
         },
@@ -514,7 +516,7 @@ async function safeTransfer(
     }
 
     // Simulate transfer
-    const transfer = await token.transfer(recipient, amount, Buffer.alloc(0));
+    const transfer = await token.transfer(recipient, amount, new Uint8Array(0));
 
     if (transfer.revert) {
         console.error('Transfer would fail:', transfer.revert);
@@ -638,7 +640,7 @@ async function getBalance(token: IOP20Contract, address: Address): Promise<bigin
 
 ```typescript
 // Always simulate first
-const simulation = await contract.transfer(to, amount, Buffer.alloc(0));
+const simulation = await contract.transfer(to, amount, new Uint8Array(0));
 
 // Only send if simulation succeeds
 if (!simulation.revert) {

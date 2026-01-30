@@ -115,7 +115,7 @@ decodeEvent(event: NetEvent): OPNetEvent<ContractDecodedObjectResult>
 Encode calldata for a contract method.
 
 ```typescript
-encodeCalldata(method: string, args: unknown[]): Buffer
+encodeCalldata(method: string, args: unknown[]): Uint8Array
 ```
 
 ---
@@ -146,7 +146,7 @@ class CallResult<
 | `refundedGas` | `bigint \| undefined` | Gas that would be refunded |
 | `estimatedSatGas` | `bigint` | Estimated gas in satoshis |
 | `estimatedRefundedGasInSat` | `bigint` | Refunded gas in satoshis |
-| `calldata` | `Buffer \| undefined` | Encoded calldata |
+| `calldata` | `Uint8Array \| undefined` | Encoded calldata |
 | `to` | `string \| undefined` | Target contract address string |
 | `address` | `Address \| undefined` | Target contract Address object |
 | `fromAddress` | `Address \| undefined` | Sender address |
@@ -223,7 +223,7 @@ Parameters for sending transactions.
 ```typescript
 interface TransactionParameters {
     // Signers
-    readonly signer: Signer | ECPairInterface | null;
+    readonly signer: Signer | UniversalSigner | null;
     readonly mldsaSigner: QuantumBIP32Interface | null;
 
     // Addresses
@@ -248,7 +248,7 @@ interface TransactionParameters {
     readonly minGas?: bigint;            // Minimum gas
 
     // Options
-    readonly note?: string | Buffer;     // Transaction note
+    readonly note?: string | Uint8Array;     // Transaction note
     // p2wda?: boolean;                  // UNUSED - internal only
     readonly txVersion?: SupportedTransactionVersion;  // TX version
     readonly anchor?: boolean;           // Anchor transaction
@@ -379,7 +379,7 @@ if (balance.revert) {
 
 ```typescript
 // First simulate the call
-const simulation = await contract.transfer(recipient, amount, Buffer.alloc(0));
+const simulation = await contract.transfer(recipient, amount, new Uint8Array(0));
 
 // Check for revert before sending
 if (simulation.revert) {

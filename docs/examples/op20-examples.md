@@ -87,7 +87,7 @@ const transferCalldata = token.encodeCalldata('transfer', [
     1000000000n,                   // amount
 ]);
 
-console.log('Calldata:', transferCalldata.toString('hex'));
+console.log('Calldata:', toHex(transferCalldata));
 
 // Encode approve calldata
 const approveCalldata = token.encodeCalldata('approve', [
@@ -110,7 +110,7 @@ async function transferTokens(
     wallet: Wallet
 ): Promise<string> {
     // Simulate first
-    const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
+    const simulation = await token.transfer(recipient, amount, new Uint8Array(0));
 
     if (simulation.revert) {
         throw new Error(`Transfer would fail: ${simulation.revert}`);
@@ -285,7 +285,7 @@ async function airdropTokens(
 
     for (const recipient of recipients) {
         // Simulate transfer
-        const simulation = await token.transfer(recipient.address, recipient.amount, Buffer.alloc(0));
+        const simulation = await token.transfer(recipient.address, recipient.amount, new Uint8Array(0));
 
         if (simulation.revert) {
             console.error(`Skip ${recipient.address.toHex()}: ${simulation.revert}`);
@@ -434,7 +434,7 @@ class TokenService {
     }
 
     async transfer(to: Address, amount: bigint): Promise<string> {
-        const simulation = await this.token.transfer(to, amount, Buffer.alloc(0));
+        const simulation = await this.token.transfer(to, amount, new Uint8Array(0));
 
         if (simulation.revert) {
             throw new Error(`Transfer failed: ${simulation.revert}`);

@@ -25,15 +25,15 @@ flowchart TD
 
 ```typescript
 import { JSONRpcProvider, EpochSubmissionParams } from 'opnet';
-import { networks, Address } from '@btc-vision/bitcoin';
+import { networks, Address, fromHex } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
 const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
 
 // Prepare submission parameters
 const submission: EpochSubmissionParams = {
-    salt: Buffer.from('your-32-byte-salt-here...', 'hex'),
-    solution: Buffer.from('your-sha1-solution...', 'hex'),
+    salt: fromHex('your-32-byte-salt-here...'),
+    solution: fromHex('your-sha1-solution...'),
     publicKey: Address.fromString('bc1p...your-address...'),
 };
 
@@ -53,7 +53,7 @@ const submissionWithGraffiti: EpochSubmissionParams = {
     salt: solutionSalt,
     solution: solutionHash,
     publicKey: minerAddress,
-    graffiti: Buffer.from('Mined by MyPool v1.0', 'utf8'),
+    graffiti: new TextEncoder().encode('Mined by MyPool v1.0'),
 };
 
 const result = await provider.submitEpoch(submissionWithGraffiti);
@@ -73,10 +73,10 @@ async submitEpoch(
 
 ```typescript
 interface EpochSubmissionParams {
-    salt: Buffer;           // 32-byte salt used in collision
-    solution: Buffer;       // SHA-1 collision result
+    salt: Uint8Array;           // 32-byte salt used in collision
+    solution: Uint8Array;       // SHA-1 collision result
     publicKey: Address;     // Miner's public key address
-    graffiti?: Buffer;      // Optional message (max 32 bytes)
+    graffiti?: Uint8Array;      // Optional message (max 32 bytes)
 }
 ```
 
@@ -192,10 +192,10 @@ import { createHash } from 'crypto';
 
 class EpochMiner {
     private provider: JSONRpcProvider;
-    private mldsaPublicKey: Buffer;
+    private mldsaPublicKey: Uint8Array;
     private minDifficulty: number = 20;
 
-    constructor(provider: JSONRpcProvider, mldsaPublicKey: Buffer) {
+    constructor(provider: JSONRpcProvider, mldsaPublicKey: Uint8Array) {
         this.provider = provider;
         this.mldsaPublicKey = mldsaPublicKey;
     }
@@ -227,25 +227,25 @@ class EpochMiner {
         };
 
         if (graffiti) {
-            params.graffiti = Buffer.from(graffiti.slice(0, 32), 'utf8');
+            params.graffiti = new TextEncoder().encode(graffiti.slice(0, 32));
         }
 
         return this.provider.submitEpoch(params);
     }
 
     private calculatePreimage(
-        checksumRoot: Buffer,
-        salt: Buffer
-    ): Buffer {
-        const target32 = Buffer.alloc(32);
-        const pubKey32 = Buffer.alloc(32);
-        const salt32 = Buffer.alloc(32);
+        checksumRoot: Uint8Array,
+        salt: Uint8Array
+    ): Uint8Array {
+        const target32 = new Uint8Array(32);
+        const pubKey32 = new Uint8Array(32);
+        const salt32 = new Uint8Array(32);
 
-        checksumRoot.copy(target32, 0, 0, Math.min(32, checksumRoot.length));
-        this.mldsaPublicKey.copy(pubKey32, 0, 0, Math.min(32, this.mldsaPublicKey.length));
-        salt.copy(salt32, 0, 0, Math.min(32, salt.length));
+        target32.set(checksumRoot.subarray(0, Math.min(32, checksumRoot.length)));
+        pubKey32.set(this.mldsaPublicKey.subarray(0, Math.min(32, this.mldsaPublicKey.length)));
+        salt32.set(salt.subarray(0, Math.min(32, salt.length)));
 
-        const preimage = Buffer.alloc(32);
+        const preimage = new Uint8Array(32);
         for (let i = 0; i < 32; i++) {
             preimage[i] = target32[i] ^ pubKey32[i] ^ salt32[i];
         }
@@ -253,7 +253,7 @@ class EpochMiner {
         return preimage;
     }
 
-    private countMatchingBits(hash1: Buffer, hash2: Buffer): number {
+    private countMatchingBits(hash1: Uint8Array, hash2: Uint8Array): number {
         let matchingBits = 0;
         const minLength = Math.min(hash1.length, hash2.length);
 
@@ -275,13 +275,13 @@ class EpochMiner {
     }
 
     private async findSolution(
-        checksumRoot: Buffer,
-        targetHash: Buffer
-    ): Promise<{ salt: Buffer; matchingBits: number } | null> {
+        checksumRoot: Uint8Array,
+        targetHash: Uint8Array
+    ): Promise<{ salt: Uint8Array; matchingBits: number } | null> {
         const maxAttempts = 10000000;
 
         for (let i = 0; i < maxAttempts; i++) {
-            const salt = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
+            const salt = crypto.getRandomValues(new Uint8Array(32));
 
             const preimage = this.calculatePreimage(checksumRoot, salt);
             const hash = createHash('sha1').update(preimage).digest();
@@ -296,10 +296,10 @@ class EpochMiner {
         return null;
     }
 
-    private signSolution(salt: Buffer): Buffer {
+    private signSolution(salt: Uint8Array): Uint8Array {
         // Sign with ML-DSA private key
         // Implementation depends on your ML-DSA library
-        return Buffer.alloc(0); // Placeholder
+        return new Uint8Array(0); // Placeholder
     }
 }
 
@@ -321,11 +321,11 @@ if (result?.status === 'success') {
 ```typescript
 class CompetitiveMiner {
     private provider: JSONRpcProvider;
-    private mldsaPublicKey: Buffer;
+    private mldsaPublicKey: Uint8Array;
     private isRunning: boolean = false;
     private minDifficulty: number = 20;
 
-    constructor(provider: JSONRpcProvider, mldsaPublicKey: Buffer) {
+    constructor(provider: JSONRpcProvider, mldsaPublicKey: Uint8Array) {
         this.provider = provider;
         this.mldsaPublicKey = mldsaPublicKey;
     }
@@ -359,7 +359,7 @@ class CompetitiveMiner {
                         mldsaPublicKey: this.mldsaPublicKey,
                         signature: this.signSolution(solution.salt),
                         graffiti: graffiti
-                            ? Buffer.from(graffiti.slice(0, 32), 'utf8')
+                            ? new TextEncoder().encode(graffiti.slice(0, 32))
                             : undefined,
                     };
 
@@ -385,16 +385,16 @@ class CompetitiveMiner {
         this.isRunning = false;
     }
 
-    private calculatePreimage(checksumRoot: Buffer, salt: Buffer): Buffer {
-        const target32 = Buffer.alloc(32);
-        const pubKey32 = Buffer.alloc(32);
-        const salt32 = Buffer.alloc(32);
+    private calculatePreimage(checksumRoot: Uint8Array, salt: Uint8Array): Uint8Array {
+        const target32 = new Uint8Array(32);
+        const pubKey32 = new Uint8Array(32);
+        const salt32 = new Uint8Array(32);
 
-        checksumRoot.copy(target32, 0, 0, Math.min(32, checksumRoot.length));
-        this.mldsaPublicKey.copy(pubKey32, 0, 0, Math.min(32, this.mldsaPublicKey.length));
-        salt.copy(salt32, 0, 0, Math.min(32, salt.length));
+        target32.set(checksumRoot.subarray(0, Math.min(32, checksumRoot.length)));
+        pubKey32.set(this.mldsaPublicKey.subarray(0, Math.min(32, this.mldsaPublicKey.length)));
+        salt32.set(salt.subarray(0, Math.min(32, salt.length)));
 
-        const preimage = Buffer.alloc(32);
+        const preimage = new Uint8Array(32);
         for (let i = 0; i < 32; i++) {
             preimage[i] = target32[i] ^ pubKey32[i] ^ salt32[i];
         }
@@ -402,7 +402,7 @@ class CompetitiveMiner {
         return preimage;
     }
 
-    private countMatchingBits(hash1: Buffer, hash2: Buffer): number {
+    private countMatchingBits(hash1: Uint8Array, hash2: Uint8Array): number {
         let matchingBits = 0;
         const minLength = Math.min(hash1.length, hash2.length);
 
@@ -424,12 +424,12 @@ class CompetitiveMiner {
     }
 
     private async mineBatch(
-        checksumRoot: Buffer,
-        targetHash: Buffer,
+        checksumRoot: Uint8Array,
+        targetHash: Uint8Array,
         batchSize: number
-    ): Promise<{ salt: Buffer; matchingBits: number } | null> {
+    ): Promise<{ salt: Uint8Array; matchingBits: number } | null> {
         for (let i = 0; i < batchSize; i++) {
-            const salt = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
+            const salt = crypto.getRandomValues(new Uint8Array(32));
 
             const preimage = this.calculatePreimage(checksumRoot, salt);
             const hash = createHash('sha1').update(preimage).digest();
@@ -443,9 +443,9 @@ class CompetitiveMiner {
         return null;
     }
 
-    private signSolution(salt: Buffer): Buffer {
+    private signSolution(salt: Uint8Array): Uint8Array {
         // Sign with ML-DSA private key
-        return Buffer.alloc(0); // Placeholder
+        return new Uint8Array(0); // Placeholder
     }
 }
 
@@ -596,8 +596,8 @@ class EpochSubmissionService {
     }
 
     async submit(
-        salt: Buffer,
-        solution: Buffer,
+        salt: Uint8Array,
+        solution: Uint8Array,
         publicKey: Address,
         graffiti?: string
     ): Promise<SubmittedEpoch> {
@@ -608,7 +608,7 @@ class EpochSubmissionService {
         };
 
         if (graffiti) {
-            params.graffiti = Buffer.from(graffiti.slice(0, 32), 'utf8');
+            params.graffiti = new TextEncoder().encode(graffiti.slice(0, 32));
         }
 
         const result = await this.provider.submitEpoch(params);
@@ -618,8 +618,8 @@ class EpochSubmissionService {
     }
 
     async submitWithVerification(
-        salt: Buffer,
-        solution: Buffer,
+        salt: Uint8Array,
+        solution: Uint8Array,
         publicKey: Address,
         graffiti?: string
     ): Promise<{

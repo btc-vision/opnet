@@ -14,7 +14,7 @@ BinaryWriter and BinaryReader are low-level utilities for encoding and decoding 
   - [Address Methods](#address-methods)
   - [Array Methods](#array-methods)
   - [Map Methods](#map-methods)
-  - [Buffer Output](#buffer-output)
+  - [Output](#output)
   - [Utility Methods](#utility-methods)
 - [BinaryReader](#binaryreader)
   - [Constructor](#constructor-1)
@@ -66,7 +66,7 @@ import { BinaryWriter, BinaryReader } from '@btc-vision/transaction';
 
 ## BinaryWriter
 
-Creates binary buffers by sequentially writing typed values.
+Creates binary data by sequentially writing typed values.
 
 ### Constructor
 
@@ -232,7 +232,7 @@ writer.writeStringWithLength("Hello World");
 Write raw bytes.
 
 ```typescript
-writeBytes(value: Uint8Array | Buffer): void
+writeBytes(value: Uint8Array): void
 ```
 
 ```typescript
@@ -390,7 +390,7 @@ balances.set(addr2, 2000n);
 writer.writeAddressValueTuple(balances);
 ```
 
-### Buffer Output
+### Output
 
 #### getBuffer
 
@@ -470,12 +470,12 @@ allocSafe(size: number): void
 
 ## BinaryReader
 
-Reads binary buffers by sequentially extracting typed values.
+Reads binary data by sequentially extracting typed values.
 
 ### Constructor
 
 ```typescript
-const reader = new BinaryReader(bytes: Uint8Array | Buffer);
+const reader = new BinaryReader(bytes: Uint8Array);
 ```
 
 ```typescript
@@ -817,10 +817,10 @@ reader.setOffset(0); // Reset to beginning
 
 #### setBuffer
 
-Replace the buffer.
+Replace the data.
 
 ```typescript
-setBuffer(bytes: Uint8Array | Buffer): void
+setBuffer(bytes: Uint8Array): void
 ```
 
 #### verifyEnd

@@ -13,7 +13,7 @@ OPNet uses a gas system where computational operations cost gas units paid in sa
 Every contract call returns gas information directly:
 
 ```typescript
-const result = await contract.transfer(recipient, amount, Buffer.alloc(0));
+const result = await contract.transfer(recipient, amount, new Uint8Array(0));
 
 // Gas consumed (in gas units)
 console.log('Gas used:', result.estimatedGas);
@@ -134,7 +134,7 @@ async function transferWithGasCheck(): Promise<void> {
 
     // Simulate transfer
     const recipient: Address = Address.fromString('0x...');
-    const simulation = await token.transfer(recipient, 100_00000000n, Buffer.alloc(0));
+    const simulation = await token.transfer(recipient, 100_00000000n, new Uint8Array(0));
 
     // Check for revert
     if (simulation.revert) {
@@ -199,13 +199,13 @@ Use access lists to optimize repeated operations:
 
 ```typescript
 // First call discovers storage access patterns
-const firstCall = await contract.transfer(recipient, amount, Buffer.alloc(0));
+const firstCall = await contract.transfer(recipient, amount, new Uint8Array(0));
 
 // Set access list for subsequent calls
 contract.setAccessList(firstCall.accessList);
 
 // Subsequent calls may use less gas
-const optimizedCall = await contract.transfer(recipient2, amount2, Buffer.alloc(0));
+const optimizedCall = await contract.transfer(recipient2, amount2, new Uint8Array(0));
 ```
 
 ---

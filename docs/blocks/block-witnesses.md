@@ -78,10 +78,10 @@ interface BlockWitness {
 
 interface BlockWitnessAPI {
     trusted: boolean;           // Is trusted validator
-    signature: Buffer;          // Witness signature
+    signature: Uint8Array;      // Witness signature
     timestamp: number;          // When witnessed
-    proofs: readonly Buffer[];  // Merkle proofs
-    identity?: Buffer;          // Validator identity
+    proofs: readonly Uint8Array[]; // Merkle proofs
+    identity?: Uint8Array;      // Validator identity
     publicKey?: Address;        // Validator public key
 }
 ```
@@ -289,7 +289,7 @@ async function verifyWitnessSignature(
         // const valid = crypto.verify(
         //     witness.publicKey,
         //     witness.signature,
-        //     Buffer.from(blockHash, 'hex')
+        //     fromHex(blockHash)
         // );
         // return valid;
 

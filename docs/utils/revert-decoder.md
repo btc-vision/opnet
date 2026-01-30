@@ -42,7 +42,7 @@ if (tx.rawRevert) {
 ### From Contract Call
 
 ```typescript
-const result = await contract.transfer(recipient, amount, Buffer.alloc(0));
+const result = await contract.transfer(recipient, amount, new Uint8Array(0));
 
 if (result.revert) {
     console.log('Call reverted:', result.revert);
@@ -53,7 +53,7 @@ if (result.revert) {
 
 ```typescript
 function decodeRevertData(
-    revertDataBytes: Uint8Array | Buffer
+    revertDataBytes: Uint8Array
 ): string
 ```
 
@@ -77,7 +77,7 @@ const ERROR_SELECTOR = [0x63, 0x73, 0x9d, 0x5c];
 3. If no, return hex representation as "Unknown Revert"
 
 ```typescript
-function decodeRevertData(revertDataBytes: Uint8Array | Buffer): string {
+function decodeRevertData(revertDataBytes: Uint8Array): string {
     // Check for error selector
     if (startsWithErrorSelector(revertDataBytes)) {
         // Decode as UTF-8 string (skip 8 bytes: 4 selector + 4 padding)
@@ -172,7 +172,7 @@ async function safeContractCall<T>(
 
 // Usage
 const outcome = await safeContractCall(() =>
-    contract.transfer(recipient, amount, Buffer.alloc(0))
+    contract.transfer(recipient, amount, new Uint8Array(0))
 );
 
 if (outcome.success) {
@@ -265,7 +265,7 @@ console.log(userFriendly);
 function logRevert(
     operation: string,
     revert: string | undefined,
-    rawRevert: Buffer | undefined
+    rawRevert: Uint8Array | undefined
 ): void {
     if (!revert && !rawRevert) {
         console.log(`${operation}: Success`);
@@ -279,12 +279,12 @@ function logRevert(
     }
 
     if (rawRevert) {
-        console.log(`  Raw: 0x${rawRevert.toString('hex')}`);
+        console.log(`  Raw: 0x${toHex(rawRevert)}`);
     }
 }
 
 // Usage
-const result = await contract.transfer(recipient, amount, Buffer.alloc(0));
+const result = await contract.transfer(recipient, amount, new Uint8Array(0));
 logRevert('Transfer', result.revert, result.rawRevert);
 ```
 
@@ -335,11 +335,11 @@ async function executeBatchWithRevertHandling(
 const results = await executeBatchWithRevertHandling([
     {
         name: 'Transfer to Alice',
-        execute: () => contract.transfer(alice, 100n, Buffer.alloc(0)),
+        execute: () => contract.transfer(alice, 100n, new Uint8Array(0)),
     },
     {
         name: 'Transfer to Bob',
-        execute: () => contract.transfer(bob, 200n, Buffer.alloc(0)),
+        execute: () => contract.transfer(bob, 200n, new Uint8Array(0)),
     },
 ]);
 
@@ -376,7 +376,7 @@ class RevertService {
         this.errorMappings.set(pattern.toLowerCase(), message);
     }
 
-    decode(rawRevert: Buffer | Uint8Array): string {
+    decode(rawRevert: Uint8Array): string {
         return decodeRevertData(rawRevert);
     }
 
@@ -404,7 +404,7 @@ class RevertService {
         return false;
     }
 
-    extractFromResult<T extends { revert?: string; rawRevert?: Buffer }>(
+    extractFromResult<T extends { revert?: string; rawRevert?: Uint8Array }>(
         result: T
     ): string | null {
         if (result.revert) {
@@ -427,7 +427,7 @@ const revertService = new RevertService();
 revertService.addMapping('already claimed', 'You have already claimed');
 
 // Use with contract result
-const result = await contract.transfer(recipient, amount, Buffer.alloc(0));
+const result = await contract.transfer(recipient, amount, new Uint8Array(0));
 const error = revertService.extractFromResult(result);
 
 if (error) {

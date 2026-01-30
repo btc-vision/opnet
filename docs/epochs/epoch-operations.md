@@ -42,6 +42,8 @@ console.log('Proposer:', epoch.proposer.publicKey.toHex());
 ### With Submissions
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
+
 // Get latest epoch with all submissions
 const epochWithSubmissions = await provider.getLatestEpoch(true);
 
@@ -52,7 +54,7 @@ console.log('Total submissions:', epochWithSubmissions.submissions?.length ?? 0)
 if (epochWithSubmissions.submissions) {
     for (const submission of epochWithSubmissions.submissions) {
         console.log('Miner:', submission.publicKey.toHex());
-        console.log('Solution:', submission.solution.toString('hex'));
+        console.log('Solution:', toHex(submission.solution));
     }
 }
 ```
@@ -70,12 +72,14 @@ async getLatestEpoch(
 ## Get Epoch by Number
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
+
 // Fetch specific epoch by number
 const epoch = await provider.getEpochByNumber(100n);
 
 console.log('Epoch:', epoch.epochNumber);
-console.log('Hash:', epoch.epochHash.toString('hex'));
-console.log('Target:', epoch.targetHash.toString('hex'));
+console.log('Hash:', toHex(epoch.epochHash));
+console.log('Target:', toHex(epoch.targetHash));
 console.log('Difficulty:', epoch.difficultyScaled);
 ```
 
@@ -92,8 +96,10 @@ async getEpochByNumber(
 ## Get Epoch by Hash
 
 ```typescript
+import { fromHex } from '@btc-vision/bitcoin';
+
 // Fetch epoch by its unique hash
-const epochHash = Buffer.from('abcdef...', 'hex');
+const epochHash = fromHex('abcdef...');
 const epoch = await provider.getEpochByHash(epochHash);
 
 console.log('Epoch Number:', epoch.epochNumber);
@@ -104,7 +110,7 @@ console.log('Block Range:', epoch.startBlock, '-', epoch.endBlock);
 
 ```typescript
 async getEpochByHash(
-    epochHash: Buffer  // Unique epoch hash
+    epochHash: Uint8Array  // Unique epoch hash
 ): Promise<Epoch>
 ```
 
@@ -116,10 +122,10 @@ async getEpochByHash(
 interface Epoch {
     // Identity
     epochNumber: bigint;          // Sequential epoch ID
-    epochHash: Buffer;            // Unique hash of this epoch
+    epochHash: Uint8Array;            // Unique hash of this epoch
 
     // State
-    epochRoot: Buffer;            // State root at epoch end
+    epochRoot: Uint8Array;            // State root at epoch end
 
     // Block range
     startBlock: bigint;           // First block in epoch
@@ -128,13 +134,13 @@ interface Epoch {
     // Mining parameters
     difficultyScaled: bigint;     // Scaled difficulty value
     minDifficulty?: string;       // Minimum required difficulty
-    targetHash: Buffer;           // Mining target hash
+    targetHash: Uint8Array;           // Mining target hash
 
     // Proposer info
     proposer: EpochMiner;         // Winning miner
 
     // Proofs
-    proofs: readonly Buffer[];    // Epoch validity proofs
+    proofs: readonly Uint8Array[];    // Epoch validity proofs
 }
 ```
 
@@ -146,10 +152,10 @@ The proposer who won the epoch:
 
 ```typescript
 interface EpochMiner {
-    solution: Buffer;      // SHA-1 collision solution
+    solution: Uint8Array;      // SHA-1 collision solution
     publicKey: Address;    // Miner's public key address
-    salt: Buffer;          // Salt used in solution
-    graffiti?: Buffer;     // Optional miner message (32 bytes max)
+    salt: Uint8Array;          // Salt used in solution
+    graffiti?: Uint8Array;     // Optional miner message (32 bytes max)
 }
 ```
 
@@ -239,6 +245,8 @@ for (const epoch of history) {
 ### Analyze Epoch Difficulty
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
+
 async function analyzeEpochDifficulty(
     provider: JSONRpcProvider,
     epochNumber: bigint
@@ -254,7 +262,7 @@ async function analyzeEpochDifficulty(
         epoch: epoch.epochNumber,
         difficulty: epoch.difficultyScaled,
         minDifficulty: epoch.minDifficulty,
-        targetHash: epoch.targetHash.toString('hex'),
+        targetHash: toHex(epoch.targetHash),
     };
 }
 
@@ -374,6 +382,8 @@ console.log('Found', myEpochs.length, 'epochs proposed by this miner');
 ## Complete Epoch Service
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
+
 class EpochService {
     constructor(private provider: JSONRpcProvider) {}
 
@@ -385,7 +395,7 @@ class EpochService {
         return this.provider.getEpochByNumber(epochNumber);
     }
 
-    async getByHash(hash: Buffer): Promise<Epoch> {
+    async getByHash(hash: Uint8Array): Promise<Epoch> {
         return this.provider.getEpochByHash(hash);
     }
 
@@ -419,9 +429,11 @@ class EpochService {
 
         return {
             publicKey: proposer.publicKey.toHex(),
-            solution: proposer.solution.toString('hex'),
-            salt: proposer.salt.toString('hex'),
-            graffiti: proposer.graffiti?.toString('utf8'),
+            solution: toHex(proposer.solution),
+            salt: toHex(proposer.salt),
+            graffiti: proposer.graffiti
+                ? new TextDecoder().decode(proposer.graffiti)
+                : undefined,
         };
     }
 

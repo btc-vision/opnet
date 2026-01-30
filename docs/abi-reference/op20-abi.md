@@ -146,7 +146,7 @@ const recipient = Address.fromString('bc1p...');
 const amount = 1000000000n; // 10 tokens with 8 decimals
 
 // Simulate first
-const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
+const simulation = await token.transfer(recipient, amount, new Uint8Array(0));
 
 if (simulation.revert) {
     throw new Error(`Transfer would fail: ${simulation.revert}`);

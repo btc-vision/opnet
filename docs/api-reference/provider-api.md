@@ -284,7 +284,7 @@ Call a contract function (read-only).
 ```typescript
 call(
     to: string | Address,
-    data: Buffer | string,
+    data: Uint8Array | string,
     from?: Address,
     height?: BigNumberish,
     simulatedTransaction?: ParsedSimulatedTransaction,
@@ -294,13 +294,13 @@ call(
 
 ### getCode
 
-Get contract code/data. Returns `Buffer` when `onlyBytecode=true`, otherwise `ContractData`.
+Get contract code/data. Returns `Uint8Array` when `onlyBytecode=true`, otherwise `ContractData`.
 
 ```typescript
 getCode(
     address: string | Address,
     onlyBytecode: boolean = false
-): Promise<ContractData | Buffer>
+): Promise<ContractData | Uint8Array>
 ```
 
 ### getStorageAt

@@ -183,7 +183,7 @@ const utxos = await utxoManager.getUTXOsForAmount({
 });
 
 // Simulate first
-const simulation = await contract.transfer(recipient, amount, Buffer.alloc(0));
+const simulation = await contract.transfer(recipient, amount, new Uint8Array(0));
 
 if (simulation.revert) {
     throw new Error(`Transfer would fail: ${simulation.revert}`);

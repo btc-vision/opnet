@@ -250,7 +250,7 @@ const nativeSwap = getContract<INativeSwapContract>(
 
 | Method | Parameters | Description |
 |--------|------------|-------------|
-| `listLiquidity(token, receiver, receiverStr, amountIn, priority)` | `Address, Buffer, string, bigint, boolean` | List tokens for sale |
+| `listLiquidity(token, receiver, receiverStr, amountIn, priority)` | `Address, Uint8Array, string, bigint, boolean` | List tokens for sale |
 | `cancelListing(token)` | `Address` | Cancel listing |
 | `withdrawListing(token)` | `Address` | Withdraw in emergency mode |
 | `getProviderDetails(token)` | `Address` | Get your provider info |
@@ -500,7 +500,7 @@ console.log('Swap executed:', swapTxId);
 
 ```typescript
 const token = Address.fromString('0x...token...');
-const receiverPubKey = Buffer.from('...33 byte compressed pubkey...');
+const receiverPubKey = new Uint8Array(33); // 33 byte compressed pubkey
 const receiverAddress = 'bcrt1p...your-btc-address...';
 const amount = 1_000_000_000_000n; // Amount to list
 const usePriorityQueue = true;

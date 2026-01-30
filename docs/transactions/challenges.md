@@ -24,7 +24,7 @@ flowchart LR
 
 ```typescript
 import { JSONRpcProvider } from 'opnet';
-import { networks } from '@btc-vision/bitcoin';
+import { networks, toHex } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
 const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
@@ -32,7 +32,7 @@ const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
 const challenge = await provider.getChallenge();
 
 console.log('Challenge:');
-console.log('  Preimage:', challenge.preimage.toString('hex'));
+console.log('  Preimage:', toHex(challenge.preimage));
 console.log('  Reward:', challenge.reward);
 console.log('  Difficulty:', challenge.difficulty);
 console.log('  Version:', challenge.version);
@@ -50,7 +50,7 @@ async getChallenge(): Promise<ChallengeSolution>
 
 ```typescript
 interface ChallengeSolution {
-    preimage: Buffer;       // Challenge preimage data
+    preimage: Uint8Array;   // Challenge preimage data
     reward: bigint;         // Reward for solving
     difficulty?: bigint;    // Current difficulty
     version?: number;       // Challenge version
@@ -65,7 +65,7 @@ When a transaction is processed, it may include PoW challenge data:
 
 ```typescript
 interface ProofOfWorkChallenge {
-    preimage: Buffer;       // Challenge preimage
+    preimage: Uint8Array;   // Challenge preimage
     reward: bigint;         // Reward amount
     difficulty?: bigint;    // Difficulty level
     version?: number;       // Version number
@@ -79,7 +79,7 @@ const tx = await provider.getTransaction(txHash);
 
 if (tx.pow) {
     console.log('Transaction PoW:');
-    console.log('  Preimage:', tx.pow.preimage.toString('hex'));
+    console.log('  Preimage:', toHex(tx.pow.preimage));
     console.log('  Reward:', tx.pow.reward);
     console.log('  Difficulty:', tx.pow.difficulty);
 }
@@ -107,7 +107,7 @@ const contract = getContract<IOP20Contract>(
 );
 
 // The challenge is automatically fetched when sending transactions
-const simulation = await contract.transfer(recipientAddress, amount, Buffer.alloc(0));
+const simulation = await contract.transfer(recipientAddress, amount, new Uint8Array(0));
 
 if (simulation.revert) {
     throw new Error(`Transfer would fail: ${simulation.revert}`);
@@ -175,7 +175,8 @@ async function isChallengeValid(
     const currentChallenge = await provider.getChallenge();
 
     // Compare preimages
-    return challenge.preimage.equals(currentChallenge.preimage);
+    return challenge.preimage.length === currentChallenge.preimage.length &&
+        challenge.preimage.every((b, i) => b === currentChallenge.preimage[i]);
 }
 
 // Usage
@@ -213,7 +214,7 @@ async function executeWithFreshChallenge<T>(
 // Usage
 const result = await executeWithFreshChallenge(provider, async (challenge) => {
     // Use challenge in transaction
-    const simulation = await contract.transfer(recipient, amount, Buffer.alloc(0));
+    const simulation = await contract.transfer(recipient, amount, new Uint8Array(0));
     return simulation;
 });
 ```
@@ -303,7 +304,7 @@ async function monitorChallenges(
     const intervalId = setInterval(async () => {
         try {
             const challenge = await provider.getChallenge();
-            const preimageHex = challenge.preimage.toString('hex');
+            const preimageHex = toHex(challenge.preimage);
 
             if (preimageHex !== lastPreimage) {
                 lastPreimage = preimageHex;
@@ -367,7 +368,7 @@ class ChallengeService {
         return challenge.difficulty ?? 0n;
     }
 
-    async getPreimage(): Promise<Buffer> {
+    async getPreimage(): Promise<Uint8Array> {
         const challenge = await this.getChallenge();
         return challenge.preimage;
     }

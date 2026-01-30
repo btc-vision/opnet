@@ -24,7 +24,7 @@ flowchart LR
 
 ```typescript
 import { JSONRpcProvider } from 'opnet';
-import { networks } from '@btc-vision/bitcoin';
+import { networks, toHex } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
 const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
@@ -36,7 +36,7 @@ const storage = await provider.getStorageAt(contractAddress, pointer);
 
 console.log('Storage Value:');
 console.log('  Pointer:', storage.pointer);
-console.log('  Value:', storage.value.toString('hex'));
+console.log('  Value:', toHex(storage.value));
 console.log('  Height:', storage.height);
 ```
 
@@ -51,7 +51,7 @@ const storage = await provider.getStorageAt(
     base64Pointer
 );
 
-console.log('Value:', storage.value.toString('hex'));
+console.log('Value:', toHex(storage.value));
 ```
 
 ### With Proofs
@@ -80,7 +80,7 @@ const storage = await provider.getStorageAt(
     false  // No proofs
 );
 
-console.log('Value:', storage.value.toString('hex'));
+console.log('Value:', toHex(storage.value));
 // storage.proofs will be empty
 ```
 
@@ -95,7 +95,7 @@ const historicalStorage = await provider.getStorageAt(
     100000n   // Block height
 );
 
-console.log('Value at block 100000:', historicalStorage.value.toString('hex'));
+console.log('Value at block 100000:', toHex(historicalStorage.value));
 console.log('Confirmed at height:', historicalStorage.height);
 ```
 
@@ -117,7 +117,7 @@ async getStorageAt(
 ```typescript
 interface StoredValue {
     pointer: bigint;       // Storage slot pointer
-    value: Buffer;         // Stored value as Buffer
+    value: Uint8Array;     // Stored value as Uint8Array
     height: bigint;        // Block height of the value
     proofs: string[];      // Merkle proofs for verification
 }
@@ -130,7 +130,7 @@ interface StoredValue {
 ### Decode Stored Value
 
 ```typescript
-function decodeUint256(value: Buffer): bigint {
+function decodeUint256(value: Uint8Array): bigint {
     // Stored values are typically 32 bytes
     if (value.length === 0) return 0n;
 
@@ -153,7 +153,7 @@ console.log('Balance:', balance);
 ```typescript
 import { Address } from '@btc-vision/bitcoin';
 
-function decodeAddress(value: Buffer): Address | null {
+function decodeAddress(value: Uint8Array): Address | null {
     if (value.length < 20) return null;
 
     // Extract address bytes
@@ -171,13 +171,14 @@ console.log('Owner:', owner?.toHex());
 
 ```typescript
 import { keccak256 } from 'ethers';
+import { fromHex } from '@btc-vision/bitcoin';
 
-function getMapPointer(mapSlot: bigint, key: Buffer): bigint {
+function getMapPointer(mapSlot: bigint, key: Uint8Array): bigint {
     // Standard mapping pointer calculation
-    const slotBuffer = Buffer.alloc(32);
-    slotBuffer.writeBigUInt64BE(mapSlot, 24);
+    const slotBuffer = new Uint8Array(32);
+    new DataView(slotBuffer.buffer).setBigUint64(24, mapSlot);
 
-    const data = Buffer.concat([key, slotBuffer]);
+    const data = new Uint8Array([...key, ...slotBuffer]);
     const hash = keccak256(data);
 
     return BigInt(hash);
@@ -185,7 +186,7 @@ function getMapPointer(mapSlot: bigint, key: Buffer): bigint {
 
 // Usage: Read balances[address]
 const balancesSlot = 0n; // Storage slot of balances mapping
-const userKey = Buffer.from(userAddress.slice(2), 'hex');
+const userKey = fromHex(userAddress.slice(2));
 const pointer = getMapPointer(balancesSlot, userKey);
 
 const storage = await provider.getStorageAt(contractAddress, pointer);
@@ -203,7 +204,7 @@ async function verifyStorageWithProof(
     provider: JSONRpcProvider,
     contractAddress: string,
     pointer: bigint,
-    expectedValue: Buffer
+    expectedValue: Uint8Array
 ): Promise<boolean> {
     const storage = await provider.getStorageAt(
         contractAddress,
@@ -212,7 +213,8 @@ async function verifyStorageWithProof(
     );
 
     // Compare value
-    if (!storage.value.equals(expectedValue)) {
+    if (storage.value.length !== expectedValue.length ||
+        !storage.value.every((b, i) => b === expectedValue[i])) {
         return false;
     }
 
@@ -233,7 +235,7 @@ const verified = await verifyStorageWithProof(
     provider,
     contractAddress,
     pointer,
-    expectedBuffer
+    expectedBytes
 );
 console.log('Storage verified:', verified);
 ```
@@ -253,7 +255,8 @@ async function hasStorageChanged(
         provider.getStorageAt(contractAddress, pointer, false, toHeight),
     ]);
 
-    return !oldStorage.value.equals(newStorage.value);
+    return oldStorage.value.length !== newStorage.value.length ||
+        !oldStorage.value.every((b, i) => b === newStorage.value[i]);
 }
 
 // Usage
@@ -278,8 +281,8 @@ async function getMultipleStorage(
     provider: JSONRpcProvider,
     contractAddress: string,
     pointers: bigint[]
-): Promise<Map<bigint, Buffer>> {
-    const results = new Map<bigint, Buffer>();
+): Promise<Map<bigint, Uint8Array>> {
+    const results = new Map<bigint, Uint8Array>();
 
     // Read in parallel
     const promises = pointers.map(pointer =>
@@ -300,7 +303,7 @@ const pointers = [0n, 1n, 2n, 3n]; // Multiple storage slots
 const values = await getMultipleStorage(provider, contractAddress, pointers);
 
 for (const [pointer, value] of values) {
-    console.log(`Slot ${pointer}: ${value.toString('hex')}`);
+    console.log(`Slot ${pointer}: ${toHex(value)}`);
 }
 ```
 
@@ -329,7 +332,7 @@ async function getStorageRange(
 const storageRange = await getStorageRange(provider, contractAddress, 0n, 10);
 console.log('First 10 storage slots:');
 for (const storage of storageRange) {
-    console.log(`  ${storage.pointer}: ${storage.value.toString('hex')}`);
+    console.log(`  ${storage.pointer}: ${toHex(storage.value)}`);
 }
 ```
 
@@ -345,8 +348,8 @@ async function getStorageHistory(
     contractAddress: string,
     pointer: bigint,
     heights: bigint[]
-): Promise<Array<{ height: bigint; value: Buffer }>> {
-    const history: Array<{ height: bigint; value: Buffer }> = [];
+): Promise<Array<{ height: bigint; value: Uint8Array }>> {
+    const history: Array<{ height: bigint; value: Uint8Array }> = [];
 
     for (const height of heights) {
         try {
@@ -365,7 +368,7 @@ async function getStorageHistory(
             // Storage may not exist at all heights
             history.push({
                 height,
-                value: Buffer.alloc(0),
+                value: new Uint8Array(0),
             });
         }
     }
@@ -379,7 +382,7 @@ const history = await getStorageHistory(provider, contractAddress, pointer, heig
 
 console.log('Storage history:');
 for (const entry of history) {
-    console.log(`  Height ${entry.height}: ${entry.value.toString('hex') || '(empty)'}`);
+    console.log(`  Height ${entry.height}: ${toHex(entry.value) || '(empty)'}`);
 }
 ```
 
@@ -404,7 +407,7 @@ class StorageService {
         );
     }
 
-    async getValue(contract: string, pointer: bigint): Promise<Buffer> {
+    async getValue(contract: string, pointer: bigint): Promise<Uint8Array> {
         const storage = await this.get(contract, pointer);
         return storage.value;
     }
@@ -417,8 +420,8 @@ class StorageService {
     async getMultiple(
         contract: string,
         pointers: bigint[]
-    ): Promise<Map<bigint, Buffer>> {
-        const results = new Map<bigint, Buffer>();
+    ): Promise<Map<bigint, Uint8Array>> {
+        const results = new Map<bigint, Uint8Array>();
 
         const storageValues = await Promise.all(
             pointers.map(p => this.get(contract, p))
@@ -443,8 +446,8 @@ class StorageService {
         height2: bigint
     ): Promise<{
         changed: boolean;
-        value1: Buffer;
-        value2: Buffer;
+        value1: Uint8Array;
+        value2: Uint8Array;
     }> {
         const [s1, s2] = await Promise.all([
             this.get(contract, pointer, { height: height1 }),
@@ -452,13 +455,14 @@ class StorageService {
         ]);
 
         return {
-            changed: !s1.value.equals(s2.value),
+            changed: s1.value.length !== s2.value.length ||
+                !s1.value.every((b, i) => b === s2.value[i]),
             value1: s1.value,
             value2: s2.value,
         };
     }
 
-    private decodeUint256(value: Buffer): bigint {
+    private decodeUint256(value: Uint8Array): bigint {
         if (value.length === 0) return 0n;
 
         let result = 0n;
@@ -479,7 +483,7 @@ console.log('Balance:', balance);
 // Read multiple
 const values = await storageService.getMultiple(contractAddress, [0n, 1n, 2n]);
 for (const [slot, value] of values) {
-    console.log(`Slot ${slot}:`, value.toString('hex'));
+    console.log(`Slot ${slot}:`, toHex(value));
 }
 
 // Compare historical values

@@ -86,7 +86,7 @@ Execution creates a Bitcoin transaction that triggers contract execution:
 
 ```typescript
 // First simulate
-const simulation = await contract.transfer(recipient, amount, Buffer.alloc(0));
+const simulation = await contract.transfer(recipient, amount, new Uint8Array(0));
 
 // Then execute (requires Bitcoin)
 const tx = await simulation.sendTransaction({
@@ -242,7 +242,7 @@ if (balance.revert) {
 }
 
 // Sending transactions
-const transfer = await contract.transfer(recipient, amount, Buffer.alloc(0));
+const transfer = await contract.transfer(recipient, amount, new Uint8Array(0));
 if (!transfer.revert) {
     const tx = await transfer.sendTransaction(params);
     console.log('TX:', tx.transactionId);

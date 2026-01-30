@@ -38,7 +38,7 @@ Transaction configuration controls how Bitcoin transactions are built and signed
 ```typescript
 interface TransactionParameters {
     // Required: Signing
-    readonly signer: Signer | ECPairInterface | null;
+    readonly signer: Signer | UniversalSigner | null;
     readonly mldsaSigner: QuantumBIP32Interface | null;
 
     // Required: Addresses
@@ -61,7 +61,7 @@ interface TransactionParameters {
 
     // Optional: Transaction options
     readonly minGas?: bigint;
-    readonly note?: string | Buffer;
+    readonly note?: string | Uint8Array;
     readonly txVersion?: SupportedTransactionVersion;
     readonly anchor?: boolean;
     readonly dontUseCSVUtxos?: boolean;
@@ -187,10 +187,9 @@ const params: TransactionParameters = {
 For advanced scenarios requiring multiple signers:
 
 ```typescript
-import { ECPairFactory } from 'ecpair';
-import * as ecc from '@bitcoinerlab/secp256k1';
+import { ECPairFactory } from '@btc-vision/ecpair';
 
-const ECPair = ECPairFactory(ecc);
+const ECPair = ECPairFactory();
 
 // Create multiple keypairs
 const keypair1 = ECPair.fromWIF('cKey1...', network);
@@ -235,9 +234,9 @@ interface UTXO {
     outputIndex: number;        // Output index
     value: bigint;              // Satoshi value
     scriptPubKey: ScriptPubKey; // Locking script
-    nonWitnessUtxo?: Buffer;    // Previous TX data
-    witnessScript?: Buffer;     // For P2WSH
-    redeemScript?: Buffer;      // For P2SH
+    nonWitnessUtxo?: Uint8Array; // Previous TX data
+    witnessScript?: Uint8Array;  // For P2WSH
+    redeemScript?: Uint8Array;   // For P2SH
     isCSV?: boolean;            // CheckSequenceVerify
 }
 ```
@@ -352,10 +351,12 @@ const params: TransactionParameters = {
 Add arbitrary data to the transaction:
 
 ```typescript
+import { fromHex } from '@btc-vision/bitcoin';
+
 const params: TransactionParameters = {
     note: 'My transaction note',
     // or
-    note: Buffer.from('hex data', 'hex'),
+    note: fromHex('hex data'),
     // ...
 };
 ```

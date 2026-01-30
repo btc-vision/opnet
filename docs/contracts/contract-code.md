@@ -58,7 +58,7 @@ The `ContractData` class holds contract bytecode and metadata:
 
 ```typescript
 interface ContractData {
-    bytecode: Buffer;           // Contract WASM bytecode
+    bytecode: Uint8Array;       // Contract WASM bytecode
     contractAddress: Address;   // Contract address
     // Additional metadata depending on onlyBytecode flag
 }
@@ -81,11 +81,13 @@ console.log('Bytecode size:', contractData.bytecode.length, 'bytes');
 ### Fetch Bytecode Only
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
+
 // More efficient when you only need bytecode
 const contractData = await provider.getCode(contractAddress, true);
 
 const bytecode = contractData.bytecode;
-console.log('Bytecode:', bytecode.toString('hex').slice(0, 100), '...');
+console.log('Bytecode:', toHex(bytecode).slice(0, 100), '...');
 ```
 
 ### Verify Contract Deployment
@@ -111,6 +113,8 @@ console.log('Contract deployed:', deployed);
 ### Compare Contract Code
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
+
 async function compareContracts(
     provider: AbstractRpcProvider,
     address1: Address,
@@ -121,7 +125,8 @@ async function compareContracts(
         provider.getCode(address2, true),
     ]);
 
-    return code1.bytecode.equals(code2.bytecode);
+    // Compare Uint8Array bytecode
+    return toHex(code1.bytecode) === toHex(code2.bytecode);
 }
 
 // Check if two contracts have same code
@@ -132,6 +137,7 @@ console.log('Same bytecode:', sameCode);
 ### Calculate Code Hash
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
 import { sha256 } from '@noble/hashes/sha256';
 
 async function getCodeHash(
@@ -140,7 +146,7 @@ async function getCodeHash(
 ): Promise<string> {
     const contractData = await provider.getCode(address, true);
     const hash = sha256(contractData.bytecode);
-    return Buffer.from(hash).toString('hex');
+    return toHex(hash);
 }
 
 // Get unique identifier for contract code
@@ -157,13 +163,15 @@ console.log('Code hash:', codeHash);
 Verify that a deployed contract matches expected code:
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
+
 async function verifyContract(
     provider: AbstractRpcProvider,
     address: Address,
-    expectedBytecode: Buffer
+    expectedBytecode: Uint8Array
 ): Promise<boolean> {
     const contractData = await provider.getCode(address, true);
-    return contractData.bytecode.equals(expectedBytecode);
+    return toHex(contractData.bytecode) === toHex(expectedBytecode);
 }
 ```
 
@@ -172,6 +180,8 @@ async function verifyContract(
 Check contract size and analyze bytecode:
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
+
 async function analyzeContract(
     provider: AbstractRpcProvider,
     address: Address
@@ -183,7 +193,7 @@ async function analyzeContract(
     console.log('  Bytecode size:', contractData.bytecode.length, 'bytes');
 
     // Check for common patterns
-    const bytecodeHex = contractData.bytecode.toString('hex');
+    const bytecodeHex = toHex(contractData.bytecode);
 
     return {
         address: contractData.contractAddress.toHex(),

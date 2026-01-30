@@ -26,7 +26,7 @@ flowchart TD
 
 ```typescript
 import { JSONRpcProvider } from 'opnet';
-import { networks } from '@btc-vision/bitcoin';
+import { networks, toHex } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
 const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
@@ -35,7 +35,7 @@ const template = await provider.getEpochTemplate();
 
 console.log('Mining Template:');
 console.log('  Epoch:', template.epochNumber);
-console.log('  Target:', template.epochTarget.toString('hex'));
+console.log('  Target:', toHex(template.epochTarget));
 ```
 
 ### Method Signature
@@ -51,7 +51,7 @@ async getEpochTemplate(): Promise<EpochTemplate>
 ```typescript
 interface EpochTemplate {
     epochNumber: bigint;    // Current epoch being mined
-    epochTarget: Buffer;    // Target hash for collision
+    epochTarget: Uint8Array;    // Target hash for collision
 }
 ```
 
@@ -74,19 +74,19 @@ Mining requires finding a SHA-1 collision against the target hash. The algorithm
 import { createHash } from 'crypto';
 
 function calculatePreimage(
-    checksumRoot: Buffer,
-    mldsaPublicKey: Buffer,
-    salt: Buffer
-): Buffer {
-    const target32 = Buffer.alloc(32);
-    const pubKey32 = Buffer.alloc(32);
-    const salt32 = Buffer.alloc(32);
+    checksumRoot: Uint8Array,
+    mldsaPublicKey: Uint8Array,
+    salt: Uint8Array
+): Uint8Array {
+    const target32 = new Uint8Array(32);
+    const pubKey32 = new Uint8Array(32);
+    const salt32 = new Uint8Array(32);
 
-    checksumRoot.copy(target32, 0, 0, Math.min(32, checksumRoot.length));
-    mldsaPublicKey.copy(pubKey32, 0, 0, Math.min(32, mldsaPublicKey.length));
-    salt.copy(salt32, 0, 0, Math.min(32, salt.length));
+    target32.set(checksumRoot.subarray(0, Math.min(32, checksumRoot.length)));
+    pubKey32.set(mldsaPublicKey.subarray(0, Math.min(32, mldsaPublicKey.length)));
+    salt32.set(salt.subarray(0, Math.min(32, salt.length)));
 
-    const preimage = Buffer.alloc(32);
+    const preimage = new Uint8Array(32);
     for (let i = 0; i < 32; i++) {
         preimage[i] = target32[i] ^ pubKey32[i] ^ salt32[i];
     }
@@ -94,7 +94,7 @@ function calculatePreimage(
     return preimage;
 }
 
-function countMatchingBits(hash1: Buffer, hash2: Buffer): number {
+function countMatchingBits(hash1: Uint8Array, hash2: Uint8Array): number {
     let matchingBits = 0;
     const minLength = Math.min(hash1.length, hash2.length);
 
@@ -120,8 +120,8 @@ function countMatchingBits(hash1: Buffer, hash2: Buffer): number {
 
 async function mineEpoch(
     provider: JSONRpcProvider,
-    mldsaPublicKey: Buffer
-): Promise<{ salt: Buffer; matchingBits: number } | null> {
+    mldsaPublicKey: Uint8Array
+): Promise<{ salt: Uint8Array; matchingBits: number } | null> {
     const template = await provider.getEpochTemplate();
     const checksumRoot = template.epochTarget;
     const targetHash = createHash('sha1').update(checksumRoot).digest();
@@ -131,7 +131,7 @@ async function mineEpoch(
     const maxAttempts = 1000000;
 
     while (attempts < maxAttempts) {
-        const salt = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
+        const salt = crypto.getRandomValues(new Uint8Array(32));
 
         const preimage = calculatePreimage(checksumRoot, mldsaPublicKey, salt);
         const hash = createHash('sha1').update(preimage).digest();
@@ -216,14 +216,16 @@ for (const entry of difficultyHistory) {
 ### Complete Mining Implementation
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
+
 class MiningService {
     private provider: JSONRpcProvider;
     private isRunning: boolean = false;
     private currentTemplate: EpochTemplate | null = null;
-    private mldsaPublicKey: Buffer;
+    private mldsaPublicKey: Uint8Array;
     private minDifficulty: number = 20;
 
-    constructor(provider: JSONRpcProvider, mldsaPublicKey: Buffer) {
+    constructor(provider: JSONRpcProvider, mldsaPublicKey: Uint8Array) {
         this.provider = provider;
         this.mldsaPublicKey = mldsaPublicKey;
     }
@@ -239,7 +241,7 @@ class MiningService {
 
     async startMining(
         onSolutionFound: (solution: {
-            salt: Buffer;
+            salt: Uint8Array;
             matchingBits: number;
             epochNumber: bigint;
         }) => void,
@@ -268,16 +270,16 @@ class MiningService {
         this.isRunning = false;
     }
 
-    private calculatePreimage(checksumRoot: Buffer, salt: Buffer): Buffer {
-        const target32 = Buffer.alloc(32);
-        const pubKey32 = Buffer.alloc(32);
-        const salt32 = Buffer.alloc(32);
+    private calculatePreimage(checksumRoot: Uint8Array, salt: Uint8Array): Uint8Array {
+        const target32 = new Uint8Array(32);
+        const pubKey32 = new Uint8Array(32);
+        const salt32 = new Uint8Array(32);
 
-        checksumRoot.copy(target32, 0, 0, Math.min(32, checksumRoot.length));
-        this.mldsaPublicKey.copy(pubKey32, 0, 0, Math.min(32, this.mldsaPublicKey.length));
-        salt.copy(salt32, 0, 0, Math.min(32, salt.length));
+        target32.set(checksumRoot.subarray(0, Math.min(32, checksumRoot.length)));
+        pubKey32.set(this.mldsaPublicKey.subarray(0, Math.min(32, this.mldsaPublicKey.length)));
+        salt32.set(salt.subarray(0, Math.min(32, salt.length)));
 
-        const preimage = Buffer.alloc(32);
+        const preimage = new Uint8Array(32);
         for (let i = 0; i < 32; i++) {
             preimage[i] = target32[i] ^ pubKey32[i] ^ salt32[i];
         }
@@ -285,7 +287,7 @@ class MiningService {
         return preimage;
     }
 
-    private countMatchingBits(hash1: Buffer, hash2: Buffer): number {
+    private countMatchingBits(hash1: Uint8Array, hash2: Uint8Array): number {
         let matchingBits = 0;
         const minLength = Math.min(hash1.length, hash2.length);
 
@@ -309,12 +311,12 @@ class MiningService {
     private async mineBatch(
         template: EpochTemplate,
         batchSize: number
-    ): Promise<{ salt: Buffer; matchingBits: number } | null> {
+    ): Promise<{ salt: Uint8Array; matchingBits: number } | null> {
         const checksumRoot = template.epochTarget;
         const targetHash = createHash('sha1').update(checksumRoot).digest();
 
         for (let i = 0; i < batchSize; i++) {
-            const salt = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
+            const salt = crypto.getRandomValues(new Uint8Array(32));
 
             const preimage = this.calculatePreimage(checksumRoot, salt);
             const hash = createHash('sha1').update(preimage).digest();
@@ -336,7 +338,7 @@ const miningService = new MiningService(provider, wallet.mldsaKeypair.publicKey)
 miningService.startMining(async (solution) => {
     console.log('Solution found!');
     console.log('  Epoch:', solution.epochNumber);
-    console.log('  Salt:', solution.salt.toString('hex'));
+    console.log('  Salt:', toHex(solution.salt));
     console.log('  Matching bits:', solution.matchingBits);
 
     // Submit the solution
@@ -354,6 +356,8 @@ miningService.startMining(async (solution) => {
 ### Watch for New Epochs
 
 ```typescript
+import { toHex } from '@btc-vision/bitcoin';
+
 async function monitorTemplates(
     provider: JSONRpcProvider,
     onNewEpoch: (template: EpochTemplate) => void,
@@ -380,7 +384,7 @@ async function monitorTemplates(
 // Usage
 const stopMonitoring = await monitorTemplates(provider, (template) => {
     console.log('New epoch started:', template.epochNumber);
-    console.log('New target:', template.epochTarget.toString('hex'));
+    console.log('New target:', toHex(template.epochTarget));
 });
 ```
 

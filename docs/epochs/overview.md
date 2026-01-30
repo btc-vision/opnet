@@ -93,15 +93,15 @@ The main epoch data structure:
 ```typescript
 interface Epoch {
     epochNumber: bigint;          // Epoch ID
-    epochHash: Buffer;            // Unique epoch hash
-    epochRoot: Buffer;            // State root
+    epochHash: Uint8Array;            // Unique epoch hash
+    epochRoot: Uint8Array;            // State root
     startBlock: bigint;           // Start block number
     endBlock: bigint;             // End block number
     difficultyScaled: bigint;     // Scaled difficulty
     minDifficulty?: string;       // Minimum required difficulty
-    targetHash: Buffer;           // Mining target
+    targetHash: Uint8Array;           // Mining target
     proposer: EpochMiner;         // Winning miner
-    proofs: readonly Buffer[];    // Epoch proofs
+    proofs: readonly Uint8Array[];    // Epoch proofs
 }
 ```
 
@@ -111,10 +111,10 @@ The miner who proposed the epoch:
 
 ```typescript
 interface EpochMiner {
-    solution: Buffer;      // SHA-1 collision solution
+    solution: Uint8Array;      // SHA-1 collision solution
     publicKey: Address;    // Miner's public key
-    salt: Buffer;          // Salt used in solution
-    graffiti?: Buffer;     // Optional miner message
+    salt: Uint8Array;          // Salt used in solution
+    graffiti?: Uint8Array;     // Optional miner message
 }
 ```
 
@@ -125,7 +125,7 @@ Template for mining the current epoch:
 ```typescript
 interface EpochTemplate {
     epochNumber: bigint;    // Current epoch number
-    epochTarget: Buffer;    // Target hash for collision
+    epochTarget: Uint8Array;    // Target hash for collision
 }
 ```
 
@@ -167,7 +167,7 @@ Epoch proposers may receive rewards, incentivizing network participation.
 
 ```typescript
 import { JSONRpcProvider } from 'opnet';
-import { networks } from '@btc-vision/bitcoin';
+import { networks, toHex } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
 const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
@@ -179,7 +179,7 @@ console.log('Proposer:', latestEpoch.proposer.publicKey.toHex());
 
 // Get mining template
 const template = await provider.getEpochTemplate();
-console.log('Mining target:', template.epochTarget.toString('hex'));
+console.log('Mining target:', toHex(template.epochTarget));
 ```
 
 ---

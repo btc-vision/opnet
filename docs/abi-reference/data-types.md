@@ -71,7 +71,7 @@ enum ABIDataTypes {
 | `bigint` | `UINT64`, `UINT128`, `UINT256`, `INT64`, `INT128`, `INT256` | Large integers |
 | `boolean` | `BOOL` | True/false |
 | `string` | `STRING` | UTF-8 text |
-| `Buffer` / `Uint8Array` | `BYTES`, `BYTES32` | Raw bytes |
+| `Uint8Array` | `BYTES`, `BYTES32` | Raw bytes |
 | `Address` | `ADDRESS` | OPNet address |
 | `Array<T>` | `ARRAY_OF_*` | Arrays of types |
 
@@ -206,7 +206,7 @@ Variable-length byte array.
 }
 ```
 
-**TypeScript**: `Uint8Array` or `Buffer`
+**TypeScript**: `Uint8Array`
 
 ### BYTES32
 
@@ -219,7 +219,7 @@ Fixed 32-byte array (common for hashes).
 }
 ```
 
-**TypeScript**: `Uint8Array` or `Buffer` (32 bytes)
+**TypeScript**: `Uint8Array` (32 bytes)
 
 ---
 

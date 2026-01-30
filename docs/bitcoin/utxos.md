@@ -277,7 +277,7 @@ interface UTXO {
     outputIndex: number;         // Output index in transaction
     value: bigint;               // Satoshi value
     scriptPubKey: ScriptPubKey;  // Locking script
-    nonWitnessUtxo?: Buffer;     // Full previous transaction
+    nonWitnessUtxo?: Uint8Array;  // Full previous transaction
     isCSV?: boolean;             // CheckSequenceVerify timelock
 }
 ```

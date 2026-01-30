@@ -192,13 +192,13 @@ interface PublicKeyInfo {
 ### Get CSV1 Address
 
 ```typescript
-import { Address } from '@btc-vision/bitcoin';
+import { Address, toHex } from '@btc-vision/bitcoin';
 
 const address = Address.fromString('bc1p...taproot-address...');
 const csv1Address = provider.getCSV1ForAddress(address);
 
 console.log('CSV1 Address:', csv1Address.address);
-console.log('Redeem Script:', csv1Address.redeemScript?.toString('hex'));
+console.log('Redeem Script:', csv1Address.redeemScript ? toHex(csv1Address.redeemScript) : undefined);
 ```
 
 ### Method Signature

@@ -11,15 +11,15 @@ Represents a finalized epoch.
 | Property | Type | Description |
 |----------|------|-------------|
 | `epochNumber` | `bigint` | Sequential epoch ID |
-| `epochHash` | `Buffer` | Unique epoch hash |
-| `epochRoot` | `Buffer` | State root at epoch end |
+| `epochHash` | `Uint8Array` | Unique epoch hash |
+| `epochRoot` | `Uint8Array` | State root at epoch end |
 | `startBlock` | `bigint` | First block in epoch |
 | `endBlock` | `bigint` | Last block in epoch |
 | `difficultyScaled` | `bigint` | Scaled difficulty |
 | `minDifficulty` | `string \| undefined` | Minimum required difficulty |
-| `targetHash` | `Buffer` | Mining target hash |
+| `targetHash` | `Uint8Array` | Mining target hash |
 | `proposer` | `EpochMiner` | Winning miner info |
-| `proofs` | `readonly Buffer[]` | Epoch validity proofs |
+| `proofs` | `readonly Uint8Array[]` | Epoch validity proofs |
 
 ---
 
@@ -29,10 +29,10 @@ The miner who proposed the epoch.
 
 ```typescript
 interface IEpochMiner {
-    readonly solution: Buffer;      // SHA-1 collision solution
+    readonly solution: Uint8Array;      // SHA-1 collision solution
     readonly publicKey: Address;    // Miner's public key
-    readonly salt: Buffer;          // Salt used in solution
-    readonly graffiti?: Buffer;     // Optional message (32 bytes max)
+    readonly salt: Uint8Array;          // Salt used in solution
+    readonly graffiti?: Uint8Array;     // Optional message (32 bytes max)
 }
 ```
 
@@ -60,17 +60,17 @@ A miner's epoch submission. Contains transaction details about the submission.
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `submissionTxId` | `Buffer` | Submission transaction ID |
-| `submissionTxHash` | `Buffer` | Submission transaction hash |
-| `submissionHash` | `Buffer` | Hash of the submission |
+| `submissionTxId` | `Uint8Array` | Submission transaction ID |
+| `submissionTxHash` | `Uint8Array` | Submission transaction hash |
+| `submissionHash` | `Uint8Array` | Hash of the submission |
 | `confirmedAt` | `string` | Confirmation timestamp |
 | `epochProposed` | `IEpochMiner` | The miner's proposal details |
 
 ```typescript
 interface IEpochSubmission {
-    readonly submissionTxId: Buffer;
-    readonly submissionTxHash: Buffer;
-    readonly submissionHash: Buffer;
+    readonly submissionTxId: Uint8Array;
+    readonly submissionTxHash: Uint8Array;
+    readonly submissionHash: Uint8Array;
     readonly confirmedAt: string;
     readonly epochProposed: IEpochMiner;
 }
@@ -87,7 +87,7 @@ Template for mining the current epoch.
 | Property | Type | Description |
 |----------|------|-------------|
 | `epochNumber` | `bigint` | Current epoch number |
-| `epochTarget` | `Buffer` | Target hash for collision |
+| `epochTarget` | `Uint8Array` | Target hash for collision |
 
 ---
 
@@ -98,11 +98,11 @@ Parameters for submitting an epoch solution.
 ```typescript
 interface EpochSubmissionParams {
     readonly epochNumber: bigint;      // Epoch number to submit for
-    readonly targetHash: Buffer;       // Target hash from template
-    readonly salt: Buffer;             // 32-byte salt used in collision
-    readonly mldsaPublicKey: Buffer;   // ML-DSA public key
-    readonly signature: Buffer;        // ML-DSA signature
-    readonly graffiti?: Buffer;        // Optional message (max 32 bytes)
+    readonly targetHash: Uint8Array;       // Target hash from template
+    readonly salt: Uint8Array;             // 32-byte salt used in collision
+    readonly mldsaPublicKey: Uint8Array;   // ML-DSA public key
+    readonly signature: Uint8Array;        // ML-DSA signature
+    readonly graffiti?: Uint8Array;        // Optional message (max 32 bytes)
 }
 ```
 
@@ -117,7 +117,7 @@ Result of epoch submission.
 | Property | Type | Description |
 |----------|------|-------------|
 | `epochNumber` | `bigint` | Epoch that was submitted to |
-| `submissionHash` | `Buffer` | Hash of the submission |
+| `submissionHash` | `Uint8Array` | Hash of the submission |
 | `difficulty` | `number` | Difficulty achieved |
 | `timestamp` | `Date` | Submission timestamp |
 | `status` | `SubmissionStatus` | Submission result status |
@@ -126,7 +126,7 @@ Result of epoch submission.
 ```typescript
 interface ISubmittedEpoch {
     readonly epochNumber: bigint;
-    readonly submissionHash: Buffer;
+    readonly submissionHash: Uint8Array;
     readonly difficulty: number;
     readonly timestamp: Date;
     readonly status: SubmissionStatus;
@@ -224,7 +224,7 @@ if ('submissions' in epochWithSubs && epochWithSubs.submissions) {
 const template = await provider.getEpochTemplate();
 
 console.log('Mining epoch:', template.epochNumber);
-console.log('Target:', template.epochTarget.toString('hex'));
+console.log('Target:', Array.from(template.epochTarget).map(b => b.toString(16).padStart(2, '0')).join(''));
 ```
 
 ### Submit Solution
@@ -236,7 +236,7 @@ const result = await provider.submitEpoch({
     salt: mySalt,
     mldsaPublicKey: myMLDSAPublicKey,
     signature: mySignature,
-    graffiti: Buffer.from('MyMiner v1.0'),
+    graffiti: new TextEncoder().encode('MyMiner v1.0'),
 });
 
 switch (result.status) {

@@ -23,20 +23,12 @@ import { TransactionOutputFlags } from '../contracts/enums/TransactionFlags.js';
 import { IAccessList } from '../contracts/interfaces/IAccessList.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
-import {
-    ParsedSimulatedTransaction,
-    SimulatedTransaction,
-} from '../contracts/interfaces/SimulatedTransaction.js';
+import { ParsedSimulatedTransaction, SimulatedTransaction, } from '../contracts/interfaces/SimulatedTransaction.js';
 import { Epoch } from '../epoch/Epoch.js';
 import { EpochWithSubmissions } from '../epoch/EpochSubmission.js';
 import { EpochTemplate } from '../epoch/EpochTemplate.js';
 import { EpochSubmissionParams } from '../epoch/interfaces/EpochSubmissionParams.js';
-import {
-    RawEpoch,
-    RawEpochTemplate,
-    RawEpochWithSubmissions,
-    RawSubmittedEpoch,
-} from '../epoch/interfaces/IEpoch.js';
+import { RawEpoch, RawEpochTemplate, RawEpochWithSubmissions, RawSubmittedEpoch, } from '../epoch/interfaces/IEpoch.js';
 import { SubmittedEpoch } from '../epoch/SubmittedEpoch.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';

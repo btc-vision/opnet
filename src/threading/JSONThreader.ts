@@ -86,7 +86,10 @@ export class JsonThreader extends BaseThreader<JsonOp, JsonInput, JsonOutput> {
         if (isServiceWorker) {
             // Fallback to main thread fetch in service worker context
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), request.timeout || 20_000);
+            const timeoutId = setTimeout(
+                () => controller.abort(),
+                request.timeout || 20_000,
+            );
 
             try {
                 const resp = await fetch(request.url, {

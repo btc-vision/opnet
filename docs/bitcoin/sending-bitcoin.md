@@ -344,7 +344,7 @@ const params: IFundingTransactionParameters = {
     network: network,
     priorityFee: 0n,
     gasSatFee: 0n,
-    note: 'Hello from OPNet!',  // String or Buffer
+    note: 'Hello from OPNet!',  // String or Uint8Array
 };
 ```
 

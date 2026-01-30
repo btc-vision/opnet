@@ -73,8 +73,8 @@ import { Address } from '@btc-vision/transaction';
 // Create from string
 const addr = Address.fromString('bc1p...');
 
-// Create from buffer
-const addr = new Address(publicKeyBuffer);
+// Create from Uint8Array
+const addr = new Address(publicKeyBytes);
 
 // Methods
 addr.toHex();           // Hex string
@@ -197,10 +197,10 @@ type BlockWitnesses = readonly IBlockWitness[];
 ```typescript
 interface IBlockWitness {
     trusted: boolean;
-    signature: Buffer;
+    signature: Uint8Array;
     timestamp: number;
-    proofs: readonly Buffer[];
-    identity?: Buffer;
+    proofs: readonly Uint8Array[];
+    identity?: Uint8Array;
     publicKey?: Address;
 }
 ```
@@ -253,10 +253,10 @@ interface ITransactionOutput {
 
 ```typescript
 interface ITransactionReceipt {
-    readonly receipt?: string | Buffer;
+    readonly receipt?: string | Uint8Array;
     readonly receiptProofs?: string[];
     readonly events?: RawContractEvents | ContractEvents;
-    readonly revert?: string | Buffer;
+    readonly revert?: string | Uint8Array;
     readonly gasUsed: string | bigint;
     readonly specialGasUsed: string | bigint;
 }
@@ -281,13 +281,13 @@ interface BroadcastedTransaction {
 
 ```typescript
 interface ContractData {
-    bytecode: Buffer;
+    bytecode: Uint8Array;
     wasCompressed: boolean;
     contractAddress: Address;
-    contractPublicKey?: Buffer;
+    contractPublicKey?: Uint8Array;
     deployedTransactionId?: string;
     deployedTransactionHash?: string;
-    deployerPubKey?: Buffer;
+    deployerPubKey?: Uint8Array;
     deployerAddress?: Address;
 }
 ```
@@ -323,7 +323,7 @@ interface IAccessList {
 ```typescript
 interface IStorageValue {
     readonly pointer: PointerLike;      // bigint | string
-    readonly value: string | Buffer;
+    readonly value: string | Uint8Array;
     readonly height: BigNumberish;      // bigint | number | string
     readonly proofs?: string[];         // Optional
 }
@@ -428,15 +428,15 @@ interface RequestUTXOsParamsWithAmount extends RequestUTXOsParams {
 ```typescript
 interface IEpoch {
     readonly epochNumber: bigint;
-    readonly epochHash: Buffer;
-    readonly epochRoot: Buffer;
+    readonly epochHash: Uint8Array;
+    readonly epochRoot: Uint8Array;
     readonly startBlock: bigint;
     readonly endBlock: bigint;
     readonly difficultyScaled: bigint;
     readonly minDifficulty?: string;
-    readonly targetHash: Buffer;
+    readonly targetHash: Uint8Array;
     readonly proposer: IEpochMiner;
-    readonly proofs: readonly Buffer[];
+    readonly proofs: readonly Uint8Array[];
 }
 ```
 
@@ -444,10 +444,10 @@ interface IEpoch {
 
 ```typescript
 interface IEpochMiner {
-    readonly solution: Buffer;
+    readonly solution: Uint8Array;
     readonly publicKey: Address;
-    readonly salt: Buffer;
-    readonly graffiti?: Buffer;
+    readonly salt: Uint8Array;
+    readonly graffiti?: Uint8Array;
 }
 ```
 
@@ -456,7 +456,7 @@ interface IEpochMiner {
 ```typescript
 interface IEpochTemplate {
     readonly epochNumber: bigint;
-    readonly epochTarget: Buffer;
+    readonly epochTarget: Uint8Array;
 }
 ```
 
@@ -467,11 +467,11 @@ Parameters for submitting an epoch solution.
 ```typescript
 interface EpochSubmissionParams {
     readonly epochNumber: bigint;
-    readonly targetHash: Buffer;
-    readonly salt: Buffer;
-    readonly mldsaPublicKey: Buffer;
-    readonly signature: Buffer;
-    readonly graffiti?: Buffer;
+    readonly targetHash: Uint8Array;
+    readonly salt: Uint8Array;
+    readonly mldsaPublicKey: Uint8Array;
+    readonly signature: Uint8Array;
+    readonly graffiti?: Uint8Array;
 }
 ```
 
@@ -479,9 +479,9 @@ interface EpochSubmissionParams {
 
 ```typescript
 interface IEpochSubmission {
-    readonly submissionTxId: Buffer;
-    readonly submissionTxHash: Buffer;
-    readonly submissionHash: Buffer;
+    readonly submissionTxId: Uint8Array;
+    readonly submissionTxHash: Uint8Array;
+    readonly submissionHash: Uint8Array;
     readonly confirmedAt: string;
     readonly epochProposed: IEpochMiner;
 }
@@ -492,7 +492,7 @@ interface IEpochSubmission {
 ```typescript
 interface ISubmittedEpoch {
     readonly epochNumber: bigint;
-    readonly submissionHash: Buffer;
+    readonly submissionHash: Uint8Array;
     readonly difficulty: number;
     readonly timestamp: Date;
     readonly status: SubmissionStatus;
@@ -519,7 +519,7 @@ Exported from `@btc-vision/transaction`.
 
 ```typescript
 interface ChallengeSolution {
-    preimage: Buffer;
+    preimage: Uint8Array;
     reward: bigint;
     difficulty?: bigint;
     version?: number;

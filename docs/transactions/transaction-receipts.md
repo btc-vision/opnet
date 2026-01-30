@@ -54,7 +54,7 @@ async getTransactionReceipt(
 ```typescript
 interface TransactionReceipt {
     // Execution result
-    receipt?: Buffer;              // Raw receipt data
+    receipt?: Uint8Array;          // Raw receipt data
     receiptProofs: string[];       // Merkle proofs for receipt
 
     // Events
@@ -63,7 +63,7 @@ interface TransactionReceipt {
 
     // Revert information
     revert?: string;               // Decoded revert message
-    rawRevert?: Buffer;            // Raw revert data
+    rawRevert?: Uint8Array;        // Raw revert data
 
     // Gas metrics
     gasUsed: bigint;               // Gas consumed
@@ -174,7 +174,7 @@ if (receipt.revert) {
 const receipt = await provider.getTransactionReceipt(txHash);
 
 if (receipt.rawRevert) {
-    console.log('Raw revert data:', receipt.rawRevert.toString('hex'));
+    console.log('Raw revert data:', toHex(receipt.rawRevert));
     console.log('Decoded:', receipt.revert);
 }
 ```

@@ -230,7 +230,7 @@ async function transferTokens() {
     const amount = 100_00000000n;  // 100 tokens
 
     // Step 1: Simulate the transfer
-    const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
+    const simulation = await token.transfer(recipient, amount, new Uint8Array(0));
 
     // Check if simulation succeeded
     if (simulation.revert) {
@@ -346,7 +346,7 @@ async function main() {
         const amount = 1000000n;  // Amount to send
 
         // Simulate first
-        const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
+        const simulation = await token.transfer(recipient, amount, new Uint8Array(0));
 
         if (simulation.revert) {
             console.error('Transfer would fail:', simulation.revert);
@@ -444,7 +444,7 @@ console.log('Amount:', amount.toString());
 
 ```typescript
 try {
-    const simulation = await token.transfer(recipient, amount, Buffer.alloc(0));
+    const simulation = await token.transfer(recipient, amount, new Uint8Array(0));
 
     if (simulation.revert) {
         throw new Error(`Simulation failed: ${simulation.revert}`);

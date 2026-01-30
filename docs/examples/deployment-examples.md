@@ -172,7 +172,7 @@ async function deployToken(
         priorityFee: 0n,
         gasSatFee: 10_000n,
         bytecode: bytecode,
-        calldata: Buffer.from(calldata.getBuffer()),
+        calldata: calldata.getBuffer(),
         challenge: challenge,
         linkMLDSAPublicKeyToAddress: true,
         revealMLDSAPublicKey: true,
@@ -233,7 +233,7 @@ async function deployNFT(
         priorityFee: 0n,
         gasSatFee: 15_000n,  // Higher gas for NFT contract
         bytecode: bytecode,
-        calldata: Buffer.from(calldata.getBuffer()),
+        calldata: calldata.getBuffer(),
         challenge: challenge,
         linkMLDSAPublicKeyToAddress: true,
         revealMLDSAPublicKey: true,
@@ -266,7 +266,7 @@ const nftAddress = await deployNFT(
 interface IDeploymentParameters {
     // Required: Wallet information
     from: string;                          // Deployer's p2tr address
-    signer: ECPairInterface;               // ECDSA keypair
+    signer: UniversalSigner;               // ECDSA keypair
     mldsaSigner?: QuantumBIP32Interface;   // ML-DSA keypair (optional)
     network: Network;                      // Bitcoin network
 
@@ -277,11 +277,11 @@ interface IDeploymentParameters {
     gasSatFee: bigint;                     // Gas allocation in sats
 
     // Required: Contract data
-    bytecode: Buffer;                      // WASM bytecode
+    bytecode: Uint8Array;                  // WASM bytecode
     challenge: ProofOfWorkChallenge;       // PoW challenge
 
     // Optional: Constructor calldata
-    calldata?: Buffer;                     // Constructor arguments
+    calldata?: Uint8Array;                 // Constructor arguments
 
     // Optional: ML-DSA options
     linkMLDSAPublicKeyToAddress?: boolean; // Link quantum key
@@ -299,7 +299,7 @@ interface IDeploymentParameters {
 import { BinaryWriter } from '@btc-vision/transaction';
 
 // Create calldata for various types
-function createConstructorCalldata(): Buffer {
+function createConstructorCalldata(): Uint8Array {
     const writer = new BinaryWriter();
 
     // String with length prefix
@@ -319,7 +319,7 @@ function createConstructorCalldata(): Buffer {
     writer.writeAddress(Address.fromString('0x...'));
 
     // Bytes
-    writer.writeBytes(Buffer.from('data'));
+    writer.writeBytes(new TextEncoder().encode('data'));
 
     // Arrays
     writer.writeU16(3);  // Array length
@@ -327,7 +327,7 @@ function createConstructorCalldata(): Buffer {
     writer.writeU256(200n);
     writer.writeU256(300n);
 
-    return Buffer.from(writer.getBuffer());
+    return writer.getBuffer();
 }
 ```
 
@@ -340,13 +340,13 @@ function tokenCalldata(
     symbol: string,
     decimals: number,
     maxSupply: bigint
-): Buffer {
+): Uint8Array {
     const writer = new BinaryWriter();
     writer.writeStringWithLength(name);
     writer.writeStringWithLength(symbol);
     writer.writeU8(decimals);
     writer.writeU256(maxSupply);
-    return Buffer.from(writer.getBuffer());
+    return writer.getBuffer();
 }
 
 // NFT constructor
@@ -356,14 +356,14 @@ function nftCalldata(
     maxSupply: bigint,
     pricePerToken: bigint,
     baseUri: string
-): Buffer {
+): Uint8Array {
     const writer = new BinaryWriter();
     writer.writeStringWithLength(name);
     writer.writeStringWithLength(symbol);
     writer.writeU256(maxSupply);
     writer.writeU64(pricePerToken);
     writer.writeStringWithLength(baseUri);
-    return Buffer.from(writer.getBuffer());
+    return writer.getBuffer();
 }
 
 // Staking constructor
@@ -371,12 +371,12 @@ function stakingCalldata(
     stakingToken: Address,
     rewardToken: Address,
     rewardRate: bigint
-): Buffer {
+): Uint8Array {
     const writer = new BinaryWriter();
     writer.writeAddress(stakingToken);
     writer.writeAddress(rewardToken);
     writer.writeU256(rewardRate);
-    return Buffer.from(writer.getBuffer());
+    return writer.getBuffer();
 }
 ```
 
@@ -411,7 +411,7 @@ Deploy multiple contracts in sequence:
 ```typescript
 interface ContractDeployment {
     file: string;
-    calldata?: Buffer;
+    calldata?: Uint8Array;
 }
 
 async function batchDeploy(
@@ -526,8 +526,8 @@ class DeploymentService {
     }
 
     async deploy(
-        bytecode: Buffer,
-        calldata?: Buffer,
+        bytecode: Uint8Array,
+        calldata?: Uint8Array,
         options?: {
             feeRate?: number;
             gasSatFee?: bigint;
@@ -609,7 +609,7 @@ class DeploymentService {
         writer.writeU256(maxSupply);
         writer.writeStringWithLength(baseUri);
 
-        const result = await this.deploy(bytecode, Buffer.from(writer.getBuffer()));
+        const result = await this.deploy(bytecode, writer.getBuffer());
         return result.contractAddress;
     }
 

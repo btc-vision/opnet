@@ -56,7 +56,7 @@ import {
     OP_20_ABI
 } from 'opnet';
 import { Address } from '@btc-vision/transaction';
-import { networks } from '@btc-vision/bitcoin';
+import { networks, toHex } from '@btc-vision/bitcoin';
 import * as fs from 'fs';
 
 async function prepareForOfflineSigning() {
@@ -78,7 +78,7 @@ async function prepareForOfflineSigning() {
     const simulation = await token.transfer(
         Address.fromString('0xRecipient...'),
         100_00000000n,  // 100 tokens
-        Buffer.alloc(0),
+        new Uint8Array(0),
     );
 
     if (simulation.revert) {
@@ -97,8 +97,8 @@ async function prepareForOfflineSigning() {
     fs.writeFileSync('offline-tx.bin', offlineBuffer);
 
     // Example: encode as hex string
-    const hexData = offlineBuffer.toString('hex');
-    console.log('Buffer size:', offlineBuffer.length, 'bytes');
+    const hexData = toHex(offlineBuffer);
+    console.log('Data size:', offlineBuffer.length, 'bytes');
 
     await provider.close();
 }
@@ -119,7 +119,7 @@ import {
     MLDSASecurityLevel,
     Wallet,
 } from '@btc-vision/transaction';
-import { networks, Network } from '@btc-vision/bitcoin';
+import { fromHex, networks, Network } from '@btc-vision/bitcoin';
 import * as fs from 'fs';
 
 // Initialize wallet from mnemonic - ONLY ON OFFLINE DEVICE
@@ -138,7 +138,7 @@ async function signOffline() {
     const buffer = fs.readFileSync('offline-tx.bin');
 
     // Example: from hex string
-    // const buffer = Buffer.from(hexString, 'hex');
+    // const buffer = fromHex(hexString);
 
     // Step 2: Reconstruct the CallResult
     const simulation = CallResult.fromOfflineBuffer(buffer);
@@ -292,20 +292,20 @@ The `CallResultSerializer` uses efficient binary encoding for compact data trans
 
 ```typescript
 interface OfflineCallResultData {
-    readonly calldata: Buffer;              // Contract calldata
+    readonly calldata: Uint8Array;           // Contract calldata
     readonly to: string;                    // Contract p2tr address
     readonly contractAddress: string;       // Contract hex address
     readonly estimatedSatGas: bigint;       // Estimated gas in satoshis
     readonly estimatedRefundedGasInSat: bigint;
     readonly revert?: string;               // Revert message if any
-    readonly result: Buffer;                // Simulation result
+    readonly result: Uint8Array;             // Simulation result
     readonly accessList: IAccessList;       // Storage access list
     readonly bitcoinFees?: BitcoinFees;     // Current fee rates
     readonly network: NetworkName;          // mainnet/testnet/regtest
     readonly estimatedGas?: bigint;         // Gas units
     readonly refundedGas?: bigint;          // Refunded gas
     readonly challenge: RawChallenge;       // PoW challenge data
-    readonly challengeOriginalPublicKey: Buffer; // 33-byte compressed public key
+    readonly challengeOriginalPublicKey: Uint8Array; // 33-byte compressed public key
     readonly utxos: UTXO[];                 // UTXOs for signing
     readonly csvAddress?: IP2WSHAddress;    // CSV address if applicable
 }
