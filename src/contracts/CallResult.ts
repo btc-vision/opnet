@@ -6,6 +6,8 @@ import {
     BinaryReader,
     BufferHelper,
     ChallengeSolution,
+    IInteractionParameters,
+    InteractionParametersWithoutSigner,
     IP2WSHAddress,
     LoadedStorage,
     NetEvent,
@@ -363,7 +365,7 @@ export class CallResult<
             revealMLDSAPublicKey: interactionParams.revealMLDSAPublicKey ?? false,
         };
 
-        const params =
+        const params: IInteractionParameters | InteractionParametersWithoutSigner =
             interactionParams.signer !== null
                 ? {
                       ...sharedParams,
@@ -733,7 +735,7 @@ export class CallResult<
         const feeRate = interactionParams.feeRate;
         const priority = interactionParams.priorityFee ?? 0n;
         const addedOuts = interactionParams.extraOutputs ?? [];
-        const totalOuts = BigInt(addedOuts.reduce((s, o) => s + Number(o.value), 0));
+        const totalOuts = addedOuts.reduce((s, o) => s + BigInt(o.value), 0n);
 
         const gasFee = this.bigintMax(this.estimatedSatGas, interactionParams.minGas ?? 0n);
         const preWant =
