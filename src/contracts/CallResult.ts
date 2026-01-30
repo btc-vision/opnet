@@ -1,5 +1,6 @@
 import { QuantumBIP32Interface } from '@btc-vision/bip32';
-import { Network, networks, PsbtOutputExtended, Signer } from '@btc-vision/bitcoin';
+import { Network, networks, PsbtOutputExtended, Signer, toHex } from '@btc-vision/bitcoin';
+import { UniversalSigner } from '@btc-vision/ecpair';
 import {
     Address,
     BinaryReader,
@@ -14,7 +15,6 @@ import {
     SupportedTransactionVersion,
     TransactionFactory,
 } from '@btc-vision/transaction';
-import { UniversalSigner } from '@btc-vision/ecpair';
 import { UTXO } from '../bitcoin/UTXOs.js';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
 import { decodeRevertData } from '../utils/RevertDecoder.js';
@@ -209,7 +209,7 @@ export class CallResult<
         // Use the original public key (33 bytes) instead of the tweaked key (32 bytes)
         const challengeWithOriginalKey = {
             ...data.challenge,
-            legacyPublicKey: '0x' + Buffer.from(data.challengeOriginalPublicKey).toString('hex'),
+            legacyPublicKey: '0x' + toHex(data.challengeOriginalPublicKey),
         };
         const challengeSolution = new ChallengeSolution(challengeWithOriginalKey);
 
@@ -365,7 +365,7 @@ export class CallResult<
             revealMLDSAPublicKey: interactionParams.revealMLDSAPublicKey ?? false,
         };
 
-        const params =
+        const params: IInteractionParameters | InteractionParametersWithoutSigner =
             interactionParams.signer !== null
                 ? {
                       ...sharedParams,
@@ -659,19 +659,6 @@ export class CallResult<
             p2wdaAddress,
         } = signedTx.utxoTracking;
 
-        // Track funding transaction's spent inputs and change outputs.
-        // The funding tx consumes wallet UTXOs (fundingInputUtxos) and produces
-        // change back to the refund address (nextUTXOs). Without this, the UTXO
-        // manager doesn't know the wallet UTXOs are spent and the change is
-        // available, causing "Insufficient UTXOs" on the next transaction.
-        if (signedTx.fundingInputUtxos && signedTx.fundingInputUtxos.length > 0) {
-            this.#provider.utxoManager.spentUTXO(
-                refundAddress,
-                signedTx.fundingInputUtxos,
-                signedTx.nextUTXOs,
-            );
-        }
-
         if (csvAddress && csvUTXOs.length) {
             const finalUTXOs = signedTx.nextUTXOs.map((u) =>
                 this.#cloneUTXOWithWitnessScript(u, csvAddress.witnessScript),
@@ -700,8 +687,7 @@ export class CallResult<
             this.#provider.utxoManager.spentUTXO(
                 refundAddress,
                 regularUTXOs,
-                // Don't re-register nextUTXOs here — already registered by funding tracking above
-                [],
+                refundToAddress === refundAddress ? signedTx.nextUTXOs : [],
             );
         }
 
@@ -717,11 +703,7 @@ export class CallResult<
             );
 
             this.#provider.utxoManager.spentUTXO(p2wdaAddress.address, [], finalUTXOs);
-        } else if (
-            refundToAddress === refundAddress &&
-            !regularUTXOs.length &&
-            !(signedTx.fundingInputUtxos && signedTx.fundingInputUtxos.length > 0)
-        ) {
+        } else if (refundToAddress === refundAddress && !regularUTXOs.length) {
             const isSpecialAddress =
                 (csvAddress && refundToAddress === csvAddress.address) ||
                 (p2wdaAddress && refundToAddress === p2wdaAddress.address);
@@ -753,7 +735,7 @@ export class CallResult<
         const feeRate = interactionParams.feeRate;
         const priority = interactionParams.priorityFee ?? 0n;
         const addedOuts = interactionParams.extraOutputs ?? [];
-        const totalOuts = BigInt(addedOuts.reduce((s, o) => s + Number(o.value), 0));
+        const totalOuts = addedOuts.reduce((s, o) => s + BigInt(o.value), 0n);
 
         const gasFee = this.bigintMax(this.estimatedSatGas, interactionParams.minGas ?? 0n);
         const preWant =
