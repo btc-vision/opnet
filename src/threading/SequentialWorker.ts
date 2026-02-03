@@ -1,62 +1,19 @@
 /**
- * React Native worker creator using worklets.
+ * Sequential worker fallback for environments without threading support.
  *
  * @packageDocumentation
  */
 
-import { ResultMessage, TaskMessage, UniversalWorker, WorkerScript } from './interfaces/IThread.js';
-import { createSequentialWorker } from './SequentialWorker.js';
+import { ResultMessage, TaskMessage, UniversalWorker } from './interfaces/IThread.js';
 
-export const isNode = false;
-export const isReactNative = true;
-export const isBrowser = false;
-
-export function detectRuntime(): 'node' | 'browser' | 'react-native' | 'unknown' {
-    return 'react-native';
-}
-
-interface WorkletRuntime {
-    readonly name: string;
-}
-
-interface WorkletsModule {
-    createWorkletRuntime(name: string): WorkletRuntime;
-    runOnRuntime<T>(runtime: WorkletRuntime, fn: () => T): Promise<T>;
-}
-
-let workletsModule: WorkletsModule | null = null;
-let workletsLoadFailed = false;
-let runtimeCounter = 0;
-
-async function getWorklets(): Promise<WorkletsModule | null> {
-    if (workletsModule) return workletsModule;
-    if (workletsLoadFailed) return null;
-
-    try {
-        workletsModule = (await import('react-native-worklets' as string)) as WorkletsModule;
-        return workletsModule;
-    } catch {
-        workletsLoadFailed = true;
-        return null;
-    }
-}
-
-export async function createWorker<TOp extends string, TData, TResult>(
-    _workerScript: WorkerScript,
-): Promise<UniversalWorker<TOp, TData, TResult>> {
-    const worklets = await getWorklets();
-
-    if (worklets) {
-        return createWorkletWorker<TOp, TData, TResult>(worklets);
-    }
-
-    return createSequentialWorker<TOp, TData, TResult>();
-}
-
-function createWorkletWorker<TOp extends string, TData, TResult>(
-    worklets: WorkletsModule,
-): UniversalWorker<TOp, TData, TResult> {
-    const runtime = worklets.createWorkletRuntime(`worker-${runtimeCounter++}`);
+/**
+ * Creates a sequential "worker" that executes tasks on the main thread.
+ */
+export function createSequentialWorker<TOp extends string, TData, TResult>(): UniversalWorker<
+    TOp,
+    TData,
+    TResult
+> {
     let messageCallback: ((msg: ResultMessage<TResult>) => void) | null = null;
     let terminated = false;
 
@@ -76,17 +33,9 @@ function createWorkletWorker<TOp extends string, TData, TResult>(
                             data instanceof ArrayBuffer
                                 ? new TextDecoder().decode(data)
                                 : (data as string);
-
-                        result = (await worklets.runOnRuntime<TResult>(runtime, () => {
-                            'worklet';
-                            return JSON.parse(text) as TResult;
-                        }));
+                        result = JSON.parse(text) as TResult;
                     } else if (op === 'stringify') {
-                        const toStringify = data;
-                        result = (await worklets.runOnRuntime<TResult>(runtime, () => {
-                            'worklet';
-                            return JSON.stringify(toStringify) as TResult;
-                        }));
+                        result = JSON.stringify(data) as TResult;
                     } else if (op === 'fetch') {
                         const { url, payload, timeout, headers } = data as {
                             url: string;
@@ -115,11 +64,7 @@ function createWorkletWorker<TOp extends string, TData, TResult>(
                                 throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
                             }
 
-                            const text = await resp.text();
-                            result = (await worklets.runOnRuntime<TResult>(runtime, () => {
-                                'worklet';
-                                return JSON.parse(text) as TResult;
-                            }));
+                            result = JSON.parse(await resp.text()) as TResult;
                         } catch (err) {
                             clearTimeout(timeoutId);
                             if ((err as Error).name === 'AbortError') {

@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.8.1-beta.9",
+    "version": "1.8.1-beta.10",
     "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -54,7 +54,8 @@
         }
     },
     "react-native": {
-        "./build/threading/WorkerCreator.js": "./build/threading/WorkerCreator.native.js"
+        "./build/threading/WorkerCreator.js": "./build/threading/WorkerCreator.native.js",
+        "./build/threading/JSONThreader.js": "./build/threading/JSONThreader.native.js"
     },
     "browser": {
         "./build/index.d.ts": "./browser/index.d.ts",

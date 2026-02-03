@@ -2,19 +2,19 @@
  * Worker-based JSON threader for Node.js and browsers.
  *
  * Uses Web Workers (browser) or worker_threads (Node.js) for parallel
- * JSON operations. React Native automatically uses WorkletJsonThreader
- * when react-native-worklets is available, otherwise falls back to
- * SequentialJsonThreader.
+ * JSON operations. React Native uses JSONThreader.native.ts via package.json swap.
  *
  * @packageDocumentation
  */
 
 import { ThreaderOptions, WorkerScript } from './interfaces/IThread.js';
 import { BaseThreader } from './SharedThreader.js';
-import { isReactNative } from './WorkerCreator.js';
 import { jsonWorkerScript } from './worker-scripts/JSONWorker.js';
 
 import type { JsonValue, FetchRequest, IJsonThreader } from './interfaces/IJsonThreader.js';
+
+// Re-export types
+export type { JsonValue, FetchRequest, IJsonThreader };
 
 type JsonOp = 'parse' | 'stringify' | 'fetch';
 type JsonInput = string | JsonValue | ArrayBuffer | FetchRequest;
@@ -143,96 +143,25 @@ export class JsonThreader
     }
 }
 
-// Global singleton with lazy initialization
+// Global singleton
 const GLOBAL_KEY = Symbol.for('opnet.jsonThreader');
-const INIT_KEY = Symbol.for('opnet.jsonThreader.init');
 const globalObj = (typeof globalThis !== 'undefined' ? globalThis : global) as Record<
     symbol,
-    IJsonThreader | Promise<IJsonThreader> | undefined
+    IJsonThreader
 >;
 
-/**
- * Creates the appropriate threader for the current runtime.
- * - React Native: WorkletJsonThreader (with worklets) or SequentialJsonThreader (fallback)
- * - Browser/Node: JsonThreader (worker-based)
- */
-async function createThreader(): Promise<IJsonThreader> {
-    if (isReactNative) {
-        // Try WorkletJsonThreader first (requires react-native-worklets)
-        try {
-            const { WorkletJsonThreader } = await import('./JSONThreader.worklet.js');
-            return WorkletJsonThreader.getInstance();
-        } catch {
-            // Fall back to sequential if worklets not available
-            const { SequentialJsonThreader } = await import('./JSONThreader.sequential.js');
-            return SequentialJsonThreader.getInstance();
-        }
-    }
-
-    return new JsonThreader();
-}
-
-/**
- * Initializes and returns the global JSON threader instance.
- *
- * Automatically selects the best implementation:
- * - Node.js/Browser: Worker-based threading
- * - React Native: Worklet-based threading (or sequential fallback)
- */
-export async function initJsonThreader(): Promise<IJsonThreader> {
-    if (globalObj[GLOBAL_KEY]) {
-        return globalObj[GLOBAL_KEY] as IJsonThreader;
-    }
-
-    if (globalObj[INIT_KEY]) {
-        return globalObj[INIT_KEY] as Promise<IJsonThreader>;
-    }
-
-    const initPromise = createThreader().then((threader) => {
-        globalObj[GLOBAL_KEY] = threader;
-        globalObj[INIT_KEY] = undefined;
-        return threader;
-    });
-
-    globalObj[INIT_KEY] = initPromise;
-    return initPromise;
-}
-
-// For non-React-Native environments, create sync singleton for backward compatibility
-// React Native users should call initJsonThreader() before using
-if (!isReactNative && !globalObj[GLOBAL_KEY]) {
+if (!(GLOBAL_KEY in globalObj)) {
     globalObj[GLOBAL_KEY] = new JsonThreader();
 }
 
 /**
- * Global JSON threader instance.
- *
- * For React Native, call initJsonThreader() first to ensure proper initialization.
- * For Node.js/Browser, this is ready to use immediately.
+ * Initializes and returns the global JSON threader instance.
  */
-export const jsonThreader: IJsonThreader = (globalObj[GLOBAL_KEY] as IJsonThreader) ?? {
-    // Proxy that defers to initialized instance for React Native
-    get stats() {
-        throw new Error('Call initJsonThreader() before using jsonThreader in React Native');
-    },
-    async parse<T>(json: string): Promise<T> {
-        const t = await initJsonThreader();
-        return t.parse<T>(json);
-    },
-    async parseBuffer<T>(buffer: ArrayBuffer): Promise<T> {
-        const t = await initJsonThreader();
-        return t.parseBuffer<T>(buffer);
-    },
-    async stringify(data: JsonValue): Promise<string> {
-        const t = await initJsonThreader();
-        return t.stringify(data);
-    },
-    async fetch<T>(request: FetchRequest): Promise<T> {
-        const t = await initJsonThreader();
-        return t.fetch<T>(request);
-    },
-    async terminate(): Promise<void> {
-        const t = await initJsonThreader();
-        return t.terminate();
-    },
-};
+export function initJsonThreader(): Promise<IJsonThreader> {
+    return Promise.resolve(globalObj[GLOBAL_KEY]);
+}
+
+/**
+ * Global JSON threader instance.
+ */
+export const jsonThreader: IJsonThreader = globalObj[GLOBAL_KEY];
