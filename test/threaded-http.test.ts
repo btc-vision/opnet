@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { FetchRequest } from '../src/threading/JSONThreader.js';
+import type { FetchRequest } from '../src/threading/interfaces/IJsonThreader.js';
 import { JsonThreader } from '../src/threading/JSONThreader.js';
 
 describe('Threaded HTTP - Worker Script Analysis', () => {
@@ -124,18 +124,20 @@ describe('Threaded HTTP - Worker Script Analysis', () => {
 
 describe('Threaded HTTP - JSONThreader.fetch() Method', () => {
     let source: string;
+    let interfaceSource: string;
 
     beforeEach(() => {
         source = fs.readFileSync('./src/threading/JSONThreader.ts', 'utf-8');
+        interfaceSource = fs.readFileSync('./src/threading/interfaces/IJsonThreader.ts', 'utf-8');
     });
 
     describe('fetch method implementation', () => {
         it('should export FetchRequest interface', () => {
-            expect(source).toContain('export interface FetchRequest');
-            expect(source).toContain('url: string');
-            expect(source).toContain('payload: JsonValue');
-            expect(source).toContain('timeout?: number');
-            expect(source).toContain('headers?: Record<string, string>');
+            expect(interfaceSource).toContain('export interface FetchRequest');
+            expect(interfaceSource).toContain('url: string');
+            expect(interfaceSource).toContain('payload: JsonValue');
+            expect(interfaceSource).toContain('timeout?: number');
+            expect(interfaceSource).toContain('headers?: Record<string, string>');
         });
 
         it('should have fetch operation type', () => {
