@@ -31,7 +31,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
             pipelining: 2, // max pipelining per server
         },
         private useRESTAPI: boolean = true,
-        private readonly useThreadedParsing: boolean = true,
+        private readonly useThreadedParsing: boolean = false,
         private readonly useThreadedHttp: boolean = false,
     ) {
         super(network);
