@@ -248,8 +248,12 @@ describe('Threaded HTTP - JSONRpcProvider Integration', () => {
     });
 
     describe('imports', () => {
-        it('should import JsonValue from JSONThreader', () => {
-            expect(source).toContain('import { jsonThreader, JsonValue }');
+        it('should import jsonThreader from JSONThreader', () => {
+            expect(source).toContain('import { jsonThreader }');
+        });
+
+        it('should import JsonValue from interfaces', () => {
+            expect(source).toContain("from '../threading/interfaces/IJsonThreader.js'");
         });
     });
 });

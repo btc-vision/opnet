@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { IJsonThreader } from '../src/threading/JSONThreader.js';
+import type { IJsonThreader } from '../src/threading/interfaces/IJsonThreader.js';
 
 describe('React Native Threading', () => {
     describe('SequentialJsonThreader', () => {
@@ -204,32 +204,7 @@ describe('React Native Threading', () => {
         });
     });
 
-    describe('index.react-native.ts entry point', () => {
-        beforeEach(() => {
-            vi.doMock('react-native-worklets', () => ({
-                createWorkletRuntime: vi.fn((name: string) => ({ name })),
-                runOnRuntime: vi.fn(async <T>(_: unknown, fn: () => T) => fn()),
-            }));
-        });
-
-        afterEach(() => {
-            vi.doUnmock('react-native-worklets');
-        });
-
-        it('should export createJsonThreader', async () => {
-            const { createJsonThreader } = await import(
-                '../src/threading/index.react-native.js'
-            );
-            expect(typeof createJsonThreader).toBe('function');
-        });
-
-        it('should export IJsonThreader type', async () => {
-            const module = await import('../src/threading/index.react-native.js');
-            expect(module.createJsonThreader).toBeDefined();
-        });
-    });
-
-    describe('createJsonThreader factory (React Native)', () => {
+    describe('initJsonThreader factory', () => {
         beforeEach(() => {
             vi.resetModules();
         });
@@ -238,46 +213,9 @@ describe('React Native Threading', () => {
             vi.doUnmock('react-native-worklets');
         });
 
-        it('should return WorkletJsonThreader when worklets available', async () => {
-            vi.doMock('react-native-worklets', () => ({
-                createWorkletRuntime: vi.fn((name: string) => ({ name })),
-                runOnRuntime: vi.fn(async <T>(_: unknown, fn: () => T) => fn()),
-            }));
-
-            const { createJsonThreader } = await import(
-                '../src/threading/index.react-native.js'
-            );
-            const { WorkletJsonThreader } = await import(
-                '../src/threading/JSONThreader.worklet.js'
-            );
-
-            WorkletJsonThreader.resetInstance();
-            const threader = await createJsonThreader();
-
-            expect(threader).toBeInstanceOf(WorkletJsonThreader);
-            await threader.terminate();
-        });
-
-        it('should fallback to SequentialJsonThreader when worklets unavailable', async () => {
-            vi.doMock('react-native-worklets', () => {
-                throw new Error('Module not found');
-            });
-
-            // Need fresh imports after mocking
-            vi.resetModules();
-
-            const { createJsonThreader } = await import(
-                '../src/threading/index.react-native.js'
-            );
-            const { SequentialJsonThreader } = await import(
-                '../src/threading/JSONThreader.sequential.js'
-            );
-
-            SequentialJsonThreader.resetInstance();
-            const threader = await createJsonThreader();
-
-            expect(threader).toBeInstanceOf(SequentialJsonThreader);
-            await threader.terminate();
+        it('should export initJsonThreader', async () => {
+            const { initJsonThreader } = await import('../src/threading/JSONThreader.js');
+            expect(typeof initJsonThreader).toBe('function');
         });
     });
 
