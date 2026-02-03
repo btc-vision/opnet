@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.8.1-beta.6",
+    "version": "1.8.1-beta.7",
     "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -9,6 +9,11 @@
     },
     "exports": {
         ".": {
+            "react-native": {
+                "types": "./build/index.d.ts",
+                "import": "./build/index.js",
+                "default": "./build/index.js"
+            },
             "browser": {
                 "types": "./browser/index.d.ts",
                 "import": "./browser/index.js",
@@ -125,6 +130,14 @@
         "vite-plugin-dts": "^4.5.4",
         "vite-plugin-node-polyfills": "^0.25.0",
         "vitest": "^4.0.18"
+    },
+    "peerDependencies": {
+        "react-native-worklets": ">=1.0.0"
+    },
+    "peerDependenciesMeta": {
+        "react-native-worklets": {
+            "optional": true
+        }
     },
     "dependencies": {
         "@bitcoinerlab/secp256k1": "^1.2.0",

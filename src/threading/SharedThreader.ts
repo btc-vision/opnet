@@ -8,7 +8,7 @@ import {
     WorkerScript,
 } from './interfaces/IThread.js';
 
-import { createWorker, isNode } from './WorkerCreator.js';
+import { createWorker, isNode, isReactNative } from './WorkerCreator.js';
 
 export abstract class BaseThreader<TOp extends string, TData, TResult> extends Logger {
     public readonly logColor: string = '#FF5733';
@@ -173,10 +173,19 @@ export abstract class BaseThreader<TOp extends string, TData, TResult> extends L
             process.once('beforeExit', cleanup);
             process.once('SIGINT', cleanup);
             process.once('SIGTERM', cleanup);
-        } else if (typeof window !== 'undefined') {
+        } else if (isReactNative) {
+            // React Native: No cleanup handlers needed.
+            // App lifecycle is handled differently (AppState API).
+        } else if (
+            typeof window !== 'undefined' &&
+            typeof window.addEventListener === 'function'
+        ) {
             window.addEventListener('beforeunload', cleanup);
             window.addEventListener('unload', cleanup);
-        } else if (typeof self !== 'undefined') {
+        } else if (
+            typeof self !== 'undefined' &&
+            typeof self.addEventListener === 'function'
+        ) {
             self.addEventListener('beforeunload', cleanup);
         }
     }

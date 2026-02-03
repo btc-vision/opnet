@@ -4,7 +4,8 @@ import { Response } from 'undici/types/fetch';
 
 import getFetcher from '../fetch/fetch.js';
 import { Fetcher, FetcherWithCleanup } from '../fetch/fetcher-type.js';
-import { jsonThreader, JsonValue } from '../threading/JSONThreader.js';
+import type { JsonValue } from '../threading/interfaces/IJsonThreader.js';
+import { jsonThreader } from '../threading/JSONThreader.js';
 import { AbstractRpcProvider } from './AbstractRpcProvider.js';
 import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSONRpcResult.js';
