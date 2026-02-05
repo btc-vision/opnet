@@ -124,7 +124,7 @@
     },
     "dependencies": {
         "@btc-vision/bip32": "^7.0.2",
-        "@btc-vision/bitcoin": "^7.0.0-alpha.10",
+        "@btc-vision/bitcoin": "^7.0.0-alpha.11",
         "@btc-vision/bitcoin-rpc": "^1.0.6",
         "@btc-vision/ecpair": "^4.0.2",
         "@btc-vision/logger": "^1.0.8",
