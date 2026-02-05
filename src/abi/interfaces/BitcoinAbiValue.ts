@@ -1,4 +1,4 @@
-import { ABIDataTypes } from '@btc-vision/transaction';
+import type { AbiType } from '@btc-vision/transaction';
 
 /**
  * The Bitcoin ABI value.
@@ -13,6 +13,7 @@ export interface BitcoinAbiValue {
 
     /**
      * The type of the input.
+     * Accepts ABIDataTypes enum values, tuple arrays, or struct objects.
      */
-    type: ABIDataTypes;
+    type: AbiType;
 }

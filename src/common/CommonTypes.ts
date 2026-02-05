@@ -17,7 +17,9 @@ export type DecodedCallResult =
     | Array<Address>
     | AddressMap<bigint>
     | ExtendedAddressMap<bigint>
-    | SchnorrSignature;
+    | SchnorrSignature
+    | DecodedCallResult[]
+    | { [key: string]: DecodedCallResult };
 
 export type Numeric = number | bigint;
 

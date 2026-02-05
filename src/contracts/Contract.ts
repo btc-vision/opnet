@@ -9,9 +9,13 @@ import {
     BinaryReader,
     BinaryWriter,
     ExtendedAddressMap,
+    isAbiStruct,
+    isAbiTuple,
     NetEvent,
     SchnorrSignature,
+    abiTypeToSelectorString,
 } from '@btc-vision/transaction';
+import type { AbiType } from '@btc-vision/transaction';
 import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
 import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties.js';
@@ -31,7 +35,7 @@ import { IContract } from './interfaces/IContract.js';
 import { ParsedSimulatedTransaction } from './interfaces/SimulatedTransaction.js';
 import { OPNetEvent } from './OPNetEvent.js';
 import { ContractDecodedObjectResult, DecodedOutput } from './types/ContractTypes.js';
-import { AbiTypeToStr } from './TypeToStr.js';
+
 
 const internal = Symbol.for('_btc_internal');
 const bitcoinAbiCoder = new ABICoder();
@@ -333,17 +337,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         if (element.inputs && element.inputs.length) {
             for (let i = 0; i < element.inputs.length; i++) {
                 const input = element.inputs[i];
-                const str = AbiTypeToStr[input.type];
-
-                if (!str) {
-                    throw new Error(`Unsupported type: ${input.type}`);
-                }
-
-                if (i > 0) {
-                    name += ',';
-                }
-
-                name += str;
+                if (i > 0) name += ',';
+                name += abiTypeToSelectorString(input.type);
             }
         }
         name += ')';
@@ -381,9 +376,91 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         return writer;
     }
 
+    /** Encodes a single-element tuple as a flat typed array (u16 count + values). */
+    private encodeArray(
+        writer: BinaryWriter,
+        elementType: AbiType,
+        value: unknown,
+        name: string,
+    ): void {
+        if (!(value instanceof Array)) {
+            throw new Error(`Expected array for ${name}`);
+        }
+
+        writer.writeU16(value.length);
+        for (const item of value) {
+            this.encodeInput(writer, { name: `${name}[]`, type: elementType }, item);
+        }
+    }
+
+    /** Encodes a multi-element tuple as array of entries (u16 count + entries). */
+    private encodeTuple(
+        writer: BinaryWriter,
+        types: AbiType[],
+        value: unknown,
+        name: string,
+    ): void {
+        if (!(value instanceof Array)) {
+            throw new Error(`Expected array of tuples for ${name}`);
+        }
+
+        const entries = value as unknown[][];
+        writer.writeU16(entries.length);
+
+        for (const entry of entries) {
+            if (!(entry instanceof Array) || entry.length !== types.length) {
+                throw new Error(
+                    `Each tuple entry must be an array of ${types.length} elements (${name})`,
+                );
+            }
+            for (let j = 0; j < types.length; j++) {
+                this.encodeInput(writer, { name: `${name}[${j}]`, type: types[j] }, entry[j]);
+            }
+        }
+    }
+
+    /** Encodes a struct as a single inline object (no count prefix). */
+    private encodeStruct(
+        writer: BinaryWriter,
+        struct: { [field: string]: AbiType },
+        value: unknown,
+        name: string,
+    ): void {
+        if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+            throw new Error(`Expected object for struct ${name}`);
+        }
+
+        const obj = value as Record<string, unknown>;
+        for (const [fieldName, fieldType] of Object.entries(struct)) {
+            this.encodeInput(
+                writer,
+                { name: `${name}.${fieldName}`, type: fieldType },
+                obj[fieldName],
+            );
+        }
+    }
+
     private encodeInput(writer: BinaryWriter, abi: BitcoinAbiValue, value: unknown): void {
         const type = abi.type;
         const name = abi.name;
+
+        // Handle tuple arrays
+        if (isAbiTuple(type)) {
+            // Single-element tuple: flat array encoding
+            const firstType = type[0];
+            if (type.length === 1 && firstType !== undefined) {
+                this.encodeArray(writer, firstType, value, name);
+                return;
+            }
+            this.encodeTuple(writer, type, value, name);
+            return;
+        }
+
+        // Handle struct objects (single inline value, no count)
+        if (isAbiStruct(type)) {
+            this.encodeStruct(writer, type, value, name);
+            return;
+        }
 
         switch (type) {
             case ABIDataTypes.INT128: {
@@ -662,6 +739,18 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             const name = abi[i].name;
 
             let decodedResult: DecodedCallResult;
+
+            // Handle tuple arrays and struct objects via ABICoder
+            if (isAbiTuple(type) || isAbiStruct(type)) {
+                decodedResult = bitcoinAbiCoder.decodeSingleValue(
+                    reader,
+                    type,
+                ) as DecodedCallResult;
+                result.push(decodedResult);
+                obj[name] = decodedResult;
+                continue;
+            }
+
             switch (type) {
                 case ABIDataTypes.INT128:
                     decodedResult = reader.readI128();
