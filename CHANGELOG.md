@@ -1,5 +1,23 @@
 # Changelog
 
+## [v1.8.1-beta.13] - 2026-02-05
+
+### Features
+
+- Fix/react native ([#126](https://github.com/btc-vision/opnet/pull/126)) by @BlobMaster41
+
+### Bug Fixes
+
+- Fix/react native ([#126](https://github.com/btc-vision/opnet/pull/126)) by @BlobMaster41
+
+### Other Changes
+
+- Tuple/implmentation ([#127](https://github.com/btc-vision/opnet/pull/127)) by @BlobMaster41
+- Bump version and disable threaded parsing ([#128](https://github.com/btc-vision/opnet/pull/128)) by @BlobMaster41
+
+
+
+
 ## [v1.8.1-beta.7] - 2026-02-03
 
 - No changes
