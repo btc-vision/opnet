@@ -47,6 +47,7 @@ export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
     },
     {
         name: 'getPool',
+        constant: true,
         inputs: [
             {
                 name: 'tokenA',
@@ -78,6 +79,7 @@ export const MotoSwapFactoryAbi: BitcoinInterfaceAbi = [
     },
     {
         name: 'getStakingContractAddress',
+        constant: true,
         inputs: [],
         outputs: [
             {

@@ -47,30 +47,35 @@ const OP20SEvents: BitcoinInterfaceAbi = [
 export const OP_20S_ABI: BitcoinInterfaceAbi = [
     {
         name: 'pegRate',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'rate', type: ABIDataTypes.UINT256 }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'pegAuthority',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'authority', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'pegUpdatedAt',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'updatedAt', type: ABIDataTypes.UINT64 }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'maxStaleness',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'staleness', type: ABIDataTypes.UINT64 }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'isStale',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'stale', type: ABIDataTypes.BOOL }],
         type: BitcoinAbiTypes.Function,

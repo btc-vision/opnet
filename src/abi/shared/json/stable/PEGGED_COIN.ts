@@ -63,12 +63,14 @@ export const PeggedToken_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'custodian',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'custodian', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'pendingCustodian',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'pendingCustodian', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Function,

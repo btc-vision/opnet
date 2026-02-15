@@ -121,6 +121,7 @@ export const StableCoin_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'isBlacklisted',
+        constant: true,
         inputs: [{ name: 'account', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'blacklisted', type: ABIDataTypes.BOOL }],
         type: BitcoinAbiTypes.Function,
@@ -139,6 +140,7 @@ export const StableCoin_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'isPaused',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'paused', type: ABIDataTypes.BOOL }],
         type: BitcoinAbiTypes.Function,
@@ -175,24 +177,28 @@ export const StableCoin_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'owner',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'minter',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'minter', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'blacklister',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'blacklister', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'pauser',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'pauser', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Function,

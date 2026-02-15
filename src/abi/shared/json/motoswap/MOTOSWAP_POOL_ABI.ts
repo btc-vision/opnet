@@ -137,6 +137,7 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
 
     {
         name: 'getReserves',
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -183,6 +184,7 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
 
     {
         name: 'price0CumulativeLast',
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -195,6 +197,7 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
 
     {
         name: 'price1CumulativeLast',
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -206,6 +209,7 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
     },
     {
         name: 'kLast',
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -217,6 +221,7 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
     },
     {
         name: 'blockTimestampLast',
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -234,6 +239,7 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
     },
     {
         name: 'MINIMUM_LIQUIDITY',
+        constant: true,
         inputs: [],
         outputs: [
             {
