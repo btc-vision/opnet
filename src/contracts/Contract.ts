@@ -931,6 +931,10 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             response.setDecoded(decoded);
             response.setCalldata(buffer);
 
+            response.constant = element.constant ?? false;
+            response.payable = element.payable ?? false;
+            response.hasTransactionDetails = txDetails !== undefined;
+
             const gasParameters = await this.currentGasParameters();
             const gas = this.estimateGas(response.estimatedGas || 0n, gasParameters);
             const gasRefunded = this.estimateGas(response.refundedGas || 0n, gasParameters);
