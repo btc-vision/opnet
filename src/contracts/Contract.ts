@@ -1,7 +1,9 @@
 import { Network } from '@btc-vision/bitcoin';
+import type { AbiType } from '@btc-vision/transaction';
 import {
     ABICoder,
     ABIDataTypes,
+    abiTypeToSelectorString,
     Address,
     AddressMap,
     AddressTypes,
@@ -13,18 +15,12 @@ import {
     isAbiTuple,
     NetEvent,
     SchnorrSignature,
-    abiTypeToSelectorString,
 } from '@btc-vision/transaction';
-import type { AbiType } from '@btc-vision/transaction';
 import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
 import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties.js';
 import { BitcoinAbiValue } from '../abi/interfaces/BitcoinAbiValue.js';
-import {
-    BitcoinInterfaceAbi,
-    EventBaseData,
-    FunctionBaseData,
-} from '../abi/interfaces/BitcoinInterfaceAbi.js';
+import { BitcoinInterfaceAbi, EventBaseData, FunctionBaseData, } from '../abi/interfaces/BitcoinInterfaceAbi.js';
 import { BlockGasParameters } from '../block/BlockGasParameters.js';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
@@ -35,7 +31,6 @@ import { IContract } from './interfaces/IContract.js';
 import { ParsedSimulatedTransaction } from './interfaces/SimulatedTransaction.js';
 import { OPNetEvent } from './OPNetEvent.js';
 import { ContractDecodedObjectResult, DecodedOutput } from './types/ContractTypes.js';
-
 
 const internal = Symbol.for('_btc_internal');
 const bitcoinAbiCoder = new ABICoder();
@@ -888,8 +883,8 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         const gasPerSat = gasParameters.gasPerSat;
         const exactGas = (gas * gasPerSat) / 1000000000000n;
 
-        // Add 25% extra gas
-        const finalGas = (exactGas * 100n) / (100n - 30n);
+        // Add 15% extra gas
+        const finalGas = (exactGas * 100n) / (100n - 15n);
         return this.max(finalGas, 297n);
     }
 
