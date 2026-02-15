@@ -564,6 +564,19 @@ interface BitcoinAbiValue {
 }
 ```
 
+### FunctionBaseData
+
+```typescript
+interface FunctionBaseData {
+    readonly name: string;
+    readonly type: BitcoinAbiTypes.Function;
+    readonly constant?: boolean;    // true for read-only (view) functions
+    readonly payable?: boolean;     // true for functions requiring payment
+    readonly inputs?: BitcoinAbiValue[];
+    readonly outputs?: BitcoinAbiValue[];
+}
+```
+
 ### BitcoinInterfaceAbi
 
 ```typescript

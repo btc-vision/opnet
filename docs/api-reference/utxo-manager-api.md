@@ -56,11 +56,17 @@ interface RequestUTXOsParamsWithAmount extends RequestUTXOsParams {
 
 ### spentUTXO
 
-Mark UTXOs as spent (for tracking).
+Mark UTXOs as spent and register new UTXOs (for tracking).
 
 ```typescript
-spentUTXO(utxos: UTXO | UTXO[]): void
+spentUTXO(address: string, spent: UTXOs, newUTXOs: UTXOs): void
 ```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `address` | `string` | The address whose UTXOs to update |
+| `spent` | `UTXOs` | UTXOs that were spent |
+| `newUTXOs` | `UTXOs` | New UTXOs created (e.g., change outputs) |
 
 ### clean
 
@@ -156,10 +162,10 @@ const confirmedUtxos = await utxoManager.getUTXOs({
 ### Track Spent UTXOs
 
 ```typescript
-// After using UTXOs in a transaction
-utxoManager.spentUTXO(usedUtxos);
+// After using UTXOs in a transaction, mark them spent and register new ones
+utxoManager.spentUTXO('bc1p...', usedUtxos, newChangeUtxos);
 
-// Later queries won't return these UTXOs
+// Later queries won't return spent UTXOs
 const availableUtxos = await utxoManager.getUTXOs({
     address: 'bc1p...',
 });
@@ -200,8 +206,8 @@ const result = await simulation.sendTransaction({
     utxos: utxos, // Provide specific UTXOs
 });
 
-// Mark as spent
-utxoManager.spentUTXO(utxos);
+// Mark as spent and register new UTXOs
+utxoManager.spentUTXO(wallet.p2tr, utxos, result.newUTXOs);
 ```
 
 ---
@@ -239,8 +245,8 @@ class UTXOService {
         return utxos.reduce((sum, u) => sum + u.value, 0n);
     }
 
-    markSpent(utxos: UTXOs): void {
-        this.manager.spentUTXO(utxos);
+    markSpent(address: string, spent: UTXOs, newUTXOs: UTXOs): void {
+        this.manager.spentUTXO(address, spent, newUTXOs);
     }
 
     clearCache(): void {

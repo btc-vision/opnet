@@ -141,12 +141,14 @@ class CallResult<
 | `events` | `U` | Emitted events |
 | `result` | `BinaryReader` | Raw result data reader |
 | `accessList` | `IAccessList` | Access list from call |
+| `constant` | `boolean` | Whether function is read-only (from ABI) |
+| `payable` | `boolean` | Whether function requires payment (from ABI) |
 | `revert` | `string \| undefined` | Decoded revert message if failed |
 | `estimatedGas` | `bigint \| undefined` | Estimated gas consumed |
 | `refundedGas` | `bigint \| undefined` | Gas that would be refunded |
 | `estimatedSatGas` | `bigint` | Estimated gas in satoshis |
 | `estimatedRefundedGasInSat` | `bigint` | Refunded gas in satoshis |
-| `calldata` | `Uint8Array \| undefined` | Encoded calldata |
+| `calldata` | `Buffer \| undefined` | Encoded calldata |
 | `to` | `string \| undefined` | Target contract address string |
 | `address` | `Address \| undefined` | Target contract Address object |
 | `fromAddress` | `Address \| undefined` | Sender address |
@@ -248,8 +250,7 @@ interface TransactionParameters {
     readonly minGas?: bigint;            // Minimum gas
 
     // Options
-    readonly note?: string | Uint8Array;     // Transaction note
-    // p2wda?: boolean;                  // UNUSED - internal only
+    readonly note?: string | Buffer;         // Transaction note
     readonly txVersion?: SupportedTransactionVersion;  // TX version
     readonly anchor?: boolean;           // Anchor transaction
 
@@ -261,6 +262,9 @@ interface TransactionParameters {
     // ML-DSA Options
     readonly linkMLDSAPublicKeyToAddress?: boolean;
     readonly revealMLDSAPublicKey?: boolean;
+
+    // Challenge
+    readonly challenge?: ChallengeSolution;
 }
 ```
 

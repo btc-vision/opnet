@@ -223,6 +223,10 @@ result.revert               // Error message if call reverted
 result.estimatedGas         // Gas used by the call
 result.refundedGas          // Gas refunded
 
+// ABI flags (set automatically from ABI definition)
+result.constant             // true if function is read-only (view)
+result.payable              // true if function requires payment
+
 // Events
 result.events               // Array of decoded events
 
@@ -272,7 +276,7 @@ contract.setSender(myAddress);
 // Set transaction details for simulation
 contract.setTransactionDetails({
     inputs: [],
-    outputs: [{ to: 'addr', value: 1000n, index: 0, flags: 0 }],
+    outputs: [{ to: 'addr', value: 1000n, index: 1, flags: 0 }],  // index 0 is reserved
 });
 
 // Set access list for optimization

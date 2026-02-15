@@ -90,6 +90,10 @@ interface CallResult<T> {
     // Error message if call reverted
     revert: string | undefined;
 
+    // ABI flags (set automatically from ABI definition)
+    constant: boolean;          // true if function is read-only (view)
+    payable: boolean;           // true if function requires payment
+
     // Gas information
     estimatedGas: bigint | undefined;
     refundedGas: bigint | undefined;
@@ -104,10 +108,13 @@ interface CallResult<T> {
     // Raw result data
     result: BinaryReader;
 
-    // Transaction sending method
+    // Transaction sending methods
+    signTransaction(params: TransactionParameters): Promise<SignedReceipt>;
     sendTransaction(params: TransactionParameters): Promise<Receipt>;
 }
 ```
+
+> **Important**: Calling `sendTransaction()` or `signTransaction()` on a `constant` (view) function will throw an error. For payable functions, you must provide `extraInputs` or `extraOutputs` in the transaction parameters.
 
 ---
 

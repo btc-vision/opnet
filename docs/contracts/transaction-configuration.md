@@ -61,7 +61,7 @@ interface TransactionParameters {
 
     // Optional: Transaction options
     readonly minGas?: bigint;
-    readonly note?: string | Uint8Array;
+    readonly note?: string | Buffer;
     readonly txVersion?: SupportedTransactionVersion;
     readonly anchor?: boolean;
     readonly dontUseCSVUtxos?: boolean;
@@ -71,7 +71,9 @@ interface TransactionParameters {
     // Optional: ML-DSA options
     readonly linkMLDSAPublicKeyToAddress?: boolean;
     readonly revealMLDSAPublicKey?: boolean;
-    // p2wda?: boolean;  // UNUSED - internal only
+
+    // Optional: Challenge
+    readonly challenge?: ChallengeSolution;
 }
 ```
 
@@ -351,12 +353,10 @@ const params: TransactionParameters = {
 Add arbitrary data to the transaction:
 
 ```typescript
-import { fromHex } from '@btc-vision/bitcoin';
-
 const params: TransactionParameters = {
     note: 'My transaction note',
     // or
-    note: fromHex('hex data'),
+    note: Buffer.from('hex data', 'hex'),
     // ...
 };
 ```

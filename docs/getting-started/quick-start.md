@@ -205,7 +205,7 @@ if (result.revert) {
 }
 
 // Gas used
-console.log('Gas used:', result.gasUsed);
+console.log('Gas used:', result.estimatedGas);
 ```
 
 ---
@@ -238,7 +238,7 @@ async function transferTokens() {
     }
 
     console.log('Simulation successful!');
-    console.log('Gas used:', simulation.gasUsed);
+    console.log('Gas used:', simulation.estimatedGas);
 
     // Step 2: Build and send the transaction
     const params: TransactionParameters = {

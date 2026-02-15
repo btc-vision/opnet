@@ -73,6 +73,26 @@ export const MY_CONTRACT_ABI: BitcoinInterfaceAbi = [
 }
 ```
 
+### Payable Function
+
+Functions that require Bitcoin payment (via extra inputs/outputs):
+
+```typescript
+{
+    name: 'purchase',
+    type: BitcoinAbiTypes.Function,
+    payable: true,
+    inputs: [
+        { name: 'quantity', type: ABIDataTypes.UINT256 },
+    ],
+    outputs: [
+        { name: 'success', type: ABIDataTypes.BOOL },
+    ],
+}
+```
+
+> **Important**: When `payable: true`, calling `sendTransaction()` requires `extraInputs` or `extraOutputs` in the transaction parameters. Additionally, `setTransactionDetails()` must be called before the contract method invocation for simulation. Omitting either will throw an error.
+
 ### Function with Multiple Parameters
 
 ```typescript

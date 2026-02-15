@@ -241,18 +241,21 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'totalSupply',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'totalSupply', type: ABIDataTypes.UINT256 }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'balanceOf',
+        constant: true,
         inputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'balance', type: ABIDataTypes.UINT256 }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'allowance',
+        constant: true,
         inputs: [
             { name: 'owner', type: ABIDataTypes.ADDRESS },
             { name: 'spender', type: ABIDataTypes.ADDRESS },

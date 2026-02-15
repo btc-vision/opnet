@@ -221,6 +221,7 @@ export const OP_20S_ABI: BitcoinInterfaceAbi = [
     // Peg rate query
     {
         name: 'pegRate',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'rate', type: ABIDataTypes.UINT256 }],
         type: BitcoinAbiTypes.Function,
@@ -229,6 +230,7 @@ export const OP_20S_ABI: BitcoinInterfaceAbi = [
     // Peg authority
     {
         name: 'pegAuthority',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'authority', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Function,
@@ -237,6 +239,7 @@ export const OP_20S_ABI: BitcoinInterfaceAbi = [
     // Last update time
     {
         name: 'pegUpdatedAt',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'updatedAt', type: ABIDataTypes.UINT64 }],
         type: BitcoinAbiTypes.Function,
@@ -245,6 +248,7 @@ export const OP_20S_ABI: BitcoinInterfaceAbi = [
     // Max staleness
     {
         name: 'maxStaleness',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'staleness', type: ABIDataTypes.UINT64 }],
         type: BitcoinAbiTypes.Function,
@@ -253,6 +257,7 @@ export const OP_20S_ABI: BitcoinInterfaceAbi = [
     // Staleness check
     {
         name: 'isStale',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'stale', type: ABIDataTypes.BOOL }],
         type: BitcoinAbiTypes.Function,
