@@ -537,12 +537,15 @@ Exported from `@btc-vision/transaction`.
 ```typescript
 enum ABIDataTypes {
     UINT8, UINT16, UINT32, UINT64, UINT128, UINT256,
-    INT8, INT16, INT32, INT64, INT128, INT256,
-    BOOL, BYTES, BYTES32, STRING, ADDRESS, TUPLE,
-    ARRAY_OF_UINT8, ARRAY_OF_UINT16, ARRAY_OF_UINT32,
-    ARRAY_OF_UINT64, ARRAY_OF_UINT128, ARRAY_OF_UINT256,
-    ARRAY_OF_BYTES, ARRAY_OF_BYTES32, ARRAY_OF_STRING,
-    ARRAY_OF_ADDRESS, ARRAY_OF_BOOL,
+    INT8, INT16, INT32, INT64, INT128,
+    BOOL, ADDRESS, EXTENDED_ADDRESS, STRING,
+    BYTES4, BYTES32, BYTES,
+    ADDRESS_UINT256_TUPLE, EXTENDED_ADDRESS_UINT256_TUPLE,
+    SCHNORR_SIGNATURE,
+    ARRAY_OF_ADDRESSES, ARRAY_OF_EXTENDED_ADDRESSES,
+    ARRAY_OF_UINT256, ARRAY_OF_UINT128, ARRAY_OF_UINT64,
+    ARRAY_OF_UINT32, ARRAY_OF_UINT16, ARRAY_OF_UINT8,
+    ARRAY_OF_STRING, ARRAY_OF_BYTES, ARRAY_OF_BUFFERS,
 }
 ```
 
@@ -561,6 +564,19 @@ enum BitcoinAbiTypes {
 interface BitcoinAbiValue {
     name: string;
     type: ABIDataTypes;
+}
+```
+
+### FunctionBaseData
+
+```typescript
+interface FunctionBaseData {
+    readonly name: string;
+    readonly type: BitcoinAbiTypes.Function;
+    readonly constant?: boolean;    // true for read-only (view) functions
+    readonly payable?: boolean;     // true for functions requiring payment
+    readonly inputs?: BitcoinAbiValue[];
+    readonly outputs?: BitcoinAbiValue[];
 }
 ```
 

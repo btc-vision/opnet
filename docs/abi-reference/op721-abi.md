@@ -344,24 +344,28 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
     // Metadata
     {
         name: 'name',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'name', type: ABIDataTypes.STRING }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'symbol',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'symbol', type: ABIDataTypes.STRING }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'maxSupply',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'maxSupply', type: ABIDataTypes.UINT256 }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'collectionInfo',
+        constant: true,
         inputs: [],
         outputs: [
             { name: 'icon', type: ABIDataTypes.STRING },
@@ -373,12 +377,14 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'tokenURI',
+        constant: true,
         inputs: [{ name: 'tokenId', type: ABIDataTypes.UINT256 }],
         outputs: [{ name: 'uri', type: ABIDataTypes.STRING }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'metadata',
+        constant: true,
         inputs: [],
         outputs: [
             { name: 'name', type: ABIDataTypes.STRING },
@@ -396,6 +402,7 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
     // Supply
     {
         name: 'totalSupply',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'totalSupply', type: ABIDataTypes.UINT256 }],
         type: BitcoinAbiTypes.Function,
@@ -404,18 +411,21 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
     // Ownership
     {
         name: 'balanceOf',
+        constant: true,
         inputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'balance', type: ABIDataTypes.UINT256 }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'ownerOf',
+        constant: true,
         inputs: [{ name: 'tokenId', type: ABIDataTypes.UINT256 }],
         outputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'tokenOfOwnerByIndex',
+        constant: true,
         inputs: [
             { name: 'owner', type: ABIDataTypes.ADDRESS },
             { name: 'index', type: ABIDataTypes.UINT256 },
@@ -459,6 +469,7 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'getApproved',
+        constant: true,
         inputs: [{ name: 'tokenId', type: ABIDataTypes.UINT256 }],
         outputs: [],
         type: BitcoinAbiTypes.Function,
@@ -474,6 +485,7 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'isApprovedForAll',
+        constant: true,
         inputs: [
             { name: 'owner', type: ABIDataTypes.ADDRESS },
             { name: 'operator', type: ABIDataTypes.ADDRESS },
@@ -531,12 +543,14 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'domainSeparator',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'domainSeparator', type: ABIDataTypes.BYTES32 }],
         type: BitcoinAbiTypes.Function,
     },
     {
         name: 'getApproveNonce',
+        constant: true,
         inputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'nonce', type: ABIDataTypes.UINT256 }],
         type: BitcoinAbiTypes.Function,

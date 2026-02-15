@@ -117,13 +117,20 @@ interface TransactionParameters {
     readonly extraOutputs?: PsbtOutputExtended[];
     readonly from?: Address;
     readonly minGas?: bigint;
-    readonly note?: string | Uint8Array;
+    readonly note?: string | Buffer;
     readonly txVersion?: SupportedTransactionVersion;
     readonly anchor?: boolean;
+
+    readonly dontUseCSVUtxos?: boolean;
+    readonly maxUTXOs?: number;
+    readonly throwIfUTXOsLimitReached?: boolean;
 
     // ML-DSA options
     readonly linkMLDSAPublicKeyToAddress?: boolean;
     readonly revealMLDSAPublicKey?: boolean;
+
+    // Challenge
+    readonly challenge?: ChallengeSolution;
 }
 ```
 
@@ -275,7 +282,10 @@ interface InteractionTransactionReceipt {
     readonly estimatedFees: bigint;        // Actual fees paid
     readonly challengeSolution: RawChallenge;
     readonly rawTransaction: string;       // Raw TX hex
-    readonly fundingUTXOs: UTXO[];        // UTXOs used
+    readonly interactionAddress: string | null;
+    readonly fundingUTXOs: UTXO[];        // UTXOs used for funding
+    readonly fundingInputUtxos: UTXO[];   // Input UTXOs for funding
+    readonly compiledTargetScript: string | null;
 }
 ```
 

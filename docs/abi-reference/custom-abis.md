@@ -73,6 +73,26 @@ export const MY_CONTRACT_ABI: BitcoinInterfaceAbi = [
 }
 ```
 
+### Payable Function
+
+Functions that require Bitcoin payment (via extra inputs/outputs):
+
+```typescript
+{
+    name: 'purchase',
+    type: BitcoinAbiTypes.Function,
+    payable: true,
+    inputs: [
+        { name: 'quantity', type: ABIDataTypes.UINT256 },
+    ],
+    outputs: [
+        { name: 'success', type: ABIDataTypes.BOOL },
+    ],
+}
+```
+
+> **Important**: When `payable: true`, calling `sendTransaction()` requires `extraInputs` or `extraOutputs` in the transaction parameters. Additionally, `setTransactionDetails()` must be called before the contract method invocation for simulation. Omitting either will throw an error.
+
 ### Function with Multiple Parameters
 
 ```typescript
@@ -98,11 +118,126 @@ export const MY_CONTRACT_ABI: BitcoinInterfaceAbi = [
     name: 'batchTransfer',
     type: BitcoinAbiTypes.Function,
     inputs: [
-        { name: 'recipients', type: ABIDataTypes.ARRAY_OF_ADDRESS },
+        { name: 'recipients', type: ABIDataTypes.ARRAY_OF_ADDRESSES },
         { name: 'amounts', type: ABIDataTypes.ARRAY_OF_UINT256 },
     ],
     outputs: [],
 }
+```
+
+### Function with Tuple Parameters
+
+Tuples let you define composite types inline. A multi-element tuple represents an array of ordered entries:
+
+```typescript
+{
+    name: 'batchTransfer',
+    type: BitcoinAbiTypes.Function,
+    inputs: [
+        {
+            name: 'transfers',
+            type: [ABIDataTypes.ADDRESS, ABIDataTypes.UINT256],
+        },
+    ],
+    outputs: [],
+}
+```
+
+Each entry is passed as an array matching the tuple shape:
+
+```typescript
+await contract.batchTransfer(
+    [
+        [recipientA, 100n],
+        [recipientB, 200n],
+    ],
+    txParams
+);
+```
+
+A single-element tuple `[T]` encodes as a flat array of that type:
+
+```typescript
+{
+    name: 'setScores',
+    type: BitcoinAbiTypes.Function,
+    inputs: [
+        { name: 'scores', type: [ABIDataTypes.UINT256] },
+    ],
+    outputs: [],
+}
+
+// Pass as a flat array
+await contract.setScores([100n, 200n, 300n], txParams);
+```
+
+### Function with Struct Parameters
+
+Structs define named fields as an object. Unlike tuples, a struct represents a single inline value (no array wrapping):
+
+```typescript
+{
+    name: 'configure',
+    type: BitcoinAbiTypes.Function,
+    inputs: [
+        {
+            name: 'config',
+            type: {
+                maxSupply: ABIDataTypes.UINT256,
+                mintEnabled: ABIDataTypes.BOOL,
+                admin: ABIDataTypes.ADDRESS,
+            },
+        },
+    ],
+    outputs: [],
+}
+```
+
+Pass a plain object matching the struct shape:
+
+```typescript
+await contract.configure(
+    {
+        maxSupply: 1000000n,
+        mintEnabled: true,
+        admin: adminAddress,
+    },
+    txParams
+);
+```
+
+### Function with Struct Output
+
+Structs work in outputs too:
+
+```typescript
+{
+    name: 'getPoolInfo',
+    type: BitcoinAbiTypes.Function,
+    constant: true,
+    inputs: [],
+    outputs: [
+        {
+            name: 'pool',
+            type: {
+                tokenA: ABIDataTypes.ADDRESS,
+                tokenB: ABIDataTypes.ADDRESS,
+                reserveA: ABIDataTypes.UINT256,
+                reserveB: ABIDataTypes.UINT256,
+                active: ABIDataTypes.BOOL,
+            },
+        },
+    ],
+}
+```
+
+Access the decoded struct via `properties`:
+
+```typescript
+const result = await contract.getPoolInfo();
+console.log(result.properties.pool.tokenA);
+console.log(result.properties.pool.reserveA);
+console.log(result.properties.pool.active);
 ```
 
 ---
