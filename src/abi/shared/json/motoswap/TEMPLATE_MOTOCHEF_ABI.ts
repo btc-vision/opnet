@@ -45,12 +45,14 @@ const TemplateMotoChefOverrides: BitcoinInterfaceAbi = [
     {
         name: 'getFarmName',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'name', type: ABIDataTypes.STRING }],
     },
     {
         name: 'getFarmBanner',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'banner', type: ABIDataTypes.STRING }],
     },
@@ -90,30 +92,35 @@ const TemplateMotoChefOverrides: BitcoinInterfaceAbi = [
     {
         name: 'userFeeRecipient',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'recipient', type: ABIDataTypes.STRING }],
     },
     {
         name: 'motoSwapFeeRecipient',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'recipient', type: ABIDataTypes.STRING }],
     },
     {
         name: 'opnetFeeRecipient',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'recipient', type: ABIDataTypes.STRING }],
     },
     {
         name: 'btcFeePercentage',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'percentage', type: ABIDataTypes.UINT256 }],
     },
     {
         name: 'getFeeDistributionBps',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             { name: 'userFeeBps', type: ABIDataTypes.UINT256 },
@@ -125,6 +132,7 @@ const TemplateMotoChefOverrides: BitcoinInterfaceAbi = [
     {
         name: 'totalUserTokenStaked',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'totalStaked', type: ABIDataTypes.UINT256 }],
     },

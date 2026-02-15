@@ -280,6 +280,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'isPaused',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'paused', type: ABIDataTypes.BOOL }],
         type: BitcoinAbiTypes.Function,
@@ -290,6 +291,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'isWithdrawModeActive',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'active', type: ABIDataTypes.BOOL }],
         type: BitcoinAbiTypes.Function,
@@ -300,6 +302,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getReserve',
+        constant: true,
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
         outputs: [
             { name: 'liquidity', type: ABIDataTypes.UINT256 },
@@ -315,6 +318,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getQuote',
+        constant: true,
         inputs: [
             { name: 'token', type: ABIDataTypes.ADDRESS },
             { name: 'satoshisIn', type: ABIDataTypes.UINT64 },
@@ -333,6 +337,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getProviderDetails',
+        constant: true,
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
         outputs: [
             { name: 'id', type: ABIDataTypes.UINT256 },
@@ -356,6 +361,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getProviderDetailsById',
+        constant: true,
         inputs: [{ name: 'providerId', type: ABIDataTypes.UINT256 }],
         outputs: [
             { name: 'id', type: ABIDataTypes.UINT256 },
@@ -379,6 +385,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getQueueDetails',
+        constant: true,
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
         outputs: [
             { name: 'lastPurgedBlock', type: ABIDataTypes.UINT64 },
@@ -398,6 +405,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getPriorityQueueCost',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'cost', type: ABIDataTypes.UINT64 }],
         type: BitcoinAbiTypes.Function,
@@ -408,6 +416,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getFees',
+        constant: true,
         inputs: [],
         outputs: [
             { name: 'reservationBaseFee', type: ABIDataTypes.UINT64 },
@@ -421,6 +430,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getAntibotSettings',
+        constant: true,
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
         outputs: [
             { name: 'antiBotExpirationBlock', type: ABIDataTypes.UINT64 },
@@ -434,6 +444,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getStakingContractAddress',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'stakingAddress', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Function,
@@ -444,6 +455,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getFeesAddress',
+        constant: true,
         inputs: [],
         outputs: [{ name: 'feesAddress', type: ABIDataTypes.STRING }],
         type: BitcoinAbiTypes.Function,
@@ -454,6 +466,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     //=================================================
     {
         name: 'getPoolInfo',
+        constant: true,
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
         outputs: [
             { name: 'poolType', type: ABIDataTypes.UINT8 },

@@ -6,6 +6,7 @@ export const OP_NET_ABI: BitcoinInterfaceAbi = [
     {
         name: 'address',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -17,6 +18,7 @@ export const OP_NET_ABI: BitcoinInterfaceAbi = [
     {
         name: 'deployer',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {

@@ -126,6 +126,7 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'totalSupply',
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -137,6 +138,7 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'maximumSupply',
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -160,6 +162,7 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'balanceOf',
+        constant: true,
         inputs: [
             {
                 name: 'owner',
@@ -188,6 +191,7 @@ export const OP_20_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'allowance',
+        constant: true,
         inputs: [
             {
                 name: 'owner',

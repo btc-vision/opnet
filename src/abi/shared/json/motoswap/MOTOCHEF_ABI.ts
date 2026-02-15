@@ -24,6 +24,7 @@ const OWNABLE_ABI: BitcoinInterfaceAbi = [
     {
         name: 'owner',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -306,6 +307,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'totalAllocPoint',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -317,6 +319,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'devAddress',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -328,6 +331,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getMotoPerBlock',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -339,6 +343,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getBonusEndBlock',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -350,6 +355,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getBonusMultiplier',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -361,6 +367,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getLpTokens',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -372,6 +379,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getPoolsLength',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -383,6 +391,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getLpToken',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [
             {
                 name: 'poolId',
@@ -399,6 +408,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getPoolInfo',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [
             {
                 name: 'poolId',
@@ -423,6 +433,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getUserInfo',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [
             {
                 name: 'poolId',
@@ -447,6 +458,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getMultiplier',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [
             {
                 name: 'from',
@@ -467,6 +479,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'pendingMoto',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [
             {
                 name: 'poolId',
@@ -487,6 +500,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'treasuryAddress',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -498,6 +512,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getStakingTxId',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [
             {
                 name: 'user',
@@ -514,6 +529,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'getStakingIndex',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [
             {
                 name: 'user',
@@ -530,6 +546,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
         name: 'totalBTCStaked',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {

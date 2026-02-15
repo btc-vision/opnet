@@ -7,6 +7,7 @@ export const MOTO_ABI: BitcoinInterfaceAbi = [
     {
         name: 'admin',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [
             {

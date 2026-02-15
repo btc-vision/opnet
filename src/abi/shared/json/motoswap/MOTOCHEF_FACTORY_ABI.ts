@@ -67,24 +67,28 @@ export const MotoChefFactoryAbi: BitcoinInterfaceAbi = [
     {
         name: 'isPaused',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'isPaused', type: ABIDataTypes.BOOL }],
     },
     {
         name: 'owner',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
     },
     {
         name: 'getTokenDeployer',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [{ name: 'tokenAddress', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'deployer', type: ABIDataTypes.ADDRESS }],
     },
     {
         name: 'getTokenOwner',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [{ name: 'tokenAddress', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
     },
@@ -135,18 +139,21 @@ export const MotoChefFactoryAbi: BitcoinInterfaceAbi = [
     {
         name: 'getUserTokens',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [{ name: 'deployer', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'tokens', type: ABIDataTypes.BYTES }],
     },
     {
         name: 'getTokenMotoChef',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [{ name: 'tokenAddress', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'motoChefAddress', type: ABIDataTypes.ADDRESS }],
     },
     {
         name: 'getDeploymentInfo',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [{ name: 'deployer', type: ABIDataTypes.ADDRESS }],
         outputs: [
             { name: 'has', type: ABIDataTypes.BOOL },
@@ -158,12 +165,14 @@ export const MotoChefFactoryAbi: BitcoinInterfaceAbi = [
     {
         name: 'getDeploymentsCount',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'count', type: ABIDataTypes.UINT32 }],
     },
     {
         name: 'getDeploymentByIndex',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [{ name: 'index', type: ABIDataTypes.UINT32 }],
         outputs: [
             { name: 'deployer', type: ABIDataTypes.ADDRESS },

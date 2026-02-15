@@ -55,6 +55,7 @@ export const STAKING_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'stakedAmount',
+        constant: true,
         inputs: [
             {
                 name: 'address',
@@ -71,6 +72,7 @@ export const STAKING_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'stakedReward',
+        constant: true,
         inputs: [
             {
                 name: 'address',
@@ -93,6 +95,7 @@ export const STAKING_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'rewardPool',
+        constant: true,
         inputs: [],
         outputs: [
             {
@@ -104,6 +107,7 @@ export const STAKING_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'totalStaked',
+        constant: true,
         inputs: [],
         outputs: [
             {

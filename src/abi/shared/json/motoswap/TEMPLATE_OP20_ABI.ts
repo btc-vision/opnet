@@ -74,18 +74,21 @@ export const TemplateOP20Abi: BitcoinInterfaceAbi = [
     {
         name: 'isMinter',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [{ name: 'account', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'isMinter', type: ABIDataTypes.BOOL }],
     },
     {
         name: 'getTokenOwner',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
     },
     {
         name: 'getFactoryAddress',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'factory', type: ABIDataTypes.ADDRESS }],
     },
@@ -104,12 +107,14 @@ export const TemplateOP20Abi: BitcoinInterfaceAbi = [
     {
         name: 'getFreeMintInfo',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'info', type: ABIDataTypes.BYTES }],
     },
     {
         name: 'deployer',
         type: BitcoinAbiTypes.Function,
+        constant: true,
         inputs: [],
         outputs: [{ name: 'deployer', type: ABIDataTypes.ADDRESS }],
     },

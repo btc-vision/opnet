@@ -109,6 +109,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
     /** Common functions */
     {
         name: 'quote',
+        constant: true,
         inputs: [
             {
                 name: 'amountA',
@@ -133,6 +134,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'getAmountOut',
+        constant: true,
         inputs: [
             {
                 name: 'amountIn',
@@ -157,6 +159,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'getAmountIn',
+        constant: true,
         inputs: [
             {
                 name: 'amountOut',
@@ -181,6 +184,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'getAmountsOut',
+        constant: true,
         inputs: [
             {
                 name: 'amountIn',
@@ -201,6 +205,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'getAmountsIn',
+        constant: true,
         inputs: [
             {
                 name: 'amountOut',
@@ -252,6 +257,7 @@ export const MOTOSWAP_ROUTER_ABI: BitcoinInterfaceAbi = [
     /** Views */
     {
         name: 'factory',
+        constant: true,
         inputs: [],
         outputs: [
             {
