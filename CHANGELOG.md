@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.8.1-rc.1] - 2026-02-15
+
+### Features
+
+- Add constant/payable validation to CallResult ([#131](https://github.com/btc-vision/opnet/pull/131)) by @BlobMaster41
+
+### Documentation
+
+- Add constant/payable validation to CallResult ([#131](https://github.com/btc-vision/opnet/pull/131)) by @BlobMaster41
+
+
+
+
 ## [v1.8.1-rc.0] - 2026-02-15
 
 - No changes
