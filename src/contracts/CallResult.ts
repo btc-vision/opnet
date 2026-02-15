@@ -116,7 +116,6 @@ export class CallResult<
 
     public constant: boolean = false;
     public payable: boolean = false;
-    public hasTransactionDetails: boolean = false;
 
     public calldata: Buffer | undefined;
     public loadedStorage: LoadedStorage | undefined;
@@ -333,14 +332,9 @@ export class CallResult<
         }
 
         if (this.payable) {
-            if (!this.hasTransactionDetails) {
-                throw new Error(
-                    'Payable function requires setTransactionDetails() to be called before invoking the contract method.',
-                );
-            }
-
             const hasExtraInputs =
                 interactionParams.extraInputs && interactionParams.extraInputs.length > 0;
+
             const hasExtraOutputs =
                 interactionParams.extraOutputs && interactionParams.extraOutputs.length > 0;
 

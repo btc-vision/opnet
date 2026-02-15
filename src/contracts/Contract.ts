@@ -901,6 +901,12 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             this.currentTxDetails = undefined;
             this.accessList = undefined;
 
+            if (element.payable && !txDetails) {
+                throw new Error(
+                    'Payable function requires setTransactionDetails() to be called before invoking the contract method.',
+                );
+            }
+
             const data = this.encodeFunctionData(element, args);
             const original = data.getBuffer().buffer;
             const buffer = Buffer.from(original);
@@ -933,7 +939,6 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
             response.constant = element.constant ?? false;
             response.payable = element.payable ?? false;
-            response.hasTransactionDetails = txDetails !== undefined;
 
             const gasParameters = await this.currentGasParameters();
             const gas = this.estimateGas(response.estimatedGas || 0n, gasParameters);
