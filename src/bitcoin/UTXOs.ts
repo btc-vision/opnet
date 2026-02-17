@@ -4,7 +4,7 @@ import { IUTXO } from './interfaces/IUTXO.js';
 
 /**
  * Unspent Transaction Output
- * @cathegory Bitcoin
+ * @category Bitcoin
  */
 export class UTXO implements Omit<IUTXO, 'raw'> {
     public readonly transactionId: string;
@@ -17,13 +17,23 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
      */
     public readonly nonWitnessUtxoBase64?: string;
 
+    /**
+     * The non-witness UTXO data as a Uint8Array.
+     * Lazily decoded from the base64 raw transaction data when first accessed.
+     * Remains `undefined` when no raw data was provided.
+     */
+    public nonWitnessUtxo?: Uint8Array | string;
+
     public witnessScript?: Uint8Array | string;
     public redeemScript?: Uint8Array | string;
 
     public isCSV?: boolean;
 
     /**
-     * Create a UTXO from raw interface data
+     * Create a UTXO from raw interface data.
+     * When raw transaction data is present, a lazy getter is installed on `nonWitnessUtxo`
+     * that decodes the base64 data to a `Uint8Array` on first access and caches the result.
+     *
      * @param iUTXO - The raw UTXO data from the API
      * @param isCSV - Whether this is a CSV UTXO
      */
@@ -36,32 +46,31 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
 
         this.scriptPubKey = iUTXO.scriptPubKey;
         this.nonWitnessUtxoBase64 = iUTXO.raw;
-    }
 
-    private _nonWitnessUtxo?: Uint8Array;
+        if (iUTXO.raw) {
+            const raw = iUTXO.raw;
+            let cached: Uint8Array | undefined;
 
-    /**
-     * Get the non-witness UTXO data as a Uint8Array.
-     * This is the full raw transaction data for the UTXO, which is required for signing non-segwit inputs.
-     *
-     * If the non-witness UTXO data is not available, an error will be thrown.
-     * If the data is a base64 string, it will be decoded to a Uint8Array.
-     */
-    public get nonWitnessUtxo(): Uint8Array | string | undefined {
-        if (!this.nonWitnessUtxoBase64) {
-            throw new Error('Non-witness UTXO data is not available for this UTXO');
+            /**
+             * Lazily decode the base64 raw transaction data to a Uint8Array on first access.
+             * The decoded result is cached for subsequent accesses to avoid redundant decoding.
+             */
+            Object.defineProperty(this, 'nonWitnessUtxo', {
+                get(): Uint8Array {
+                    if (!cached) {
+                        cached = fromBase64(raw);
+                    }
+                    return cached;
+                },
+                enumerable: true,
+                configurable: true,
+            });
         }
-
-        if (!this._nonWitnessUtxo) {
-            this._nonWitnessUtxo = fromBase64(this.nonWitnessUtxoBase64);
-        }
-
-        return this._nonWitnessUtxo;
     }
 }
 
 /**
  * Array of Unspent Transaction Outputs
- * @cathegory Bitcoin
+ * @category Bitcoin
  */
 export type UTXOs = UTXO[];
