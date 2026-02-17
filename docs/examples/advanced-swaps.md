@@ -106,10 +106,10 @@ import {
 import { Network, networks } from '@btc-vision/bitcoin';
 
 const network: Network = networks.regtest;
-const provider: JSONRpcProvider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    network
-);
+const provider: JSONRpcProvider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network,
+});
 const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
 const wallet: Wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 
@@ -234,10 +234,6 @@ async function createPool(
     // Create new pool
     const simulation = await factory.createPool(tokenA, tokenB);
 
-    if (simulation.revert) {
-        throw new Error(`Create pool failed: ${simulation.revert}`);
-    }
-
     const params: TransactionParameters = {
         signer: wallet.keypair,
         mldsaSigner: wallet.mldsaKeypair,
@@ -350,18 +346,17 @@ async function swapExactTokens(
         wallet.address
     );
 
-    const approveSimulation = await tokenIn.approve(router.address, amountIn);
-    if (!approveSimulation.revert) {
-        const approveParams: TransactionParameters = {
-            signer: wallet.keypair,
-            mldsaSigner: wallet.mldsaKeypair,
-            refundTo: wallet.p2tr,
-            maximumAllowedSatToSpend: 10000n,
-            feeRate: 10,
-            network: network,
-        };
-        await approveSimulation.sendTransaction(approveParams);
-    }
+    // Increase allowance for router (throws on revert)
+    const approveSimulation = await tokenIn.increaseAllowance(router.address, amountIn);
+    const approveParams: TransactionParameters = {
+        signer: wallet.keypair,
+        mldsaSigner: wallet.mldsaKeypair,
+        refundTo: wallet.p2tr,
+        maximumAllowedSatToSpend: 10000n,
+        feeRate: 10,
+        network: network,
+    };
+    await approveSimulation.sendTransaction(approveParams);
 
     // Execute swap
     const simulation = await router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
@@ -371,10 +366,6 @@ async function swapExactTokens(
         recipient,
         deadline
     );
-
-    if (simulation.revert) {
-        throw new Error(`Swap failed: ${simulation.revert}`);
-    }
 
     const params: TransactionParameters = {
         signer: wallet.keypair,
@@ -484,10 +475,6 @@ async function multiHopSwap(
         deadline
     );
 
-    if (simulation.revert) {
-        throw new Error(`Multi-hop swap failed: ${simulation.revert}`);
-    }
-
     const params: TransactionParameters = {
         signer: wallet.keypair,
         mldsaSigner: wallet.mldsaKeypair,
@@ -543,31 +530,27 @@ async function addLiquidity(
         wallet.address
     );
 
-    // Approve token A
-    const approveA = await tokenAContract.approve(router.address, amountADesired);
-    if (!approveA.revert) {
-        await approveA.sendTransaction({
-            signer: wallet.keypair,
-            mldsaSigner: wallet.mldsaKeypair,
-            refundTo: wallet.p2tr,
-            maximumAllowedSatToSpend: 10000n,
-            feeRate: 10,
-            network: network,
-        });
-    }
+    // Increase allowance for token A (throws on revert)
+    const approveA = await tokenAContract.increaseAllowance(router.address, amountADesired);
+    await approveA.sendTransaction({
+        signer: wallet.keypair,
+        mldsaSigner: wallet.mldsaKeypair,
+        refundTo: wallet.p2tr,
+        maximumAllowedSatToSpend: 10000n,
+        feeRate: 10,
+        network: network,
+    });
 
-    // Approve token B
-    const approveB = await tokenBContract.approve(router.address, amountBDesired);
-    if (!approveB.revert) {
-        await approveB.sendTransaction({
-            signer: wallet.keypair,
-            mldsaSigner: wallet.mldsaKeypair,
-            refundTo: wallet.p2tr,
-            maximumAllowedSatToSpend: 10000n,
-            feeRate: 10,
-            network: network,
-        });
-    }
+    // Increase allowance for token B (throws on revert)
+    const approveB = await tokenBContract.increaseAllowance(router.address, amountBDesired);
+    await approveB.sendTransaction({
+        signer: wallet.keypair,
+        mldsaSigner: wallet.mldsaKeypair,
+        refundTo: wallet.p2tr,
+        maximumAllowedSatToSpend: 10000n,
+        feeRate: 10,
+        network: network,
+    });
 
     // Add liquidity
     const simulation = await router.addLiquidity(
@@ -580,10 +563,6 @@ async function addLiquidity(
         wallet.address,
         deadline
     );
-
-    if (simulation.revert) {
-        throw new Error(`Add liquidity failed: ${simulation.revert}`);
-    }
 
     console.log('Liquidity result:', {
         amountA: simulation.properties.amountA,
@@ -641,18 +620,16 @@ async function removeLiquidity(
     const amountBMin = calculateMinOutput(estimatedB, slippagePercent);
     const deadline = BigInt(Math.floor(Date.now() / 1000) + 600);
 
-    // Approve LP tokens for router
-    const approveLP = await pool.approve(router.address, liquidity);
-    if (!approveLP.revert) {
-        await approveLP.sendTransaction({
-            signer: wallet.keypair,
-            mldsaSigner: wallet.mldsaKeypair,
-            refundTo: wallet.p2tr,
-            maximumAllowedSatToSpend: 10000n,
-            feeRate: 10,
-            network: network,
-        });
-    }
+    // Increase allowance for LP tokens (throws on revert)
+    const approveLP = await pool.increaseAllowance(router.address, liquidity);
+    await approveLP.sendTransaction({
+        signer: wallet.keypair,
+        mldsaSigner: wallet.mldsaKeypair,
+        refundTo: wallet.p2tr,
+        maximumAllowedSatToSpend: 10000n,
+        feeRate: 10,
+        network: network,
+    });
 
     // Remove liquidity
     const simulation = await router.removeLiquidity(
@@ -664,10 +641,6 @@ async function removeLiquidity(
         wallet.address,
         deadline
     );
-
-    if (simulation.revert) {
-        throw new Error(`Remove liquidity failed: ${simulation.revert}`);
-    }
 
     console.log('Removed liquidity:', {
         amountA: simulation.properties.amountA,
@@ -859,17 +832,16 @@ class DexService {
             this.wallet.address
         );
 
-        const approve = await token.approve(this.router.address, amountIn);
-        if (!approve.revert) {
-            await approve.sendTransaction({
-                signer: this.wallet.keypair,
-                mldsaSigner: this.wallet.mldsaKeypair,
-                refundTo: this.wallet.p2tr,
-                maximumAllowedSatToSpend: 10000n,
-                feeRate: 10,
-                network: this.network,
-            });
-        }
+        // Increase allowance for router (throws on revert)
+        const approve = await token.increaseAllowance(this.router.address, amountIn);
+        await approve.sendTransaction({
+            signer: this.wallet.keypair,
+            mldsaSigner: this.wallet.mldsaKeypair,
+            refundTo: this.wallet.p2tr,
+            maximumAllowedSatToSpend: 10000n,
+            feeRate: 10,
+            network: this.network,
+        });
 
         // Swap
         const simulation = await this.router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
@@ -879,10 +851,6 @@ class DexService {
             this.wallet.address,
             deadline
         );
-
-        if (simulation.revert) {
-            throw new Error(`Swap failed: ${simulation.revert}`);
-        }
 
         const receipt = await simulation.sendTransaction({
             signer: this.wallet.keypair,

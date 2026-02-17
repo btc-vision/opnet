@@ -1,4 +1,4 @@
-import { script } from '@btc-vision/bitcoin';
+import { fromHex, script } from '@btc-vision/bitcoin';
 import { ScriptPubKey } from '@btc-vision/bitcoin-rpc';
 
 /**
@@ -32,7 +32,7 @@ export class TransactionOutput {
         this.index = data.index;
 
         this.scriptPubKey = data.scriptPubKey;
-        this.script = script.decompile(Buffer.from(this.scriptPubKey.hex, 'hex'));
+        this.script = script.decompile(fromHex(this.scriptPubKey.hex));
     }
 
     private convertValue(value: string): bigint {

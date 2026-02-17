@@ -32,15 +32,18 @@ Base class for all providers. Both JSONRpcProvider and WebSocketRpcProvider exte
 ### JSONRpcProvider
 
 ```typescript
-new JSONRpcProvider(
-    url: string,
-    network: Network,
-    options?: {
-        timeout?: number;
-        useRESTAPI?: boolean;
-        useThreadedParsing?: boolean;
-    }
-)
+new JSONRpcProvider(config: JSONRpcProviderConfig)
+```
+
+```typescript
+interface JSONRpcProviderConfig {
+    readonly url: string;
+    readonly network: Network;
+    readonly timeout?: number;
+    readonly fetcherConfigurations?: Agent.Options;
+    readonly useThreadedParsing?: boolean;
+    readonly useThreadedHttp?: boolean;
+}
 ```
 
 | Parameter | Type | Default | Description |
@@ -48,17 +51,22 @@ new JSONRpcProvider(
 | `url` | `string` | Required | RPC endpoint URL |
 | `network` | `Network` | Required | Bitcoin network |
 | `timeout` | `number` | `20000` | Request timeout in milliseconds (20 seconds) |
-| `useRESTAPI` | `boolean` | `true` | Use REST API mode for requests |
-| `useThreadedParsing` | `boolean` | `true` | Use threaded parsing for responses |
+| `fetcherConfigurations` | `Agent.Options` | *see below* | HTTP agent configuration |
+| `useThreadedParsing` | `boolean` | `false` | Parse responses in worker thread |
+| `useThreadedHttp` | `boolean` | `false` | Perform entire HTTP request in worker thread |
 
 ### WebSocketRpcProvider
 
 ```typescript
-new WebSocketRpcProvider(
-    url: string,
-    network: Network,
-    config?: WebSocketClientConfig
-)
+new WebSocketRpcProvider(config: WebSocketRpcProviderConfig)
+```
+
+```typescript
+interface WebSocketRpcProviderConfig {
+    readonly url: string;
+    readonly network: Network;
+    readonly websocketConfig?: Partial<Omit<WebSocketClientConfig, 'url'>>;
+}
 ```
 
 ---
@@ -228,7 +236,7 @@ Get the most recent epoch.
 ```typescript
 getLatestEpoch(
     includeSubmissions: boolean
-): Promise<Epoch | EpochWithSubmissions>
+): Promise<Epoch>
 ```
 
 | Parameter | Type | Description |
@@ -380,8 +388,8 @@ Get public key info for multiple addresses.
 ```typescript
 getPublicKeysInfo(
     addresses: string | string[] | Address | Address[],
-    isContract?: boolean,
-    logErrors?: boolean
+    isContract: boolean = false,
+    logErrors: boolean = false
 ): Promise<AddressesInfo>
 ```
 
@@ -476,10 +484,10 @@ enum SubscriptionType {
 ```typescript
 import { WebSocketRpcProvider, SubscriptionType } from 'opnet';
 
-const wsProvider = new WebSocketRpcProvider(
-    'wss://regtest.opnet.org/ws',
-    network
-);
+const wsProvider = new WebSocketRpcProvider({
+    url: 'wss://regtest.opnet.org/ws',
+    network,
+});
 
 // Subscribe to blocks
 await wsProvider.subscribeBlocks((block) => {

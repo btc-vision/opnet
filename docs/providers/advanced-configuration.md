@@ -229,11 +229,16 @@ The JSON-RPC provider uses undici for HTTP requests with built-in connection poo
 ### Default Pool Configuration
 
 ```typescript
-const provider = new JSONRpcProvider(url, network, 20000, {
-    keepAliveTimeout: 30_000,     // Socket keep-alive
-    keepAliveTimeoutThreshold: 30_000,
-    connections: 128,             // Max connections
-    pipelining: 2,                // Pipelined requests
+const provider = new JSONRpcProvider({
+    url,
+    network,
+    timeout: 20_000,
+    fetcherConfigurations: {
+        keepAliveTimeout: 30_000,     // Socket keep-alive
+        keepAliveTimeoutThreshold: 30_000,
+        connections: 128,             // Max connections
+        pipelining: 2,                // Pipelined requests
+    },
 });
 ```
 
@@ -241,17 +246,17 @@ const provider = new JSONRpcProvider(url, network, 20000, {
 
 ```typescript
 // For high-throughput applications
-const provider = new JSONRpcProvider(
+const provider = new JSONRpcProvider({
     url,
     network,
-    30000,  // Longer timeout
-    {
+    timeout: 30_000,
+    fetcherConfigurations: {
         keepAliveTimeout: 60_000,    // Longer keep-alive
         keepAliveTimeoutThreshold: 60_000,
         connections: 256,            // More connections
         pipelining: 10,              // More pipelining
-    }
-);
+    },
+});
 ```
 
 ### Configuration Options Explained
@@ -271,11 +276,11 @@ const provider = new JSONRpcProvider(
 
 ```typescript
 // Provider-wide timeout
-const provider = new JSONRpcProvider(
+const provider = new JSONRpcProvider({
     url,
     network,
-    60000  // 60 second timeout
-);
+    timeout: 60_000, // 60 second timeout
+});
 ```
 
 ### Operation-Specific Timeout
@@ -393,16 +398,16 @@ class OPNetClient {
     private retryConfig = { maxRetries: 3, baseDelay: 1000 };
 
     constructor(url: string, network: typeof networks.bitcoin) {
-        this.provider = new JSONRpcProvider(
+        this.provider = new JSONRpcProvider({
             url,
             network,
-            60000,
-            {
+            timeout: 60_000,
+            fetcherConfigurations: {
                 keepAliveTimeout: 60_000,
                 connections: 256,
                 pipelining: 4,
-            }
-        );
+            },
+        });
     }
 
     async getBlock(height: bigint) {
@@ -434,10 +439,11 @@ class OPNetClient {
                     lastError = error as Error;
 
                     if (error instanceof OPNetError) {
-                        // Don't retry client errors
-                        if (error.code >= 400 && error.code < 500) {
-                            throw error;
-                        }
+                        // Don't retry certain errors.
+                        // Note: OPNetError.code values are WebSocket error codes,
+                        // not HTTP status codes. Check for specific error codes
+                        // relevant to your application.
+                        throw error;
                     }
 
                     const delay = this.retryConfig.baseDelay * Math.pow(2, i);

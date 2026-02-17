@@ -29,7 +29,7 @@ export interface EventList {
  * @category Interfaces
  */
 export interface ICallResultData {
-    readonly result: string | BinaryReader;
+    readonly result: string | Uint8Array | BinaryReader;
     readonly events: RawEventList;
     readonly accessList: IAccessList;
     readonly revert?: string;

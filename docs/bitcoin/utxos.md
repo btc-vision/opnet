@@ -28,7 +28,7 @@ import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
 // Access the UTXOs manager
 const utxoManager = provider.utxoManager;
@@ -272,13 +272,15 @@ for (const [address, utxos] of Object.entries(result)) {
 ## UTXO Class Reference
 
 ```typescript
-interface UTXO {
-    transactionId: string;       // Previous transaction hash
-    outputIndex: number;         // Output index in transaction
-    value: bigint;               // Satoshi value
-    scriptPubKey: ScriptPubKey;  // Locking script
-    nonWitnessUtxo?: Uint8Array;  // Full previous transaction
-    isCSV?: boolean;             // CheckSequenceVerify timelock
+class UTXO {
+    readonly transactionId: string;             // Previous transaction hash
+    readonly outputIndex: number;               // Output index in transaction
+    readonly value: bigint;                     // Satoshi value
+    readonly scriptPubKey: ScriptPubKey;        // Locking script
+    readonly nonWitnessUtxo?: Uint8Array | string; // Full previous transaction
+    witnessScript?: Uint8Array | string;        // Witness script
+    redeemScript?: Uint8Array | string;         // Redeem script
+    isCSV?: boolean;                            // CheckSequenceVerify timelock
 }
 ```
 

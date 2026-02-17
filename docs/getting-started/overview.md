@@ -63,10 +63,10 @@ import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 // JSON-RPC for standard operations
-const provider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest
-);
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+});
 
 // Get blockchain state
 const blockNumber = await provider.getBlockNumber();
@@ -235,11 +235,11 @@ import {
     // Data Classes
     Block,
     Epoch,
-    Transaction,
+    TransactionBase,
 
     // Utils
     BitcoinUtils,
-    RevertDecoder,
+    decodeRevertData,
 } from 'opnet';
 ```
 

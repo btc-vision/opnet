@@ -8,14 +8,14 @@ import { Address } from '@btc-vision/transaction';
 export interface IRawContract {
     readonly contractAddress: string;
 
-    readonly contractPublicKey: string | Buffer;
+    readonly contractPublicKey: string | Uint8Array;
 
-    readonly bytecode: Buffer | string;
+    readonly bytecode: Uint8Array | string;
     readonly wasCompressed: boolean;
     readonly deployedTransactionId: string;
     readonly deployedTransactionHash: string;
-    readonly deployerPubKey: Buffer | string;
-    readonly contractSeed: Buffer | string;
-    readonly contractSaltHash: Buffer | string;
+    readonly deployerPubKey: Uint8Array | string;
+    readonly contractSeed: Uint8Array | string;
+    readonly contractSaltHash: Uint8Array | string;
     readonly deployerAddress: Address;
 }

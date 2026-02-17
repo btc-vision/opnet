@@ -32,10 +32,10 @@ import { networks } from '@btc-vision/bitcoin';
 const network = networks.regtest;  // Use regtest for development
 
 // Create the provider
-const provider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    network
-);
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network,
+});
 
 // Test the connection
 async function testConnection() {
@@ -138,10 +138,10 @@ import {
 import { Network, networks } from '@btc-vision/bitcoin';
 
 const network: Network = networks.regtest;
-const provider: JSONRpcProvider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    network
-);
+const provider: JSONRpcProvider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network,
+});
 
 // Your wallet (from mnemonic) - use deriveUnisat for OPWallet compatibility
 const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
@@ -290,7 +290,7 @@ async function main() {
     const rpcUrl = 'https://regtest.opnet.org';
 
     // ============ Setup Provider ============
-    const provider = new JSONRpcProvider(rpcUrl, network);
+    const provider = new JSONRpcProvider({ url: rpcUrl, network });
 
     // Verify connection
     const blockNumber = await provider.getBlockNumber();

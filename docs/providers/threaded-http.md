@@ -75,15 +75,13 @@ Enable threaded HTTP when creating a provider:
 import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
-const provider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest,
-    20_000,      // timeout
-    {},          // fetcher config
-    true,        // useRESTAPI
-    true,        // useThreadedParsing
-    true         // useThreadedHttp (default: true)
-);
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+    timeout: 20_000,
+    useThreadedParsing: true,
+    useThreadedHttp: true,
+});
 ```
 
 ### Threading Modes
@@ -114,15 +112,15 @@ import { JsonThreader } from 'opnet';
 
 const threader = new JsonThreader({
     poolSize: 4,              // Number of workers (default: CPU cores)
-    threadingThreshold: 1024  // Min size to use workers (bytes)
+    threadingThreshold: 16384  // Min size to use workers (bytes, default: 16384)
 });
 ```
 
 ### Methods
 
-#### `parse<T>(data: string | ArrayBuffer): Promise<T>`
+#### `parse<T>(data: string): Promise<T>`
 
-Parse JSON string or ArrayBuffer in a worker thread:
+Parse JSON string in a worker thread:
 
 ```typescript
 const obj = await threader.parse<MyType>('{"key": "value"}');

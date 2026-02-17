@@ -1,4 +1,4 @@
-import { Network } from '@btc-vision/bitcoin';
+import { fromBase64, fromHex, Network, toBase64, toHex } from '@btc-vision/bitcoin';
 import {
     Address,
     AddressMap,
@@ -23,12 +23,20 @@ import { TransactionOutputFlags } from '../contracts/enums/TransactionFlags.js';
 import { IAccessList } from '../contracts/interfaces/IAccessList.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
-import { ParsedSimulatedTransaction, SimulatedTransaction, } from '../contracts/interfaces/SimulatedTransaction.js';
+import {
+    ParsedSimulatedTransaction,
+    SimulatedTransaction,
+} from '../contracts/interfaces/SimulatedTransaction.js';
 import { Epoch } from '../epoch/Epoch.js';
 import { EpochWithSubmissions } from '../epoch/EpochSubmission.js';
 import { EpochTemplate } from '../epoch/EpochTemplate.js';
 import { EpochSubmissionParams } from '../epoch/interfaces/EpochSubmissionParams.js';
-import { RawEpoch, RawEpochTemplate, RawEpochWithSubmissions, RawSubmittedEpoch, } from '../epoch/interfaces/IEpoch.js';
+import {
+    RawEpoch,
+    RawEpochTemplate,
+    RawEpochWithSubmissions,
+    RawSubmittedEpoch,
+} from '../epoch/interfaces/IEpoch.js';
 import { SubmittedEpoch } from '../epoch/SubmittedEpoch.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
@@ -477,14 +485,14 @@ export abstract class AbstractRpcProvider {
      * @description This method is used to get the contract code of an address.
      * @param {string | Address} address The address of the contract
      * @param {boolean} [onlyBytecode] Whether to return only the bytecode
-     * @returns {Promise<ContractData | Buffer>} The contract data or bytecode
+     * @returns {Promise<ContractData | Uint8Array>} The contract data or bytecode
      * @example await getCode('tb1pth90usc4f528aqphpjrfkkdm4vy8hxnt5gps6aau2nva6pxeshtqqzlt3a');
      * @throws {Error} If something went wrong while fetching the contract code
      */
     public async getCode(
         address: string | Address,
         onlyBytecode: boolean = false,
-    ): Promise<ContractData | Buffer> {
+    ): Promise<ContractData | Uint8Array> {
         const addressStr: string = address.toString();
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GET_CODE, [
             addressStr,
@@ -505,7 +513,7 @@ export abstract class AbstractRpcProvider {
         if ('contractAddress' in result) {
             return new ContractData(result);
         } else {
-            return Buffer.from(result.bytecode, 'base64');
+            return fromBase64(result.bytecode);
         }
     }
 
@@ -550,18 +558,18 @@ export abstract class AbstractRpcProvider {
      * Call a contract function with a given calldata.
      * @description This method is used to call a contract function with a given calldata.
      * @param {string | Address} to The address of the contract
-     * @param {Buffer} data The calldata of the contract function
+     * @param {Uint8Array | string} data The calldata of the contract function
      * @param {string | Address} [from] The address to call the contract from
      * @param {BigNumberish} [height] The height to call the contract from
      * @param {ParsedSimulatedTransaction} [simulatedTransaction] UTXOs to simulate the transaction
      * @param {IAccessList} [accessList] The access list of previous simulation to use for this call
      * @returns {Promise<CallResult>} The result of the contract function call
-     * @example await call('tb1pth90usc4f528aqphpjrfkkdm4vy8hxnt5gps6aau2nva6pxeshtqqzlt3a', Buffer.from('0x12345678'));
+     * @example await call('tb1pth90usc4f528aqphpjrfkkdm4vy8hxnt5gps6aau2nva6pxeshtqqzlt3a', fromHex('12345678'));
      * @throws {Error} If something went wrong while calling the contract
      */
     public async call(
         to: string | Address,
-        data: Buffer | string,
+        data: Uint8Array | string,
         from?: Address,
         height?: BigNumberish,
         simulatedTransaction?: ParsedSimulatedTransaction,
@@ -571,7 +579,7 @@ export abstract class AbstractRpcProvider {
         const fromStr: string | undefined = from ? from.toHex() : undefined;
         const fromLegacyStr: string | undefined = from ? from.tweakedToHex() : undefined;
 
-        let dataStr: string = Buffer.isBuffer(data) ? this.bufferToHex(data) : data;
+        let dataStr: string = data instanceof Uint8Array ? toHex(data) : data;
         if (dataStr.startsWith('0x')) {
             dataStr = dataStr.slice(2);
         }
@@ -626,9 +634,7 @@ export abstract class AbstractRpcProvider {
             let decodedError: string;
 
             try {
-                decodedError = decodeRevertData(
-                    BufferHelper.bufferToUint8Array(Buffer.from(result.revert, 'base64')),
-                );
+                decodedError = decodeRevertData(fromBase64(result.revert));
             } catch {
                 decodedError = result.revert;
             }
@@ -950,7 +956,7 @@ export abstract class AbstractRpcProvider {
 
             const address = Address.fromString(addressContent, legacyKey);
             if (info.mldsaPublicKey) {
-                address.originalMDLSAPublicKey = Buffer.from(info.mldsaPublicKey, 'hex');
+                address.originalMDLSAPublicKey = fromHex(info.mldsaPublicKey);
                 address.mldsaLevel = info.mldsaLevel as MLDSASecurityLevel;
             }
 
@@ -1065,11 +1071,11 @@ export abstract class AbstractRpcProvider {
      * @returns {Promise<SubmittedEpoch>} The submission result
      * @example await submitEpoch({
      *     epochNumber: 123n,
-     *     checksumRoot: Buffer.from('00000000000000000000000000000000', 'hex'), // 32 bytes
-     *     salt: Buffer.from('0a0a0a0a0a0a00a', 'hex'),
+     *     checksumRoot: fromHex('00000000000000000000000000000000'), // 32 bytes
+     *     salt: fromHex('0a0a0a0a0a0a00a0'),
      *     mldsaPublicKey: Address.dead(),
-     *     graffiti: Buffer.from('Hello, world!'),
-     *     signature: Buffer.from('1234567890abcdef', 'hex'),
+     *     graffiti: new Uint8Array([72, 101, 108, 108, 111]),
+     *     signature: fromHex('1234567890abcdef'),
      * });
      * @throws {Error} If something went wrong while submitting the epoch
      */
@@ -1077,11 +1083,11 @@ export abstract class AbstractRpcProvider {
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.SUBMIT_EPOCH, [
             {
                 epochNumber: params.epochNumber.toString(),
-                checksumRoot: this.bufferToHex(params.checksumRoot),
-                salt: this.bufferToHex(params.salt),
-                mldsaPublicKey: this.bufferToHex(params.mldsaPublicKey),
-                signature: this.bufferToHex(params.signature),
-                graffiti: params.graffiti ? this.bufferToHex(params.graffiti) : undefined,
+                checksumRoot: toHex(params.checksumRoot),
+                salt: toHex(params.salt),
+                mldsaPublicKey: toHex(params.mldsaPublicKey),
+                signature: toHex(params.signature),
+                graffiti: params.graffiti ? toHex(params.graffiti) : undefined,
             },
         ]);
 
@@ -1116,11 +1122,11 @@ export abstract class AbstractRpcProvider {
         return {
             inputs: transaction.inputs.map((input) => {
                 return {
-                    txId: input.txId.toString('base64'),
+                    txId: toBase64(input.txId),
                     outputIndex: input.outputIndex,
-                    scriptSig: input.scriptSig.toString('base64'),
-                    witnesses: input.witnesses.map((w) => w.toString('base64')),
-                    coinbase: input.coinbase ? input.coinbase.toString('base64') : undefined,
+                    scriptSig: toBase64(input.scriptSig),
+                    witnesses: input.witnesses.map((w) => toBase64(w)),
+                    coinbase: input.coinbase ? toBase64(input.coinbase) : undefined,
                     flags: input.flags,
                 };
             }),
@@ -1130,18 +1136,14 @@ export abstract class AbstractRpcProvider {
                     to: output.to,
                     value: output.value.toString(),
 
-                    scriptPubKey: output.scriptPubKey?.toString('base64') || undefined,
+                    scriptPubKey: output.scriptPubKey ? toBase64(output.scriptPubKey) : undefined,
                     flags: output.flags || TransactionOutputFlags.hasTo,
                 };
             }),
         };
     }
 
-    private bufferToHex(buffer: Buffer): string {
-        return buffer.toString('hex');
-    }
-
     private bigintToBase64(bigint: bigint): string {
-        return Buffer.from(BufferHelper.pointerToUint8Array(bigint)).toString('base64');
+        return toBase64(BufferHelper.pointerToUint8Array(bigint));
     }
 }

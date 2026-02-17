@@ -57,10 +57,18 @@ Returns a `ContractData` object containing the contract's code.
 The `ContractData` class holds contract bytecode and metadata:
 
 ```typescript
-interface ContractData {
-    bytecode: Uint8Array;       // Contract WASM bytecode
-    contractAddress: Address;   // Contract address
-    // Additional metadata depending on onlyBytecode flag
+class ContractData {
+    contractAddress: string;               // Contract address (hex string)
+    contractPublicKey: Address;            // Contract public key as Address
+    bytecode: Uint8Array;                  // Contract WASM bytecode
+    wasCompressed: boolean;                // Whether bytecode was compressed
+    deployedTransactionId: string;         // Deployment transaction ID
+    deployedTransactionHash: string;       // Deployment transaction hash
+    deployerPubKey: Uint8Array;            // Deployer's public key
+    deployerHashedPublicKey: Uint8Array;   // Deployer's hashed public key
+    contractSeed: Uint8Array;              // Contract seed
+    contractSaltHash: Uint8Array;          // Contract salt hash
+    deployerAddress: Address;              // Deployer's address
 }
 ```
 
@@ -74,7 +82,7 @@ interface ContractData {
 const address = Address.fromString('0x...');
 const contractData = await provider.getCode(address, false);
 
-console.log('Contract address:', contractData.contractAddress.toHex());
+console.log('Contract address:', contractData.contractAddress);
 console.log('Bytecode size:', contractData.bytecode.length, 'bytes');
 ```
 
@@ -189,14 +197,14 @@ async function analyzeContract(
     const contractData = await provider.getCode(address, false);
 
     console.log('Contract Analysis:');
-    console.log('  Address:', contractData.contractAddress.toHex());
+    console.log('  Address:', contractData.contractAddress);
     console.log('  Bytecode size:', contractData.bytecode.length, 'bytes');
 
     // Check for common patterns
     const bytecodeHex = toHex(contractData.bytecode);
 
     return {
-        address: contractData.contractAddress.toHex(),
+        address: contractData.contractAddress,
         size: contractData.bytecode.length,
     };
 }

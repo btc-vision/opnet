@@ -4,7 +4,7 @@
 
 const ERROR_SELECTOR_BYTES = Uint8Array.from([0x63, 0x73, 0x9d, 0x5c]);
 
-function areBytesEqual(a: Uint8Array | Buffer, b: Uint8Array | Buffer): boolean {
+function areBytesEqual(a: Uint8Array, b: Uint8Array): boolean {
     if (a.length !== b.length) return false;
 
     for (let i = 0; i < a.length; i++) {
@@ -16,10 +16,10 @@ function areBytesEqual(a: Uint8Array | Buffer, b: Uint8Array | Buffer): boolean 
     return true;
 }
 
-function startsWithErrorSelector(revertDataBytes: Uint8Array | Buffer): boolean {
+function startsWithErrorSelector(revertDataBytes: Uint8Array): boolean {
     return (
         revertDataBytes.length >= 4 &&
-        areBytesEqual(Buffer.from(revertDataBytes.subarray(0, 4)), ERROR_SELECTOR_BYTES)
+        areBytesEqual(revertDataBytes.subarray(0, 4), ERROR_SELECTOR_BYTES)
     );
 }
 
@@ -34,10 +34,10 @@ function bytesToHexString(byteArray: Uint8Array): string {
  * @param revertDataBytes - The raw revert data bytes.
  * @returns The decoded revert message.
  */
-export function decodeRevertData(revertDataBytes: Uint8Array | Buffer): string {
+export function decodeRevertData(revertDataBytes: Uint8Array): string {
     if (startsWithErrorSelector(revertDataBytes)) {
         const decoder = new TextDecoder();
-        const buf = Buffer.from(revertDataBytes.subarray(8));
+        const buf = revertDataBytes.subarray(8);
 
         return decoder.decode(buf);
     } else {

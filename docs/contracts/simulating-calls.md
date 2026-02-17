@@ -98,6 +98,7 @@ interface CallResult<T> {
     estimatedGas: bigint | undefined;
     refundedGas: bigint | undefined;
     estimatedSatGas: bigint;
+    estimatedRefundedGasInSat: bigint;
 
     // Events emitted during simulation
     events: OPNetEvent[];
@@ -109,8 +110,8 @@ interface CallResult<T> {
     result: BinaryReader;
 
     // Transaction sending methods
-    signTransaction(params: TransactionParameters): Promise<SignedReceipt>;
-    sendTransaction(params: TransactionParameters): Promise<Receipt>;
+    signTransaction(params: TransactionParameters, amountAddition?: bigint): Promise<SignedInteractionTransactionReceipt>;
+    sendTransaction(params: TransactionParameters, amountAddition?: bigint): Promise<InteractionTransactionReceipt>;
 }
 ```
 
@@ -183,7 +184,7 @@ const tx = await result.sendTransaction(params);
 ### Decoding Revert Messages
 
 ```typescript
-import { RevertDecoder } from 'opnet';
+import { decodeRevertData } from 'opnet';
 
 const result = await contract.someMethod(args);
 
@@ -286,14 +287,15 @@ import { TransactionInputFlags, TransactionOutputFlags } from 'opnet';
 
 // Output flags
 enum TransactionOutputFlags {
-    hasScriptPubKey = 1,  // Has raw scriptPubKey
-    hasTo = 2,            // Has address string
+    hasTo = 1,            // 0b00000001 - Has address string
+    hasScriptPubKey = 2,  // 0b00000010 - Has raw scriptPubKey
+    OP_RETURN = 4,        // 0b00000100 - OP_RETURN output (must also set hasScriptPubKey)
 }
 
 // Input flags
 enum TransactionInputFlags {
-    hasWitnesses = 1,
-    hasCoinbase = 2,
+    hasCoinbase = 1,      // 0b00000001
+    hasWitness = 2,       // 0b00000010
 }
 ```
 
@@ -439,7 +441,7 @@ import { networks, PsbtOutputExtended } from '@btc-vision/bitcoin';
 
 async function claimNFTWithPayment(): Promise<void> {
     const network = networks.regtest;
-    const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+    const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
     const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
     const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 

@@ -1,3 +1,4 @@
+import { fromHex } from '@btc-vision/bitcoin';
 import { BinaryReader, BinaryWriter, IP2WSHAddress, RawChallenge } from '@btc-vision/transaction';
 import { UTXO } from '../bitcoin/UTXOs.js';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
@@ -24,13 +25,13 @@ const SERIALIZATION_VERSION = 1;
  * @category Contracts
  */
 export interface OfflineCallResultData {
-    readonly calldata: Buffer;
+    readonly calldata: Uint8Array;
     readonly to: string;
     readonly contractAddress: string;
     readonly estimatedSatGas: bigint;
     readonly estimatedRefundedGasInSat: bigint;
     readonly revert?: string;
-    readonly result: Buffer;
+    readonly result: Uint8Array;
     readonly accessList: IAccessList;
     readonly bitcoinFees?: BitcoinFees;
     readonly network: NetworkName;
@@ -51,11 +52,11 @@ export class CallResultSerializer {
     private static readonly FEE_PRECISION = 1000000;
 
     /**
-     * Serializes offline data to a Buffer.
+     * Serializes offline data to a Uint8Array.
      * @param {OfflineCallResultData} data - The data to serialize.
-     * @returns {Buffer} The serialized binary data.
+     * @returns {Uint8Array} The serialized binary data.
      */
-    public static serialize(data: OfflineCallResultData): Buffer {
+    public static serialize(data: OfflineCallResultData): Uint8Array {
         const writer = new BinaryWriter();
 
         // Version header
@@ -117,15 +118,15 @@ export class CallResultSerializer {
             writer.writeBoolean(false);
         }
 
-        return Buffer.from(writer.getBuffer());
+        return writer.getBuffer();
     }
 
     /**
-     * Deserializes a Buffer to offline data.
-     * @param {Buffer} buffer - The serialized data.
+     * Deserializes a Uint8Array to offline data.
+     * @param {Uint8Array} buffer - The serialized data.
      * @returns {OfflineCallResultData} The deserialized data.
      */
-    public static deserialize(buffer: Buffer): OfflineCallResultData {
+    public static deserialize(buffer: Uint8Array): OfflineCallResultData {
         const reader = new BinaryReader(buffer);
 
         // Version check
@@ -140,7 +141,7 @@ export class CallResultSerializer {
         const network = this.u8ToNetworkName(reader.readU8());
 
         // Calldata
-        const calldata = Buffer.from(reader.readBytesWithLength());
+        const calldata = reader.readBytesWithLength();
 
         // Contract addresses
         const to = reader.readStringWithLength();
@@ -159,7 +160,7 @@ export class CallResultSerializer {
         const revert = hasRevert ? reader.readStringWithLength() : undefined;
 
         // Result
-        const result = Buffer.from(reader.readBytesWithLength());
+        const result = reader.readBytesWithLength();
 
         // Access list
         const accessList = this.readAccessList(reader);
@@ -172,7 +173,7 @@ export class CallResultSerializer {
         const challenge = this.readChallenge(reader);
 
         // Challenge original public key (33 bytes compressed)
-        const challengeOriginalPublicKey = Buffer.from(reader.readBytesWithLength());
+        const challengeOriginalPublicKey = reader.readBytesWithLength();
 
         // UTXOs
         const utxos = this.readUTXOs(reader);
@@ -182,7 +183,7 @@ export class CallResultSerializer {
         const csvAddress = hasCsvAddress
             ? {
                   address: reader.readStringWithLength(),
-                  witnessScript: Buffer.from(reader.readBytesWithLength()),
+                  witnessScript: reader.readBytesWithLength(),
               }
             : undefined;
 
@@ -393,22 +394,22 @@ export class CallResultSerializer {
 
             if (utxo.witnessScript) {
                 writer.writeBoolean(true);
-                const witnessScriptBuffer =
+                const witnessScriptBytes =
                     typeof utxo.witnessScript === 'string'
-                        ? Buffer.from(utxo.witnessScript, 'hex')
+                        ? fromHex(utxo.witnessScript)
                         : utxo.witnessScript;
-                writer.writeBytesWithLength(witnessScriptBuffer);
+                writer.writeBytesWithLength(witnessScriptBytes);
             } else {
                 writer.writeBoolean(false);
             }
 
             if (utxo.redeemScript) {
                 writer.writeBoolean(true);
-                const redeemScriptBuffer =
+                const redeemScriptBytes =
                     typeof utxo.redeemScript === 'string'
-                        ? Buffer.from(utxo.redeemScript, 'hex')
+                        ? fromHex(utxo.redeemScript)
                         : utxo.redeemScript;
-                writer.writeBytesWithLength(redeemScriptBuffer);
+                writer.writeBytesWithLength(redeemScriptBytes);
             } else {
                 writer.writeBoolean(false);
             }
@@ -430,14 +431,10 @@ export class CallResultSerializer {
             const isCSV = reader.readBoolean();
 
             const hasWitnessScript = reader.readBoolean();
-            const witnessScript = hasWitnessScript
-                ? Buffer.from(reader.readBytesWithLength())
-                : undefined;
+            const witnessScript = hasWitnessScript ? reader.readBytesWithLength() : undefined;
 
             const hasRedeemScript = reader.readBoolean();
-            const redeemScript = hasRedeemScript
-                ? Buffer.from(reader.readBytesWithLength())
-                : undefined;
+            const redeemScript = hasRedeemScript ? reader.readBytesWithLength() : undefined;
 
             utxos.push({
                 transactionId,

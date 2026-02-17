@@ -1,4 +1,4 @@
-import { Network } from '@btc-vision/bitcoin';
+import { fromBase64, fromHex, Network } from '@btc-vision/bitcoin';
 import { Address } from '@btc-vision/transaction';
 import { OPNetTransactionTypes } from '../../interfaces/opnet/OPNetTransactionTypes.js';
 import { IDeploymentTransaction } from '../interfaces/transactions/IDeploymentTransaction.js';
@@ -16,47 +16,49 @@ export class DeploymentTransaction
     public readonly contractAddress?: string;
     public readonly contractPublicKey?: Address;
 
-    public readonly bytecode?: Buffer;
+    public readonly bytecode?: Uint8Array;
     public readonly wasCompressed?: boolean;
 
-    public readonly deployerPubKey?: Buffer;
-    public readonly deployerHashedPublicKey?: Buffer;
+    public readonly deployerPubKey?: Uint8Array;
+    public readonly deployerHashedPublicKey?: Uint8Array;
     public readonly deployerAddress?: Address;
 
-    public readonly contractSeed?: Buffer;
-    public readonly contractSaltHash?: Buffer;
+    public readonly contractSeed?: Uint8Array;
+    public readonly contractSaltHash?: Uint8Array;
 
     public readonly from?: Address;
 
     constructor(transaction: IDeploymentTransaction, network: Network) {
         super(transaction, network);
 
-        if (!transaction.deployerAddress && !transaction.revert) {
+        if (
+            !transaction.deployerAddress &&
+            (transaction.revert === null || transaction.revert === undefined)
+        ) {
             throw new Error('Deployer address is missing');
         }
 
         try {
             this.from = new Address(
-                Buffer.from(transaction.from as string, 'base64'),
-                Buffer.from(transaction.fromLegacy as string, 'base64'),
+                fromBase64(transaction.from as string),
+                fromBase64(transaction.fromLegacy as string),
             );
 
             this.contractAddress = transaction.contractAddress;
             this.contractPublicKey = new Address(
-                Buffer.from(transaction.contractPublicKey as string, 'base64'),
+                fromBase64(transaction.contractPublicKey as string),
             );
 
-            this.bytecode = Buffer.from(transaction.bytecode as string, 'base64');
+            this.bytecode = fromBase64(transaction.bytecode as string);
             this.wasCompressed = transaction.wasCompressed;
 
             if (transaction.deployerPubKey) {
-                this.deployerPubKey = Buffer.from(transaction.deployerPubKey as string, 'base64');
+                this.deployerPubKey = fromBase64(transaction.deployerPubKey as string);
             }
 
             if (transaction.deployerAddress) {
-                this.deployerHashedPublicKey = Buffer.from(
+                this.deployerHashedPublicKey = fromHex(
                     (transaction.deployerAddress as string).replace('0x', ''),
-                    'hex',
                 );
             }
 
@@ -67,8 +69,8 @@ export class DeploymentTransaction
                 );
             }
 
-            this.contractSeed = Buffer.from(transaction.contractSeed as string, 'base64');
-            this.contractSaltHash = Buffer.from(transaction.contractSaltHash as string, 'base64');
+            this.contractSeed = fromBase64(transaction.contractSeed as string);
+            this.contractSaltHash = fromBase64(transaction.contractSaltHash as string);
         } catch {}
     }
 }

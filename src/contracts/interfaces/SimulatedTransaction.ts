@@ -2,7 +2,7 @@ export interface StrippedTransactionOutput {
     readonly value: bigint;
     readonly index: number;
     readonly flags: number;
-    readonly scriptPubKey?: Buffer;
+    readonly scriptPubKey?: Uint8Array;
     readonly to?: string;
 }
 
@@ -15,14 +15,14 @@ export interface StrippedTransactionOutputAPI {
 }
 
 export interface StrippedTransactionInput {
-    readonly txId: Buffer;
+    readonly txId: Uint8Array;
     readonly outputIndex: number;
-    readonly scriptSig: Buffer;
+    readonly scriptSig: Uint8Array;
 
-    readonly witnesses: Buffer[];
+    readonly witnesses: Uint8Array[];
 
     readonly flags: number;
-    readonly coinbase?: Buffer;
+    readonly coinbase?: Uint8Array;
 }
 
 export interface StrippedTransactionInputAPI {

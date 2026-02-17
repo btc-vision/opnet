@@ -27,7 +27,7 @@ import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
 // Raw signed transaction as hex string
 const rawTx = '02000000000101ad897689f66c98daae5fdc3606235c1ad7...';

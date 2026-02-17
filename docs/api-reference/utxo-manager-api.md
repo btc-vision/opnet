@@ -9,7 +9,7 @@ Manages UTXO tracking and retrieval for transaction building.
 ### Constructor
 
 ```typescript
-new UTXOsManager(provider: AbstractRpcProvider)
+new UTXOsManager(provider: IProviderForUTXO)
 ```
 
 ---
@@ -28,10 +28,12 @@ async getUTXOs(params: RequestUTXOsParams): Promise<UTXOs>
 
 ```typescript
 interface RequestUTXOsParams {
-    address: string;              // Bitcoin address
-    optimize?: boolean;           // Optimize UTXO selection
-    throwOnError?: boolean;       // Throw on errors
-    ensureConfirmed?: boolean;    // Only confirmed UTXOs
+    readonly address: string;              // Bitcoin address
+    readonly optimize?: boolean;           // Optimize UTXO selection
+    readonly mergePendingUTXOs?: boolean;  // Include unconfirmed UTXOs
+    readonly filterSpentUTXOs?: boolean;   // Exclude known spent UTXOs
+    readonly olderThan?: bigint;           // Only UTXOs older than this block
+    readonly isCSV?: boolean;              // CSV (timelock) UTXOs
 }
 ```
 
@@ -49,8 +51,11 @@ async getUTXOsForAmount(
 
 ```typescript
 interface RequestUTXOsParamsWithAmount extends RequestUTXOsParams {
-    amount: bigint;               // Amount to cover
-    feeRate?: number;             // Fee rate for estimation
+    readonly amount: bigint;                    // Amount to cover
+    readonly throwErrors?: boolean;             // Throw if insufficient
+    readonly csvAddress?: string;               // CSV address for priority
+    readonly maxUTXOs?: number;                 // Max UTXOs to select
+    readonly throwIfUTXOsLimitReached?: boolean; // Throw if limit reached
 }
 ```
 
@@ -68,29 +73,60 @@ spentUTXO(address: string, spent: UTXOs, newUTXOs: UTXOs): void
 | `spent` | `UTXOs` | UTXOs that were spent |
 | `newUTXOs` | `UTXOs` | New UTXOs created (e.g., change outputs) |
 
-### clean
+### getPendingUTXOs
 
-Clear the spent UTXO tracking cache.
+Get pending (unconfirmed) UTXOs for an address.
 
 ```typescript
-clean(): void
+getPendingUTXOs(address: string): UTXOs
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `address` | `string` | The address to get pending UTXOs for |
+
+### getMultipleUTXOs
+
+Get UTXOs for multiple addresses in a single call.
+
+```typescript
+async getMultipleUTXOs(
+    params: RequestMultipleUTXOsParams
+): Promise<Record<string, UTXOs>>
+```
+
+#### RequestMultipleUTXOsParams
+
+```typescript
+interface RequestMultipleUTXOsParams {
+    readonly requests: RequestUTXOsParams[];
+    readonly mergePendingUTXOs?: boolean;
+    readonly filterSpentUTXOs?: boolean;
+}
+```
+
+### clean
+
+Clear the spent UTXO tracking cache. Optionally pass an address to clear only that address.
+
+```typescript
+clean(address?: string): void
 ```
 
 ---
 
-## UTXO Interface
+## UTXO Class
 
 ```typescript
-interface UTXO {
-    transactionId: string;        // Transaction ID
-    outputIndex: number;          // Output index
-    value: bigint;                // Value in satoshis
-    scriptPubKey: {
-        hex: string;              // Script hex
-        address?: string;         // Decoded address
-    };
-    confirmations?: number;       // Confirmation count
-    raw?: string;                 // Raw transaction hex
+class UTXO {
+    readonly transactionId: string;             // Transaction ID
+    readonly outputIndex: number;               // Output index
+    readonly value: bigint;                     // Value in satoshis
+    readonly scriptPubKey: ScriptPubKey;        // Locking script
+    readonly nonWitnessUtxo?: Uint8Array | string; // Full previous transaction
+    witnessScript?: Uint8Array | string;        // Witness script
+    redeemScript?: Uint8Array | string;         // Redeem script
+    isCSV?: boolean;                            // CheckSequenceVerify timelock
 }
 ```
 
@@ -111,7 +147,7 @@ type UTXOs = UTXO[];
 ```typescript
 import { UTXOsManager, JSONRpcProvider } from 'opnet';
 
-const provider = new JSONRpcProvider(url, network);
+const provider = new JSONRpcProvider({ url, network });
 const utxoManager = new UTXOsManager(provider);
 
 // Get all UTXOs
@@ -132,7 +168,7 @@ for (const utxo of utxos) {
 const utxos = await utxoManager.getUTXOsForAmount({
     address: 'bc1p...',
     amount: 100000000n, // 1 BTC
-    feeRate: 10,
+    throwErrors: true,
 });
 
 const totalValue = utxos.reduce((sum, u) => sum + u.value, 0n);
@@ -149,13 +185,13 @@ const utxos = await utxoManager.getUTXOs({
 });
 ```
 
-### Confirmed Only
+### Without Pending UTXOs
 
 ```typescript
-// Only get confirmed UTXOs
+// Only get confirmed UTXOs (exclude pending)
 const confirmedUtxos = await utxoManager.getUTXOs({
     address: 'bc1p...',
-    ensureConfirmed: true,
+    mergePendingUTXOs: false,
 });
 ```
 
@@ -185,7 +221,7 @@ utxoManager.clean();
 const utxos = await utxoManager.getUTXOsForAmount({
     address: wallet.p2tr,
     amount: estimatedCost,
-    feeRate: 10,
+    throwErrors: true,
 });
 
 // Simulate first
@@ -219,13 +255,13 @@ class UTXOService {
     private manager: UTXOsManager;
 
     constructor(provider: AbstractRpcProvider) {
-        this.manager = new UTXOsManager(provider);
+        this.manager = provider.utxoManager;
     }
 
     async getAvailable(address: string): Promise<UTXOs> {
         return this.manager.getUTXOs({
             address,
-            ensureConfirmed: true,
+            mergePendingUTXOs: false,
         });
     }
 
@@ -265,9 +301,9 @@ class UTXOService {
 
 3. **Clear Cache Periodically**: Call `clean()` when UTXOs are confirmed
 
-4. **Handle Errors**: Use `throwOnError: true` for critical operations
+4. **Handle Errors**: Use `throwErrors: true` for critical operations
 
-5. **Prefer Confirmed**: Use `ensureConfirmed` for important transactions
+5. **Exclude Pending**: Use `mergePendingUTXOs: false` for confirmed-only queries
 
 ---
 

@@ -217,7 +217,7 @@ export type TokenMetadata = CallResult<
  * import { getContract } from '../contracts/Contract.js';
  * import { JSONRpcProvider } from '../providers/JSONRpcProvider.js';
  *
- * const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.org');
+ * const provider: JSONRpcProvider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network: networks.regtest });
  * const contract: IOP20Contract = getContract<IOP20Contract>(
  *     'bcrt1pyrs3eqwnrmd4ql3nwvx66yzp0wc24xd2t9pf8699ln340pjs7f3sar3tum',
  *     OP_20_ABI,

@@ -144,7 +144,7 @@ import { getContract, OP_721_ABI, IOP721Contract } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
 const nft = getContract<IOP721Contract>(
     'bc1p...nft-address...',

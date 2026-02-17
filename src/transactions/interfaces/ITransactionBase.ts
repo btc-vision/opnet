@@ -44,8 +44,9 @@ export interface ITransactionBase<T extends OPNetTransactionTypes> extends ITran
 
     /**
      * @description If the transaction was reverted, this field will contain the revert message.
+     * @caution A revert is valid even if it's an empty string, so the presence of this field indicates a revert regardless of its content.
      */
-    readonly revert?: string | Buffer;
+    readonly revert?: string | Uint8Array;
 
     /**
      * @description The inputs of the transaction.

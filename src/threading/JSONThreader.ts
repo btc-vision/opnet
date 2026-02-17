@@ -7,11 +7,10 @@
  * @packageDocumentation
  */
 
+import type { FetchRequest, IJsonThreader, JsonValue } from './interfaces/IJsonThreader.js';
 import { ThreaderOptions, WorkerScript } from './interfaces/IThread.js';
 import { BaseThreader } from './SharedThreader.js';
 import { jsonWorkerScript } from './worker-scripts/JSONWorker.js';
-
-import type { JsonValue, FetchRequest, IJsonThreader } from './interfaces/IJsonThreader.js';
 
 // Re-export types
 export type { JsonValue, FetchRequest, IJsonThreader };
@@ -106,10 +105,7 @@ export class JsonThreader
         if (isServiceWorker) {
             // Fallback to main thread fetch in service worker context
             const controller = new AbortController();
-            const timeoutId = setTimeout(
-                () => controller.abort(),
-                request.timeout || 20_000,
-            );
+            const timeoutId = setTimeout(() => controller.abort(), request.timeout || 20_000);
 
             try {
                 const resp = await fetch(request.url, {
@@ -132,7 +128,9 @@ export class JsonThreader
             } catch (err) {
                 clearTimeout(timeoutId);
                 if ((err as Error).name === 'AbortError') {
-                    throw new Error(`Request timed out after ${request.timeout || 20_000}ms`);
+                    throw new Error(`Request timed out after ${request.timeout || 20_000}ms`, {
+                        cause: err,
+                    });
                 }
                 throw err;
             }

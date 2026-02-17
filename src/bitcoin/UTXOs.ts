@@ -1,16 +1,28 @@
+import { fromBase64 } from '@btc-vision/bitcoin';
 import { ScriptPubKey } from '@btc-vision/bitcoin-rpc';
 import { IUTXO } from './interfaces/IUTXO.js';
 
 /**
  * Unspent Transaction Output
- * @cathegory Bitcoin
+ * @category Bitcoin
  */
 export class UTXO implements Omit<IUTXO, 'raw'> {
     public readonly transactionId: string;
     public readonly outputIndex: number;
     public readonly value: bigint;
     public readonly scriptPubKey: ScriptPubKey;
-    public readonly nonWitnessUtxo?: Uint8Array | string;
+
+    /**
+     * The raw transaction data for this UTXO, encoded as a base64 string.
+     */
+    public readonly nonWitnessUtxoBase64?: string;
+
+    /**
+     * The non-witness UTXO data as a Uint8Array.
+     * Lazily decoded from the base64 raw transaction data when first accessed.
+     * Remains `undefined` when no raw data was provided.
+     */
+    public nonWitnessUtxo?: Uint8Array | string;
 
     public witnessScript?: Uint8Array | string;
     public redeemScript?: Uint8Array | string;
@@ -18,7 +30,10 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
     public isCSV?: boolean;
 
     /**
-     * Create a UTXO from raw interface data
+     * Create a UTXO from raw interface data.
+     * When raw transaction data is present, a lazy getter is installed on `nonWitnessUtxo`
+     * that decodes the base64 data to a `Uint8Array` on first access and caches the result.
+     *
      * @param iUTXO - The raw UTXO data from the API
      * @param isCSV - Whether this is a CSV UTXO
      */
@@ -30,13 +45,49 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
         this.value = BigInt(iUTXO.value);
 
         this.scriptPubKey = iUTXO.scriptPubKey;
+        this.nonWitnessUtxoBase64 = iUTXO.raw;
 
-        this.nonWitnessUtxo = Buffer.from(iUTXO.raw, 'base64');
+        if (iUTXO.raw) {
+            const raw = iUTXO.raw;
+            let cached: Uint8Array | undefined;
+
+            /**
+             * Lazily decode the base64 raw transaction data to a Uint8Array on first access.
+             * The decoded result is cached for subsequent accesses to avoid redundant decoding.
+             */
+            Object.defineProperty(this, 'nonWitnessUtxo', {
+                get(): Uint8Array {
+                    if (!cached) {
+                        cached = fromBase64(raw);
+                    }
+                    return cached;
+                },
+                enumerable: true,
+                configurable: true,
+            });
+        }
     }
+
+    /*public toJSON(): Record<string, unknown> {
+        return {
+            transactionId: this.transactionId,
+            outputIndex: this.outputIndex,
+            value: this.value.toString(),
+            scriptPubKey: this.scriptPubKey,
+            nonWitnessUtxo: this.nonWitnessUtxoBase64,
+            witnessScript: this.witnessScript,
+            redeemScript: this.redeemScript,
+            isCSV: this.isCSV,
+        };
+    }
+
+    public [Symbol.for('nodejs.util.inspect.custom')](): Record<string, unknown> {
+        return this.toJSON();
+    }*/
 }
 
 /**
  * Array of Unspent Transaction Outputs
- * @cathegory Bitcoin
+ * @category Bitcoin
  */
 export type UTXOs = UTXO[];

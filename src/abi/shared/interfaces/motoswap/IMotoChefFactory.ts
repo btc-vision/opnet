@@ -36,7 +36,7 @@ export type GetTokenOwner = CallResult<{ owner: Address }, []>;
 export type DeployToken = CallResult<{ success: boolean }, [OPNetEvent<TokenDeployedEvent>]>;
 export type DeployMotoChef = CallResult<{ success: boolean }, [OPNetEvent<MotoChefDeployedEvent>]>;
 export type UpdateTokenOwner = CallResult<{ success: boolean }, []>;
-export type GetUserTokens = CallResult<{ tokens: Buffer }, []>;
+export type GetUserTokens = CallResult<{ tokens: Uint8Array }, []>;
 export type GetDeploymentInfo = CallResult<
     { has: boolean; token: Address; motoChef: Address; block: bigint },
     []
@@ -47,7 +47,7 @@ export type GetDeploymentByIndex = CallResult<
     []
 >;
 export type GetTokenMotoChef = CallResult<{ motoChefAddress: Address }, []>;
-export type OnOP20Received = CallResult<{ selector: Buffer }, []>;
+export type OnOP20Received = CallResult<{ selector: Uint8Array }, []>;
 
 export interface IMotoChefFactory extends IOP_NETContract {
     owner(): Promise<Owner>;
@@ -96,7 +96,7 @@ export interface IMotoChefFactory extends IOP_NETContract {
         operator: Address,
         from: Address,
         amount: bigint,
-        data: Buffer,
+        data: Uint8Array,
     ): Promise<OnOP20Received>;
 }
 

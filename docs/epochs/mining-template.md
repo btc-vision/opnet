@@ -29,7 +29,7 @@ import { JSONRpcProvider } from 'opnet';
 import { networks, toHex } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
 const template = await provider.getEpochTemplate();
 

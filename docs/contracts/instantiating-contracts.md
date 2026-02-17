@@ -31,10 +31,10 @@ import { Network, networks } from '@btc-vision/bitcoin';
 
 // Setup
 const network: Network = networks.regtest;
-const provider: JSONRpcProvider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    network
-);
+const provider: JSONRpcProvider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network,
+});
 
 // Contract address
 const tokenAddress: Address = Address.fromString(
@@ -253,7 +253,7 @@ import { networks } from '@btc-vision/bitcoin';
 
 async function main() {
     const network = networks.regtest;
-    const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+    const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
     const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
     const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 

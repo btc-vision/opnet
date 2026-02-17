@@ -376,7 +376,7 @@ export type SetDev = CallResult<{}, OPNetEvent<never>[]>;
  */
 export type OnOP20Received = CallResult<
     {
-        selector: Buffer;
+        selector: Uint8Array;
     },
     []
 >;

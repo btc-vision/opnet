@@ -117,7 +117,8 @@ interface TransactionParameters {
     readonly extraOutputs?: PsbtOutputExtended[];
     readonly from?: Address;
     readonly minGas?: bigint;
-    readonly note?: string | Buffer;
+    readonly note?: string | Uint8Array;
+    readonly p2wda?: boolean;
     readonly txVersion?: SupportedTransactionVersion;
     readonly anchor?: boolean;
 
@@ -327,7 +328,7 @@ import { networks } from '@btc-vision/bitcoin';
 
 async function transferTokens() {
     const network = networks.regtest;
-    const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+    const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
     const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
     const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 

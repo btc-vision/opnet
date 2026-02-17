@@ -8,9 +8,9 @@ import {
 } from './interfaces/IEpoch.js';
 
 export class EpochSubmission implements IEpochSubmission {
-    public readonly submissionTxId: Buffer;
-    public readonly submissionTxHash: Buffer;
-    public readonly submissionHash: Buffer;
+    public readonly submissionTxId: Uint8Array;
+    public readonly submissionTxHash: Uint8Array;
+    public readonly submissionHash: Uint8Array;
     public readonly confirmedAt: string;
     public readonly epochProposed: EpochMiner;
 

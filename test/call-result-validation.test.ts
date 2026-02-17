@@ -1,4 +1,4 @@
-import type { Network } from '@btc-vision/bitcoin';
+import type { Network, Satoshi } from '@btc-vision/bitcoin';
 import {
     Address,
     type BroadcastedTransaction,
@@ -7,10 +7,11 @@ import {
 } from '@btc-vision/transaction';
 import { describe, expect, it, vi } from 'vitest';
 import type { UTXO } from '../build/bitcoin/UTXOs.js';
+import type { TransactionParameters } from '../build/contracts/CallResult.js';
 import { CallResult } from '../build/contracts/CallResult.js';
 import type { ICallResultData } from '../build/contracts/interfaces/ICallResult.js';
 import type { IProviderForCallResult } from '../build/contracts/interfaces/IProviderForCallResult.js';
-import type { TransactionParameters } from '../build/contracts/CallResult.js';
+import { RawEventList } from '../src/contracts/interfaces/ICallResult.js';
 
 function createMockProvider(): IProviderForCallResult {
     return {
@@ -37,9 +38,10 @@ function createMockProvider(): IProviderForCallResult {
 }
 
 function createMockCallResultData(overrides: Partial<ICallResultData> = {}): ICallResultData {
+    const events: RawEventList = {};
     return {
         result: Buffer.from([]).toString('base64'),
-        events: [],
+        events: events,
         accessList: {},
         ...overrides,
     };
@@ -175,7 +177,7 @@ describe('CallResult - Payable Function Validation', () => {
             extraOutputs: [
                 {
                     address: 'bcrt1p-output-address',
-                    value: 10000,
+                    value: 10000n as Satoshi,
                 },
             ],
         });

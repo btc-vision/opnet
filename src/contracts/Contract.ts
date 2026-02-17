@@ -20,7 +20,11 @@ import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
 import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties.js';
 import { BitcoinAbiValue } from '../abi/interfaces/BitcoinAbiValue.js';
-import { BitcoinInterfaceAbi, EventBaseData, FunctionBaseData, } from '../abi/interfaces/BitcoinInterfaceAbi.js';
+import {
+    BitcoinInterfaceAbi,
+    EventBaseData,
+    FunctionBaseData,
+} from '../abi/interfaces/BitcoinInterfaceAbi.js';
 import { BlockGasParameters } from '../block/BlockGasParameters.js';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
@@ -210,13 +214,13 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
      * Encodes the calldata for a function.
      * @param {string} functionName The name of the function.
      * @param {unknown[]} args The arguments for the function.
-     * @returns {Buffer} The encoded calldata.
+     * @returns {Uint8Array} The encoded calldata.
      */
-    public encodeCalldata(functionName: string, args: unknown[]): Buffer {
+    public encodeCalldata(functionName: string, args: unknown[]): Uint8Array {
         for (const element of this.interface.abi) {
             if (element.name === functionName) {
                 const data = this.encodeFunctionData(element as FunctionBaseData, args);
-                return Buffer.from(data.getBuffer().buffer);
+                return data.getBuffer();
             }
         }
 
@@ -270,7 +274,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         | Address
         | Network
         | (() => Promise<BlockGasParameters>)
-        | ((functionName: string, args: unknown[]) => Buffer) {
+        | ((functionName: string, args: unknown[]) => Uint8Array) {
         const key = name as keyof Omit<
             IBaseContract<T>,
             | 'address'
@@ -349,8 +353,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         let str = bitcoinAbiCoder.encodeSelector(selectorStr);
         if (str.includes(',')) {
             const array = str.split(',').map((s) => Number(s));
-            const buffer = Buffer.from(array);
-            str = buffer.toString('hex');
+            str = array.map((b) => b.toString(16).padStart(2, '0')).join('');
         }
 
         const selector = Number('0x' + str);
@@ -908,8 +911,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             }
 
             const data = this.encodeFunctionData(element, args);
-            const original = data.getBuffer().buffer;
-            const buffer = Buffer.from(original);
+            const buffer = data.getBuffer();
 
             const response = await this.provider.call(
                 this.address,
@@ -988,6 +990,7 @@ export class BaseContract<T extends BaseContractProperties> extends IBaseContrac
                     if (!(error instanceof Error)) {
                         throw new Error(
                             `Something went wrong when trying to get the function: ${error}`,
+                            { cause: error },
                         );
                     } else {
                         throw error;
@@ -1041,7 +1044,7 @@ function contractBase<T extends BaseContractProperties>(): new (
  *    40, 11, 228, 172, 219, 50, 169, 155, 163, 235, 250, 102, 169, 29, 219, 65, 167, 183, 161, 210,
  *    254, 244, 21, 57, 153, 34, 205, 138, 4, 72, 92, 2,
  * ]);
- * const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.org');
+ * const provider: JSONRpcProvider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network: networks.regtest });
  * const contract: IOP20Contract = getContract<IOP20Contract>(
  *     contractAddress,
  *     OP_20_ABI,

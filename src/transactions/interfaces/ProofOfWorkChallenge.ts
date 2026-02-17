@@ -1,5 +1,5 @@
 export interface ProofOfWorkChallenge {
-    readonly preimage: Buffer;
+    readonly preimage: Uint8Array;
     readonly reward: bigint;
     readonly difficulty?: bigint;
     readonly version?: number;

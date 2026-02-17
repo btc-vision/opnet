@@ -27,12 +27,15 @@ import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
-const witnesses = await provider.getBlockWitness(123456n);
+// getBlockWitness returns BlockWitnesses (readonly IBlockWitness[])
+const blockWitnesses = await provider.getBlockWitness(123456n);
 
-console.log('Block:', witnesses.blockNumber);
-console.log('Witness count:', witnesses.witnesses.length);
+for (const bw of blockWitnesses) {
+    console.log('Block:', bw.blockNumber);
+    console.log('Witness count:', bw.witnesses.length);
+}
 ```
 
 ### With Options
@@ -71,18 +74,21 @@ async getBlockWitness(
 ## BlockWitness Structure
 
 ```typescript
-interface BlockWitness {
+// BlockWitnesses is an array of IBlockWitness
+type BlockWitnesses = readonly IBlockWitness[];
+
+interface IBlockWitness {
     blockNumber: bigint;
-    witnesses: readonly BlockWitnessAPI[];
+    readonly witnesses: readonly IBlockWitnessAPI[];
 }
 
-interface BlockWitnessAPI {
-    trusted: boolean;           // Is trusted validator
-    signature: Uint8Array;      // Witness signature
-    timestamp: number;          // When witnessed
-    proofs: readonly Uint8Array[]; // Merkle proofs
-    identity?: Uint8Array;      // Validator identity
-    publicKey?: Address;        // Validator public key
+interface IBlockWitnessAPI {
+    readonly trusted: boolean;           // Is trusted validator
+    readonly signature: Uint8Array;      // Witness signature
+    readonly timestamp: number;          // When witnessed
+    readonly proofs: readonly Uint8Array[]; // Merkle proofs
+    readonly identity?: Uint8Array;      // Validator identity
+    readonly publicKey?: Address;        // Validator public key
 }
 ```
 
@@ -98,8 +104,8 @@ async function isBlockWitnessed(
     blockNumber: bigint
 ): Promise<boolean> {
     try {
-        const witnesses = await provider.getBlockWitness(blockNumber);
-        return witnesses.witnesses.length > 0;
+        const blockWitnesses = await provider.getBlockWitness(blockNumber);
+        return blockWitnesses.some(bw => bw.witnesses.length > 0);
     } catch {
         return false;
     }
@@ -117,9 +123,13 @@ async function getTrustedWitnessCount(
     provider: JSONRpcProvider,
     blockNumber: bigint
 ): Promise<number> {
-    const witnesses = await provider.getBlockWitness(blockNumber);
+    const blockWitnesses = await provider.getBlockWitness(blockNumber);
 
-    return witnesses.witnesses.filter(w => w.trusted).length;
+    let count = 0;
+    for (const bw of blockWitnesses) {
+        count += bw.witnesses.filter(w => w.trusted).length;
+    }
+    return count;
 }
 
 // Usage
@@ -163,19 +173,22 @@ async function analyzeWitnesses(
     validators: Address[];
     timestamps: number[];
 }> {
-    const witnesses = await provider.getBlockWitness(blockNumber, false);
+    const blockWitnesses = await provider.getBlockWitness(blockNumber, false);
 
-    const trusted = witnesses.witnesses.filter(w => w.trusted);
-    const untrusted = witnesses.witnesses.filter(w => !w.trusted);
+    // Flatten all witnesses from all blocks in the result
+    const allWitnesses = blockWitnesses.flatMap(bw => [...bw.witnesses]);
 
-    const validators = witnesses.witnesses
+    const trusted = allWitnesses.filter(w => w.trusted);
+    const untrusted = allWitnesses.filter(w => !w.trusted);
+
+    const validators = allWitnesses
         .filter(w => w.publicKey)
         .map(w => w.publicKey!);
 
-    const timestamps = witnesses.witnesses.map(w => w.timestamp);
+    const timestamps = allWitnesses.map(w => w.timestamp);
 
     return {
-        total: witnesses.witnesses.length,
+        total: allWitnesses.length,
         trusted: trusted.length,
         untrusted: untrusted.length,
         validators,
@@ -203,13 +216,14 @@ async function getWitnessTiming(
     lastWitness: number;
     timespanMs: number;
 }> {
-    const witnesses = await provider.getBlockWitness(blockNumber);
+    const blockWitnesses = await provider.getBlockWitness(blockNumber);
+    const allWitnesses = blockWitnesses.flatMap(bw => [...bw.witnesses]);
 
-    if (witnesses.witnesses.length === 0) {
+    if (allWitnesses.length === 0) {
         throw new Error('No witnesses found');
     }
 
-    const timestamps = witnesses.witnesses.map(w => w.timestamp);
+    const timestamps = allWitnesses.map(w => w.timestamp);
     const firstWitness = Math.min(...timestamps);
     const lastWitness = Math.max(...timestamps);
 
@@ -237,21 +251,22 @@ async function getAllWitnesses(
     provider: JSONRpcProvider,
     blockNumber: bigint,
     pageSize: number = 100
-): Promise<BlockWitnessAPI[]> {
-    const allWitnesses: BlockWitnessAPI[] = [];
+): Promise<IBlockWitnessAPI[]> {
+    const allWitnesses: IBlockWitnessAPI[] = [];
     let page = 0;
 
     while (true) {
-        const result = await provider.getBlockWitness(
+        const blockWitnesses = await provider.getBlockWitness(
             blockNumber,
             false,
             pageSize,
             page
         );
 
-        allWitnesses.push(...result.witnesses);
+        const pageWitnesses = blockWitnesses.flatMap(bw => [...bw.witnesses]);
+        allWitnesses.push(...pageWitnesses);
 
-        if (result.witnesses.length < pageSize) {
+        if (pageWitnesses.length < pageSize) {
             break;
         }
 
@@ -315,8 +330,9 @@ async function checkBlockFinality(
     blockNumber: bigint,
     minWitnesses: number = 3
 ): Promise<FinalityStatus> {
-    const witnesses = await provider.getBlockWitness(blockNumber);
-    const trustedCount = witnesses.witnesses.filter(w => w.trusted).length;
+    const blockWitnesses = await provider.getBlockWitness(blockNumber);
+    const allWitnesses = blockWitnesses.flatMap(bw => [...bw.witnesses]);
+    const trustedCount = allWitnesses.filter(w => w.trusted).length;
 
     const isFinalized = trustedCount >= minWitnesses;
     const confidence = Math.min(100, (trustedCount / minWitnesses) * 100);
@@ -346,12 +362,12 @@ class WitnessService {
     async getWitnesses(
         blockNumber: bigint,
         trustedOnly: boolean = false
-    ): Promise<BlockWitnessAPI[]> {
-        const witnesses = await this.provider.getBlockWitness(
+    ): Promise<IBlockWitnessAPI[]> {
+        const blockWitnesses = await this.provider.getBlockWitness(
             blockNumber,
             trustedOnly
         );
-        return [...witnesses.witnesses];
+        return blockWitnesses.flatMap(bw => [...bw.witnesses]);
     }
 
     async getWitnessCount(

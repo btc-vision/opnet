@@ -77,16 +77,16 @@ function createWorkletWorker<TOp extends string, TData, TResult>(
                                 ? new TextDecoder().decode(data)
                                 : (data as string);
 
-                        result = (await worklets.runOnRuntime<TResult>(runtime, () => {
+                        result = await worklets.runOnRuntime<TResult>(runtime, () => {
                             'worklet';
                             return JSON.parse(text) as TResult;
-                        }));
+                        });
                     } else if (op === 'stringify') {
                         const toStringify = data;
-                        result = (await worklets.runOnRuntime<TResult>(runtime, () => {
+                        result = await worklets.runOnRuntime<TResult>(runtime, () => {
                             'worklet';
                             return JSON.stringify(toStringify) as TResult;
-                        }));
+                        });
                     } else if (op === 'fetch') {
                         const { url, payload, timeout, headers } = data as {
                             url: string;
@@ -116,14 +116,16 @@ function createWorkletWorker<TOp extends string, TData, TResult>(
                             }
 
                             const text = await resp.text();
-                            result = (await worklets.runOnRuntime<TResult>(runtime, () => {
+                            result = await worklets.runOnRuntime<TResult>(runtime, () => {
                                 'worklet';
                                 return JSON.parse(text) as TResult;
-                            }));
+                            });
                         } catch (err) {
                             clearTimeout(timeoutId);
                             if ((err as Error).name === 'AbortError') {
-                                throw new Error(`Request timed out after ${timeout || 20000}ms`);
+                                throw new Error(`Request timed out after ${timeout || 20000}ms`, {
+                                    cause: err,
+                                });
                             }
                             throw err;
                         }

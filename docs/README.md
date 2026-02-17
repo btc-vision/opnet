@@ -13,7 +13,7 @@ import { getContract, IOP20Contract, JSONRpcProvider, OP_20_ABI } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 // Connect to OPNet
-const provider = new JSONRpcProvider('https://regtest.opnet.org', networks.regtest);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network: networks.regtest });
 
 // Interact with a token contract
 const token = getContract<IOP20Contract>(
@@ -309,7 +309,7 @@ console.log('Balance:', balance.properties.balance);
 - [Address Utilities](./utils/bitcoin-utils.md#address-utilities)
 
 #### [Revert Decoder](./utils/revert-decoder.md)
-- [RevertDecoder Class](./utils/revert-decoder.md#revertdecoder-class)
+- [decodeRevertData Function](./utils/revert-decoder.md#decode-revert-data)
 - [Decoding Revert Data](./utils/revert-decoder.md#decoding-revert-data)
 - [Common Patterns](./utils/revert-decoder.md#common-patterns)
 

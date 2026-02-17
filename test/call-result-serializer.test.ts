@@ -6,6 +6,11 @@ import { CallResult } from '../build/contracts/CallResult.js';
 import { CallResultSerializer, NetworkName, OfflineCallResultData, } from '../build/contracts/CallResultSerializer.js';
 import { IAccessList } from '../build/contracts/interfaces/IAccessList.js';
 
+/** Convert a Buffer to a plain Uint8Array for comparison. */
+function u8(buf: Buffer): Uint8Array {
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+}
+
 /**
  * Creates a mock RawChallenge for testing
  */
@@ -16,7 +21,7 @@ function createMockRawChallenge(overrides: Partial<RawChallenge> = {}): RawChall
         legacyPublicKey: '0x' + 'b'.repeat(64),
         solution: '0x' + 'c'.repeat(64),
         salt: '0x' + 'd'.repeat(64),
-        graffiti: 'test-graffiti',
+        graffiti: '0x' + 'ab'.repeat(8),
         difficulty: 1000,
         verification: {
             epochHash: '0x' + 'e'.repeat(64),
@@ -25,7 +30,7 @@ function createMockRawChallenge(overrides: Partial<RawChallenge> = {}): RawChall
             targetChecksum: '0x' + '2'.repeat(64),
             startBlock: '100',
             endBlock: '200',
-            proofs: ['proof1', 'proof2', 'proof3'],
+            proofs: ['0x' + 'aa'.repeat(16), '0x' + 'bb'.repeat(16), '0x' + 'cc'.repeat(16)],
         },
         submission: undefined,
         ...overrides,
@@ -41,8 +46,8 @@ function createMockUTXO(
     value: bigint,
     options: {
         isCSV?: boolean;
-        witnessScript?: Buffer;
-        redeemScript?: Buffer;
+        witnessScript?: Uint8Array;
+        redeemScript?: Uint8Array;
         address?: string;
     } = {},
 ): UTXO {
@@ -80,9 +85,9 @@ function createMockBitcoinFees(): BitcoinFees {
 /**
  * Creates a mock 33-byte compressed public key for testing
  */
-function createMockCompressedPublicKey(): Buffer {
+function createMockCompressedPublicKey(): Uint8Array {
     // 33-byte compressed public key (02 or 03 prefix + 32 bytes x-coordinate)
-    return Buffer.from('02' + 'ab'.repeat(32), 'hex');
+    return new Uint8Array(Buffer.from('02' + 'ab'.repeat(32), 'hex'));
 }
 
 function createMockOfflineData(
@@ -130,7 +135,7 @@ describe('CallResultSerializer - Basic Serialization', () => {
         const data = createMockOfflineData();
         const buffer = CallResultSerializer.serialize(data);
 
-        expect(buffer).toBeInstanceOf(Buffer);
+        expect(buffer).toBeInstanceOf(Uint8Array);
         expect(buffer.length).toBeGreaterThan(0);
     });
 
@@ -150,7 +155,7 @@ describe('CallResultSerializer - Basic Serialization', () => {
         };
 
         const buffer = CallResultSerializer.serialize(minimalData);
-        expect(buffer).toBeInstanceOf(Buffer);
+        expect(buffer).toBeInstanceOf(Uint8Array);
         expect(buffer.length).toBeGreaterThan(0);
     });
 
@@ -212,7 +217,7 @@ describe('CallResultSerializer - Round-Trip Serialization', () => {
         const buffer = CallResultSerializer.serialize(data);
         const result = CallResultSerializer.deserialize(buffer);
 
-        expect(result.calldata).toEqual(originalCalldata);
+        expect(result.calldata).toEqual(u8(originalCalldata));
     });
 
     it('should preserve contract addresses through round-trip', () => {
@@ -252,7 +257,7 @@ describe('CallResultSerializer - Round-Trip Serialization', () => {
         const buffer = CallResultSerializer.serialize(data);
         const result = CallResultSerializer.deserialize(buffer);
 
-        expect(result.result).toEqual(originalResult);
+        expect(result.result).toEqual(u8(originalResult));
     });
 
     it('should preserve network through round-trip for all networks', () => {
@@ -350,7 +355,7 @@ describe('CallResultSerializer - Optional Fields', () => {
 
         expect(result.csvAddress).toBeDefined();
         expect(result.csvAddress?.address).toBe(csvAddress.address);
-        expect(result.csvAddress?.witnessScript).toEqual(csvAddress.witnessScript);
+        expect(result.csvAddress?.witnessScript).toEqual(u8(csvAddress.witnessScript as Buffer));
     });
 });
 
@@ -648,7 +653,7 @@ describe('CallResultSerializer - UTXOs', () => {
         const buffer = CallResultSerializer.serialize(data);
         const result = CallResultSerializer.deserialize(buffer);
 
-        expect(result.utxos[0].witnessScript).toEqual(witnessScript);
+        expect(result.utxos[0].witnessScript).toEqual(u8(witnessScript as Buffer));
     });
 
     it('should handle undefined witnessScript', () => {
@@ -669,7 +674,7 @@ describe('CallResultSerializer - UTXOs', () => {
         const buffer = CallResultSerializer.serialize(data);
         const result = CallResultSerializer.deserialize(buffer);
 
-        expect(result.utxos[0].redeemScript).toEqual(redeemScript);
+        expect(result.utxos[0].redeemScript).toEqual(u8(redeemScript as Buffer));
     });
 
     it('should handle undefined redeemScript', () => {
@@ -695,8 +700,8 @@ describe('CallResultSerializer - UTXOs', () => {
         const result = CallResultSerializer.deserialize(buffer);
 
         expect(result.utxos[0].isCSV).toBe(true);
-        expect(result.utxos[0].witnessScript).toEqual(Buffer.from('witness'));
-        expect(result.utxos[0].redeemScript).toEqual(Buffer.from('redeem'));
+        expect(result.utxos[0].witnessScript).toEqual(u8(Buffer.from('witness')));
+        expect(result.utxos[0].redeemScript).toEqual(u8(Buffer.from('redeem')));
     });
 
     it('should handle many UTXOs', () => {
@@ -840,7 +845,7 @@ describe('CallResultSerializer - Edge Cases', () => {
         const buffer = CallResultSerializer.serialize(data);
         const result = CallResultSerializer.deserialize(buffer);
 
-        expect(result.calldata).toEqual(largeCalldata);
+        expect(result.calldata).toEqual(u8(largeCalldata));
     });
 
     it('should handle special characters in strings', () => {
@@ -907,8 +912,8 @@ describe('CallResultSerializer - Edge Cases', () => {
         const buffer = CallResultSerializer.serialize(data);
         const result = CallResultSerializer.deserialize(buffer);
 
-        expect(result.calldata).toEqual(binaryData);
-        expect(result.result).toEqual(binaryData);
+        expect(result.calldata).toEqual(u8(binaryData));
+        expect(result.result).toEqual(u8(binaryData));
     });
 });
 
@@ -948,7 +953,7 @@ describe('CallResultSerializer - Complete Integration', () => {
                 legacyPublicKey: '0x' + 'b'.repeat(64),
                 solution: '0x' + 'c'.repeat(64),
                 salt: '0x' + 'd'.repeat(64),
-                graffiti: 'complex-graffiti-\u4e2d\u6587',
+                graffiti: '0x' + 'cd'.repeat(12),
                 difficulty: 12345,
                 verification: {
                     epochHash: '0x' + 'e'.repeat(64),
@@ -957,13 +962,19 @@ describe('CallResultSerializer - Complete Integration', () => {
                     targetChecksum: '0x' + '2'.repeat(64),
                     startBlock: '1000',
                     endBlock: '2000',
-                    proofs: ['proof1', 'proof2', 'proof3', 'proof4', 'proof5'],
+                    proofs: [
+                        '0x' + 'a1'.repeat(16),
+                        '0x' + 'b2'.repeat(16),
+                        '0x' + 'c3'.repeat(16),
+                        '0x' + 'd4'.repeat(16),
+                        '0x' + 'e5'.repeat(16),
+                    ],
                 },
                 submission: {
                     mldsaPublicKey: '0x' + 'a'.repeat(64),
                     legacyPublicKey: '0x' + 'b'.repeat(64),
                     solution: '0x' + 'c'.repeat(64),
-                    graffiti: 'submission-graffiti',
+                    graffiti: '0x' + 'ef'.repeat(10),
                     signature: '0x' + 'd'.repeat(128),
                 },
             },
@@ -992,13 +1003,13 @@ describe('CallResultSerializer - Complete Integration', () => {
         const result = CallResultSerializer.deserialize(buffer);
 
         // Verify all fields
-        expect(result.calldata).toEqual(complexData.calldata);
+        expect(result.calldata).toEqual(u8(complexData.calldata as Buffer));
         expect(result.to).toBe(complexData.to);
         expect(result.contractAddress).toBe(complexData.contractAddress);
         expect(result.estimatedSatGas).toBe(complexData.estimatedSatGas);
         expect(result.estimatedRefundedGasInSat).toBe(complexData.estimatedRefundedGasInSat);
         expect(result.revert).toBe(complexData.revert);
-        expect(result.result).toEqual(complexData.result);
+        expect(result.result).toEqual(u8(complexData.result as Buffer));
         expect(result.accessList).toEqual(complexData.accessList);
         expect(result.bitcoinFees).toEqual(complexData.bitcoinFees);
         expect(result.network).toBe(complexData.network);
@@ -1019,12 +1030,14 @@ describe('CallResultSerializer - Complete Integration', () => {
         // UTXOs verification
         expect(result.utxos).toHaveLength(3);
         expect(result.utxos[0].isCSV).toBe(true);
-        expect(result.utxos[0].witnessScript).toEqual(Buffer.from('ws1'));
-        expect(result.utxos[1].redeemScript).toEqual(Buffer.from('rs2'));
+        expect(result.utxos[0].witnessScript).toEqual(u8(Buffer.from('ws1')));
+        expect(result.utxos[1].redeemScript).toEqual(u8(Buffer.from('rs2')));
 
         // CSV address verification
         expect(result.csvAddress?.address).toBe(complexData.csvAddress?.address);
-        expect(result.csvAddress?.witnessScript).toEqual(complexData.csvAddress?.witnessScript);
+        expect(result.csvAddress?.witnessScript).toEqual(
+            u8(complexData.csvAddress?.witnessScript as Buffer),
+        );
     });
 
     it('should produce deterministic output', () => {
@@ -1123,7 +1136,7 @@ describe('CallResult.fromOfflineBuffer', () => {
     it('should accept hex string input', () => {
         const data = createMockOfflineData();
         const buffer = CallResultSerializer.serialize(data);
-        const hexString = buffer.toString('hex');
+        const hexString = Buffer.from(buffer).toString('hex');
 
         const callResult = CallResult.fromOfflineBuffer(hexString);
 
@@ -1137,7 +1150,7 @@ describe('CallResult.fromOfflineBuffer', () => {
 
         const callResult = CallResult.fromOfflineBuffer(buffer);
 
-        expect(callResult.calldata).toEqual(calldata);
+        expect(callResult.calldata).toEqual(u8(calldata));
     });
 
     it('should restore contract addresses correctly', () => {
@@ -1177,7 +1190,9 @@ describe('CallResult.fromOfflineBuffer', () => {
 
         expect(callResult.csvAddress).toBeDefined();
         expect(callResult.csvAddress?.address).toBe(csvAddress.address);
-        expect(callResult.csvAddress?.witnessScript).toEqual(csvAddress.witnessScript);
+        expect(callResult.csvAddress?.witnessScript).toEqual(
+            u8(csvAddress.witnessScript as Buffer),
+        );
     });
 
     it('should handle undefined csvAddress', () => {
@@ -1340,7 +1355,7 @@ describe('CallResult.fromOfflineBuffer', () => {
         const buffer = CallResultSerializer.serialize(complexData);
         const callResult = CallResult.fromOfflineBuffer(buffer);
 
-        expect(callResult.calldata).toEqual(complexData.calldata);
+        expect(callResult.calldata).toEqual(u8(complexData.calldata as Buffer));
         expect(callResult.to).toBe(complexData.to);
         expect(callResult.address?.toHex()).toBe(complexData.contractAddress);
         expect(callResult.estimatedSatGas).toBe(complexData.estimatedSatGas);

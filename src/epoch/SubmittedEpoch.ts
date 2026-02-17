@@ -3,7 +3,7 @@ import { ISubmittedEpoch, RawSubmittedEpoch, SubmissionStatus } from './interfac
 
 export class SubmittedEpoch implements ISubmittedEpoch {
     public readonly epochNumber: bigint;
-    public readonly submissionHash: Buffer;
+    public readonly submissionHash: Uint8Array;
     public readonly difficulty: number;
     public readonly timestamp: Date;
     public readonly status: SubmissionStatus;

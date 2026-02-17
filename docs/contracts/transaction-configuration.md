@@ -61,7 +61,8 @@ interface TransactionParameters {
 
     // Optional: Transaction options
     readonly minGas?: bigint;
-    readonly note?: string | Buffer;
+    readonly note?: string | Uint8Array;
+    readonly p2wda?: boolean;
     readonly txVersion?: SupportedTransactionVersion;
     readonly anchor?: boolean;
     readonly dontUseCSVUtxos?: boolean;
@@ -353,10 +354,12 @@ const params: TransactionParameters = {
 Add arbitrary data to the transaction:
 
 ```typescript
+import { fromHex } from '@btc-vision/bitcoin';
+
 const params: TransactionParameters = {
     note: 'My transaction note',
     // or
-    note: Buffer.from('hex data', 'hex'),
+    note: fromHex('deadbeef'),
     // ...
 };
 ```
@@ -420,7 +423,7 @@ import { networks, PsbtOutputExtended } from '@btc-vision/bitcoin';
 
 async function fullConfigurationExample() {
     const network = networks.regtest;
-    const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+    const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
     const mnemonic = new Mnemonic(
         'your twenty four word seed phrase goes here ...',

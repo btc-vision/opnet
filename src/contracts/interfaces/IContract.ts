@@ -23,7 +23,7 @@ export interface IContract {
 
     decodeEvent(event: NetEvent): OPNetEvent;
 
-    encodeCalldata(method: string, ...args: unknown[]): Buffer;
+    encodeCalldata(method: string, ...args: unknown[]): Uint8Array;
 
     setSimulatedHeight(height: bigint | undefined): void;
 

@@ -29,7 +29,7 @@ import { JSONRpcProvider } from 'opnet';
 import { networks, Address } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
 // Get public key info for an address
 const address = await provider.getPublicKeyInfo(
@@ -109,8 +109,8 @@ for (const addr of addresses) {
 ```typescript
 async getPublicKeysInfo(
     addresses: string | string[] | Address | Address[],
-    isContract?: boolean,   // Default: false
-    logErrors?: boolean     // Default: false
+    isContract: boolean = false,
+    logErrors: boolean = false
 ): Promise<AddressesInfo>
 ```
 

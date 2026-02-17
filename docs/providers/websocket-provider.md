@@ -14,7 +14,7 @@ sequenceDiagram
     Provider->>Node: WebSocket handshake
     Node-->>Provider: Connected
 
-    App->>Provider: subscribeToBlocks()
+    App->>Provider: subscribeBlocks()
     Provider->>Node: Subscribe request
     Node-->>Provider: Subscription confirmed
 
@@ -35,10 +35,10 @@ sequenceDiagram
 import { WebSocketRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
-const provider = new WebSocketRpcProvider(
-    'wss://regtest.opnet.org/ws',
-    networks.regtest
-);
+const provider = new WebSocketRpcProvider({
+    url: 'wss://regtest.opnet.org/ws',
+    network: networks.regtest,
+});
 
 // Wait for connection
 await provider.connect();
@@ -52,59 +52,41 @@ console.log('Connected to OPNet!');
 
 ### Block Notifications
 
-Subscribe to receive notifications when new blocks are mined:
+Subscribe to receive notifications when new blocks are mined. The `subscribeBlocks` method returns `Promise<void>` (not an unsubscribe function). To unsubscribe, use `provider.unsubscribe(SubscriptionType.BLOCKS)`.
 
 ```typescript
+import { SubscriptionType } from 'opnet';
+
 // Subscribe to new blocks
-const unsubscribe = provider.subscribeToBlocks((block) => {
+await provider.subscribeBlocks((block) => {
     console.log('New block!');
-    console.log('  Height:', block.height);
-    console.log('  Hash:', block.hash);
-    console.log('  Transactions:', block.txCount);
+    console.log('  Block number:', block.blockNumber);
+    console.log('  Hash:', block.blockHash);
+    console.log('  Previous hash:', block.previousBlockHash);
+    console.log('  Timestamp:', block.timestamp);
 });
 
 // Later, unsubscribe
-unsubscribe();
-```
-
-### Block Subscription with Full Data
-
-```typescript
-// Request full block data with transactions
-const unsubscribe = provider.subscribeToBlocks(
-    (block) => {
-        console.log('Block:', block.height);
-
-        // Access transactions if prefetched
-        if (block.transactions) {
-            for (const tx of block.transactions) {
-                console.log('  TX:', tx.hash);
-            }
-        }
-    },
-    { prefetchTransactions: true }
-);
+await provider.unsubscribe(SubscriptionType.BLOCKS);
 ```
 
 ### Epoch Notifications
 
-Subscribe to epoch updates for mining:
+Subscribe to epoch updates for mining. Like block subscriptions, `subscribeEpochs` returns `Promise<void>`.
 
 ```typescript
+import { SubscriptionType } from 'opnet';
+
 // Subscribe to epoch updates
-const unsubscribe = provider.subscribeToEpochs((epoch) => {
+await provider.subscribeEpochs((epoch) => {
     console.log('Epoch update!');
     console.log('  Epoch number:', epoch.epochNumber);
-    console.log('  Target hash:', epoch.targetHash);
-    console.log('  Difficulty:', epoch.difficultyScaled);
-
-    if (epoch.proposer) {
-        console.log('  Winner:', epoch.proposer.publicKey);
-    }
+    console.log('  Epoch hash:', epoch.epochHash);
+    console.log('  Timestamp:', epoch.timestamp);
 });
 
 // Unsubscribe when done
-unsubscribe();
+await provider.unsubscribe(SubscriptionType.EPOCHS);
 ```
 
 ---
@@ -117,27 +99,27 @@ The WebSocket provider emits various events you can listen to:
 import { WebSocketClientEvent } from 'opnet';
 
 // Connection opened
-provider.on(WebSocketClientEvent.Connected, () => {
+provider.on(WebSocketClientEvent.CONNECTED, () => {
     console.log('WebSocket connected');
 });
 
 // Connection closed
-provider.on(WebSocketClientEvent.Disconnected, () => {
+provider.on(WebSocketClientEvent.DISCONNECTED, () => {
     console.log('WebSocket disconnected');
 });
 
 // Error occurred
-provider.on(WebSocketClientEvent.Error, (error) => {
+provider.on(WebSocketClientEvent.ERROR, (error) => {
     console.error('WebSocket error:', error);
 });
 
 // Block received
-provider.on(WebSocketClientEvent.Block, (block) => {
-    console.log('Block via event:', block.height);
+provider.on(WebSocketClientEvent.BLOCK, (block) => {
+    console.log('Block via event:', block.blockNumber);
 });
 
 // Epoch received
-provider.on(WebSocketClientEvent.Epoch, (epoch) => {
+provider.on(WebSocketClientEvent.EPOCH, (epoch) => {
     console.log('Epoch via event:', epoch.epochNumber);
 });
 ```
@@ -152,20 +134,29 @@ provider.on(WebSocketClientEvent.Epoch, (epoch) => {
 import { ConnectionState } from 'opnet';
 
 // Check connection state
-const state = provider.connectionState;
+const state = provider.getState();
 
 switch (state) {
-    case ConnectionState.Disconnected:
+    case ConnectionState.DISCONNECTED:
         console.log('Not connected');
         break;
-    case ConnectionState.Connecting:
+    case ConnectionState.CONNECTING:
         console.log('Connecting...');
         break;
-    case ConnectionState.Connected:
+    case ConnectionState.CONNECTED:
         console.log('Connected');
         break;
-    case ConnectionState.Reconnecting:
+    case ConnectionState.HANDSHAKING:
+        console.log('Handshaking...');
+        break;
+    case ConnectionState.READY:
+        console.log('Ready');
+        break;
+    case ConnectionState.RECONNECTING:
         console.log('Reconnecting...');
+        break;
+    case ConnectionState.CLOSING:
+        console.log('Closing...');
         break;
 }
 ```
@@ -178,9 +169,6 @@ await provider.connect();
 
 // Disconnect
 provider.disconnect();
-
-// Reconnect
-await provider.reconnect();
 ```
 
 ### Automatic Reconnection
@@ -188,10 +176,14 @@ await provider.reconnect();
 The provider automatically attempts to reconnect on connection loss:
 
 ```typescript
-const provider = new WebSocketRpcProvider(url, network, {
-    reconnectAttempts: 5,        // Max reconnection attempts
-    reconnectInterval: 3000,     // Wait between attempts (ms)
-    autoReconnect: true,         // Enable auto-reconnect
+const provider = new WebSocketRpcProvider({
+    url,
+    network,
+    websocketConfig: {
+        maxReconnectAttempts: 10,    // Max reconnection attempts (default: 10)
+        reconnectBaseDelay: 1000,    // Base delay between attempts in ms (default: 1000)
+        autoReconnect: true,         // Enable auto-reconnect
+    },
 });
 ```
 
@@ -203,17 +195,23 @@ const provider = new WebSocketRpcProvider(url, network, {
 
 ```typescript
 interface WebSocketClientConfig {
-    // Reconnection settings
-    reconnectAttempts?: number;     // Default: 5
-    reconnectInterval?: number;     // Default: 3000ms
-    autoReconnect?: boolean;        // Default: true
+    // Connection settings
+    url?: string;                       // WebSocket URL
+    connectTimeout?: number;            // Connection timeout (default: 10000ms)
+    handshakeTimeout?: number;          // Handshake timeout
 
-    // Timeout settings
-    connectionTimeout?: number;     // Default: 10000ms
-    requestTimeout?: number;        // Default: 30000ms
+    // Reconnection settings
+    maxReconnectAttempts?: number;       // Default: 10
+    reconnectBaseDelay?: number;         // Default: 1000ms
+    reconnectMaxDelay?: number;          // Max delay between reconnect attempts
+    autoReconnect?: boolean;             // Default: true
+
+    // Request settings
+    requestTimeout?: number;             // Default: 30000ms
+    maxPendingRequests?: number;         // Max pending requests
 
     // Heartbeat
-    pingInterval?: number;          // Default: 30000ms
+    pingInterval?: number;               // Default: 30000ms
 }
 ```
 
@@ -223,18 +221,18 @@ interface WebSocketClientConfig {
 import { WebSocketRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
-const provider = new WebSocketRpcProvider(
-    'wss://regtest.opnet.org/ws',
-    networks.regtest,
-    {
-        reconnectAttempts: 10,
-        reconnectInterval: 5000,
+const provider = new WebSocketRpcProvider({
+    url: 'wss://regtest.opnet.org/ws',
+    network: networks.regtest,
+    websocketConfig: {
+        maxReconnectAttempts: 10,
+        reconnectBaseDelay: 1000,
         autoReconnect: true,
-        connectionTimeout: 15000,
+        connectTimeout: 15000,
         requestTimeout: 60000,
         pingInterval: 20000,
-    }
-);
+    },
+});
 
 await provider.connect();
 ```
@@ -269,30 +267,30 @@ const balance = await provider.getBalance('bc1q...');
 import {
     WebSocketRpcProvider,
     WebSocketClientEvent,
-    ConnectionState,
+    SubscriptionType,
 } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 async function main() {
-    const provider = new WebSocketRpcProvider(
-        'wss://regtest.opnet.org/ws',
-        networks.regtest,
-        {
+    const provider = new WebSocketRpcProvider({
+        url: 'wss://regtest.opnet.org/ws',
+        network: networks.regtest,
+        websocketConfig: {
             autoReconnect: true,
-            reconnectAttempts: 5,
-        }
-    );
+            maxReconnectAttempts: 10,
+        },
+    });
 
     // Set up event handlers
-    provider.on(WebSocketClientEvent.Connected, () => {
+    provider.on(WebSocketClientEvent.CONNECTED, () => {
         console.log('Connected!');
     });
 
-    provider.on(WebSocketClientEvent.Disconnected, () => {
+    provider.on(WebSocketClientEvent.DISCONNECTED, () => {
         console.log('Disconnected');
     });
 
-    provider.on(WebSocketClientEvent.Error, (error) => {
+    provider.on(WebSocketClientEvent.ERROR, (error) => {
         console.error('Error:', error);
     });
 
@@ -304,12 +302,12 @@ async function main() {
     console.log('Current block:', height);
 
     // Subscribe to new blocks
-    const unsubscribeBlocks = provider.subscribeToBlocks((block) => {
-        console.log('New block:', block.height);
+    await provider.subscribeBlocks((block) => {
+        console.log('New block:', block.blockNumber);
     });
 
     // Subscribe to epochs
-    const unsubscribeEpochs = provider.subscribeToEpochs((epoch) => {
+    await provider.subscribeEpochs((epoch) => {
         console.log('Epoch:', epoch.epochNumber);
     });
 
@@ -317,8 +315,8 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 60000));
 
     // Cleanup
-    unsubscribeBlocks();
-    unsubscribeEpochs();
+    await provider.unsubscribe(SubscriptionType.BLOCKS);
+    await provider.unsubscribe(SubscriptionType.EPOCHS);
     provider.disconnect();
 }
 
@@ -359,7 +357,7 @@ try {
 
 1. **Handle Disconnections**: Set up reconnection handlers
 
-2. **Unsubscribe When Done**: Always call unsubscribe functions
+2. **Unsubscribe When Done**: Always call `provider.unsubscribe()` with the appropriate `SubscriptionType`
 
 3. **Configure Timeouts**: Adjust based on network conditions
 

@@ -18,18 +18,21 @@ export abstract class BaseThreader<TOp extends string, TData, TResult> extends L
     private workers: UniversalWorker<TOp, TData, TResult>[] = [];
     private available: UniversalWorker<TOp, TData, TResult>[] = [];
     private pending = new Map<number, PendingTask<TResult>>();
+
     private queue: QueuedTask<TOp, TData, TResult>[] = [];
-    private idCounter = 0;
-    private readonly poolSize: number;
-    private initialized = false;
+    private idCounter: number = 0;
+
+    private initialized: boolean = false;
     private initializing: Promise<void> | null = null;
 
-    private tasksProcessed = 0;
-    private tasksFailed = 0;
-    private lastStatsLog = 0;
-    private readonly statsInterval = 30_000;
+    private tasksProcessed: number = 0;
+    private tasksFailed: number = 0;
+    private lastStatsLog: number = 0;
 
-    private cleanupBound = false;
+    private readonly poolSize: number;
+    private readonly statsInterval: number = 30_000;
+
+    private cleanupBound: boolean = false;
 
     protected constructor(options: ThreaderOptions = {}) {
         super();
@@ -176,16 +179,10 @@ export abstract class BaseThreader<TOp extends string, TData, TResult> extends L
         } else if (isReactNative) {
             // React Native: No cleanup handlers needed.
             // App lifecycle is handled differently (AppState API).
-        } else if (
-            typeof window !== 'undefined' &&
-            typeof window.addEventListener === 'function'
-        ) {
+        } else if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
             window.addEventListener('beforeunload', cleanup);
             window.addEventListener('unload', cleanup);
-        } else if (
-            typeof self !== 'undefined' &&
-            typeof self.addEventListener === 'function'
-        ) {
+        } else if (typeof self !== 'undefined' && typeof self.addEventListener === 'function') {
             self.addEventListener('beforeunload', cleanup);
         }
     }

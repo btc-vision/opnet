@@ -6,9 +6,8 @@ The `JSONRpcProvider` is the primary way to communicate with OPNet nodes using H
 
 - [Overview](#overview)
 - [Setting Up HTTP Connections](#setting-up-http-connections)
-- [Constructor Parameters](#constructor-parameters)
+- [Constructor Configuration](#constructor-configuration)
 - [Network Configuration](#network-configuration)
-- [REST API vs JSON-RPC Mode](#rest-api-vs-json-rpc-mode)
 - [Threaded Parsing](#threaded-parsing)
 - [Threaded HTTP](#threaded-http)
 - [Complete Configuration Example](#complete-configuration-example)
@@ -53,36 +52,37 @@ sequenceDiagram
 import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
-const provider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest
-);
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+});
 ```
 
 ### With Custom Timeout
 
 ```typescript
-const provider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest,
-    30_000  // 30 second timeout
-);
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+    timeout: 30_000, // 30 second timeout
+});
 ```
 
 ---
 
-## Constructor Parameters
+## Constructor Configuration
+
+The `JSONRpcProvider` accepts a `JSONRpcProviderConfig` object:
 
 ```typescript
-constructor(
-    url: string,
-    network: Network,
-    timeout?: number,
-    fetcherConfigurations?: Agent.Options,
-    useRESTAPI?: boolean,
-    useThreadedParsing?: boolean,
-    useThreadedHttp?: boolean
-)
+interface JSONRpcProviderConfig {
+    readonly url: string;
+    readonly network: Network;
+    readonly timeout?: number;
+    readonly fetcherConfigurations?: Agent.Options;
+    readonly useThreadedParsing?: boolean;
+    readonly useThreadedHttp?: boolean;
+}
 ```
 
 ### Parameter Reference
@@ -93,9 +93,8 @@ constructor(
 | `network` | `Network` | *required* | Bitcoin network (mainnet/testnet/regtest) |
 | `timeout` | `number` | `20000` | Request timeout in milliseconds |
 | `fetcherConfigurations` | `Agent.Options` | *see below* | HTTP agent configuration |
-| `useRESTAPI` | `boolean` | `true` | Use REST API format for requests |
-| `useThreadedParsing` | `boolean` | `true` | Parse responses in worker thread |
-| `useThreadedHttp` | `boolean` | `true` | Perform entire HTTP request in worker thread |
+| `useThreadedParsing` | `boolean` | `false` | Parse responses in worker thread |
+| `useThreadedHttp` | `boolean` | `false` | Perform entire HTTP request in worker thread |
 
 ### Default Fetcher Configuration
 
@@ -118,16 +117,16 @@ constructor(
 import { networks } from '@btc-vision/bitcoin';
 
 // Production
-const mainnetProvider = new JSONRpcProvider(
-    'https://mainnet.opnet.org',
-    networks.bitcoin
-);
+const mainnetProvider = new JSONRpcProvider({
+    url: 'https://mainnet.opnet.org',
+    network: networks.bitcoin,
+});
 
 // Development
-const regtestProvider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest
-);
+const regtestProvider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+});
 ```
 
 ### Network URLs
@@ -139,78 +138,17 @@ const regtestProvider = new JSONRpcProvider(
 
 ---
 
-## REST API vs JSON-RPC Mode
-
-The provider can operate in two modes:
-
-### REST API Mode (Default)
-
-Automatically formats the URL to use the REST API endpoint:
-
-```typescript
-const provider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest,
-    20_000,
-    undefined,
-    true  // useRESTAPI = true (default)
-);
-
-// URL becomes: https://regtest.opnet.org/api/v1/json-rpc
-```
-
-### Pure JSON-RPC Mode
-
-```typescript
-// Explicitly disable REST API mode (default is true)
-const provider: JSONRpcProvider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest,
-    20_000,
-    undefined,
-    false  // useRESTAPI = false (disabling default)
-);
-```
-
-### Switching Modes at Runtime
-
-```typescript
-// Start in REST mode
-const provider = new JSONRpcProvider(url, network);
-
-// Switch to pure JSON-RPC
-provider.setFetchMode(false);
-
-// Switch back to REST
-provider.setFetchMode(true);
-```
-
----
-
 ## Threaded Parsing
 
 For large responses, the provider can parse JSON in a worker thread to avoid blocking the main thread:
 
 ```typescript
-// Enable threaded parsing (default)
-const provider = new JSONRpcProvider(
-    url,
-    network,
-    20_000,
-    undefined,
-    true,
-    true  // useThreadedParsing = true
-);
-
-// Disable for small responses or debugging
-const provider = new JSONRpcProvider(
-    url,
-    network,
-    20_000,
-    undefined,
-    true,
-    false  // useThreadedParsing = false
-);
+// Enable threaded parsing (not enabled by default)
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+    useThreadedParsing: true,
+});
 ```
 
 **When to use threaded parsing:**
@@ -230,27 +168,13 @@ const provider = new JSONRpcProvider(
 Beyond threaded parsing, the provider can offload the **entire HTTP request** (network I/O + JSON parsing) to a worker thread, completely freeing the main thread:
 
 ```typescript
-// Enable threaded HTTP (default)
-const provider = new JSONRpcProvider(
-    url,
-    network,
-    20_000,
-    undefined,
-    true,
-    true,
-    true  // useThreadedHttp = true
-);
-
-// Disable threaded HTTP (uses main thread for HTTP, optional threaded parsing)
-const provider = new JSONRpcProvider(
-    url,
-    network,
-    20_000,
-    undefined,
-    true,
-    true,
-    false  // useThreadedHttp = false
-);
+// Enable threaded HTTP (not enabled by default)
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+    useThreadedParsing: true,
+    useThreadedHttp: true,
+});
 ```
 
 **How it works:**
@@ -289,19 +213,18 @@ For detailed documentation on the threading system, see [Threaded HTTP](./thread
 import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
-const provider = new JSONRpcProvider(
-    'https://regtest.opnet.org',     // RPC URL
-    networks.regtest,                 // Network
-    30_000,                          // 30s timeout
-    {
-        keepAliveTimeout: 60_000,    // 60s keep-alive
-        connections: 256,            // More connections
-        pipelining: 4,               // More pipelining
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+    timeout: 30_000,
+    fetcherConfigurations: {
+        keepAliveTimeout: 60_000,
+        connections: 256,
+        pipelining: 4,
     },
-    true,                            // Use REST API
-    true,                            // Use threaded parsing
-    true                             // Use threaded HTTP
-);
+    useThreadedParsing: true,
+    useThreadedHttp: true,
+});
 
 async function main() {
     // Use the provider
@@ -354,20 +277,18 @@ const receipt = await provider.getTransactionReceipt('txHash');
 const result = await provider.sendRawTransaction(rawTx, psbt);
 
 // Broadcast multiple transactions
-const results = await provider.sendRawTransactions([
-    { tx: rawTx1, psbt: psbt1 },
-    { tx: rawTx2, psbt: psbt2 },
-]);
+const results = await provider.sendRawTransactions([rawTx1, rawTx2]);
 ```
 
 ### Contract Methods
 
 ```typescript
 // Call contract (simulation)
+// `from` is an Address object (not a string), return type is Promise<CallResult | ICallRequestError>
 const result = await provider.call(
-    contractAddress,    // Contract to call
-    calldata,          // Encoded function call
-    senderAddress,     // Optional sender
+    contractAddress,    // Contract to call (string | Address)
+    calldata,          // Encoded function call (Uint8Array | string)
+    fromAddress,       // Optional sender (Address)
     blockHeight,       // Optional block height
     simulatedTx,       // Optional simulated transaction
     accessList         // Optional access list
@@ -437,9 +358,12 @@ const template = await provider.getEpochTemplate();
 
 // Submit epoch solution
 const submitted = await provider.submitEpoch({
-    solution: solutionBuffer,
+    epochNumber: 123n,
+    checksumRoot: checksumRootBuffer,
     salt: saltBuffer,
-    graffiti: graffitiBuffer,
+    mldsaPublicKey: publicKeyBuffer,
+    signature: signatureBuffer,
+    graffiti: graffitiBuffer,  // optional
 });
 ```
 
@@ -472,7 +396,10 @@ const utxosForAmount = await provider.utxoManager.getUTXOsForAmount({
 ```typescript
 import { JSONRpcProvider, OPNetError } from 'opnet';
 
-const provider = new JSONRpcProvider(url, network);
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+});
 
 try {
     const block = await provider.getBlock(999999999);
@@ -493,7 +420,10 @@ try {
 Always close the provider when done:
 
 ```typescript
-const provider = new JSONRpcProvider(url, network);
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+});
 
 try {
     // Use provider...
@@ -518,18 +448,17 @@ try {
 
 ```typescript
 // Production configuration
-const provider = new JSONRpcProvider(
-    'https://mainnet.opnet.org',
-    networks.bitcoin,
-    60_000,  // Longer timeout for mainnet
-    {
+const provider = new JSONRpcProvider({
+    url: 'https://mainnet.opnet.org',
+    network: networks.bitcoin,
+    timeout: 60_000,
+    fetcherConfigurations: {
         connections: 256,
         pipelining: 4,
     },
-    true,   // REST API
-    true,   // Threaded parsing
-    true    // Threaded HTTP
-);
+    useThreadedParsing: true,
+    useThreadedHttp: true,
+});
 ```
 
 ---

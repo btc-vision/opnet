@@ -28,7 +28,7 @@ import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
 const txHash = '63e77ba9fa4262b3d4d0d9d97fa8a7359534606c3f3af096284662e3f619f374';
 const receipt = await provider.getTransactionReceipt(txHash);
@@ -85,8 +85,8 @@ for (const [contractAddress, events] of Object.entries(receipt.events)) {
     console.log('Contract:', contractAddress);
 
     for (const event of events) {
-        console.log('  Event type:', event.eventType);
-        console.log('  Event data:', event.eventData);
+        console.log('  Event type:', event.type);
+        console.log('  Event data:', event.data);
     }
 }
 ```
@@ -112,8 +112,8 @@ if (contractEvents) {
     const decodedEvents = contract.decodeEvents(contractEvents);
 
     for (const event of decodedEvents) {
-        console.log('Event name:', event.name);
-        console.log('Event values:', event.values);
+        console.log('Event type:', event.type);
+        console.log('Event properties:', event.properties);
     }
 }
 ```
