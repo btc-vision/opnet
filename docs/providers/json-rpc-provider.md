@@ -94,8 +94,8 @@ constructor(
 | `timeout` | `number` | `20000` | Request timeout in milliseconds |
 | `fetcherConfigurations` | `Agent.Options` | *see below* | HTTP agent configuration |
 | `useRESTAPI` | `boolean` | `true` | Use REST API format for requests |
-| `useThreadedParsing` | `boolean` | `true` | Parse responses in worker thread |
-| `useThreadedHttp` | `boolean` | `true` | Perform entire HTTP request in worker thread |
+| `useThreadedParsing` | `boolean` | `false` | Parse responses in worker thread |
+| `useThreadedHttp` | `boolean` | `false` | Perform entire HTTP request in worker thread |
 
 ### Default Fetcher Configuration
 
@@ -192,24 +192,24 @@ provider.setFetchMode(true);
 For large responses, the provider can parse JSON in a worker thread to avoid blocking the main thread:
 
 ```typescript
-// Enable threaded parsing (default)
+// Enable threaded parsing (not enabled by default)
 const provider = new JSONRpcProvider(
     url,
     network,
     20_000,
     undefined,
     true,
-    true  // useThreadedParsing = true
+    true  // useThreadedParsing = true (default is false)
 );
 
-// Disable for small responses or debugging
+// Disable for small responses or debugging (this is the default)
 const provider = new JSONRpcProvider(
     url,
     network,
     20_000,
     undefined,
     true,
-    false  // useThreadedParsing = false
+    false  // useThreadedParsing = false (default)
 );
 ```
 
@@ -230,7 +230,7 @@ const provider = new JSONRpcProvider(
 Beyond threaded parsing, the provider can offload the **entire HTTP request** (network I/O + JSON parsing) to a worker thread, completely freeing the main thread:
 
 ```typescript
-// Enable threaded HTTP (default)
+// Enable threaded HTTP (not enabled by default)
 const provider = new JSONRpcProvider(
     url,
     network,
@@ -238,10 +238,10 @@ const provider = new JSONRpcProvider(
     undefined,
     true,
     true,
-    true  // useThreadedHttp = true
+    true  // useThreadedHttp = true (default is false)
 );
 
-// Disable threaded HTTP (uses main thread for HTTP, optional threaded parsing)
+// Disable threaded HTTP (uses main thread for HTTP, optional threaded parsing; this is the default)
 const provider = new JSONRpcProvider(
     url,
     network,
@@ -249,7 +249,7 @@ const provider = new JSONRpcProvider(
     undefined,
     true,
     true,
-    false  // useThreadedHttp = false
+    false  // useThreadedHttp = false (default)
 );
 ```
 
@@ -354,20 +354,18 @@ const receipt = await provider.getTransactionReceipt('txHash');
 const result = await provider.sendRawTransaction(rawTx, psbt);
 
 // Broadcast multiple transactions
-const results = await provider.sendRawTransactions([
-    { tx: rawTx1, psbt: psbt1 },
-    { tx: rawTx2, psbt: psbt2 },
-]);
+const results = await provider.sendRawTransactions([rawTx1, rawTx2]);
 ```
 
 ### Contract Methods
 
 ```typescript
 // Call contract (simulation)
+// `from` is an Address object (not a string), return type is Promise<CallResult | ICallRequestError>
 const result = await provider.call(
-    contractAddress,    // Contract to call
-    calldata,          // Encoded function call
-    senderAddress,     // Optional sender
+    contractAddress,    // Contract to call (string | Address)
+    calldata,          // Encoded function call (Uint8Array | string)
+    fromAddress,       // Optional sender (Address)
     blockHeight,       // Optional block height
     simulatedTx,       // Optional simulated transaction
     accessList         // Optional access list
@@ -437,9 +435,12 @@ const template = await provider.getEpochTemplate();
 
 // Submit epoch solution
 const submitted = await provider.submitEpoch({
-    solution: solutionBuffer,
+    epochNumber: 123n,
+    checksumRoot: checksumRootBuffer,
     salt: saltBuffer,
-    graffiti: graffitiBuffer,
+    mldsaPublicKey: publicKeyBuffer,
+    signature: signatureBuffer,
+    graffiti: graffitiBuffer,  // optional
 });
 ```
 

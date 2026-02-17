@@ -73,22 +73,23 @@ console.log('Conservative:', gasParams.bitcoin.conservative);
 ### BlockGasParameters Structure
 
 ```typescript
-interface BlockGasParameters {
-    blockNumber: bigint;      // Current block number
-    gasUsed: bigint;          // Gas used in block
-    targetGasLimit: bigint;   // Target gas limit
-    ema: bigint;              // Exponential moving average
-    baseGas: bigint;          // Base gas price
-    gasPerSat: bigint;        // Gas units per satoshi
-    bitcoin: BitcoinFees;     // Bitcoin fee estimates
+// BlockGasParameters is a class (implements IBlockGasParameters)
+class BlockGasParameters implements IBlockGasParameters {
+    readonly blockNumber: bigint;      // Current block number
+    readonly gasUsed: bigint;          // Gas used in block
+    readonly targetGasLimit: bigint;   // Target gas limit
+    readonly ema: bigint;              // Exponential moving average
+    readonly baseGas: bigint;          // Base gas price
+    readonly gasPerSat: bigint;        // Gas units per satoshi
+    readonly bitcoin: BitcoinFees;     // Bitcoin fee estimates
 }
 
 interface BitcoinFees {
-    conservative: number;     // Conservative fee estimate
-    recommended: {
-        low: number;          // Low priority
-        medium: number;       // Medium priority
-        high: number;         // High priority (next block)
+    readonly conservative: number;     // Conservative fee estimate
+    readonly recommended: {
+        readonly low: number;          // Low priority
+        readonly medium: number;       // Medium priority
+        readonly high: number;         // High priority (next block)
     };
 }
 ```

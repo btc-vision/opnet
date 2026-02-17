@@ -220,7 +220,7 @@ export type GetPoolInfoNativeSwap = CallResult<
     []
 >;
 
-export type OnOP20ReceivedResult = CallResult<{ selector: Buffer }, []>;
+export type OnOP20ReceivedResult = CallResult<{ selector: Uint8Array }, []>;
 
 /**
  * @description This interface represents the NativeSwap contract,
@@ -257,7 +257,7 @@ export interface INativeSwapContract extends IOP_NETContract {
      */
     listLiquidity(
         token: Address,
-        receiver: Buffer,
+        receiver: Uint8Array,
         receiverStr: string,
         amountIn: bigint,
         priority: boolean,
@@ -296,7 +296,7 @@ export interface INativeSwapContract extends IOP_NETContract {
         token: Address,
         floorPrice: bigint,
         initialLiquidity: bigint,
-        receiver: Buffer,
+        receiver: Uint8Array,
         receiverStr: string,
         antiBotEnabledFor: number,
         antiBotMaximumTokensPerReservation: bigint,

@@ -9,10 +9,10 @@ import {
 
 export class BlockWitnessAPI implements IBlockWitnessAPI {
     public readonly trusted: boolean;
-    public readonly signature: Buffer;
+    public readonly signature: Uint8Array;
     public readonly timestamp: number;
-    public readonly proofs: readonly Buffer[];
-    public readonly identity?: Buffer;
+    public readonly proofs: readonly Uint8Array[];
+    public readonly identity?: Uint8Array;
     public readonly publicKey?: Address;
 
     constructor(data: RawBlockWitnessAPI) {

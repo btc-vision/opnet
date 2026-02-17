@@ -309,7 +309,7 @@ console.log('Balance:', balance.properties.balance);
 - [Address Utilities](./utils/bitcoin-utils.md#address-utilities)
 
 #### [Revert Decoder](./utils/revert-decoder.md)
-- [RevertDecoder Class](./utils/revert-decoder.md#revertdecoder-class)
+- [decodeRevertData Function](./utils/revert-decoder.md#decode-revert-data)
 - [Decoding Revert Data](./utils/revert-decoder.md#decoding-revert-data)
 - [Common Patterns](./utils/revert-decoder.md#common-patterns)
 

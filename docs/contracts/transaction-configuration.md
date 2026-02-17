@@ -61,7 +61,8 @@ interface TransactionParameters {
 
     // Optional: Transaction options
     readonly minGas?: bigint;
-    readonly note?: string | Buffer;
+    readonly note?: string | Uint8Array;
+    readonly p2wda?: boolean;
     readonly txVersion?: SupportedTransactionVersion;
     readonly anchor?: boolean;
     readonly dontUseCSVUtxos?: boolean;
@@ -353,10 +354,12 @@ const params: TransactionParameters = {
 Add arbitrary data to the transaction:
 
 ```typescript
+import { fromHex } from '@btc-vision/bitcoin';
+
 const params: TransactionParameters = {
     note: 'My transaction note',
     // or
-    note: Buffer.from('hex data', 'hex'),
+    note: fromHex('deadbeef'),
     // ...
 };
 ```

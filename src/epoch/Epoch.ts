@@ -3,10 +3,10 @@ import { stringToBuffer } from '../utils/StringToBuffer.js';
 import { IEpoch, IEpochMiner, RawEpoch, RawEpochMiner } from './interfaces/IEpoch.js';
 
 export class EpochMiner implements IEpochMiner {
-    public readonly solution: Buffer;
+    public readonly solution: Uint8Array;
     public readonly publicKey: Address;
-    public readonly salt: Buffer;
-    public readonly graffiti?: Buffer;
+    public readonly salt: Uint8Array;
+    public readonly graffiti?: Uint8Array;
 
     constructor(data: RawEpochMiner) {
         this.solution = stringToBuffer(data.solution);
@@ -20,15 +20,15 @@ export class EpochMiner implements IEpochMiner {
 
 export class Epoch implements IEpoch {
     public readonly epochNumber: bigint;
-    public readonly epochHash: Buffer;
-    public readonly epochRoot: Buffer;
+    public readonly epochHash: Uint8Array;
+    public readonly epochRoot: Uint8Array;
     public readonly startBlock: bigint;
     public readonly endBlock: bigint;
     public readonly difficultyScaled: bigint;
     public readonly minDifficulty?: string;
-    public readonly targetHash: Buffer;
+    public readonly targetHash: Uint8Array;
     public readonly proposer: EpochMiner;
-    public readonly proofs: readonly Buffer[];
+    public readonly proofs: readonly Uint8Array[];
 
     constructor(data: RawEpoch) {
         this.epochNumber = BigInt(data.epochNumber);

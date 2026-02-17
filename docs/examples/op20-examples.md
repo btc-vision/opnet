@@ -8,7 +8,7 @@ This guide provides comprehensive examples for working with OP20 (fungible) toke
 - [Setup](#setup)
 - [Method Data Encoding](#method-data-encoding)
 - [Transfer Example](#transfer-example)
-- [Approve/TransferFrom Pattern](#approvetransferfrom-pattern)
+- [Allowance/TransferFrom Pattern](#allowancetransferfrom-pattern)
 - [Airdrop Example (Batch Transfers)](#airdrop-example-batch-transfers)
 - [Balance Checking with Decimals](#balance-checking-with-decimals)
 - [Complete Token Service](#complete-token-service)
@@ -26,11 +26,14 @@ classDiagram
         +symbol() string
         +decimals() number
         +totalSupply() bigint
-        +balanceOf(account) bigint
-        +transfer(to, value) boolean
-        +approve(spender, value) boolean
+        +balanceOf(owner) bigint
+        +transfer(to, amount)
+        +transferFrom(from, to, amount)
+        +safeTransfer(to, amount, data)
+        +increaseAllowance(spender, amount)
+        +decreaseAllowance(spender, amount)
         +allowance(owner, spender) bigint
-        +transferFrom(from, to, value) boolean
+        +burn(amount)
     }
 ```
 
@@ -89,10 +92,10 @@ const transferCalldata = token.encodeCalldata('transfer', [
 
 console.log('Calldata:', toHex(transferCalldata));
 
-// Encode approve calldata
-const approveCalldata = token.encodeCalldata('approve', [
+// Encode increaseAllowance calldata
+const allowanceCalldata = token.encodeCalldata('increaseAllowance', [
     Address.fromString('0x...'),  // spender
-    BigInt('0xffffffffffffffff'),  // max amount
+    BigInt('0xffffffffffffffff'),  // amount to increase by
 ]);
 ```
 
@@ -110,11 +113,7 @@ async function transferTokens(
     wallet: Wallet
 ): Promise<string> {
     // Simulate first
-    const simulation = await token.transfer(recipient, amount, new Uint8Array(0));
-
-    if (simulation.revert) {
-        throw new Error(`Transfer would fail: ${simulation.revert}`);
-    }
+    const simulation = await token.transfer(recipient, amount);
 
     // Send transaction
     const params: TransactionParameters = {
@@ -151,11 +150,8 @@ async function safeTransfer(
     wallet: Wallet
 ): Promise<string> {
     // safeTransfer allows passing additional data
+    // The simulation call throws if the contract reverts
     const simulation = await token.safeTransfer(recipient, amount, data);
-
-    if (simulation.revert) {
-        throw new Error(`Safe transfer failed: ${simulation.revert}`);
-    }
 
     const params: TransactionParameters = {
         signer: wallet.keypair,
@@ -171,33 +167,37 @@ async function safeTransfer(
 }
 
 // Usage with empty data
-const txId = await safeTransfer(
-    token,
-    recipient,
-    100_00000000n,
-    new Uint8Array(),
-    wallet
-);
+try {
+    const txId = await safeTransfer(
+        token,
+        recipient,
+        100_00000000n,
+        new Uint8Array(),
+        wallet
+    );
+    console.log('Safe transfer TX:', txId);
+} catch (error) {
+    console.error('Safe transfer failed:', error);
+}
 ```
 
 ---
 
-## Approve/TransferFrom Pattern
+## Allowance/TransferFrom Pattern
 
-### Approve Spender
+### Increase Allowance
+
+OP20 uses `increaseAllowance` and `decreaseAllowance` instead of a single `approve` method.
 
 ```typescript
-async function approveSpender(
+async function increaseSpenderAllowance(
     token: IOP20Contract,
     spender: Address,
     amount: bigint,
     wallet: Wallet
 ): Promise<string> {
-    const simulation = await token.approve(spender, amount);
-
-    if (simulation.revert) {
-        throw new Error(`Approve failed: ${simulation.revert}`);
-    }
+    // The simulation call throws if the contract reverts
+    const simulation = await token.increaseAllowance(spender, amount);
 
     const params: TransactionParameters = {
         signer: wallet.keypair,
@@ -212,9 +212,9 @@ async function approveSpender(
     return receipt.transactionId;
 }
 
-// Approve unlimited amount
-const maxAmount = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-await approveSpender(token, spenderAddress, maxAmount, wallet);
+// Increase allowance by a large amount
+const largeAmount = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+await increaseSpenderAllowance(token, spenderAddress, largeAmount, wallet);
 ```
 
 ### Transfer From Another Account
@@ -242,12 +242,8 @@ async function transferFrom(
         throw new Error('Insufficient allowance');
     }
 
-    // Execute transferFrom
+    // Execute transferFrom (throws if contract reverts)
     const simulation = await spenderToken.transferFrom(from, to, amount);
-
-    if (simulation.revert) {
-        throw new Error(`TransferFrom failed: ${simulation.revert}`);
-    }
 
     const params: TransactionParameters = {
         signer: spenderWallet.keypair,
@@ -284,13 +280,9 @@ async function airdropTokens(
     let currentUtxos: UTXO[] | undefined;
 
     for (const recipient of recipients) {
-        // Simulate transfer
-        const simulation = await token.transfer(recipient.address, recipient.amount, new Uint8Array(0));
-
-        if (simulation.revert) {
-            console.error(`Skip ${recipient.address.toHex()}: ${simulation.revert}`);
-            continue;
-        }
+        try {
+        // Simulate transfer (throws on revert)
+        const simulation = await token.transfer(recipient.address, recipient.amount);
 
         const params: TransactionParameters = {
             signer: wallet.keypair,
@@ -309,6 +301,10 @@ async function airdropTokens(
         currentUtxos = receipt.newUTXOs;
 
         console.log(`Sent ${recipient.amount} to ${recipient.address.toHex()}`);
+        } catch (error) {
+            console.error(`Skip ${recipient.address.toHex()}:`, error);
+            continue;
+        }
     }
 
     return txIds;
@@ -434,11 +430,8 @@ class TokenService {
     }
 
     async transfer(to: Address, amount: bigint): Promise<string> {
-        const simulation = await this.token.transfer(to, amount, new Uint8Array(0));
-
-        if (simulation.revert) {
-            throw new Error(`Transfer failed: ${simulation.revert}`);
-        }
+        // Simulation throws if contract reverts
+        const simulation = await this.token.transfer(to, amount);
 
         const receipt = await simulation.sendTransaction({
             signer: this.wallet.keypair,
@@ -452,12 +445,9 @@ class TokenService {
         return receipt.transactionId;
     }
 
-    async approve(spender: Address, amount: bigint): Promise<string> {
-        const simulation = await this.token.approve(spender, amount);
-
-        if (simulation.revert) {
-            throw new Error(`Approve failed: ${simulation.revert}`);
-        }
+    async increaseAllowance(spender: Address, amount: bigint): Promise<string> {
+        // Simulation throws if contract reverts
+        const simulation = await this.token.increaseAllowance(spender, amount);
 
         const receipt = await simulation.sendTransaction({
             signer: this.wallet.keypair,

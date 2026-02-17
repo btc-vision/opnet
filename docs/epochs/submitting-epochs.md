@@ -25,16 +25,18 @@ flowchart TD
 
 ```typescript
 import { JSONRpcProvider, EpochSubmissionParams } from 'opnet';
-import { networks, Address, fromHex } from '@btc-vision/bitcoin';
+import { networks, fromHex } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
 const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
 
 // Prepare submission parameters
 const submission: EpochSubmissionParams = {
+    epochNumber: 100n,
+    checksumRoot: fromHex('your-checksum-root-here...'),
     salt: fromHex('your-32-byte-salt-here...'),
-    solution: fromHex('your-sha1-solution...'),
-    publicKey: Address.fromString('bc1p...your-address...'),
+    mldsaPublicKey: fromHex('your-mldsa-public-key...'),
+    signature: fromHex('your-mldsa-signature...'),
 };
 
 // Submit the solution
@@ -50,9 +52,11 @@ console.log('  Epoch:', result.epochNumber);
 ```typescript
 // Include optional graffiti message (max 32 bytes)
 const submissionWithGraffiti: EpochSubmissionParams = {
+    epochNumber: template.epochNumber,
+    checksumRoot: checksumRoot,
     salt: solutionSalt,
-    solution: solutionHash,
-    publicKey: minerAddress,
+    mldsaPublicKey: mldsaPublicKey,
+    signature: solutionSignature,
     graffiti: new TextEncoder().encode('Mined by MyPool v1.0'),
 };
 
@@ -73,10 +77,12 @@ async submitEpoch(
 
 ```typescript
 interface EpochSubmissionParams {
-    salt: Uint8Array;           // 32-byte salt used in collision
-    solution: Uint8Array;       // SHA-1 collision result
-    publicKey: Address;     // Miner's public key address
-    graffiti?: Uint8Array;      // Optional message (max 32 bytes)
+    readonly epochNumber: bigint;         // Epoch number to submit for
+    readonly checksumRoot: Uint8Array;    // Checksum root
+    readonly salt: Uint8Array;            // 32-byte salt used in collision
+    readonly mldsaPublicKey: Uint8Array;  // ML-DSA public key
+    readonly signature: Uint8Array;       // ML-DSA signature
+    readonly graffiti?: Uint8Array;       // Optional message (max 32 bytes)
 }
 ```
 
@@ -86,18 +92,17 @@ interface EpochSubmissionParams {
 
 ```typescript
 interface SubmittedEpoch {
-    status: SubmissionStatus;   // Success or error status
-    epochNumber: bigint;        // Epoch that was submitted to
-    message?: string;           // Additional status message
+    readonly epochNumber: bigint;            // Epoch that was submitted to
+    readonly submissionHash: Uint8Array;     // Hash of the submission
+    readonly difficulty: number;             // Difficulty of the submission
+    readonly timestamp: Date;                // When the submission was made
+    readonly status: SubmissionStatus;       // Acceptance status
+    readonly message?: string;               // Additional status message
 }
 
 enum SubmissionStatus {
-    SUCCESS = 'success',
-    INVALID_SOLUTION = 'invalid_solution',
-    EPOCH_ALREADY_PROPOSED = 'epoch_already_proposed',
-    INVALID_DIFFICULTY = 'invalid_difficulty',
-    INVALID_SALT = 'invalid_salt',
-    NETWORK_ERROR = 'network_error',
+    ACCEPTED = 'accepted',
+    REJECTED = 'rejected',
 }
 ```
 
@@ -116,24 +121,13 @@ async function submitAndHandle(
         const result = await provider.submitEpoch(params);
 
         switch (result.status) {
-            case 'success':
+            case 'accepted':
                 console.log(`Successfully proposed epoch ${result.epochNumber}!`);
+                console.log(`  Difficulty: ${result.difficulty}`);
                 return true;
 
-            case 'epoch_already_proposed':
-                console.log('Epoch already has a proposer');
-                return false;
-
-            case 'invalid_solution':
-                console.log('Solution did not meet difficulty requirements');
-                return false;
-
-            case 'invalid_difficulty':
-                console.log('Difficulty check failed');
-                return false;
-
-            case 'invalid_salt':
-                console.log('Salt format is invalid');
+            case 'rejected':
+                console.log('Submission rejected:', result.message);
                 return false;
 
             default:
@@ -220,15 +214,14 @@ class EpochMiner {
 
         const params: EpochSubmissionParams = {
             epochNumber: template.epochNumber,
-            targetHash: checksumRoot,
+            checksumRoot: checksumRoot,
             salt: solution.salt,
             mldsaPublicKey: this.mldsaPublicKey,
             signature: this.signSolution(solution.salt), // Sign with ML-DSA key
+            graffiti: graffiti
+                ? new TextEncoder().encode(graffiti.slice(0, 32))
+                : undefined,
         };
-
-        if (graffiti) {
-            params.graffiti = new TextEncoder().encode(graffiti.slice(0, 32));
-        }
 
         return this.provider.submitEpoch(params);
     }
@@ -307,7 +300,7 @@ class EpochMiner {
 const miner = new EpochMiner(provider, wallet.mldsaKeypair.publicKey);
 const result = await miner.mineAndSubmit('MyMiner v1.0');
 
-if (result?.status === 'success') {
+if (result?.status === 'accepted') {
     console.log('Successfully proposed epoch', result.epochNumber);
 }
 ```
@@ -354,7 +347,7 @@ class CompetitiveMiner {
                 if (solution) {
                     const params: EpochSubmissionParams = {
                         epochNumber: template.epochNumber,
-                        targetHash: checksumRoot,
+                        checksumRoot: checksumRoot,
                         salt: solution.salt,
                         mldsaPublicKey: this.mldsaPublicKey,
                         signature: this.signSolution(solution.salt),
@@ -366,7 +359,7 @@ class CompetitiveMiner {
                     try {
                         const result = await this.provider.submitEpoch(params);
 
-                        if (result.status === 'success') {
+                        if (result.status === 'accepted') {
                             console.log(`WON epoch ${result.epochNumber}!`);
                         } else {
                             console.log('Submission rejected:', result.status);
@@ -479,7 +472,7 @@ class SubmissionTracker {
             epochNumber: result.epochNumber,
             timestamp: Date.now(),
             status: result.status,
-            wasAccepted: result.status === 'success',
+            wasAccepted: result.status === 'accepted',
         });
     }
 
@@ -543,21 +536,12 @@ async function submitWithRetry(
         try {
             const result = await provider.submitEpoch(params);
 
-            // Don't retry on definitive rejections
-            if (
-                result.status === 'invalid_solution' ||
-                result.status === 'invalid_difficulty' ||
-                result.status === 'epoch_already_proposed'
-            ) {
+            // Don't retry on definitive results
+            if (result.status === 'accepted' || result.status === 'rejected') {
                 return result;
             }
 
-            if (result.status === 'success') {
-                return result;
-            }
-
-            // Retry on network errors
-            console.log(`Attempt ${attempt} failed: ${result.status}`);
+            console.log(`Attempt ${attempt} returned unexpected status: ${result.status}`);
 
         } catch (error) {
             lastError = error as Error;
@@ -576,8 +560,8 @@ async function submitWithRetry(
 
 // Usage
 const result = await submitWithRetry(provider, submission);
-if (result?.status === 'success') {
-    console.log('Submission successful after retries');
+if (result?.status === 'accepted') {
+    console.log('Submission accepted after retries');
 }
 ```
 
@@ -596,20 +580,23 @@ class EpochSubmissionService {
     }
 
     async submit(
+        epochNumber: bigint,
+        checksumRoot: Uint8Array,
         salt: Uint8Array,
-        solution: Uint8Array,
-        publicKey: Address,
+        mldsaPublicKey: Uint8Array,
+        signature: Uint8Array,
         graffiti?: string
     ): Promise<SubmittedEpoch> {
         const params: EpochSubmissionParams = {
+            epochNumber,
+            checksumRoot,
             salt,
-            solution,
-            publicKey,
+            mldsaPublicKey,
+            signature,
+            graffiti: graffiti
+                ? new TextEncoder().encode(graffiti.slice(0, 32))
+                : undefined,
         };
-
-        if (graffiti) {
-            params.graffiti = new TextEncoder().encode(graffiti.slice(0, 32));
-        }
 
         const result = await this.provider.submitEpoch(params);
         this.tracker.record(result);
@@ -618,24 +605,27 @@ class EpochSubmissionService {
     }
 
     async submitWithVerification(
+        epochNumber: bigint,
+        checksumRoot: Uint8Array,
         salt: Uint8Array,
-        solution: Uint8Array,
-        publicKey: Address,
+        mldsaPublicKey: Uint8Array,
+        signature: Uint8Array,
+        publicKeyHex: string,
         graffiti?: string
     ): Promise<{
         submitted: SubmittedEpoch;
         verified: boolean;
     }> {
-        const result = await this.submit(salt, solution, publicKey, graffiti);
+        const result = await this.submit(epochNumber, checksumRoot, salt, mldsaPublicKey, signature, graffiti);
 
         let verified = false;
-        if (result.status === 'success') {
+        if (result.status === 'accepted') {
             // Wait a moment for propagation
             await new Promise(r => setTimeout(r, 2000));
 
             // Verify on-chain
             const epoch = await this.provider.getEpochByNumber(result.epochNumber);
-            verified = epoch.proposer.publicKey.toHex() === publicKey.toHex();
+            verified = epoch.proposer.publicKey.toHex() === publicKeyHex;
         }
 
         return { submitted: result, verified };
@@ -654,9 +644,12 @@ class EpochSubmissionService {
 const submissionService = new EpochSubmissionService(provider);
 
 const { submitted, verified } = await submissionService.submitWithVerification(
+    template.epochNumber,
+    checksumRoot,
     solutionSalt,
-    solutionHash,
-    minerAddress,
+    mldsaPublicKey,
+    solutionSignature,
+    minerPublicKeyHex,
     'MyMiner'
 );
 

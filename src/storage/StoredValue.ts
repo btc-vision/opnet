@@ -1,3 +1,4 @@
+import { fromBase64, fromHex } from '@btc-vision/bitcoin';
 import { BufferHelper } from '@btc-vision/transaction';
 import { IStorageValue } from './interfaces/IStorageValue.js';
 
@@ -8,7 +9,7 @@ import { IStorageValue } from './interfaces/IStorageValue.js';
  */
 export class StoredValue implements IStorageValue {
     public readonly pointer: bigint;
-    public readonly value: Buffer;
+    public readonly value: Uint8Array;
 
     public readonly height: bigint;
     public readonly proofs: string[];
@@ -22,10 +23,9 @@ export class StoredValue implements IStorageValue {
         if (typeof iStoredValue.value !== 'string') {
             this.value = iStoredValue.value;
         } else {
-            this.value = Buffer.from(
-                iStoredValue.value,
-                iStoredValue.value.startsWith('0x') ? 'hex' : 'base64',
-            );
+            this.value = iStoredValue.value.startsWith('0x')
+                ? fromHex(iStoredValue.value.slice(2))
+                : fromBase64(iStoredValue.value);
         }
 
         this.height = BigInt(iStoredValue.height);
@@ -33,6 +33,6 @@ export class StoredValue implements IStorageValue {
     }
 
     private base64ToBigInt(base64: string): bigint {
-        return BufferHelper.uint8ArrayToPointer(Buffer.from(base64, 'base64'));
+        return BufferHelper.uint8ArrayToPointer(fromBase64(base64));
     }
 }

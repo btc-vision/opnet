@@ -434,10 +434,11 @@ class OPNetClient {
                     lastError = error as Error;
 
                     if (error instanceof OPNetError) {
-                        // Don't retry client errors
-                        if (error.code >= 400 && error.code < 500) {
-                            throw error;
-                        }
+                        // Don't retry certain errors.
+                        // Note: OPNetError.code values are WebSocket error codes,
+                        // not HTTP status codes. Check for specific error codes
+                        // relevant to your application.
+                        throw error;
                     }
 
                     const delay = this.retryConfig.baseDelay * Math.pow(2, i);

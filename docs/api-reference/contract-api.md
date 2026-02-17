@@ -25,7 +25,7 @@ function getContract<T extends BaseContractProperties>(
     provider: AbstractRpcProvider,
     network: Network,
     sender?: Address
-): T
+): BaseContract<T> & Omit<T, keyof BaseContract<T>>
 ```
 
 ### Parameters
@@ -52,7 +52,7 @@ Base interface for all contract instances.
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `address` | `Address` | Contract address |
+| `address` | `string \| Address` | Contract address |
 | `provider` | `AbstractRpcProvider` | Provider instance |
 | `network` | `Network` | Bitcoin network |
 
@@ -148,7 +148,7 @@ class CallResult<
 | `refundedGas` | `bigint \| undefined` | Gas that would be refunded |
 | `estimatedSatGas` | `bigint` | Estimated gas in satoshis |
 | `estimatedRefundedGasInSat` | `bigint` | Refunded gas in satoshis |
-| `calldata` | `Buffer \| undefined` | Encoded calldata |
+| `calldata` | `Uint8Array \| undefined` | Encoded calldata |
 | `to` | `string \| undefined` | Target contract address string |
 | `address` | `Address \| undefined` | Target contract Address object |
 | `fromAddress` | `Address \| undefined` | Sender address |
@@ -250,7 +250,8 @@ interface TransactionParameters {
     readonly minGas?: bigint;            // Minimum gas
 
     // Options
-    readonly note?: string | Buffer;         // Transaction note
+    readonly note?: string | Uint8Array;      // Transaction note
+    readonly p2wda?: boolean;            // P2WDA mode
     readonly txVersion?: SupportedTransactionVersion;  // TX version
     readonly anchor?: boolean;           // Anchor transaction
 

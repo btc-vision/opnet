@@ -1,3 +1,4 @@
+import { fromBase64 } from '@btc-vision/bitcoin';
 import { ScriptPubKey } from '@btc-vision/bitcoin-rpc';
 import { IUTXO } from './interfaces/IUTXO.js';
 
@@ -31,7 +32,7 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
 
         this.scriptPubKey = iUTXO.scriptPubKey;
 
-        this.nonWitnessUtxo = Buffer.from(iUTXO.raw, 'base64');
+        this.nonWitnessUtxo = fromBase64(iUTXO.raw);
     }
 }
 

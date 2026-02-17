@@ -12,8 +12,8 @@ Factory contracts allow deploying new token and staking contracts from templates
 
 | Factory | Interface | ABI |
 |---------|-----------|-----|
-| OP20 Factory | `IOP20Factory` | `OP20_FACTORY_ABI` |
-| MotoChef Factory | `IMotoChefFactory` | `MOTOCHEF_FACTORY_ABI` |
+| OP20 Factory | `IOP20Factory` | `OP20FactoryAbi` |
+| MotoChef Factory | `IMotoChefFactory` | `MotoChefFactoryAbi` |
 
 ---
 
@@ -25,14 +25,14 @@ Deploys new OP20 tokens from a template.
 
 ```typescript
 import {
-    OP20_FACTORY_ABI,
+    OP20FactoryAbi,
     IOP20Factory,
     getContract,
 } from 'opnet';
 
 const factory = getContract<IOP20Factory>(
     factoryAddress,
-    OP20_FACTORY_ABI,
+    OP20FactoryAbi,
     provider,
     network
 );
@@ -42,28 +42,44 @@ const factory = getContract<IOP20Factory>(
 
 | Method | Parameters | Returns | Description |
 |--------|------------|---------|-------------|
-| `deployToken(name, symbol, decimals, maxSupply)` | `string, string, number, bigint` | `Address` | Deploy new token |
-| `getTemplate()` | - | `Address` | Get template address |
-| `deployedTokens(index)` | `bigint` | `Address` | Get token by index |
-| `deployedTokensCount()` | - | `bigint` | Total deployed tokens |
+| `pauseFactory()` | - | `{ success: boolean }` | Pause the factory |
+| `unpauseFactory()` | - | `{ success: boolean }` | Unpause the factory |
+| `isPaused()` | - | `{ isPaused: boolean }` | Check if factory is paused |
+| `owner()` | - | `{ owner: Address }` | Get the factory owner |
+| `deployToken(maxSupply, decimals, name, symbol, initialMintTo, initialMintAmount, freeMintSupply, freeMintPerTx, tokenOwner)` | `bigint, number, string, string, Address, bigint, bigint, bigint, Address` | `{ success: boolean }` | Deploy new token |
+| `getTokenDeployer(tokenAddress)` | `Address` | `{ deployer: Address }` | Get token deployer |
+| `getTokenOwner(tokenAddress)` | `Address` | `{ owner: Address }` | Get token owner |
+| `updateTokenOwner(tokenAddress, newOwner)` | `Address, Address` | `{ success: boolean }` | Update token owner |
+| `getUserTokens(deployer)` | `Address` | `{ tokens: Uint8Array }` | Get tokens by deployer |
+| `getDeploymentInfo(deployer)` | `Address` | `{ has: boolean, token: Address, block: bigint }` | Get deployment info |
+| `getDeploymentsCount()` | - | `{ count: number }` | Total deployments |
+| `getDeploymentByIndex(index)` | `number` | `{ deployer: Address, token: Address, block: bigint }` | Get deployment by index |
+| `onOP20Received(operator, from, amount, data)` | `Address, Address, bigint, Uint8Array` | `{ selector: Uint8Array }` | OP20 receive callback |
+
+### Events
+
+| Event | Fields |
+|-------|--------|
+| `TokenDeployed` | `deployer: Address, token: Address, name: string, symbol: string` |
+| `FactoryPaused` | `by: Address` |
+| `FactoryUnpaused` | `by: Address` |
 
 ### Example: Deploy Token
 
 ```typescript
 const result = await factory.deployToken(
-    'My Token',
-    'MTK',
-    8,
-    1000000000000000n, // 10M tokens
-    {
-        signer: wallet.keypair,
-        mldsaSigner: wallet.mldsaKeypair,
-        refundTo: wallet.p2tr,
-        feeRate: 10,
-    }
+    21_000_000_00000000n,               // maxSupply
+    8,                                   // decimals
+    'My Token',                          // name
+    'MTK',                               // symbol
+    Address.fromString('0x...'),         // initialMintTo
+    1_000_000_00000000n,                 // initialMintAmount
+    0n,                                  // freeMintSupply
+    0n,                                  // freeMintPerTx
+    Address.fromString('0x...'),         // tokenOwner
 );
 
-console.log('New token address:', result.properties.tokenAddress);
+console.log('Deploy success:', result.properties.success);
 ```
 
 ---
@@ -72,48 +88,79 @@ console.log('New token address:', result.properties.tokenAddress);
 
 ### IMotoChefFactory
 
-Deploys new staking pools from a template.
+Deploys new tokens and MotoChef staking contracts from templates. Extends the OP20 Factory with MotoChef-specific deployment methods.
 
 ```typescript
 import {
-    MOTOCHEF_FACTORY_ABI,
+    MotoChefFactoryAbi,
     IMotoChefFactory,
     getContract,
 } from 'opnet';
 
 const factory = getContract<IMotoChefFactory>(
     factoryAddress,
-    MOTOCHEF_FACTORY_ABI,
+    MotoChefFactoryAbi,
     provider,
     network
 );
 ```
 
-### Methods
+### Additional Methods (beyond OP20 Factory)
 
 | Method | Parameters | Returns | Description |
 |--------|------------|---------|-------------|
-| `deployPool(stakingToken, rewardToken, rewardRate)` | `Address, Address, bigint` | `Address` | Deploy staking pool |
-| `getTemplate()` | - | `Address` | Get template address |
-| `deployedPools(index)` | `bigint` | `Address` | Get pool by index |
-| `deployedPoolsCount()` | - | `bigint` | Total deployed pools |
+| `initialize()` | - | `{ success: boolean }` | Initialize the factory |
+| `deployMotoChef(...)` | See below | `{ success: boolean }` | Deploy a MotoChef staking contract |
+| `getTokenMotoChef(tokenAddress)` | `Address` | `{ motoChefAddress: Address }` | Get MotoChef for a token |
 
-### Example: Deploy Staking Pool
+The `deployMotoChef` method takes the following parameters:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `tokenPerBlock` | `bigint` | Reward tokens per block |
+| `bonusEndBlock` | `bigint` | Block number when bonus period ends |
+| `bonusMultiplier` | `bigint` | Multiplier during bonus period |
+| `BTCAllocPoint` | `bigint` | BTC pool allocation points |
+| `tokenAddress` | `Address` | Token address for the farm |
+| `tokenAllocPoint` | `bigint` | Token pool allocation points |
+| `userBTCFeePercentage` | `bigint` | User BTC fee percentage |
+| `userFeeRecipient` | `string` | Fee recipient address (string) |
+| `farmName` | `string` | Name of the farm |
+| `farmBanner` | `string` | Banner URL for the farm |
+| `additionalPoolTokens` | `Address[]` | Additional pool token addresses |
+| `additionalPoolAllocPoints` | `bigint[]` | Additional pool allocation points |
+
+The `getDeploymentInfo` return type includes an additional `motoChef: Address` field compared to the OP20 Factory. Similarly, `getDeploymentByIndex` also returns a `motoChef: Address` field.
+
+### Additional Events
+
+| Event | Fields |
+|-------|--------|
+| `TokenDeployed` | `deployer: Address, token: Address, name: string, symbol: string` |
+| `MotoChefDeployed` | `deployer: Address, token: Address, motoChef: Address, userBTCFeePercentage: bigint, farmName: string` |
+| `FeeRecipientsUpdated` | `motoSwapFeeRecipient: string, opnetFeeRecipient: string` |
+| `FactoryPaused` | `by: Address` |
+| `FactoryUnpaused` | `by: Address` |
+
+### Example: Deploy MotoChef
 
 ```typescript
-const result = await factory.deployPool(
-    stakingToken,
-    rewardToken,
-    1000000n, // Reward rate per block
-    {
-        signer: wallet.keypair,
-        mldsaSigner: wallet.mldsaKeypair,
-        refundTo: wallet.p2tr,
-        feeRate: 10,
-    }
+const result = await factory.deployMotoChef(
+    1000000n,                            // tokenPerBlock
+    100000n,                             // bonusEndBlock
+    2n,                                  // bonusMultiplier
+    1000n,                               // BTCAllocPoint
+    Address.fromString('0x...'),         // tokenAddress
+    2000n,                               // tokenAllocPoint
+    5n,                                  // userBTCFeePercentage
+    'bc1q...',                           // userFeeRecipient
+    'My Farm',                           // farmName
+    'https://example.com/banner.png',    // farmBanner
+    [],                                  // additionalPoolTokens
+    [],                                  // additionalPoolAllocPoints
 );
 
-console.log('New pool address:', result.properties.poolAddress);
+console.log('Deploy success:', result.properties.success);
 ```
 
 ---
@@ -126,13 +173,13 @@ The template used by OP20 Factory.
 
 ```typescript
 import {
-    TEMPLATE_OP20_ABI,
+    TemplateOP20Abi,
     ITemplateOP20,
     getContract,
 } from 'opnet';
 ```
 
-Template tokens include initialization methods for the factory to configure.
+Template tokens extend the OP20 interface with additional methods including `initialize`, `mint`, `grantMinterRole`, `revokeMinterRole`, `isMinter`, `getTokenOwner`, `getFactoryAddress`, `deployer`, `transferTokenOwner`, `freeMint`, `getFreeMintInfo`, and `onOP20Received`.
 
 ### ITemplateMotoChef
 
@@ -140,8 +187,7 @@ The template used by MotoChef Factory.
 
 ```typescript
 import {
-    TEMPLATE_MOTOCHEF_ABI,
-    ITemplateMotoChef,
+    TemplateMotoChefAbi,
     getContract,
 } from 'opnet';
 ```
@@ -155,68 +201,66 @@ import {
 ```typescript
 async function getAllDeployedTokens(
     factory: IOP20Factory
-): Promise<Address[]> {
-    const count = await factory.deployedTokensCount();
-    const tokens: Address[] = [];
+): Promise<{ deployer: Address; token: Address; block: bigint }[]> {
+    const countResult = await factory.getDeploymentsCount();
+    const count = countResult.properties.count;
+    const deployments: { deployer: Address; token: Address; block: bigint }[] = [];
 
-    for (let i = 0n; i < count.properties.count; i++) {
-        const token = await factory.deployedTokens(i);
-        tokens.push(token.properties.tokenAddress);
+    for (let i = 0; i < count; i++) {
+        const deployment = await factory.getDeploymentByIndex(i);
+        deployments.push({
+            deployer: deployment.properties.deployer,
+            token: deployment.properties.token,
+            block: deployment.properties.block,
+        });
     }
 
-    return tokens;
+    return deployments;
 }
 ```
 
-### Deploy and Initialize Token
+### Deploy Token with Factory
 
 ```typescript
-async function deployAndConfigureToken(
+async function deployTokenViaFactory(
     factory: IOP20Factory,
     config: {
         name: string;
         symbol: string;
         decimals: number;
         maxSupply: bigint;
-        initialMint?: bigint;
-        mintTo?: Address;
+        initialMintTo: Address;
+        initialMintAmount: bigint;
+        tokenOwner: Address;
     },
     wallet: Wallet
-): Promise<Address> {
-    // Deploy token
-    const deployResult = await factory.deployToken(
+): Promise<void> {
+    // Deploy token (factory handles initialization and initial minting)
+    const simulation = await factory.deployToken(
+        config.maxSupply,
+        config.decimals,
         config.name,
         config.symbol,
-        config.decimals,
-        config.maxSupply,
-        {
-            signer: wallet.keypair,
-            mldsaSigner: wallet.mldsaKeypair,
-            refundTo: wallet.p2tr,
-            feeRate: 10,
-        }
+        config.initialMintTo,
+        config.initialMintAmount,
+        0n,                  // freeMintSupply
+        0n,                  // freeMintPerTx
+        config.tokenOwner,
     );
 
-    const tokenAddress = deployResult.properties.tokenAddress;
+    // Note: The simulation call throws if the contract reverts.
+    // Use try/catch around the entire function to handle reverts gracefully.
 
-    // If initial mint requested
-    if (config.initialMint && config.mintTo) {
-        const token = getContract<IOP20SContract>(
-            tokenAddress.toHex(),
-            OP_20S_ABI,
-            provider,
-            network
-        );
+    const receipt = await simulation.sendTransaction({
+        signer: wallet.keypair,
+        mldsaSigner: wallet.mldsaKeypair,
+        refundTo: wallet.p2tr,
+        maximumAllowedSatToSpend: 50000n,
+        network: network,
+        feeRate: 10,
+    });
 
-        await token.mint(config.mintTo, config.initialMint, {
-            signer: wallet.keypair,
-            mldsaSigner: wallet.mldsaKeypair,
-            refundTo: wallet.p2tr,
-            feeRate: 10,
-        });
-    }
-
-    return tokenAddress;
+    console.log('Deploy TX:', receipt.transactionId);
 }
 ```
 
@@ -226,28 +270,54 @@ async function deployAndConfigureToken(
 
 ### TokenDeployed
 
-Emitted when a new token is deployed.
+Emitted when a new token is deployed via either factory.
 
 ```typescript
-interface TokenDeployedEvent {
-    deployer: Address;
-    tokenAddress: Address;
-    name: string;
-    symbol: string;
-}
+type TokenDeployedEvent = {
+    readonly deployer: Address;
+    readonly token: Address;
+    readonly name: string;
+    readonly symbol: string;
+};
 ```
 
-### PoolDeployed
+### MotoChefDeployed
 
-Emitted when a new staking pool is deployed.
+Emitted when a new MotoChef is deployed (MotoChef Factory only).
 
 ```typescript
-interface PoolDeployedEvent {
-    deployer: Address;
-    poolAddress: Address;
-    stakingToken: Address;
-    rewardToken: Address;
-}
+type MotoChefDeployedEvent = {
+    readonly deployer: Address;
+    readonly token: Address;
+    readonly motoChef: Address;
+    readonly userBTCFeePercentage: bigint;
+    readonly farmName: string;
+};
+```
+
+### FactoryPaused / FactoryUnpaused
+
+Emitted when the factory is paused or unpaused.
+
+```typescript
+type FactoryPausedEvent = {
+    readonly by: Address;
+};
+
+type FactoryUnpausedEvent = {
+    readonly by: Address;
+};
+```
+
+### FeeRecipientsUpdated
+
+Emitted when fee recipients are updated (MotoChef Factory only).
+
+```typescript
+type FeeRecipientsUpdatedEvent = {
+    readonly motoSwapFeeRecipient: string;
+    readonly opnetFeeRecipient: string;
+};
 ```
 
 ---
@@ -328,29 +398,33 @@ const rewards = await staking.stakedReward(userAddress);
 console.log('Pending rewards:', rewards.properties.amount);
 
 // Stake tokens
-const stakeSimulation = await staking.stake(1000000000n);
-if (!stakeSimulation.revert) {
+try {
+    const stakeSimulation = await staking.stake(1000000000n);
     await stakeSimulation.sendTransaction({
         signer: wallet.keypair,
-        mldsaSigner: wallet.mldsaSigner,
+        mldsaSigner: wallet.mldsaKeypair,
         refundTo: wallet.p2tr,
         maximumAllowedSatToSpend: 50000n,
         network: network,
         feeRate: 10,
     });
+} catch (error) {
+    console.error('Stake failed:', error);
 }
 
 // Claim rewards
-const claimSimulation = await staking.claim();
-if (!claimSimulation.revert) {
+try {
+    const claimSimulation = await staking.claim();
     await claimSimulation.sendTransaction({
         signer: wallet.keypair,
-        mldsaSigner: wallet.mldsaSigner,
+        mldsaSigner: wallet.mldsaKeypair,
         refundTo: wallet.p2tr,
         maximumAllowedSatToSpend: 50000n,
         network: network,
         feeRate: 10,
     });
+} catch (error) {
+    console.error('Claim failed:', error);
 }
 ```
 

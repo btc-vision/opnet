@@ -117,7 +117,8 @@ interface TransactionParameters {
     readonly extraOutputs?: PsbtOutputExtended[];
     readonly from?: Address;
     readonly minGas?: bigint;
-    readonly note?: string | Buffer;
+    readonly note?: string | Uint8Array;
+    readonly p2wda?: boolean;
     readonly txVersion?: SupportedTransactionVersion;
     readonly anchor?: boolean;
 

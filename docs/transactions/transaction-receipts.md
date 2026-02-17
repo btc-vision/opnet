@@ -85,8 +85,8 @@ for (const [contractAddress, events] of Object.entries(receipt.events)) {
     console.log('Contract:', contractAddress);
 
     for (const event of events) {
-        console.log('  Event type:', event.eventType);
-        console.log('  Event data:', event.eventData);
+        console.log('  Event type:', event.type);
+        console.log('  Event data:', event.data);
     }
 }
 ```
@@ -112,8 +112,8 @@ if (contractEvents) {
     const decodedEvents = contract.decodeEvents(contractEvents);
 
     for (const event of decodedEvents) {
-        console.log('Event name:', event.name);
-        console.log('Event values:', event.values);
+        console.log('Event type:', event.type);
+        console.log('Event properties:', event.properties);
     }
 }
 ```

@@ -97,8 +97,8 @@ Parameters for submitting an epoch solution.
 
 ```typescript
 interface EpochSubmissionParams {
-    readonly epochNumber: bigint;      // Epoch number to submit for
-    readonly targetHash: Uint8Array;       // Target hash from template
+    readonly epochNumber: bigint;           // Epoch number to submit for
+    readonly checksumRoot: Uint8Array;      // Checksum root from template
     readonly salt: Uint8Array;             // 32-byte salt used in collision
     readonly mldsaPublicKey: Uint8Array;   // ML-DSA public key
     readonly signature: Uint8Array;        // ML-DSA signature
@@ -154,7 +154,7 @@ enum SubmissionStatus {
 ```typescript
 async getLatestEpoch(
     includeSubmissions: boolean
-): Promise<Epoch | EpochWithSubmissions>
+): Promise<Epoch>
 ```
 
 ### getEpochByNumber
@@ -232,7 +232,7 @@ console.log('Target:', Array.from(template.epochTarget).map(b => b.toString(16).
 ```typescript
 const result = await provider.submitEpoch({
     epochNumber: template.epochNumber,
-    targetHash: template.epochTarget,
+    checksumRoot: template.epochTarget,
     salt: mySalt,
     mldsaPublicKey: myMLDSAPublicKey,
     signature: mySignature,

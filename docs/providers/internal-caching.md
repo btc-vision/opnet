@@ -118,8 +118,8 @@ const challenge2 = await provider.getChallenge();  // Same challenge
 CSV1 (CheckSequenceVerify v1) addresses are cached per address:
 
 ```typescript
-// Get CSV1 address
-const csv1 = provider.getCSV1ForAddress(address);
+// Get CSV1 address (takes an Address object, not a string)
+const csv1 = provider.getCSV1ForAddress(address);  // address: Address
 
 // Subsequent calls return cached
 const csv1Again = provider.getCSV1ForAddress(address);  // From cache
@@ -197,7 +197,7 @@ const freshProvider = new JSONRpcProvider(url, network);
 
 ```typescript
 // WebSocket: Cache updates with real-time blocks
-wsProvider.subscribeToBlocks((block) => {
+await wsProvider.subscribeBlocks((block) => {
     // Gas cache automatically refreshes
 });
 

@@ -1,6 +1,5 @@
-import { Network } from '@btc-vision/bitcoin';
+import { fromBase64, Network } from '@btc-vision/bitcoin';
 import { Address } from '@btc-vision/transaction';
-import { Buffer } from 'buffer';
 import { InteractionType } from '../../interfaces/opnet/OPNetTransactionTypes.js';
 import { IInteractionTransaction } from '../interfaces/transactions/IInteractionTransaction.js';
 import { TransactionBase } from '../Transaction.js';
@@ -16,22 +15,22 @@ export class InteractionTransaction
     /**
      * @description The calldata of the transaction.
      */
-    public readonly calldata?: Buffer;
+    public readonly calldata?: Uint8Array;
 
     /**
      * @description The sender's public key hash.
      */
-    public readonly senderPubKeyHash: Buffer;
+    public readonly senderPubKeyHash: Uint8Array;
 
     /**
      * @description The contract secret.
      */
-    public readonly contractSecret: Buffer;
+    public readonly contractSecret: Uint8Array;
 
     /**
      * @description The interaction public key.
      */
-    public readonly interactionPubKey: Buffer;
+    public readonly interactionPubKey: Uint8Array;
 
     /**
      * @description Whether the transaction data was compressed.
@@ -57,16 +56,16 @@ export class InteractionTransaction
         super(transaction, network);
 
         this.contractPublicKey = new Address(
-            Buffer.from(transaction.contractPublicKey as string, 'base64'),
+            fromBase64(transaction.contractPublicKey as string),
         );
 
         if (transaction.calldata) {
-            this.calldata = Buffer.from(transaction.calldata as string, 'base64');
+            this.calldata = fromBase64(transaction.calldata as string);
         }
 
-        this.senderPubKeyHash = Buffer.from(transaction.senderPubKeyHash as string, 'base64');
-        this.contractSecret = Buffer.from(transaction.contractSecret as string, 'base64');
-        this.interactionPubKey = Buffer.from(transaction.interactionPubKey as string, 'base64');
+        this.senderPubKeyHash = fromBase64(transaction.senderPubKeyHash as string);
+        this.contractSecret = fromBase64(transaction.contractSecret as string);
+        this.interactionPubKey = fromBase64(transaction.interactionPubKey as string);
 
         this.wasCompressed = transaction.wasCompressed || false;
         this.contractAddress = transaction.contractAddress;
@@ -74,8 +73,8 @@ export class InteractionTransaction
         try {
             if (transaction.from) {
                 this.from = new Address(
-                    Buffer.from(transaction.from as string, 'base64'),
-                    Buffer.from(transaction.fromLegacy as string, 'base64'),
+                    fromBase64(transaction.from as string),
+                    fromBase64(transaction.fromLegacy as string),
                 );
             }
         } catch {}

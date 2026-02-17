@@ -1,4 +1,4 @@
-import { Network } from '@btc-vision/bitcoin';
+import { fromBase64, Network } from '@btc-vision/bitcoin';
 import { BigNumberish } from '../common/CommonTypes.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { ITransactionBase } from './interfaces/ITransactionBase.js';
@@ -124,7 +124,7 @@ export abstract class TransactionBase<T extends OPNetTransactionTypes>
 
     private decodeProofOfWorkChallenge(challenge: RawProofOfWorkChallenge): ProofOfWorkChallenge {
         return {
-            preimage: Buffer.from(challenge.preimage, 'base64'),
+            preimage: fromBase64(challenge.preimage),
             reward: BigInt(challenge.reward) || 0n,
             difficulty: BigInt(challenge.difficulty || '0'),
             version: challenge.version || 0,

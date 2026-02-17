@@ -41,8 +41,8 @@ export type TransferTokenOwner = CallResult<
     [OPNetEvent<TokenOwnerTransferredEvent>]
 >;
 export type FreeMint = CallResult<{ success: boolean }, [OPNetEvent<MintedEvent>]>;
-export type FreeMintInfo = CallResult<{ info: Buffer }, []>;
-export type OnOP20Received = CallResult<{ selector: Buffer }, []>;
+export type FreeMintInfo = CallResult<{ info: Uint8Array }, []>;
+export type OnOP20Received = CallResult<{ selector: Uint8Array }, []>;
 
 export interface ITemplateOP20 extends IOP20Contract {
     initialize(
@@ -72,7 +72,7 @@ export interface ITemplateOP20 extends IOP20Contract {
         operator: Address,
         from: Address,
         amount: bigint,
-        data: Buffer,
+        data: Uint8Array,
     ): Promise<OnOP20Received>;
 }
 

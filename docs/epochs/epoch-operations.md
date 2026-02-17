@@ -63,8 +63,8 @@ if (epochWithSubmissions.submissions) {
 
 ```typescript
 async getLatestEpoch(
-    submissions?: boolean  // Include all submissions (default: false)
-): Promise<Epoch | EpochWithSubmissions>
+    includeSubmissions: boolean  // Include all submissions
+): Promise<Epoch>
 ```
 
 ---
@@ -87,8 +87,9 @@ console.log('Difficulty:', epoch.difficultyScaled);
 
 ```typescript
 async getEpochByNumber(
-    epochNumber: bigint  // Epoch sequence number
-): Promise<Epoch>
+    epochNumber: BigNumberish,                  // Epoch sequence number
+    includeSubmissions: boolean = false          // Include all submissions
+): Promise<Epoch | EpochWithSubmissions>
 ```
 
 ---
@@ -96,11 +97,8 @@ async getEpochByNumber(
 ## Get Epoch by Hash
 
 ```typescript
-import { fromHex } from '@btc-vision/bitcoin';
-
-// Fetch epoch by its unique hash
-const epochHash = fromHex('abcdef...');
-const epoch = await provider.getEpochByHash(epochHash);
+// Fetch epoch by its unique hash (string parameter)
+const epoch = await provider.getEpochByHash('0xabcdef...');
 
 console.log('Epoch Number:', epoch.epochNumber);
 console.log('Block Range:', epoch.startBlock, '-', epoch.endBlock);
@@ -110,8 +108,9 @@ console.log('Block Range:', epoch.startBlock, '-', epoch.endBlock);
 
 ```typescript
 async getEpochByHash(
-    epochHash: Uint8Array  // Unique epoch hash
-): Promise<Epoch>
+    epochHash: string,                          // Unique epoch hash as string
+    includeSubmissions: boolean = false          // Include all submissions
+): Promise<Epoch | EpochWithSubmissions>
 ```
 
 ---
@@ -391,11 +390,11 @@ class EpochService {
         return this.provider.getLatestEpoch(includeSubmissions);
     }
 
-    async getByNumber(epochNumber: bigint): Promise<Epoch> {
+    async getByNumber(epochNumber: bigint): Promise<Epoch | EpochWithSubmissions> {
         return this.provider.getEpochByNumber(epochNumber);
     }
 
-    async getByHash(hash: Uint8Array): Promise<Epoch> {
+    async getByHash(hash: string): Promise<Epoch | EpochWithSubmissions> {
         return this.provider.getEpochByHash(hash);
     }
 

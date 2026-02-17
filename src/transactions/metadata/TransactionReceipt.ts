@@ -1,4 +1,4 @@
-import { Network } from '@btc-vision/bitcoin';
+import { fromBase64, Network } from '@btc-vision/bitcoin';
 import { NetEvent } from '@btc-vision/transaction';
 import { getP2op } from '../../cache/P2OPCache.js';
 import { decodeRevertData } from '../../utils/RevertDecoder.js';
@@ -17,7 +17,7 @@ export class TransactionReceipt implements ITransactionReceipt {
     /**
      * @description The receipt of the transaction.
      */
-    public readonly receipt?: Buffer;
+    public readonly receipt?: Uint8Array;
 
     /**
      * @description The receipt proofs of the transaction.
@@ -34,7 +34,7 @@ export class TransactionReceipt implements ITransactionReceipt {
     /**
      * @description If the transaction was reverted, this field will contain the revert message.
      */
-    public readonly rawRevert?: Buffer;
+    public readonly rawRevert?: Uint8Array;
 
     public readonly revert?: string;
 
@@ -43,14 +43,14 @@ export class TransactionReceipt implements ITransactionReceipt {
 
     constructor(receipt: ITransactionReceipt, network: Network) {
         this.receipt = receipt.receipt
-            ? Buffer.from(receipt.receipt as string, 'base64')
+            ? fromBase64(receipt.receipt as string)
             : undefined;
 
         this.receiptProofs = receipt.receiptProofs || [];
         this.events = receipt.events ? this.parseEvents(receipt.events, network) : {};
 
         this.rawRevert = receipt.revert
-            ? Buffer.from(receipt.revert as string, 'base64')
+            ? fromBase64(receipt.revert as string)
             : undefined;
 
         this.revert = this.rawRevert ? decodeRevertData(this.rawRevert) : undefined;
@@ -106,8 +106,7 @@ export class TransactionReceipt implements ITransactionReceipt {
     private decodeEvent(event: NetEventDocument): NetEvent {
         let eventData: Uint8Array;
         if (typeof event.data === 'string') {
-            const buf = Buffer.from(event.data, 'base64');
-            eventData = new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+            eventData = fromBase64(event.data);
         } else {
             eventData = event.data;
         }

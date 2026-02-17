@@ -98,9 +98,9 @@ interface TransactionBase {
     blockNumber?: bigint;    // Block number (if confirmed)
 
     // Fees & Gas
-    burnedBitcoin: bigint;   // Satoshis burned
-    priorityFee: bigint;     // Priority fee paid
-    maxGasSat: bigint;       // Maximum gas in satoshis
+    burnedBitcoin: BigNumberish;   // Satoshis burned
+    priorityFee: BigNumberish;     // Priority fee paid
+    maxGasSat: BigNumberish;       // Maximum gas in satoshis
     gasUsed: bigint;         // Gas consumed
     specialGasUsed: bigint;  // Special gas consumed
 
@@ -171,17 +171,21 @@ Contract deployment transactions have specific properties:
 
 ```typescript
 interface DeploymentTransaction extends TransactionBase {
-    // Deployment details
-    contractAddress: string;     // Deployed contract address
-    contractPublicKey: Address;  // Contract's public key
-    bytecode: Uint8Array;        // Contract bytecode
+    // Deployment details (optional - may be undefined if reverted)
+    contractAddress?: string;          // Deployed contract address
+    contractPublicKey?: Address;       // Contract's public key
+    bytecode?: Uint8Array;             // Contract bytecode
 
     // Deployer details
-    from?: Address;              // Deployer address
-    deployerPubKeyHash: Uint8Array; // Deployer's public key hash
+    from?: Address;                    // Deployer address
+    deployerPubKey?: Uint8Array;       // Deployer's public key
+    deployerHashedPublicKey?: Uint8Array; // Deployer's hashed public key
+    deployerAddress?: Address;         // Deployer address object
 
-    // Initialization
-    constructorCalldata?: Uint8Array; // Constructor arguments
+    // Contract seed info
+    contractSeed?: Uint8Array;         // Contract seed
+    contractSaltHash?: Uint8Array;     // Contract salt hash
+    wasCompressed?: boolean;           // Was bytecode compressed
 }
 ```
 
@@ -197,7 +201,7 @@ if (tx.OPNetType === OPNetTransactionTypes.Deployment) {
 
     console.log('Deployed contract:', deployTx.contractAddress);
     console.log('Deployer:', deployTx.from?.toHex());
-    console.log('Bytecode size:', deployTx.bytecode.length, 'bytes');
+    console.log('Bytecode size:', deployTx.bytecode?.length ?? 0, 'bytes');
 }
 ```
 
@@ -209,12 +213,11 @@ if (tx.OPNetType === OPNetTransactionTypes.Deployment) {
 
 ```typescript
 interface TransactionInput {
-    txId: string;           // Source transaction ID
-    outputIndex: number;    // Source output index
-    scriptSig: Uint8Array;  // Script signature
-    sequence: number;       // Sequence number
-    witness: Uint8Array[];  // Witness data
-    flags: number;          // Input flags
+    originalTransactionId: string | undefined;   // Source transaction ID
+    outputTransactionIndex: number | undefined;  // Source output index
+    scriptSignature: ScriptSig | undefined;      // Script signature
+    sequenceId: number;                          // Sequence number
+    transactionInWitness: string[];              // Witness data
 }
 ```
 
@@ -222,10 +225,10 @@ interface TransactionInput {
 
 ```typescript
 interface TransactionOutput {
-    value: bigint;          // Output value in satoshis
-    scriptPubKey: Uint8Array; // Output script
-    index: number;          // Output index
-    flags: number;          // Output flags
+    value: bigint;                                  // Output value in satoshis
+    scriptPubKey: ScriptPubKey;                     // Output script (object with hex, addresses, address)
+    index: number;                                  // Output index
+    script: Array<number | Uint8Array> | null;      // Decompiled script
 }
 ```
 
@@ -236,7 +239,7 @@ const tx = await provider.getTransaction(txHash);
 
 console.log('Inputs:', tx.inputs.length);
 for (const input of tx.inputs) {
-    console.log(`  ${input.txId}:${input.outputIndex}`);
+    console.log(`  ${input.originalTransactionId}:${input.outputTransactionIndex}`);
 }
 
 console.log('Outputs:', tx.outputs.length);
@@ -306,7 +309,7 @@ function analyzeGasCost(tx: TransactionBase<OPNetTransactionTypes>): {
         gasUsed: tx.gasUsed,
         specialGasUsed: tx.specialGasUsed,
         totalGas: tx.gasUsed + tx.specialGasUsed,
-        burnedBitcoin: BigInt(tx.burnedBitcoin),
+        burnedBitcoin: tx.burnedBitcoin,
     };
 }
 

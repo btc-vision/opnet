@@ -84,8 +84,8 @@ const provider = new WebSocketRpcProvider(
 );
 
 // Subscribe to new blocks
-provider.subscribeToBlocks((block) => {
-    console.log('New block:', block.height);
+await provider.subscribeBlocks((block) => {
+    console.log('New block:', block.blockNumber);
 });
 ```
 

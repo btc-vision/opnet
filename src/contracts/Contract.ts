@@ -210,13 +210,13 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
      * Encodes the calldata for a function.
      * @param {string} functionName The name of the function.
      * @param {unknown[]} args The arguments for the function.
-     * @returns {Buffer} The encoded calldata.
+     * @returns {Uint8Array} The encoded calldata.
      */
-    public encodeCalldata(functionName: string, args: unknown[]): Buffer {
+    public encodeCalldata(functionName: string, args: unknown[]): Uint8Array {
         for (const element of this.interface.abi) {
             if (element.name === functionName) {
                 const data = this.encodeFunctionData(element as FunctionBaseData, args);
-                return Buffer.from(data.getBuffer().buffer);
+                return data.getBuffer();
             }
         }
 
@@ -270,7 +270,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         | Address
         | Network
         | (() => Promise<BlockGasParameters>)
-        | ((functionName: string, args: unknown[]) => Buffer) {
+        | ((functionName: string, args: unknown[]) => Uint8Array) {
         const key = name as keyof Omit<
             IBaseContract<T>,
             | 'address'
@@ -349,8 +349,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         let str = bitcoinAbiCoder.encodeSelector(selectorStr);
         if (str.includes(',')) {
             const array = str.split(',').map((s) => Number(s));
-            const buffer = Buffer.from(array);
-            str = buffer.toString('hex');
+            str = array.map((b) => b.toString(16).padStart(2, '0')).join('');
         }
 
         const selector = Number('0x' + str);
@@ -908,8 +907,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
             }
 
             const data = this.encodeFunctionData(element, args);
-            const original = data.getBuffer().buffer;
-            const buffer = Buffer.from(original);
+            const buffer = data.getBuffer();
 
             const response = await this.provider.call(
                 this.address,

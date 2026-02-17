@@ -2,12 +2,12 @@ import { Address } from '@btc-vision/transaction';
 
 export interface IBlockWitnessAPI {
     readonly trusted: boolean;
-    readonly signature: Buffer;
+    readonly signature: Uint8Array;
     readonly timestamp: number;
 
-    readonly proofs: readonly Buffer[];
+    readonly proofs: readonly Uint8Array[];
 
-    readonly identity?: Buffer;
+    readonly identity?: Uint8Array;
     readonly publicKey?: Address;
 }
 

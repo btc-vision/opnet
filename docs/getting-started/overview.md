@@ -235,11 +235,11 @@ import {
     // Data Classes
     Block,
     Epoch,
-    Transaction,
+    TransactionBase,
 
     // Utils
     BitcoinUtils,
-    RevertDecoder,
+    decodeRevertData,
 } from 'opnet';
 ```
 

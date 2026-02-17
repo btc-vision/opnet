@@ -85,7 +85,7 @@ for (const tx of block.transactions) {
 ```typescript
 interface Block {
     // Identity
-    height: bigint;
+    height: BigNumberish;
     hash: string;
     previousBlockHash: string;
     previousBlockChecksum: string;
@@ -287,19 +287,9 @@ const stopMonitoring = await monitorBlocks(provider, (block) => {
 // stopMonitoring();
 ```
 
-### Using WebSocket for Real-Time Blocks
+### Polling-Based Real-Time Monitoring
 
-```typescript
-import { WebSocketRpcProvider } from 'opnet';
-
-const wsProvider = new WebSocketRpcProvider('wss://regtest.opnet.org/ws', network);
-
-wsProvider.subscribeToBlocks((block) => {
-    console.log('New block:', block.height);
-    console.log('  Hash:', block.hash);
-    console.log('  Gas used:', block.gasUsed);
-});
-```
+For real-time block monitoring, use the polling approach shown above. The `getBlockNumber()` method can be called periodically to detect new blocks and fetch them as they arrive.
 
 ---
 

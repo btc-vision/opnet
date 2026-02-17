@@ -239,9 +239,8 @@ async function transferNFT(
         new Uint8Array()
     );
 
-    if (simulation.revert) {
-        throw new Error(`Transfer would fail: ${simulation.revert}`);
-    }
+    // Note: The simulation call above throws if the contract reverts.
+    // Use try/catch around the simulation call to handle reverts gracefully.
 
     const params: TransactionParameters = {
         signer: wallet.keypair,
@@ -277,10 +276,6 @@ async function transferWithData(
     wallet: Wallet
 ): Promise<string> {
     const simulation = await nft.safeTransfer(recipient, tokenId, data);
-
-    if (simulation.revert) {
-        throw new Error(`Transfer failed: ${simulation.revert}`);
-    }
 
     const params: TransactionParameters = {
         signer: wallet.keypair,
@@ -326,10 +321,6 @@ async function transferFrom(
         new Uint8Array()
     );
 
-    if (simulation.revert) {
-        throw new Error(`TransferFrom failed: ${simulation.revert}`);
-    }
-
     const params: TransactionParameters = {
         signer: operatorWallet.keypair,
         mldsaSigner: operatorWallet.mldsaKeypair,
@@ -359,10 +350,6 @@ async function approveToken(
 ): Promise<string> {
     const simulation = await nft.approve(operator, tokenId);
 
-    if (simulation.revert) {
-        throw new Error(`Approve failed: ${simulation.revert}`);
-    }
-
     const params: TransactionParameters = {
         signer: wallet.keypair,
         mldsaSigner: wallet.mldsaKeypair,
@@ -387,10 +374,6 @@ async function setApprovalForAll(
     wallet: Wallet
 ): Promise<string> {
     const simulation = await nft.setApprovalForAll(operator, approved);
-
-    if (simulation.revert) {
-        throw new Error(`SetApprovalForAll failed: ${simulation.revert}`);
-    }
 
     const params: TransactionParameters = {
         signer: wallet.keypair,
@@ -466,10 +449,6 @@ async function setMintEnabled(
     ownerWallet: Wallet
 ): Promise<string> {
     const simulation = await nft.setMintEnabled(enabled);
-
-    if (simulation.revert) {
-        throw new Error(`SetMintEnabled failed: ${simulation.revert}`);
-    }
 
     const params: TransactionParameters = {
         signer: ownerWallet.keypair,
@@ -561,10 +540,6 @@ async function reserveNFTs(
     // Simulate reservation
     const simulation = await nft.reserve(quantity);
 
-    if (simulation.revert) {
-        throw new Error(`Reserve failed: ${simulation.revert}`);
-    }
-
     console.log('Remaining payment:', simulation.properties.remainingPayment);
     console.log('Reservation block:', simulation.properties.reservationBlock);
 
@@ -601,10 +576,6 @@ async function claimNFTs(
 
     // Simulate claim
     const simulation = await nft.claim();
-
-    if (simulation.revert) {
-        throw new Error(`Claim failed: ${simulation.revert}`);
-    }
 
     const params: TransactionParameters = {
         signer: wallet.keypair,
@@ -646,10 +617,6 @@ async function airdropNFTs(
 
     // Simulate airdrop
     const simulation = await nft.airdrop(recipients, quantities);
-
-    if (simulation.revert) {
-        throw new Error(`Airdrop failed: ${simulation.revert}`);
-    }
 
     const params: TransactionParameters = {
         signer: wallet.keypair,
@@ -696,12 +663,8 @@ async function batchAirdrop(
 
         console.log(`Airdropping to ${chunk.length} recipients...`);
 
+        try {
         const simulation = await nft.airdrop(chunk, quantities);
-
-        if (simulation.revert) {
-            console.error(`Chunk ${i / maxPerTx + 1} failed:`, simulation.revert);
-            continue;
-        }
 
         const params: TransactionParameters = {
             signer: wallet.keypair,
@@ -716,6 +679,10 @@ async function batchAirdrop(
         txIds.push(receipt.transactionId);
 
         console.log(`Chunk ${i / maxPerTx + 1} complete: ${receipt.transactionId}`);
+        } catch (error) {
+            console.error(`Chunk ${i / maxPerTx + 1} failed:`, error);
+            continue;
+        }
     }
 
     return txIds;
@@ -734,10 +701,6 @@ async function setTokenURI(
     ownerWallet: Wallet
 ): Promise<string> {
     const simulation = await nft.setTokenURI(tokenId, uri);
-
-    if (simulation.revert) {
-        throw new Error(`SetTokenURI failed: ${simulation.revert}`);
-    }
 
     const params: TransactionParameters = {
         signer: ownerWallet.keypair,
@@ -772,10 +735,6 @@ async function burnNFT(
     wallet: Wallet
 ): Promise<string> {
     const simulation = await nft.burn(tokenId);
-
-    if (simulation.revert) {
-        throw new Error(`Burn failed: ${simulation.revert}`);
-    }
 
     const params: TransactionParameters = {
         signer: wallet.keypair,
@@ -864,10 +823,6 @@ class NFTService {
             new Uint8Array()
         );
 
-        if (simulation.revert) {
-            throw new Error(`Transfer failed: ${simulation.revert}`);
-        }
-
         const receipt = await simulation.sendTransaction({
             signer: this.wallet.keypair,
             mldsaSigner: this.wallet.mldsaKeypair,
@@ -882,10 +837,6 @@ class NFTService {
 
     async approveAll(operator: Address): Promise<string> {
         const simulation = await this.nft.setApprovalForAll(operator, true);
-
-        if (simulation.revert) {
-            throw new Error(`Approve failed: ${simulation.revert}`);
-        }
 
         const receipt = await simulation.sendTransaction({
             signer: this.wallet.keypair,

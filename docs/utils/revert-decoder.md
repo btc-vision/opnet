@@ -182,21 +182,22 @@ if (outcome.success) {
 }
 ```
 
-### Extract Revert from Receipt
+### Extract Revert from Transaction
 
 ```typescript
 async function getRevertReason(
     provider: JSONRpcProvider,
     txHash: string
 ): Promise<string | null> {
-    const receipt = await provider.getTransactionReceipt(txHash);
+    const tx = await provider.getTransaction(txHash);
 
-    if (receipt.revert) {
-        return receipt.revert;
+    // TransactionBase has both `revert` (decoded) and `rawRevert` (raw bytes)
+    if (tx.revert) {
+        return tx.revert;
     }
 
-    if (receipt.rawRevert) {
-        return decodeRevertData(receipt.rawRevert);
+    if (tx.rawRevert) {
+        return decodeRevertData(tx.rawRevert);
     }
 
     return null;
@@ -264,28 +265,27 @@ console.log(userFriendly);
 ```typescript
 function logRevert(
     operation: string,
-    revert: string | undefined,
-    rawRevert: Uint8Array | undefined
+    revert: string | undefined
 ): void {
-    if (!revert && !rawRevert) {
+    if (!revert) {
         console.log(`${operation}: Success`);
         return;
     }
 
     console.log(`${operation}: REVERTED`);
-
-    if (revert) {
-        console.log(`  Message: ${revert}`);
-    }
-
-    if (rawRevert) {
-        console.log(`  Raw: 0x${toHex(rawRevert)}`);
-    }
+    console.log(`  Message: ${revert}`);
 }
 
-// Usage
+// Usage with CallResult (contract simulation)
 const result = await contract.transfer(recipient, amount, new Uint8Array(0));
-logRevert('Transfer', result.revert, result.rawRevert);
+logRevert('Transfer', result.revert);
+
+// Usage with TransactionBase (fetched transaction) - also has rawRevert
+const tx = await provider.getTransaction(txHash);
+logRevert('Transaction', tx.revert);
+if (tx.rawRevert) {
+    console.log('  Raw revert bytes available for manual decoding');
+}
 ```
 
 ---
@@ -404,15 +404,21 @@ class RevertService {
         return false;
     }
 
-    extractFromResult<T extends { revert?: string; rawRevert?: Uint8Array }>(
-        result: T
-    ): string | null {
+    extractFromCallResult(result: { revert?: string }): string | null {
         if (result.revert) {
             return this.getUserFriendlyMessage(result.revert);
         }
 
-        if (result.rawRevert) {
-            const decoded = this.decode(result.rawRevert);
+        return null;
+    }
+
+    extractFromTransaction(tx: { revert?: string; rawRevert?: Uint8Array }): string | null {
+        if (tx.revert) {
+            return this.getUserFriendlyMessage(tx.revert);
+        }
+
+        if (tx.rawRevert) {
+            const decoded = this.decode(tx.rawRevert);
             return this.getUserFriendlyMessage(decoded);
         }
 
@@ -426,9 +432,9 @@ const revertService = new RevertService();
 // Add custom mapping
 revertService.addMapping('already claimed', 'You have already claimed');
 
-// Use with contract result
+// Use with contract call result
 const result = await contract.transfer(recipient, amount, new Uint8Array(0));
-const error = revertService.extractFromResult(result);
+const error = revertService.extractFromCallResult(result);
 
 if (error) {
     console.log('Error:', error);
@@ -439,7 +445,7 @@ if (error) {
 
 ## Best Practices
 
-1. **Always Check Reverts**: Check both `revert` and `rawRevert` fields
+1. **Always Check Reverts**: Check `revert` on `CallResult`, and both `revert` and `rawRevert` on `TransactionBase`
 
 2. **User-Friendly Messages**: Convert technical errors to user-friendly text
 

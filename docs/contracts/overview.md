@@ -237,19 +237,21 @@ result.accessList           // Storage slots accessed
 ### Using CallResult
 
 ```typescript
-// Reading values
-const balance = await contract.balanceOf(address);
-if (balance.revert) {
-    console.error('Call failed:', balance.revert);
-} else {
+// Reading values - the contract throws on revert, so use try/catch
+try {
+    const balance = await contract.balanceOf(address);
     console.log('Balance:', balance.properties.balance);
+} catch (error) {
+    console.error('Call failed:', error);
 }
 
-// Sending transactions
-const transfer = await contract.transfer(recipient, amount, new Uint8Array(0));
-if (!transfer.revert) {
+// Sending transactions - wrap in try/catch to handle reverts
+try {
+    const transfer = await contract.transfer(recipient, amount, new Uint8Array(0));
     const tx = await transfer.sendTransaction(params);
     console.log('TX:', tx.transactionId);
+} catch (error) {
+    console.error('Transfer failed:', error);
 }
 ```
 
@@ -303,15 +305,17 @@ const gasParams = await contract.currentGasParameters();
 
 ## Best Practices
 
-### 1. Always Check for Reverts
+### 1. Always Handle Reverts
 
 ```typescript
-const result = await contract.someMethod(args);
-if (result.revert) {
-    console.error('Call would fail:', result.revert);
+// The contract throws on revert, so wrap calls in try/catch
+try {
+    const result = await contract.someMethod(args);
+    // Proceed with transaction
+} catch (error) {
+    console.error('Call would fail:', error);
     return;
 }
-// Proceed with transaction
 ```
 
 ### 2. Use Type-Safe Interfaces

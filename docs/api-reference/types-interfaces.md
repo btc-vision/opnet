@@ -280,15 +280,18 @@ interface BroadcastedTransaction {
 ### ContractData
 
 ```typescript
-interface ContractData {
-    bytecode: Uint8Array;
-    wasCompressed: boolean;
-    contractAddress: Address;
-    contractPublicKey?: Uint8Array;
-    deployedTransactionId?: string;
-    deployedTransactionHash?: string;
-    deployerPubKey?: Uint8Array;
-    deployerAddress?: Address;
+class ContractData {
+    readonly contractAddress: string;
+    readonly contractPublicKey: Address;
+    readonly bytecode: Uint8Array;
+    readonly wasCompressed: boolean;
+    readonly deployedTransactionId: string;
+    readonly deployedTransactionHash: string;
+    readonly deployerPubKey: Uint8Array;
+    readonly deployerHashedPublicKey: Uint8Array;
+    readonly contractSeed: Uint8Array;
+    readonly contractSaltHash: Uint8Array;
+    readonly deployerAddress: Address;
 }
 ```
 
@@ -467,7 +470,7 @@ Parameters for submitting an epoch solution.
 ```typescript
 interface EpochSubmissionParams {
     readonly epochNumber: bigint;
-    readonly targetHash: Uint8Array;
+    readonly checksumRoot: Uint8Array;
     readonly salt: Uint8Array;
     readonly mldsaPublicKey: Uint8Array;
     readonly signature: Uint8Array;

@@ -1,10 +1,9 @@
 import { QuantumBIP32Interface } from '@btc-vision/bip32';
-import { Network, networks, PsbtOutputExtended, Signer, toHex } from '@btc-vision/bitcoin';
+import { fromBase64, fromHex, Network, networks, PsbtOutputExtended, Signer, toHex } from '@btc-vision/bitcoin';
 import { UniversalSigner } from '@btc-vision/ecpair';
 import {
     Address,
     BinaryReader,
-    BufferHelper,
     ChallengeSolution,
     IInteractionParameters,
     InteractionParametersWithoutSigner,
@@ -47,7 +46,7 @@ export interface TransactionParameters {
     readonly extraOutputs?: PsbtOutputExtended[];
 
     readonly minGas?: bigint;
-    readonly note?: string | Buffer;
+    readonly note?: string | Uint8Array;
     readonly p2wda?: boolean;
     readonly from?: Address;
 
@@ -117,7 +116,7 @@ export class CallResult<
     public constant: boolean = false;
     public payable: boolean = false;
 
-    public calldata: Buffer | undefined;
+    public calldata: Uint8Array | undefined;
     public loadedStorage: LoadedStorage | undefined;
     public readonly estimatedGas: bigint | undefined;
     public readonly refundedGas: bigint | undefined;
@@ -166,6 +165,9 @@ export class CallResult<
         if (typeof callResult.result === 'string') {
             this.#resultBase64 = callResult.result;
             this.result = new BinaryReader(this.base64ToUint8Array(callResult.result));
+        } else if (callResult.result instanceof Uint8Array) {
+            this.#resultBase64 = '';
+            this.result = new BinaryReader(callResult.result);
         } else {
             // If already a BinaryReader, we can't easily get the base64 back
             // This shouldn't happen in normal flow
@@ -178,14 +180,14 @@ export class CallResult<
         return this.#rawEvents;
     }
 
-    public static decodeRevertData(revertDataBytes: Uint8Array | Buffer): string {
+    public static decodeRevertData(revertDataBytes: Uint8Array): string {
         return decodeRevertData(revertDataBytes);
     }
 
     /**
      * Reconstructs a CallResult from offline serialized buffer.
      * Use this on a device to sign transactions offline.
-     * @param {Buffer | string} input - The serialized offline data as Buffer or hex string.
+     * @param {Uint8Array | string} input - The serialized offline data as Uint8Array or hex string.
      * @returns {CallResult} A CallResult instance ready for offline signing.
      *
      * @example
@@ -201,8 +203,8 @@ export class CallResult<
      * });
      * ```
      */
-    public static fromOfflineBuffer(input: Buffer | string): CallResult {
-        const buffer = typeof input === 'string' ? Buffer.from(input, 'hex') : input;
+    public static fromOfflineBuffer(input: Uint8Array | string): CallResult {
+        const buffer = typeof input === 'string' ? fromHex(input) : input;
         const data = CallResultSerializer.deserialize(buffer);
 
         // Resolve network
@@ -243,7 +245,7 @@ export class CallResult<
         // Create ICallResultData
         // Note: revert is set directly below to avoid double-decoding
         const callResultData: ICallResultData = {
-            result: data.result.toString('base64'),
+            result: data.result,
             accessList: data.accessList,
             events: {},
             revert: undefined,
@@ -565,20 +567,20 @@ export class CallResult<
 
     /**
      * Set the calldata for the transaction.
-     * @param {Buffer} calldata - The calldata buffer.
+     * @param {Uint8Array} calldata - The calldata.
      */
-    public setCalldata(calldata: Buffer): void {
+    public setCalldata(calldata: Uint8Array): void {
         this.calldata = calldata;
     }
 
     /**
-     * Serializes this CallResult to a Buffer.
+     * Serializes this CallResult to a Uint8Array.
      * Call this on an online device after simulation, then transfer the result
      * to an offline device for signing.
      *
      * @param {string} refundAddress - The address to fetch UTXOs from (your p2tr address).
      * @param {bigint} amount - The amount of satoshis needed for the transaction.
-     * @returns {Promise<Buffer>} Serialized buffer ready for offline signing.
+     * @returns {Promise<Uint8Array>} Serialized buffer ready for offline signing.
      *
      * @example
      * ```typescript
@@ -591,7 +593,7 @@ export class CallResult<
      * // Or: const qrData = offlineBuffer.toString('base64');
      * ```
      */
-    public async toOfflineBuffer(refundAddress: string, amount: bigint): Promise<Buffer> {
+    public async toOfflineBuffer(refundAddress: string, amount: bigint): Promise<Uint8Array> {
         if (!this.calldata) {
             throw new Error('Calldata not set');
         }
@@ -627,7 +629,7 @@ export class CallResult<
             estimatedSatGas: this.estimatedSatGas,
             estimatedRefundedGasInSat: this.estimatedRefundedGasInSat,
             revert: this.revert,
-            result: Buffer.from(this.#resultBase64, 'base64'),
+            result: fromBase64(this.#resultBase64),
             accessList: this.accessList,
             bitcoinFees: this.#bitcoinFees,
             network: networkName,
@@ -655,7 +657,7 @@ export class CallResult<
     /**
      * Clone a UTXO and attach a witness script.
      * @param {UTXO} utxo - The UTXO to clone.
-     * @param {Buffer} witnessScript - The witness script to attach.
+     * @param {Uint8Array} witnessScript - The witness script to attach.
      * @returns {UTXO} The cloned UTXO with witness script.
      */
     #cloneUTXOWithWitnessScript(utxo: UTXO, witnessScript: Uint8Array): UTXO {
@@ -912,7 +914,7 @@ export class CallResult<
             const events: NetEvent[] = [];
 
             for (const event of value) {
-                const eventData = new NetEvent(event.type, Buffer.from(event.data, 'base64'));
+                const eventData = new NetEvent(event.type, fromBase64(event.data));
 
                 events.push(eventData);
             }
@@ -929,6 +931,6 @@ export class CallResult<
      * @returns {Uint8Array} The decoded bytes.
      */
     private base64ToUint8Array(base64: string): Uint8Array {
-        return BufferHelper.bufferToUint8Array(Buffer.from(base64, 'base64'));
+        return fromBase64(base64);
     }
 }

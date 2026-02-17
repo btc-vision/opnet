@@ -21,22 +21,22 @@ export interface IDeploymentTransaction extends ICommonTransaction<OPNetTransact
     /**
      * @description The bytecode of the contract.
      */
-    readonly bytecode?: Buffer | string;
+    readonly bytecode?: Uint8Array | string;
 
     /**
      * @description The public key of the deployer.
      */
-    readonly deployerPubKey?: Buffer | string;
+    readonly deployerPubKey?: Uint8Array | string;
 
     /**
      * @description The seed of the contract.
      */
-    readonly contractSeed?: Buffer | string;
+    readonly contractSeed?: Uint8Array | string;
 
     /**
      * @description The salt verification hash of the contract.
      */
-    readonly contractSaltHash?: Buffer | string;
+    readonly contractSaltHash?: Uint8Array | string;
 
     /**
      * @description The deployer address.

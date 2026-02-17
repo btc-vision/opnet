@@ -35,11 +35,11 @@ Base class for all providers. Both JSONRpcProvider and WebSocketRpcProvider exte
 new JSONRpcProvider(
     url: string,
     network: Network,
-    options?: {
-        timeout?: number;
-        useRESTAPI?: boolean;
-        useThreadedParsing?: boolean;
-    }
+    timeout?: number,
+    fetcherConfigurations?: Agent.Options,
+    useRESTAPI?: boolean,
+    useThreadedParsing?: boolean,
+    useThreadedHttp?: boolean
 )
 ```
 
@@ -48,8 +48,10 @@ new JSONRpcProvider(
 | `url` | `string` | Required | RPC endpoint URL |
 | `network` | `Network` | Required | Bitcoin network |
 | `timeout` | `number` | `20000` | Request timeout in milliseconds (20 seconds) |
+| `fetcherConfigurations` | `Agent.Options` | *see below* | HTTP agent configuration |
 | `useRESTAPI` | `boolean` | `true` | Use REST API mode for requests |
-| `useThreadedParsing` | `boolean` | `true` | Use threaded parsing for responses |
+| `useThreadedParsing` | `boolean` | `false` | Parse responses in worker thread |
+| `useThreadedHttp` | `boolean` | `false` | Perform entire HTTP request in worker thread |
 
 ### WebSocketRpcProvider
 
@@ -228,7 +230,7 @@ Get the most recent epoch.
 ```typescript
 getLatestEpoch(
     includeSubmissions: boolean
-): Promise<Epoch | EpochWithSubmissions>
+): Promise<Epoch>
 ```
 
 | Parameter | Type | Description |
@@ -380,8 +382,8 @@ Get public key info for multiple addresses.
 ```typescript
 getPublicKeysInfo(
     addresses: string | string[] | Address | Address[],
-    isContract?: boolean,
-    logErrors?: boolean
+    isContract: boolean = false,
+    logErrors: boolean = false
 ): Promise<AddressesInfo>
 ```
 

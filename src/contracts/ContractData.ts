@@ -1,3 +1,4 @@
+import { fromBase64, fromHex } from '@btc-vision/bitcoin';
 import { Address } from '@btc-vision/transaction';
 import { IRawContract } from './interfaces/IRawContract.js';
 
@@ -10,48 +11,48 @@ export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
     public readonly contractAddress: string;
     public readonly contractPublicKey: Address;
 
-    public readonly bytecode: Buffer;
+    public readonly bytecode: Uint8Array;
     public readonly wasCompressed: boolean;
 
     public readonly deployedTransactionId: string;
     public readonly deployedTransactionHash: string;
 
-    public readonly deployerPubKey: Buffer;
-    public readonly deployerHashedPublicKey: Buffer;
-    public readonly contractSeed: Buffer;
+    public readonly deployerPubKey: Uint8Array;
+    public readonly deployerHashedPublicKey: Uint8Array;
+    public readonly contractSeed: Uint8Array;
 
-    public readonly contractSaltHash: Buffer;
+    public readonly contractSaltHash: Uint8Array;
     public readonly deployerAddress: Address;
 
     constructor(raw: IRawContract) {
         this.contractAddress = raw.contractAddress;
-        this.contractPublicKey = Buffer.isBuffer(raw.contractPublicKey)
+        this.contractPublicKey = raw.contractPublicKey instanceof Uint8Array
             ? new Address(raw.contractPublicKey)
-            : new Address(Buffer.from(raw.contractPublicKey, 'base64'));
+            : new Address(fromBase64(raw.contractPublicKey));
 
-        this.bytecode = Buffer.isBuffer(raw.bytecode)
+        this.bytecode = raw.bytecode instanceof Uint8Array
             ? raw.bytecode
-            : Buffer.from(raw.bytecode, 'base64');
+            : fromBase64(raw.bytecode);
 
         this.wasCompressed = raw.wasCompressed;
         this.deployedTransactionId = raw.deployedTransactionId;
         this.deployedTransactionHash = raw.deployedTransactionHash;
 
-        this.deployerPubKey = Buffer.isBuffer(raw.deployerPubKey)
+        this.deployerPubKey = raw.deployerPubKey instanceof Uint8Array
             ? raw.deployerPubKey
-            : Buffer.from(raw.deployerPubKey, 'base64');
+            : fromBase64(raw.deployerPubKey);
 
-        this.deployerHashedPublicKey = Buffer.isBuffer(raw.deployerAddress)
-            ? raw.deployerAddress
-            : Buffer.from((raw.deployerAddress as unknown as string).replace('0x', ''), 'base64');
+        this.deployerHashedPublicKey = raw.deployerAddress instanceof Address
+            ? fromHex((raw.deployerAddress as unknown as string).replace('0x', ''))
+            : fromBase64((raw.deployerAddress as unknown as string).replace('0x', ''));
 
-        this.contractSeed = Buffer.isBuffer(raw.contractSeed)
+        this.contractSeed = raw.contractSeed instanceof Uint8Array
             ? raw.contractSeed
-            : Buffer.from(raw.contractSeed, 'base64');
+            : fromBase64(raw.contractSeed);
 
-        this.contractSaltHash = Buffer.isBuffer(raw.contractSaltHash)
+        this.contractSaltHash = raw.contractSaltHash instanceof Uint8Array
             ? raw.contractSaltHash
-            : Buffer.from(raw.contractSaltHash, 'base64');
+            : fromBase64(raw.contractSaltHash);
 
         if (this.deployerHashedPublicKey && this.deployerPubKey) {
             this.deployerAddress = new Address(this.deployerHashedPublicKey, this.deployerPubKey);

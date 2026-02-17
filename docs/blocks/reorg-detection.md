@@ -41,9 +41,9 @@ const reorgs = await provider.getReorg(100n, 200n);
 if (reorgs.length > 0) {
     console.log('Reorgs detected:', reorgs.length);
     for (const reorg of reorgs) {
-        console.log('  Block:', reorg.blockNumber);
-        console.log('  Old hash:', reorg.oldHash);
-        console.log('  New hash:', reorg.newHash);
+        console.log('  From block:', reorg.fromBlock);
+        console.log('  To block:', reorg.toBlock);
+        console.log('  Timestamp:', reorg.timestamp);
     }
 } else {
     console.log('No reorgs in range');
@@ -65,10 +65,9 @@ async getReorg(
 
 ```typescript
 interface ReorgInformation {
-    blockNumber: bigint;    // Affected block number
-    oldHash: string;        // Previous (orphaned) block hash
-    newHash: string;        // New canonical block hash
-    timestamp: number;      // When reorg was detected
+    fromBlock: string | bigint;    // Start block of reorg range
+    toBlock: string | bigint;      // End block of reorg range
+    readonly timestamp: number;    // When reorg was detected
 }
 ```
 
@@ -132,9 +131,8 @@ async function monitorReorgs(
 
 // Usage
 const stopMonitoring = await monitorReorgs(provider, (reorg) => {
-    console.log(`REORG: Block ${reorg.blockNumber} changed!`);
-    console.log(`  Old: ${reorg.oldHash}`);
-    console.log(`  New: ${reorg.newHash}`);
+    console.log(`REORG: Blocks ${reorg.fromBlock} to ${reorg.toBlock} affected!`);
+    console.log(`  Timestamp: ${reorg.timestamp}`);
 });
 
 // Later: stop monitoring
@@ -214,7 +212,7 @@ async function getConfirmationStatus(
 
     let message: string;
     if (reorgRisk) {
-        message = `Reorg detected affecting blocks ${reorgs.map(r => r.blockNumber).join(', ')}`;
+        message = `Reorg detected affecting blocks ${reorgs.map(r => `${r.fromBlock}-${r.toBlock}`).join(', ')}`;
     } else if (confirmed) {
         message = `Confirmed with ${confirmations} confirmations`;
     } else {
@@ -473,7 +471,7 @@ const reorgService = new ReorgService(provider);
 
 // Register callback
 const unsubscribe = reorgService.onReorg((reorg) => {
-    console.log(`REORG ALERT: Block ${reorg.blockNumber}`);
+    console.log(`REORG ALERT: Blocks ${reorg.fromBlock} to ${reorg.toBlock}`);
     // Handle reorg: invalidate caches, check transactions, etc.
 });
 

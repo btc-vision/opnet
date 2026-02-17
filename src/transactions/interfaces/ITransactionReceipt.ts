@@ -33,7 +33,7 @@ export interface ITransactionReceipt {
     /**
      * @description The receipt of the transaction.
      */
-    readonly receipt?: string | Buffer;
+    readonly receipt?: string | Uint8Array;
 
     /**
      * @description The receipt proofs of the transaction.
@@ -48,7 +48,7 @@ export interface ITransactionReceipt {
     /**
      * @description If the transaction was reverted, this field will contain the revert message.
      */
-    readonly revert?: string | Buffer;
+    readonly revert?: string | Uint8Array;
 
     /**
      * @description Gas used by the transaction.

@@ -1,7 +1,9 @@
-export function stringToBuffer(str: string): Buffer {
-    return Buffer.from(str.replace('0x', ''), 'hex');
+import { fromBase64, fromHex } from '@btc-vision/bitcoin';
+
+export function stringToBuffer(str: string): Uint8Array {
+    return fromHex(str.replace('0x', ''));
 }
 
-export function stringBase64ToBuffer(str: string): Buffer {
-    return Buffer.from(str, 'base64');
+export function stringBase64ToBuffer(str: string): Uint8Array {
+    return fromBase64(str);
 }

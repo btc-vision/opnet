@@ -1,23 +1,23 @@
 import { Address } from '@btc-vision/transaction';
 
 export interface IEpochMiner {
-    readonly solution: Buffer;
+    readonly solution: Uint8Array;
     readonly publicKey: Address;
-    readonly salt: Buffer;
-    readonly graffiti?: Buffer;
+    readonly salt: Uint8Array;
+    readonly graffiti?: Uint8Array;
 }
 
 export interface IEpoch {
     readonly epochNumber: bigint;
-    readonly epochHash: Buffer;
-    readonly epochRoot: Buffer;
+    readonly epochHash: Uint8Array;
+    readonly epochRoot: Uint8Array;
     readonly startBlock: bigint;
     readonly endBlock: bigint;
     readonly difficultyScaled: bigint;
     readonly minDifficulty?: string;
-    readonly targetHash: Buffer;
+    readonly targetHash: Uint8Array;
     readonly proposer: IEpochMiner;
-    readonly proofs: readonly Buffer[];
+    readonly proofs: readonly Uint8Array[];
 }
 
 export interface RawEpochMiner {
@@ -50,9 +50,9 @@ export interface RawEpochSubmission {
 }
 
 export interface IEpochSubmission {
-    readonly submissionTxId: Buffer;
-    readonly submissionTxHash: Buffer;
-    readonly submissionHash: Buffer;
+    readonly submissionTxId: Uint8Array;
+    readonly submissionTxHash: Uint8Array;
+    readonly submissionHash: Uint8Array;
     readonly confirmedAt: string;
     readonly epochProposed: IEpochMiner;
 }
@@ -72,7 +72,7 @@ export interface RawEpochTemplate {
 
 export interface IEpochTemplate {
     readonly epochNumber: bigint;
-    readonly epochTarget: Buffer;
+    readonly epochTarget: Uint8Array;
 }
 
 export enum SubmissionStatus {
@@ -91,7 +91,7 @@ export interface RawSubmittedEpoch {
 
 export interface ISubmittedEpoch {
     readonly epochNumber: bigint;
-    readonly submissionHash: Buffer;
+    readonly submissionHash: Uint8Array;
     readonly difficulty: number;
     readonly timestamp: Date;
 

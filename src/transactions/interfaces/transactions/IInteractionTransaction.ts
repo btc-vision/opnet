@@ -12,22 +12,22 @@ export interface IInteractionTransaction extends ICommonTransaction<InteractionT
     /**
      * @description The calldata of the transaction.
      */
-    readonly calldata?: string | Buffer;
+    readonly calldata?: string | Uint8Array;
 
     /**
      * @description The sender's public key hash.
      */
-    readonly senderPubKeyHash: string | Buffer;
+    readonly senderPubKeyHash: string | Uint8Array;
 
     /**
      * @description The contract secret.
      */
-    readonly contractSecret: string | Buffer;
+    readonly contractSecret: string | Uint8Array;
 
     /**
      * @description The interaction public key.
      */
-    readonly interactionPubKey: string | Buffer;
+    readonly interactionPubKey: string | Uint8Array;
 
     /**
      * @description Who sent the transaction. (ALWAYS TAPROOT. *This address is generated from the P2TR of the pubkey of the deployer.*)
@@ -42,7 +42,7 @@ export interface IInteractionTransaction extends ICommonTransaction<InteractionT
     /**
      * @description The receipt of the transaction.
      */
-    readonly receipt?: string | Buffer;
+    readonly receipt?: string | Uint8Array;
 
     /**
      * @description The receipt proofs of the transaction.

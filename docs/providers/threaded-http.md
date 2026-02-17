@@ -82,7 +82,7 @@ const provider = new JSONRpcProvider(
     {},          // fetcher config
     true,        // useRESTAPI
     true,        // useThreadedParsing
-    true         // useThreadedHttp (default: true)
+    true         // useThreadedHttp (default: false)
 );
 ```
 
@@ -114,15 +114,15 @@ import { JsonThreader } from 'opnet';
 
 const threader = new JsonThreader({
     poolSize: 4,              // Number of workers (default: CPU cores)
-    threadingThreshold: 1024  // Min size to use workers (bytes)
+    threadingThreshold: 16384  // Min size to use workers (bytes, default: 16384)
 });
 ```
 
 ### Methods
 
-#### `parse<T>(data: string | ArrayBuffer): Promise<T>`
+#### `parse<T>(data: string): Promise<T>`
 
-Parse JSON string or ArrayBuffer in a worker thread:
+Parse JSON string in a worker thread:
 
 ```typescript
 const obj = await threader.parse<MyType>('{"key": "value"}');

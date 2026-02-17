@@ -109,8 +109,8 @@ for (const addr of addresses) {
 ```typescript
 async getPublicKeysInfo(
     addresses: string | string[] | Address | Address[],
-    isContract?: boolean,   // Default: false
-    logErrors?: boolean     // Default: false
+    isContract: boolean = false,
+    logErrors: boolean = false
 ): Promise<AddressesInfo>
 ```
 
