@@ -24,7 +24,13 @@ export * from './providers/JSONRpcProvider.js';
 export * from './providers/WebsocketRpcProvider.js';
 
 /** WebSocket Provider */
-export * from './providers/websocket/index.js';
+export * from './providers/websocket/types/SubscriptionType.js';
+export * from './providers/websocket/types/ConnectionState.js';
+export * from './providers/websocket/types/PendingRequest.js';
+export * from './providers/websocket/types/WebSocketClientConfig.js';
+export * from './providers/websocket/types/WebSocketProviderTypes.js';
+export * from './providers/websocket/types/WebSocketErrorCodes.js';
+export * from './providers/websocket/types/WebSocketOpcodes.js';
 
 /** Providers interfaces */
 export * from './providers/interfaces/ReorgInformation.js';

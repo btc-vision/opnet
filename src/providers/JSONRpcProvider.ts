@@ -11,6 +11,26 @@ import { JsonRpcPayload } from './interfaces/JSONRpc.js';
 import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSONRpcResult.js';
 
 /**
+ * @description Configuration for the JSONRpcProvider.
+ * @interface JSONRpcProviderConfig
+ * @property {string} url - The URL of the JSON RPC provider
+ * @property {Network} network - The network to connect to
+ * @property {number} [timeout] - The timeout for requests in milliseconds (default: 20,000)
+ * @property {Agent.Options} [fetcherConfigurations] - Optional configurations for the HTTP fetcher
+ * @property {boolean} [useThreadedParsing] - Whether to use threaded JSON parsing (default: false)
+ * @property {boolean} [useThreadedHttp] - Whether to use threaded HTTP requests (default: false)
+ */
+export interface JSONRpcProviderConfig {
+    readonly url: string;
+    readonly network: Network;
+    readonly timeout?: number;
+    readonly fetcherConfigurations?: Agent.Options;
+    //readonly useRESTAPI?: false; // not supported yet, reserved for future use
+    readonly useThreadedParsing?: boolean;
+    readonly useThreadedHttp?: boolean;
+}
+
+/**
  * @description This class is used to provide a JSON RPC provider.
  * @class JSONRpcProvider
  * @category Providers
@@ -18,25 +38,33 @@ import { JsonRpcCallResult, JsonRpcError, JsonRpcResult } from './interfaces/JSO
 export class JSONRpcProvider extends AbstractRpcProvider {
     public readonly url: string;
 
+    private readonly timeout: number;
+    private readonly fetcherConfigurations: Agent.Options;
+
+    //private useRESTAPI: boolean;
+
+    private readonly useThreadedParsing: boolean;
+    private readonly useThreadedHttp: boolean;
+
     private _fetcherWithCleanup: FetcherWithCleanup | undefined;
 
-    constructor(
-        url: string,
-        network: Network,
-        private readonly timeout: number = 20_000,
-        private readonly fetcherConfigurations: Agent.Options = {
-            keepAliveTimeout: 30_000, // how long sockets stay open
-            keepAliveTimeoutThreshold: 30_000, // threshold before closing keep-alive sockets
-            connections: 128, // max connections per server
-            pipelining: 2, // max pipelining per server
-        },
-        private useRESTAPI: boolean = true,
-        private readonly useThreadedParsing: boolean = false,
-        private readonly useThreadedHttp: boolean = false,
-    ) {
-        super(network);
+    constructor(config: JSONRpcProviderConfig) {
+        super(config.network);
 
-        this.url = this.providerUrl(url);
+        this.timeout = config.timeout ?? 20_000;
+
+        this.fetcherConfigurations = config.fetcherConfigurations ?? {
+            keepAliveTimeout: 30_000,
+            keepAliveTimeoutThreshold: 30_000,
+            connections: 128,
+            pipelining: 2,
+        };
+
+        //this.useRESTAPI = config.useRESTAPI ?? true;
+        this.useThreadedParsing = config.useThreadedParsing ?? false;
+        this.useThreadedHttp = config.useThreadedHttp ?? false;
+
+        this.url = this.providerUrl(config.url);
     }
 
     private get fetcher(): Fetcher {
@@ -58,9 +86,9 @@ export class JSONRpcProvider extends AbstractRpcProvider {
      * @param {boolean} useRESTAPI - Whether to use REST API or not
      * @returns {void}
      */
-    public setFetchMode(useRESTAPI: boolean) {
+    /*public setFetchMode(useRESTAPI: boolean) {
         this.useRESTAPI = useRESTAPI;
-    }
+    }*/
 
     /**
      * @description Sends a JSON RPC payload to the provider.
@@ -126,7 +154,7 @@ export class JSONRpcProvider extends AbstractRpcProvider {
         } catch (e) {
             const error = e as Error;
             if (error.name === 'AbortError') {
-                throw new Error(`Request timed out after ${this.timeout}ms`);
+                throw new Error(`Request timed out after ${this.timeout}ms`, { cause: e });
             }
 
             throw e;
