@@ -26,33 +26,37 @@ export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
 
     constructor(raw: IRawContract) {
         this.contractAddress = raw.contractAddress;
-        this.contractPublicKey = raw.contractPublicKey instanceof Uint8Array
-            ? new Address(raw.contractPublicKey)
-            : new Address(fromBase64(raw.contractPublicKey));
+        this.contractPublicKey =
+            raw.contractPublicKey instanceof Uint8Array
+                ? new Address(raw.contractPublicKey)
+                : new Address(fromBase64(raw.contractPublicKey));
 
-        this.bytecode = raw.bytecode instanceof Uint8Array
-            ? raw.bytecode
-            : fromBase64(raw.bytecode);
+        this.bytecode =
+            raw.bytecode instanceof Uint8Array ? raw.bytecode : fromBase64(raw.bytecode);
 
         this.wasCompressed = raw.wasCompressed;
         this.deployedTransactionId = raw.deployedTransactionId;
         this.deployedTransactionHash = raw.deployedTransactionHash;
 
-        this.deployerPubKey = raw.deployerPubKey instanceof Uint8Array
-            ? raw.deployerPubKey
-            : fromBase64(raw.deployerPubKey);
+        this.deployerPubKey =
+            raw.deployerPubKey instanceof Uint8Array
+                ? raw.deployerPubKey
+                : fromBase64(raw.deployerPubKey);
 
-        this.deployerHashedPublicKey = raw.deployerAddress instanceof Address
-            ? fromHex((raw.deployerAddress as unknown as string).replace('0x', ''))
-            : fromBase64((raw.deployerAddress as unknown as string).replace('0x', ''));
+        this.deployerHashedPublicKey =
+            raw.deployerAddress instanceof Address
+                ? fromHex((raw.deployerAddress as unknown as string).replace('0x', ''))
+                : fromBase64((raw.deployerAddress as unknown as string).replace('0x', ''));
 
-        this.contractSeed = raw.contractSeed instanceof Uint8Array
-            ? raw.contractSeed
-            : fromBase64(raw.contractSeed);
+        this.contractSeed =
+            raw.contractSeed instanceof Uint8Array
+                ? raw.contractSeed
+                : fromBase64(raw.contractSeed);
 
-        this.contractSaltHash = raw.contractSaltHash instanceof Uint8Array
-            ? raw.contractSaltHash
-            : fromBase64(raw.contractSaltHash);
+        this.contractSaltHash =
+            raw.contractSaltHash instanceof Uint8Array
+                ? raw.contractSaltHash
+                : fromBase64(raw.contractSaltHash);
 
         if (this.deployerHashedPublicKey && this.deployerPubKey) {
             this.deployerAddress = new Address(this.deployerHashedPublicKey, this.deployerPubKey);

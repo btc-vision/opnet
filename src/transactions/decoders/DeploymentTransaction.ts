@@ -31,7 +31,10 @@ export class DeploymentTransaction
     constructor(transaction: IDeploymentTransaction, network: Network) {
         super(transaction, network);
 
-        if (!transaction.deployerAddress && !transaction.revert) {
+        if (
+            !transaction.deployerAddress &&
+            (transaction.revert === null || transaction.revert === undefined)
+        ) {
             throw new Error('Deployer address is missing');
         }
 

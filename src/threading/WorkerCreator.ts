@@ -11,10 +11,7 @@ export const isReactNative =
     (navigator as { product?: string }).product === 'ReactNative';
 
 export const isBrowser =
-    !isNode &&
-    !isReactNative &&
-    typeof window !== 'undefined' &&
-    typeof Worker !== 'undefined';
+    !isNode && !isReactNative && typeof window !== 'undefined' && typeof Worker !== 'undefined';
 
 /**
  * Detects the current runtime environment.

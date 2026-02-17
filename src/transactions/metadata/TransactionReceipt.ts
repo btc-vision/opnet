@@ -38,22 +38,25 @@ export class TransactionReceipt implements ITransactionReceipt {
 
     public readonly revert?: string;
 
+    /**
+     * @description Whether the transaction failed (reverted) or not.
+     */
+    public readonly failed: boolean = false;
+
     public readonly gasUsed: bigint;
     public readonly specialGasUsed: bigint;
 
     constructor(receipt: ITransactionReceipt, network: Network) {
-        this.receipt = receipt.receipt
-            ? fromBase64(receipt.receipt as string)
-            : undefined;
+        this.receipt = receipt.receipt ? fromBase64(receipt.receipt as string) : undefined;
 
         this.receiptProofs = receipt.receiptProofs || [];
         this.events = receipt.events ? this.parseEvents(receipt.events, network) : {};
 
-        this.rawRevert = receipt.revert
-            ? fromBase64(receipt.revert as string)
-            : undefined;
+        this.rawRevert = receipt.revert ? fromBase64(receipt.revert as string) : undefined;
 
         this.revert = this.rawRevert ? decodeRevertData(this.rawRevert) : undefined;
+        this.failed = receipt.revert !== undefined && receipt.revert !== null;
+
         this.gasUsed = BigInt(receipt.gasUsed || '0x00') || 0n;
         this.specialGasUsed = BigInt(receipt.specialGasUsed || '0x00') || 0n;
     }

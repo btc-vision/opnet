@@ -55,9 +55,7 @@ export class InteractionTransaction
     constructor(transaction: IInteractionTransaction, network: Network) {
         super(transaction, network);
 
-        this.contractPublicKey = new Address(
-            fromBase64(transaction.contractPublicKey as string),
-        );
+        this.contractPublicKey = new Address(fromBase64(transaction.contractPublicKey as string));
 
         if (transaction.calldata) {
             this.calldata = fromBase64(transaction.calldata as string);

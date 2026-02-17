@@ -431,14 +431,10 @@ export class CallResultSerializer {
             const isCSV = reader.readBoolean();
 
             const hasWitnessScript = reader.readBoolean();
-            const witnessScript = hasWitnessScript
-                ? reader.readBytesWithLength()
-                : undefined;
+            const witnessScript = hasWitnessScript ? reader.readBytesWithLength() : undefined;
 
             const hasRedeemScript = reader.readBoolean();
-            const redeemScript = hasRedeemScript
-                ? reader.readBytesWithLength()
-                : undefined;
+            const redeemScript = hasRedeemScript ? reader.readBytesWithLength() : undefined;
 
             utxos.push({
                 transactionId,

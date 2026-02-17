@@ -7,7 +7,7 @@
  * @packageDocumentation
  */
 
-import type { JsonValue, FetchRequest, IJsonThreader } from './interfaces/IJsonThreader.js';
+import type { FetchRequest, IJsonThreader, JsonValue } from './interfaces/IJsonThreader.js';
 import { ThreaderOptions, WorkerScript } from './interfaces/IThread.js';
 import { BaseThreader } from './SharedThreader.js';
 import { jsonWorkerScript } from './worker-scripts/JSONWorker.js';
