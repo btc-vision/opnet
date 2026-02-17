@@ -32,6 +32,9 @@ export default tseslint.config(
             '@typescript-eslint/no-base-to-string': 'off',
             '@typescript-eslint/no-dynamic-delete': 'off',
             '@typescript-eslint/no-redundant-type-constituents': 'off',
+
+            // This is stupid. null and undefined is not the same thing. who ever made this eslint rule is stupid.
+            'no-useless-assignment': 'off',
         },
     },
     {

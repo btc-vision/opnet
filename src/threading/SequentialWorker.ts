@@ -68,7 +68,9 @@ export function createSequentialWorker<TOp extends string, TData, TResult>(): Un
                         } catch (err) {
                             clearTimeout(timeoutId);
                             if ((err as Error).name === 'AbortError') {
-                                throw new Error(`Request timed out after ${timeout || 20000}ms`);
+                                throw new Error(`Request timed out after ${timeout || 20000}ms`, {
+                                    cause: err,
+                                });
                             }
                             throw err;
                         }
