@@ -28,6 +28,7 @@ export class TransactionHelper {
             [AddressTypes.P2SH_OR_P2SH_P2WPKH]: 91 * 4 + 107,
             [AddressTypes.P2WPKH]: 41 * 4 + 107,
             [AddressTypes.P2TR]: 41 * 4 + 65,
+            [AddressTypes.P2MR]: 41 * 4 + 33,
             [AddressTypes.P2PK]: 148 * 4,
             [AddressTypes.P2WSH]: 41 * 4 + (1 + 73 + 1 + 33),
             [AddressTypes.P2OP]: 41 * 4 + 107,
@@ -39,6 +40,7 @@ export class TransactionHelper {
             [AddressTypes.P2SH_OR_P2SH_P2WPKH]: 32,
             [AddressTypes.P2WPKH]: 31,
             [AddressTypes.P2TR]: 43,
+            [AddressTypes.P2MR]: 43,
             [AddressTypes.P2PK]: 34,
             [AddressTypes.P2OP]: 32,
             [AddressTypes.P2WSH]: 43,
@@ -65,6 +67,7 @@ export class TransactionHelper {
                     t === AddressTypes.P2WPKH ||
                     t === AddressTypes.P2SH_OR_P2SH_P2WPKH ||
                     t === AddressTypes.P2TR ||
+                    t === AddressTypes.P2MR ||
                     t === AddressTypes.P2OP ||
                     t === AddressTypes.P2WSH
                 );

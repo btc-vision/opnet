@@ -235,6 +235,7 @@ enum AddressTypes {
     P2SH_OR_P2SH_P2WPKH = 'P2SH_OR_P2SH-P2WPKH', // Script hash (3...)
     P2PK = 'P2PK',                               // Public key
     P2TR = 'P2TR',                               // Taproot (bc1p...)
+    P2MR = 'P2MR',                               // Pay-to-Merkle-Root / BIP 360 (bc1z...)
     P2WPKH = 'P2WPKH',                           // Native SegWit (bc1q...)
     P2WSH = 'P2WSH',                             // SegWit script hash
     // P2WDA = 'P2WDA',                          // UNUSED - internal only

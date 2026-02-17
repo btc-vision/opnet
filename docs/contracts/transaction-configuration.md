@@ -259,8 +259,8 @@ const params: TransactionParameters = {
 
 **Best practices:**
 - Use your own address
-- Any address type works (P2TR, P2WPKH, P2PKH, etc.)
-- P2TR (Taproot) offers slightly lower fees
+- Any address type works (P2TR, P2MR, P2WPKH, P2PKH, etc.)
+- P2TR (Taproot) and P2MR (BIP 360) offer the lowest fees
 - Never use exchange addresses
 
 ---

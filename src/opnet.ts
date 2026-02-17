@@ -106,10 +106,11 @@ export * from './common/CommonTypes.js';
 
 /** Bitcoin */
 export * from './bitcoin/interfaces/IUTXO.js';
+export * from './bitcoin/P2MRUtils.js';
 export * from './bitcoin/UTXOs.js';
 
 /** Other */
-export { ABIDataTypes } from '@btc-vision/transaction';
+export { ABIDataTypes, P2MR_MS, P2TR_MS } from '@btc-vision/transaction';
 
 /** ABI JSON */
 export * from './abi/shared/json/generic/STAKING_ABI.js';
