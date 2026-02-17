@@ -176,7 +176,7 @@ The provider does not expose direct cache manipulation, but you can create new p
 
 ```typescript
 // If you need a fresh cache
-const freshProvider = new JSONRpcProvider(url, network);
+const freshProvider = new JSONRpcProvider({ url, network });
 ```
 
 ---
@@ -241,12 +241,12 @@ async function measureCacheEffect() {
 
 ```typescript
 // Good: Reuse for efficiency
-const provider = new JSONRpcProvider(url, network);
+const provider = new JSONRpcProvider({ url, network });
 await provider.gasParameters();
 await provider.gasParameters();  // Cached
 
 // When fresh data is critical
-const freshProvider = new JSONRpcProvider(url, network);
+const freshProvider = new JSONRpcProvider({ url, network });
 const freshGas = await freshProvider.gasParameters();
 ```
 

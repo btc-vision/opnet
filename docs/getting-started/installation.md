@@ -139,10 +139,10 @@ import { networks } from '@btc-vision/bitcoin';
 
 console.log('OPNet version:', version);
 
-const provider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest
-);
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+});
 
 async function main() {
     const blockNumber = await provider.getBlockNumber();
@@ -260,16 +260,16 @@ import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 // Mainnet
-const mainnetProvider = new JSONRpcProvider(
-    'https://mainnet.opnet.org',
-    networks.bitcoin
-);
+const mainnetProvider = new JSONRpcProvider({
+    url: 'https://mainnet.opnet.org',
+    network: networks.bitcoin,
+});
 
 // Regtest (development)
-const regtestProvider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest
-);
+const regtestProvider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+});
 ```
 
 ---

@@ -374,10 +374,10 @@ import { networks } from '@btc-vision/bitcoin';
 import { Address } from '@btc-vision/transaction';
 
 const network = networks.regtest;
-const provider: JSONRpcProvider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    network
-);
+const provider: JSONRpcProvider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network,
+});
 
 const stakingAddress: string = '0x...'; // Contract address
 const userAddress: Address = Address.fromString('0x...');

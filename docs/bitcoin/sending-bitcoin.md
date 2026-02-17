@@ -55,7 +55,7 @@ import { JSONRpcProvider } from 'opnet';
 
 // Setup network and providers
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 const limitedProvider = new OPNetLimitedProvider('https://regtest.opnet.org');
 
 // Create wallet from mnemonic
@@ -522,7 +522,7 @@ class BitcoinTransferService {
 
 // Usage
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 const mnemonic = new Mnemonic(
     'your twenty four word seed phrase goes here ...',
     '',

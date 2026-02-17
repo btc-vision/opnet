@@ -61,7 +61,7 @@ import * as fs from 'fs';
 
 async function prepareForOfflineSigning() {
     const network = networks.regtest;
-    const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+    const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
     // Your PUBLIC address (no private key needed here)
     const myAddress = Address.fromString('0x...');
@@ -220,7 +220,7 @@ interface SerializedUTXOWithScript extends SerializedUTXO {
 
 async function broadcastTransaction() {
     const network = networks.regtest;
-    const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+    const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
     // Your address (same as used in preparation)
     const myP2TR = 'bcrt1p...';

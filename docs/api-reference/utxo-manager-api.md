@@ -147,7 +147,7 @@ type UTXOs = UTXO[];
 ```typescript
 import { UTXOsManager, JSONRpcProvider } from 'opnet';
 
-const provider = new JSONRpcProvider(url, network);
+const provider = new JSONRpcProvider({ url, network });
 const utxoManager = new UTXOsManager(provider);
 
 // Get all UTXOs

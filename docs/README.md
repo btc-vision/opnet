@@ -13,7 +13,7 @@ import { getContract, IOP20Contract, JSONRpcProvider, OP_20_ABI } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 // Connect to OPNet
-const provider = new JSONRpcProvider('https://regtest.opnet.org', networks.regtest);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network: networks.regtest });
 
 // Interact with a token contract
 const token = getContract<IOP20Contract>(

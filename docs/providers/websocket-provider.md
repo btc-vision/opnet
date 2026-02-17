@@ -35,10 +35,10 @@ sequenceDiagram
 import { WebSocketRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
-const provider = new WebSocketRpcProvider(
-    'wss://regtest.opnet.org/ws',
-    networks.regtest
-);
+const provider = new WebSocketRpcProvider({
+    url: 'wss://regtest.opnet.org/ws',
+    network: networks.regtest,
+});
 
 // Wait for connection
 await provider.connect();
@@ -176,10 +176,14 @@ provider.disconnect();
 The provider automatically attempts to reconnect on connection loss:
 
 ```typescript
-const provider = new WebSocketRpcProvider(url, network, {
-    maxReconnectAttempts: 10,    // Max reconnection attempts (default: 10)
-    reconnectBaseDelay: 1000,    // Base delay between attempts in ms (default: 1000)
-    autoReconnect: true,         // Enable auto-reconnect
+const provider = new WebSocketRpcProvider({
+    url,
+    network,
+    websocketConfig: {
+        maxReconnectAttempts: 10,    // Max reconnection attempts (default: 10)
+        reconnectBaseDelay: 1000,    // Base delay between attempts in ms (default: 1000)
+        autoReconnect: true,         // Enable auto-reconnect
+    },
 });
 ```
 
@@ -217,18 +221,18 @@ interface WebSocketClientConfig {
 import { WebSocketRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
-const provider = new WebSocketRpcProvider(
-    'wss://regtest.opnet.org/ws',
-    networks.regtest,
-    {
+const provider = new WebSocketRpcProvider({
+    url: 'wss://regtest.opnet.org/ws',
+    network: networks.regtest,
+    websocketConfig: {
         maxReconnectAttempts: 10,
         reconnectBaseDelay: 1000,
         autoReconnect: true,
         connectTimeout: 15000,
         requestTimeout: 60000,
         pingInterval: 20000,
-    }
-);
+    },
+});
 
 await provider.connect();
 ```
@@ -268,14 +272,14 @@ import {
 import { networks } from '@btc-vision/bitcoin';
 
 async function main() {
-    const provider = new WebSocketRpcProvider(
-        'wss://regtest.opnet.org/ws',
-        networks.regtest,
-        {
+    const provider = new WebSocketRpcProvider({
+        url: 'wss://regtest.opnet.org/ws',
+        network: networks.regtest,
+        websocketConfig: {
             autoReconnect: true,
             maxReconnectAttempts: 10,
-        }
-    );
+        },
+    });
 
     // Set up event handlers
     provider.on(WebSocketClientEvent.CONNECTED, () => {

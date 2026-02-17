@@ -1044,7 +1044,7 @@ function contractBase<T extends BaseContractProperties>(): new (
  *    40, 11, 228, 172, 219, 50, 169, 155, 163, 235, 250, 102, 169, 29, 219, 65, 167, 183, 161, 210,
  *    254, 244, 21, 57, 153, 34, 205, 138, 4, 72, 92, 2,
  * ]);
- * const provider: JSONRpcProvider = new JSONRpcProvider('https://regtest.opnet.org');
+ * const provider: JSONRpcProvider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network: networks.regtest });
  * const contract: IOP20Contract = getContract<IOP20Contract>(
  *     contractAddress,
  *     OP_20_ABI,

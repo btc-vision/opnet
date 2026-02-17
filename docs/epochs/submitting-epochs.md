@@ -28,7 +28,7 @@ import { JSONRpcProvider, EpochSubmissionParams } from 'opnet';
 import { networks, fromHex } from '@btc-vision/bitcoin';
 
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 
 // Prepare submission parameters
 const submission: EpochSubmissionParams = {

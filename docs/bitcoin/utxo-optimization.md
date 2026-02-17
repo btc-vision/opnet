@@ -701,7 +701,7 @@ class UTXOOptimizer {
 
 // Usage
 const network = networks.regtest;
-const provider = new JSONRpcProvider('https://regtest.opnet.org', network);
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
 const mnemonic = new Mnemonic(
     'your twenty four word seed phrase goes here ...',
     '',

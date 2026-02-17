@@ -1567,7 +1567,7 @@ describe('UTXOsManager - Integration Tests (regtest.opnet.org)', () => {
     let manager: UTXOsManager;
 
     beforeAll(() => {
-        provider = new JSONRpcProvider(REGTEST_URL, networks.regtest);
+        provider = new JSONRpcProvider({ url: REGTEST_URL, network: networks.regtest });
         manager = provider.utxoManager;
     });
 

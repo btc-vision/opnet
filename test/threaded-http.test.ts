@@ -207,7 +207,7 @@ describe('Threaded HTTP - JSONRpcProvider Integration', () => {
         });
 
         it('should default useThreadedHttp to false', () => {
-            expect(source).toContain('useThreadedHttp: boolean = false');
+            expect(source).toContain('config.useThreadedHttp ?? false');
         });
     });
 
@@ -429,15 +429,13 @@ describe('Threaded HTTP - JSONRpcProvider Live Test', () => {
         const { JSONRpcProvider } = await import('../src/providers/JSONRpcProvider.js');
         const { networks } = await import('@btc-vision/bitcoin');
 
-        const provider = new JSONRpcProvider(
-            'https://regtest.opnet.org',
-            networks.regtest,
-            10000,
-            {},
-            true,
-            true,
-            true, // useThreadedHttp enabled
-        );
+        const provider = new JSONRpcProvider({
+            url: 'https://regtest.opnet.org',
+            network: networks.regtest,
+            timeout: 10000,
+            useThreadedParsing: true,
+            useThreadedHttp: true,
+        });
 
         try {
             const blockNumber = await provider.getBlockNumber();
@@ -452,15 +450,13 @@ describe('Threaded HTTP - JSONRpcProvider Live Test', () => {
         const { JSONRpcProvider } = await import('../src/providers/JSONRpcProvider.js');
         const { networks } = await import('@btc-vision/bitcoin');
 
-        const provider = new JSONRpcProvider(
-            'https://regtest.opnet.org',
-            networks.regtest,
-            10000,
-            {},
-            true,
-            true,
-            false, // useThreadedHttp disabled
-        );
+        const provider = new JSONRpcProvider({
+            url: 'https://regtest.opnet.org',
+            network: networks.regtest,
+            timeout: 10000,
+            useThreadedParsing: true,
+            useThreadedHttp: false,
+        });
 
         try {
             const blockNumber = await provider.getBlockNumber();
@@ -475,25 +471,21 @@ describe('Threaded HTTP - JSONRpcProvider Live Test', () => {
         const { JSONRpcProvider } = await import('../src/providers/JSONRpcProvider.js');
         const { networks } = await import('@btc-vision/bitcoin');
 
-        const providerThreaded = new JSONRpcProvider(
-            'https://regtest.opnet.org',
-            networks.regtest,
-            10000,
-            {},
-            true,
-            true,
-            true,
-        );
+        const providerThreaded = new JSONRpcProvider({
+            url: 'https://regtest.opnet.org',
+            network: networks.regtest,
+            timeout: 10000,
+            useThreadedParsing: true,
+            useThreadedHttp: true,
+        });
 
-        const providerFallback = new JSONRpcProvider(
-            'https://regtest.opnet.org',
-            networks.regtest,
-            10000,
-            {},
-            true,
-            true,
-            false,
-        );
+        const providerFallback = new JSONRpcProvider({
+            url: 'https://regtest.opnet.org',
+            network: networks.regtest,
+            timeout: 10000,
+            useThreadedParsing: true,
+            useThreadedHttp: false,
+        });
 
         try {
             const [blockThreaded, blockFallback] = await Promise.all([

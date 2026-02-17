@@ -74,10 +74,10 @@ import {
 import { Network, networks } from '@btc-vision/bitcoin';
 
 const network: Network = networks.regtest;
-const provider: JSONRpcProvider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    network
-);
+const provider: JSONRpcProvider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network,
+});
 const mnemonic = new Mnemonic('your seed phrase here ...', '', network, MLDSASecurityLevel.LEVEL2);
 const wallet: Wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);  // OPWallet-compatible
 

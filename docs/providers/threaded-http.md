@@ -75,15 +75,13 @@ Enable threaded HTTP when creating a provider:
 import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
-const provider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest,
-    20_000,      // timeout
-    {},          // fetcher config
-    true,        // useRESTAPI
-    true,        // useThreadedParsing
-    true         // useThreadedHttp (default: false)
-);
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+    timeout: 20_000,
+    useThreadedParsing: true,
+    useThreadedHttp: true,
+});
 ```
 
 ### Threading Modes

@@ -32,15 +32,18 @@ Base class for all providers. Both JSONRpcProvider and WebSocketRpcProvider exte
 ### JSONRpcProvider
 
 ```typescript
-new JSONRpcProvider(
-    url: string,
-    network: Network,
-    timeout?: number,
-    fetcherConfigurations?: Agent.Options,
-    useRESTAPI?: boolean,
-    useThreadedParsing?: boolean,
-    useThreadedHttp?: boolean
-)
+new JSONRpcProvider(config: JSONRpcProviderConfig)
+```
+
+```typescript
+interface JSONRpcProviderConfig {
+    readonly url: string;
+    readonly network: Network;
+    readonly timeout?: number;
+    readonly fetcherConfigurations?: Agent.Options;
+    readonly useThreadedParsing?: boolean;
+    readonly useThreadedHttp?: boolean;
+}
 ```
 
 | Parameter | Type | Default | Description |
@@ -49,18 +52,21 @@ new JSONRpcProvider(
 | `network` | `Network` | Required | Bitcoin network |
 | `timeout` | `number` | `20000` | Request timeout in milliseconds (20 seconds) |
 | `fetcherConfigurations` | `Agent.Options` | *see below* | HTTP agent configuration |
-| `useRESTAPI` | `boolean` | `true` | Use REST API mode for requests |
 | `useThreadedParsing` | `boolean` | `false` | Parse responses in worker thread |
 | `useThreadedHttp` | `boolean` | `false` | Perform entire HTTP request in worker thread |
 
 ### WebSocketRpcProvider
 
 ```typescript
-new WebSocketRpcProvider(
-    url: string,
-    network: Network,
-    config?: WebSocketClientConfig
-)
+new WebSocketRpcProvider(config: WebSocketRpcProviderConfig)
+```
+
+```typescript
+interface WebSocketRpcProviderConfig {
+    readonly url: string;
+    readonly network: Network;
+    readonly websocketConfig?: Partial<Omit<WebSocketClientConfig, 'url'>>;
+}
 ```
 
 ---
@@ -478,10 +484,10 @@ enum SubscriptionType {
 ```typescript
 import { WebSocketRpcProvider, SubscriptionType } from 'opnet';
 
-const wsProvider = new WebSocketRpcProvider(
-    'wss://regtest.opnet.org/ws',
-    network
-);
+const wsProvider = new WebSocketRpcProvider({
+    url: 'wss://regtest.opnet.org/ws',
+    network,
+});
 
 // Subscribe to blocks
 await wsProvider.subscribeBlocks((block) => {

@@ -58,10 +58,10 @@ HTTP-based provider using standard JSON-RPC protocol:
 import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
-const provider = new JSONRpcProvider(
-    'https://regtest.opnet.org',
-    networks.regtest
-);
+const provider = new JSONRpcProvider({
+    url: 'https://regtest.opnet.org',
+    network: networks.regtest,
+});
 ```
 
 **Best for:**
@@ -78,10 +78,10 @@ WebSocket-based provider with real-time capabilities:
 import { WebSocketRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
-const provider = new WebSocketRpcProvider(
-    'wss://regtest.opnet.org/ws',
-    networks.regtest
-);
+const provider = new WebSocketRpcProvider({
+    url: 'wss://regtest.opnet.org/ws',
+    network: networks.regtest,
+});
 
 // Subscribe to new blocks
 await provider.subscribeBlocks((block) => {
@@ -156,8 +156,8 @@ const env = 'regtest';
 const { rpc, ws, network } = config[env];
 
 // Create providers
-const httpProvider = new JSONRpcProvider(rpc, network);
-const wsProvider = new WebSocketRpcProvider(ws, network);
+const httpProvider = new JSONRpcProvider({ url: rpc, network });
+const wsProvider = new WebSocketRpcProvider({ url: ws, network });
 ```
 
 ---
@@ -245,10 +245,10 @@ import { JSONRpcProvider } from 'opnet';
 import { networks } from '@btc-vision/bitcoin';
 
 async function main() {
-    const provider = new JSONRpcProvider(
-        'https://regtest.opnet.org',
-        networks.regtest
-    );
+    const provider = new JSONRpcProvider({
+        url: 'https://regtest.opnet.org',
+        network: networks.regtest,
+    });
 
     try {
         const block = await provider.getBlockNumber();
@@ -275,13 +275,13 @@ async function main() {
 
 ```typescript
 // Good: Reuse provider
-const provider = new JSONRpcProvider(url, network);
+const provider = new JSONRpcProvider({ url, network });
 const block1 = await provider.getBlock(1);
 const block2 = await provider.getBlock(2);
 
 // Bad: Creating new provider each time
-const block1 = await new JSONRpcProvider(url, network).getBlock(1);
-const block2 = await new JSONRpcProvider(url, network).getBlock(2);
+const block1 = await new JSONRpcProvider({ url, network }).getBlock(1);
+const block2 = await new JSONRpcProvider({ url, network }).getBlock(2);
 ```
 
 ---
