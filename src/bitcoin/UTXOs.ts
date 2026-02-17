@@ -67,6 +67,23 @@ export class UTXO implements Omit<IUTXO, 'raw'> {
             });
         }
     }
+
+    /*public toJSON(): Record<string, unknown> {
+        return {
+            transactionId: this.transactionId,
+            outputIndex: this.outputIndex,
+            value: this.value.toString(),
+            scriptPubKey: this.scriptPubKey,
+            nonWitnessUtxo: this.nonWitnessUtxoBase64,
+            witnessScript: this.witnessScript,
+            redeemScript: this.redeemScript,
+            isCSV: this.isCSV,
+        };
+    }
+
+    public [Symbol.for('nodejs.util.inspect.custom')](): Record<string, unknown> {
+        return this.toJSON();
+    }*/
 }
 
 /**
