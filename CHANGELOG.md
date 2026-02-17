@@ -1,5 +1,27 @@
 # Changelog
 
+## [v1.8.1-rc.2] - 2026-02-17
+
+### Breaking Changes
+
+- breaking: upgraded deps, refactor buffer -> uint8array for consistency, upgraded eslint v10. ([#134](https://github.com/btc-vision/opnet/pull/134)) by @BlobMaster41
+
+### Features
+
+- breaking: upgraded deps, refactor buffer -> uint8array for consistency, upgraded eslint v10. ([#134](https://github.com/btc-vision/opnet/pull/134)) by @BlobMaster41
+
+### Documentation
+
+- docs: add ABI flags and update contract APIs ([#132](https://github.com/btc-vision/opnet/pull/132)) by @BlobMaster41
+- breaking: upgraded deps, refactor buffer -> uint8array for consistency, upgraded eslint v10. ([#134](https://github.com/btc-vision/opnet/pull/134)) by @BlobMaster41
+
+### Other Changes
+
+- Added constant to ABI ([#133](https://github.com/btc-vision/opnet/pull/133)) by @BlobMaster41
+
+
+
+
 ## [v1.8.1-rc.1] - 2026-02-15
 
 ### Features
