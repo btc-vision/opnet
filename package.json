@@ -123,10 +123,10 @@
         }
     },
     "dependencies": {
-        "@btc-vision/bip32": "^7.1.1",
-        "@btc-vision/bitcoin": "file:../bitcoin",
+        "@btc-vision/bip32": "^7.1.2",
+        "@btc-vision/bitcoin": "^7.0.0-rc.4",
         "@btc-vision/bitcoin-rpc": "^1.0.6",
-        "@btc-vision/ecpair": "^4.0.4",
+        "@btc-vision/ecpair": "^4.0.5",
         "@btc-vision/logger": "^1.0.8",
         "@btc-vision/transaction": "file:../transaction",
         "@noble/hashes": "^2.0.1",
