@@ -43,10 +43,15 @@ export class ContractData implements Omit<IRawContract, 'contractPublicKey'> {
                 ? raw.deployerPubKey
                 : fromBase64(raw.deployerPubKey);
 
+        const deployerAddr = raw.deployerAddress as unknown as string;
+        const cleanDeployerAddr = deployerAddr.startsWith('0x')
+            ? deployerAddr.slice(2)
+            : deployerAddr;
+
         this.deployerHashedPublicKey =
             raw.deployerAddress instanceof Address
-                ? fromHex((raw.deployerAddress as unknown as string).replace('0x', ''))
-                : fromBase64((raw.deployerAddress as unknown as string).replace('0x', ''));
+                ? fromHex(cleanDeployerAddr)
+                : fromBase64(cleanDeployerAddr);
 
         this.contractSeed =
             raw.contractSeed instanceof Uint8Array
