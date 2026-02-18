@@ -128,7 +128,7 @@ export abstract class AbstractRpcProvider {
         try {
             const pubKeyInfo = await this.getPublicKeysInfo(address, isContract);
 
-            return pubKeyInfo[address] || pubKeyInfo[address.replace('0x', '')];
+            return pubKeyInfo[address] || pubKeyInfo[address.startsWith('0x') ? address.slice(2) : address];
         } catch (e) {
             if (AddressVerificator.isValidPublicKey(address, this.network)) {
                 return Address.fromString(address);
@@ -238,7 +238,7 @@ export abstract class AbstractRpcProvider {
         }
 
         // Check if the solution is all zeros (invalid)
-        const solutionHex = result.solution.replace('0x', '');
+        const solutionHex = result.solution.startsWith('0x') ? result.solution.slice(2) : result.solution;
         if (solutionHex === '0'.repeat(64)) {
             throw new Error(
                 'No valid challenge found. OPNet is probably not active yet on this blockchain.',

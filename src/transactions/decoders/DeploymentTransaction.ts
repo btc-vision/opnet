@@ -57,8 +57,9 @@ export class DeploymentTransaction
             }
 
             if (transaction.deployerAddress) {
+                const deployerAddr = transaction.deployerAddress as string;
                 this.deployerHashedPublicKey = fromHex(
-                    (transaction.deployerAddress as string).replace('0x', ''),
+                    deployerAddr.startsWith('0x') ? deployerAddr.slice(2) : deployerAddr,
                 );
             }
 
