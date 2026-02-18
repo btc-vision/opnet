@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.8.1-rc.3] - 2026-02-18
+
+### Features
+
+- Normalize hex strings; strip 0x prefix safely ([#135](https://github.com/btc-vision/opnet/pull/135)) by @BlobMaster41
+
+### Bug Fixes
+
+- Normalize hex strings; strip 0x prefix safely ([#135](https://github.com/btc-vision/opnet/pull/135)) by @BlobMaster41
+
+
+
+
 ## [v1.8.1-rc.2] - 2026-02-17
 
 ### Breaking Changes
