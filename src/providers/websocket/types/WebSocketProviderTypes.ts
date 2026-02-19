@@ -9,6 +9,8 @@ export enum WebSocketClientEvent {
     ERROR = 'error',
     BLOCK = 'block',
     EPOCH = 'epoch',
+    /** A new transaction entered the mempool. */
+    MEMPOOL = 'mempool',
 }
 
 /**
@@ -37,6 +39,15 @@ export interface BlockNotification {
 export interface EpochNotification {
     readonly epochNumber: bigint;
     readonly epochHash: string;
+    readonly timestamp: bigint;
+}
+
+/**
+ * Mempool transaction notification from subscription
+ */
+export interface MempoolNotification {
+    readonly txId: string;
+    readonly isOPNet: boolean;
     readonly timestamp: bigint;
 }
 

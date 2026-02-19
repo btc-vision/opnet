@@ -59,6 +59,8 @@ import {
     JsonRpcResult,
     JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
+import { MempoolInfo } from './interfaces/mempool/MempoolInfo.js';
+import { MempoolTransactionData } from './interfaces/mempool/MempoolTransactionData.js';
 import { AddressesInfo, IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
@@ -1100,6 +1102,80 @@ export abstract class AbstractRpcProvider {
 
         const result: RawSubmittedEpoch = rawSubmission.result as RawSubmittedEpoch;
         return new SubmittedEpoch(result);
+    }
+
+    /**
+     * @description Get mempool information (transaction count, size, etc.)
+     * @returns {Promise<MempoolInfo>} Mempool information
+     */
+    public async getMempoolInfo(): Promise<MempoolInfo> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_MEMPOOL_INFO,
+            [],
+        );
+        const rawResult: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        if ('error' in rawResult) {
+            throw new Error(
+                `Error fetching mempool info: ${rawResult.error?.message || 'Unknown error'}`,
+            );
+        }
+
+        return rawResult.result as MempoolInfo;
+    }
+
+    /**
+     * @description Get a pending transaction from the mempool by hash
+     * @param {string} hash - The transaction hash
+     * @returns {Promise<MempoolTransactionData | null>} The pending transaction data, or null if not found
+     */
+    public async getPendingTransaction(hash: string): Promise<MempoolTransactionData | null> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_PENDING_TRANSACTION,
+            [hash],
+        );
+        const rawResult: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        if ('error' in rawResult) {
+            throw new Error(
+                `Error fetching pending transaction: ${rawResult.error?.message || 'Unknown error'}`,
+            );
+        }
+
+        return (rawResult.result as MempoolTransactionData) ?? null;
+    }
+
+    /**
+     * @description Get the latest pending transactions from the mempool
+     * @param {string} [address] - Optional address to filter by
+     * @param {string[]} [addresses] - Optional array of addresses to filter by
+     * @param {number} [limit] - Optional limit on number of transactions to return
+     * @returns {Promise<MempoolTransactionData[]>} Array of pending transactions
+     */
+    public async getLatestPendingTransactions(
+        address?: string,
+        addresses?: string[],
+        limit?: number,
+    ): Promise<MempoolTransactionData[]> {
+        const params: unknown[] = [];
+        params.push(address ?? null);
+        params.push(addresses ?? null);
+        params.push(limit ?? null);
+
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_LATEST_PENDING_TRANSACTIONS,
+            params,
+        );
+        const rawResult: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        if ('error' in rawResult) {
+            throw new Error(
+                `Error fetching latest pending transactions: ${rawResult.error?.message || 'Unknown error'}`,
+            );
+        }
+
+        const result = rawResult.result as { transactions: MempoolTransactionData[] };
+        return result.transactions ?? [];
     }
 
     protected abstract providerUrl(url: string): string;

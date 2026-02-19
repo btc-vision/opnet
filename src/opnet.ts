@@ -34,6 +34,8 @@ export * from './providers/websocket/types/WebSocketOpcodes.js';
 
 /** Providers interfaces */
 export * from './providers/interfaces/ReorgInformation.js';
+export * from './providers/interfaces/mempool/MempoolInfo.js';
+export * from './providers/interfaces/mempool/MempoolTransactionData.js';
 
 /** Block */
 export * from './block/Block.js';
