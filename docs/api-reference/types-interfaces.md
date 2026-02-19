@@ -608,6 +608,34 @@ enum MLDSASecurityLevel {
 
 ---
 
+## Bitcoin Utility Types
+
+### isP2MRAddress
+
+Detect whether an address is a Pay-to-Merkle-Root (BIP 360) address.
+
+```typescript
+import { isP2MRAddress } from 'opnet';
+import { networks } from '@btc-vision/bitcoin';
+
+const result: boolean = isP2MRAddress('bc1z...', networks.bitcoin);
+```
+
+### Script Constants
+
+Re-exported from `@btc-vision/transaction`.
+
+```typescript
+import { P2MR_MS, P2TR_MS } from 'opnet';
+```
+
+| Constant | Description |
+|----------|-------------|
+| `P2MR_MS` | Magic byte for P2MR (BIP 360) script outputs |
+| `P2TR_MS` | Magic byte for P2TR (Taproot) script outputs |
+
+---
+
 ## Next Steps
 
 - [Provider API](./provider-api.md) - Provider methods
