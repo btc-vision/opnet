@@ -128,6 +128,9 @@
             "optional": true
         }
     },
+    "overrides": {
+	   "@microsoft/api-extractor": "7.56.3"
+    },
     "dependencies": {
         "@btc-vision/bip32": "^7.1.2",
         "@btc-vision/bitcoin": "^7.0.0-rc.4",
