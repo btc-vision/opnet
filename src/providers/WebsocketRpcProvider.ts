@@ -519,10 +519,11 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
 
             case JSONRpcMethods.GET_LATEST_PENDING_TRANSACTIONS:
                 // GetLatestPendingTransactionsRequest: requestId=1, address=2, addresses=3, limit=4
+                // Omit fields that were not provided so the server treats them as absent.
                 return {
-                    2: params[0] ?? '',
-                    3: params[1] ?? [],
-                    4: params[2] ?? 0,
+                    ...(params[0] != null ? { 2: params[0] } : {}),
+                    ...(params[1] != null ? { 3: params[1] } : {}),
+                    ...(params[2] != null ? { 4: params[2] } : {}),
                 };
 
             default:

@@ -17,6 +17,7 @@ Complete reference for TypeScript types and interfaces.
 - [Challenge Types](#challenge-types)
 - [ABI Types](#abi-types)
 - [ML-DSA Types](#ml-dsa-types)
+- [Mempool Types](#mempool-types)
 
 ---
 
@@ -603,6 +604,86 @@ enum MLDSASecurityLevel {
     ML_DSA_44 = 44,
     ML_DSA_65 = 65,
     ML_DSA_87 = 87,
+}
+```
+
+---
+
+## Mempool Types
+
+### MempoolInfo
+
+Aggregate statistics returned by [`getMempoolInfo()`](./provider-api.md#getmempoolinfo).
+
+```typescript
+interface MempoolInfo {
+    /** Total number of pending transactions in the mempool. */
+    readonly count: number;
+    /** Number of pending OPNet-specific transactions in the mempool. */
+    readonly opnetCount: number;
+    /** Total byte size of the mempool. */
+    readonly size: number;
+}
+```
+
+### MempoolTransactionData
+
+Full representation of a pending mempool transaction returned by
+[`getPendingTransaction()`](./provider-api.md#getpendingtransaction) and
+[`getLatestPendingTransactions()`](./provider-api.md#getlatestpendingtransactions).
+
+```typescript
+interface MempoolTransactionData {
+    /** Internal transaction identifier (txid). */
+    readonly id: string;
+    /** ISO-8601 timestamp of when the transaction was first seen (e.g. `"2025-02-19T15:30:45.123Z"`). */
+    readonly firstSeen: string;
+    /** Block height at which the transaction was observed, as a `0x`-prefixed hex string. */
+    readonly blockHeight: string;
+    /** Theoretical gas limit for OPNet execution, as a `0x`-prefixed hex string. */
+    readonly theoreticalGasLimit: string;
+    /** Priority fee attached to the transaction, as a `0x`-prefixed hex string. */
+    readonly priorityFee: string;
+    /** Whether this transaction targets an OPNet contract. */
+    readonly isOPNet: boolean;
+    /** Whether the transaction was submitted as a PSBT. */
+    readonly psbt: boolean;
+    /** The transaction inputs. */
+    readonly inputs: MempoolTransactionInput[];
+    /** The transaction outputs. */
+    readonly outputs: MempoolTransactionOutput[];
+    /** The full raw transaction as a hex string. */
+    readonly raw: string;
+}
+```
+
+### MempoolTransactionInput
+
+A single transaction input as reported by the mempool API.
+
+```typescript
+interface MempoolTransactionInput {
+    /** The txid of the UTXO being spent. */
+    readonly transactionId: string;
+    /** The vout index of the UTXO being spent. */
+    readonly outputIndex: number;
+}
+```
+
+### MempoolTransactionOutput
+
+A single transaction output as reported by the mempool API.
+
+```typescript
+interface MempoolTransactionOutput {
+    /** The destination address, or `null` for unspendable outputs (e.g. OP_RETURN). */
+    readonly address: string | null;
+    /** The vout index within the transaction. */
+    readonly outputIndex: number;
+    /** The output value in satoshis (decimal string). */
+    readonly value: string;
+    /** The hex-encoded scriptPubKey. */
+    readonly scriptPubKey: string;
 }
 ```
 

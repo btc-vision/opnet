@@ -1126,10 +1126,16 @@ export abstract class AbstractRpcProvider {
 
     /**
      * @description Get a pending transaction from the mempool by hash
-     * @param {string} hash - The transaction hash
+     * @param {string} hash - The transaction txid (64 hex characters)
      * @returns {Promise<MempoolTransactionData | null>} The pending transaction data, or null if not found
      */
     public async getPendingTransaction(hash: string): Promise<MempoolTransactionData | null> {
+        if (!hash || !/^[0-9a-fA-F]{64}$/.test(hash)) {
+            throw new Error(
+                `getPendingTransaction: expected a 64-character hex txid, got "${hash}"`,
+            );
+        }
+
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(
             JSONRpcMethods.GET_PENDING_TRANSACTION,
             [hash],
@@ -1137,19 +1143,22 @@ export abstract class AbstractRpcProvider {
         const rawResult: JsonRpcResult = await this.callPayloadSingle(payload);
 
         if ('error' in rawResult) {
-            throw new Error(
-                `Error fetching pending transaction: ${rawResult.error?.message || 'Unknown error'}`,
-            );
+            const msg = rawResult.error?.message ?? 'Unknown error';
+            // The node returns an error (not null) when a transaction is not in the mempool.
+            if (/not found/i.test(msg)) return null;
+            throw new Error(`Error fetching pending transaction: ${msg}`);
         }
 
         return (rawResult.result as MempoolTransactionData) ?? null;
     }
 
     /**
-     * @description Get the latest pending transactions from the mempool
-     * @param {string} [address] - Optional address to filter by
-     * @param {string[]} [addresses] - Optional array of addresses to filter by
-     * @param {number} [limit] - Optional limit on number of transactions to return
+     * @description Get the latest pending transactions from the mempool.
+     *   `address` and `addresses` are independent server-side filters that are OR-ed together.
+     *   Either, both, or neither may be supplied.
+     * @param {string} [address] - Optional single address to filter by
+     * @param {string[]} [addresses] - Optional list of addresses to filter by
+     * @param {number} [limit] - Optional maximum number of transactions to return (positive integer)
      * @returns {Promise<MempoolTransactionData[]>} Array of pending transactions
      */
     public async getLatestPendingTransactions(
@@ -1157,6 +1166,12 @@ export abstract class AbstractRpcProvider {
         addresses?: string[],
         limit?: number,
     ): Promise<MempoolTransactionData[]> {
+        if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+            throw new Error(
+                `getLatestPendingTransactions: limit must be a positive integer, got ${limit}`,
+            );
+        }
+
         const params: unknown[] = [];
         params.push(address ?? null);
         params.push(addresses ?? null);
@@ -1174,7 +1189,7 @@ export abstract class AbstractRpcProvider {
             );
         }
 
-        const result = rawResult.result as { transactions: MempoolTransactionData[] };
+        const result = (rawResult.result as { transactions?: MempoolTransactionData[] }) ?? {};
         return result.transactions ?? [];
     }
 

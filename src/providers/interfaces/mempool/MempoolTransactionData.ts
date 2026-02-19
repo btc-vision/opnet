@@ -22,13 +22,13 @@ export interface MempoolTransactionOutput {
 export interface MempoolTransactionData {
     /** Internal transaction identifier (txid). */
     readonly id: string;
-    /** ISO-8601 timestamp of when the transaction was first seen. */
+    /** ISO-8601 timestamp of when the transaction was first seen (e.g. `"2025-02-19T15:30:45.123Z"`). */
     readonly firstSeen: string;
-    /** Block height at which the transaction was observed (`0x`-prefixed hex). */
+    /** Block height at which the transaction was observed, as a `0x`-prefixed hex string. */
     readonly blockHeight: string;
-    /** Theoretical gas limit for OPNet execution (`0x`-prefixed hex). */
+    /** Theoretical gas limit for OPNet execution, as a `0x`-prefixed hex string. */
     readonly theoreticalGasLimit: string;
-    /** Priority fee attached to the transaction (`0x`-prefixed hex). */
+    /** Priority fee attached to the transaction, as a `0x`-prefixed hex string. */
     readonly priorityFee: string;
     /** Whether this transaction targets an OPNet contract. */
     readonly isOPNet: boolean;

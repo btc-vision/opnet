@@ -11,6 +11,7 @@ Complete API reference for OPNet providers.
 - [JSONRpcProvider Methods](#jsonrpcprovider-methods)
 - [Block Methods](#block-methods)
 - [Transaction Methods](#transaction-methods)
+- [Mempool Methods](#mempool-methods)
 - [Epoch Methods](#epoch-methods)
 - [Contract Methods](#contract-methods)
 - [Balance Methods](#balance-methods)
@@ -223,6 +224,116 @@ Get the current PoW challenge.
 
 ```typescript
 getChallenge(): Promise<ChallengeSolution>
+```
+
+---
+
+## Mempool Methods
+
+### getMempoolInfo
+
+Retrieve aggregate mempool statistics: total transaction count, OPNet-specific transaction count, and total byte size.
+
+```typescript
+getMempoolInfo(): Promise<MempoolInfo>
+```
+
+**Returns:** [`MempoolInfo`](./types-interfaces.md#mempoolinfo)
+
+**JSON-RPC method:** `btc_getMempoolInfo`
+
+**Example:**
+
+```typescript
+const info = await provider.getMempoolInfo();
+
+console.log(`Pending txs : ${info.count}`);
+console.log(`OPNet txs   : ${info.opnetCount}`);
+console.log(`Mempool size: ${info.size} bytes`);
+```
+
+---
+
+### getPendingTransaction
+
+Fetch a single pending transaction from the mempool by its txid. Returns `null` when the transaction is not found.
+
+```typescript
+getPendingTransaction(hash: string): Promise<MempoolTransactionData | null>
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `hash` | `string` | Transaction id (txid) — must be exactly 64 hex characters |
+
+**Returns:** [`MempoolTransactionData`](./types-interfaces.md#mempooltransactiondata) or `null`
+
+**JSON-RPC method:** `btc_getPendingTransaction`
+
+**Example:**
+
+```typescript
+const txid = 'abc123def456...';
+const tx = await provider.getPendingTransaction(txid);
+
+if (tx === null) {
+    console.log('Transaction not found in mempool');
+} else {
+    console.log(`First seen : ${tx.firstSeen}`);
+    console.log(`OPNet tx   : ${tx.isOPNet}`);
+    console.log(`Inputs     : ${tx.inputs.length}`);
+    console.log(`Outputs    : ${tx.outputs.length}`);
+}
+```
+
+---
+
+### getLatestPendingTransactions
+
+Fetch the most recent pending transactions from the mempool. Results can be filtered by a single address, a list of addresses, or capped with a limit.
+
+```typescript
+getLatestPendingTransactions(
+    address?: string,
+    addresses?: string[],
+    limit?: number
+): Promise<MempoolTransactionData[]>
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `address` | `string` | `undefined` | Filter by a single address |
+| `addresses` | `string[]` | `undefined` | Filter by multiple addresses |
+| `limit` | `number` | `undefined` | Maximum number of transactions to return (positive integer) |
+
+**Returns:** [`MempoolTransactionData[]`](./types-interfaces.md#mempooltransactiondata)
+
+**JSON-RPC method:** `btc_getLatestPendingTransactions`
+
+> `address` and `addresses` are independent server-side filters that are OR-ed together. Either, both, or neither may be supplied. `limit` must be a positive integer if provided; the method throws otherwise.
+
+**Examples:**
+
+```typescript
+// No filters — fetch latest pending transactions
+const txs = await provider.getLatestPendingTransactions();
+
+// Limit to 10 transactions
+const txs = await provider.getLatestPendingTransactions(undefined, undefined, 10);
+
+// Filter by a single address
+const txs = await provider.getLatestPendingTransactions('bc1p...');
+
+// Filter by multiple addresses, cap at 25
+const txs = await provider.getLatestPendingTransactions(
+    undefined,
+    ['bc1p...', 'bc1q...'],
+    25,
+);
+
+for (const tx of txs) {
+    console.log(`${tx.id} — OPNet: ${tx.isOPNet}, fee: ${tx.priorityFee}`);
+}
 ```
 
 ---

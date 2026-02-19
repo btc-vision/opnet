@@ -147,10 +147,10 @@ describe('Mempool API - Unit Tests', () => {
     describe('getPendingTransaction', () => {
         const mockTx: MempoolTransactionData = {
             id: 'abc123def456abc123def456abc123def456abc123def456abc123def456abc1',
-            firstSeen: '1700000000000',
-            blockHeight: '850000',
-            theoreticalGasLimit: '1000000',
-            priorityFee: '500',
+            firstSeen: '2023-11-14T22:13:20.000Z',
+            blockHeight: '0xcf080',
+            theoreticalGasLimit: '0xf4240',
+            priorityFee: '0x1f4',
             isOPNet: true,
             psbt: false,
             inputs: [
@@ -208,16 +208,22 @@ describe('Mempool API - Unit Tests', () => {
             expect(payload.params).toEqual([txHash]);
         });
 
-        it('should return null when transaction is not found', async () => {
+        it('should return null when the node reports the transaction is not found', async () => {
+            // The node returns a JSON-RPC error (not a null result) for missing transactions.
             provider.mockSend.mockResolvedValue([
                 {
                     jsonrpc: '2.0',
                     id: 1,
-                    result: null,
+                    error: {
+                        code: -32000,
+                        message: 'Pending transaction 0000000000000000000000000000000000000000000000000000000000000000 not found.',
+                    },
                 },
             ]);
 
-            const result = await provider.getPendingTransaction('nonexistent-hash');
+            const result = await provider.getPendingTransaction(
+                '0000000000000000000000000000000000000000000000000000000000000000',
+            );
 
             expect(result).toBeNull();
         });
@@ -231,9 +237,31 @@ describe('Mempool API - Unit Tests', () => {
                 },
             ]);
 
-            await expect(provider.getPendingTransaction('some-hash')).rejects.toThrow(
-                'Error fetching pending transaction',
+            await expect(
+                provider.getPendingTransaction(
+                    'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+                ),
+            ).rejects.toThrow('Error fetching pending transaction');
+        });
+
+        it('should throw for an invalid hash (too short)', async () => {
+            await expect(provider.getPendingTransaction('abc123')).rejects.toThrow(
+                'getPendingTransaction: expected a 64-character hex txid',
             );
+        });
+
+        it('should throw for an empty hash', async () => {
+            await expect(provider.getPendingTransaction('')).rejects.toThrow(
+                'getPendingTransaction: expected a 64-character hex txid',
+            );
+        });
+
+        it('should throw for a hash with non-hex characters', async () => {
+            await expect(
+                provider.getPendingTransaction(
+                    'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
+                ),
+            ).rejects.toThrow('getPendingTransaction: expected a 64-character hex txid');
         });
 
         it('should handle non-OPNet transaction', async () => {
@@ -317,10 +345,10 @@ describe('Mempool API - Unit Tests', () => {
     describe('getLatestPendingTransactions', () => {
         const mockTx1: MempoolTransactionData = {
             id: 'tx1_hash_0000000000000000000000000000000000000000000000000000000001',
-            firstSeen: '1700000000000',
-            blockHeight: '850000',
-            theoreticalGasLimit: '1000000',
-            priorityFee: '500',
+            firstSeen: '2023-11-14T22:13:20.000Z',
+            blockHeight: '0xcf080',
+            theoreticalGasLimit: '0xf4240',
+            priorityFee: '0x1f4',
             isOPNet: true,
             psbt: false,
             inputs: [{ transactionId: 'input1', outputIndex: 0 }],
@@ -513,6 +541,38 @@ describe('Mempool API - Unit Tests', () => {
             expect(result).toHaveLength(100);
             expect(result[0].isOPNet).toBe(true);
             expect(result[1].isOPNet).toBe(false);
+        });
+
+        it('should handle null result gracefully', async () => {
+            provider.mockSend.mockResolvedValue([
+                {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    result: null,
+                },
+            ]);
+
+            const result = await provider.getLatestPendingTransactions();
+
+            expect(result).toEqual([]);
+        });
+
+        it('should throw for a non-integer limit', async () => {
+            await expect(
+                provider.getLatestPendingTransactions(undefined, undefined, 3.7),
+            ).rejects.toThrow('getLatestPendingTransactions: limit must be a positive integer');
+        });
+
+        it('should throw for a zero limit', async () => {
+            await expect(
+                provider.getLatestPendingTransactions(undefined, undefined, 0),
+            ).rejects.toThrow('getLatestPendingTransactions: limit must be a positive integer');
+        });
+
+        it('should throw for a negative limit', async () => {
+            await expect(
+                provider.getLatestPendingTransactions(undefined, undefined, -1),
+            ).rejects.toThrow('getLatestPendingTransactions: limit must be a positive integer');
         });
     });
 });
