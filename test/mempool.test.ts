@@ -360,10 +360,10 @@ describe('Mempool API - Unit Tests', () => {
 
         const mockTx2: MempoolTransactionData = {
             id: 'tx2_hash_0000000000000000000000000000000000000000000000000000000002',
-            firstSeen: '1700000001000',
-            blockHeight: '850000',
-            theoreticalGasLimit: '500000',
-            priorityFee: '300',
+            firstSeen: '2023-11-14T22:13:21.000Z',
+            blockHeight: '0xcf080',
+            theoreticalGasLimit: '0x7a120',
+            priorityFee: '0x12c',
             isOPNet: false,
             psbt: false,
             inputs: [{ transactionId: 'input2', outputIndex: 1 }],
@@ -510,10 +510,10 @@ describe('Mempool API - Unit Tests', () => {
         it('should handle many transactions', async () => {
             const manyTxs: MempoolTransactionData[] = Array.from({ length: 100 }, (_, i) => ({
                 id: `tx_${String(i).padStart(60, '0')}`,
-                firstSeen: String(1700000000000 + i * 1000),
-                blockHeight: '850000',
-                theoreticalGasLimit: '1000000',
-                priorityFee: String(i * 100),
+                firstSeen: new Date(1700000000000 + i * 1000).toISOString(),
+                blockHeight: '0xcf080',
+                theoreticalGasLimit: '0xf4240',
+                priorityFee: `0x${(i * 100).toString(16)}`,
                 isOPNet: i % 2 === 0,
                 psbt: false,
                 inputs: [{ transactionId: `input_${i}`, outputIndex: 0 }],
