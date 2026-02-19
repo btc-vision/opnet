@@ -8,6 +8,9 @@ export enum SubscriptionType {
 
     /** Subscribe to new epoch notifications */
     EPOCHS = 1,
+
+    /** Subscribe to new mempool transaction notifications */
+    MEMPOOL = 2,
 }
 
 /**
@@ -19,6 +22,8 @@ export function getSubscriptionTypeName(type: SubscriptionType): string {
             return 'BLOCKS';
         case SubscriptionType.EPOCHS:
             return 'EPOCHS';
+        case SubscriptionType.MEMPOOL:
+            return 'MEMPOOL';
         default:
             return 'UNKNOWN';
     }

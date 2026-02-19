@@ -144,4 +144,22 @@ export const METHOD_MAPPINGS: Partial<Record<JSONRpcMethods, MethodMapping>> = {
         requestType: 'SubmitEpochRequest',
         responseType: 'SubmitEpochResponse',
     },
+    [JSONRpcMethods.GET_MEMPOOL_INFO]: {
+        requestOpcode: WebSocketRequestOpcode.GET_MEMPOOL_INFO,
+        responseOpcode: WebSocketResponseOpcode.MEMPOOL_INFO,
+        requestType: 'GetMempoolInfoRequest',
+        responseType: 'GetMempoolInfoResponse',
+    },
+    [JSONRpcMethods.GET_PENDING_TRANSACTION]: {
+        requestOpcode: WebSocketRequestOpcode.GET_PENDING_TRANSACTION,
+        responseOpcode: WebSocketResponseOpcode.PENDING_TRANSACTION,
+        requestType: 'GetPendingTransactionRequest',
+        responseType: 'PendingTransactionResponse',
+    },
+    [JSONRpcMethods.GET_LATEST_PENDING_TRANSACTIONS]: {
+        requestOpcode: WebSocketRequestOpcode.GET_LATEST_PENDING_TRANSACTIONS,
+        responseOpcode: WebSocketResponseOpcode.LATEST_PENDING_TRANSACTIONS,
+        requestType: 'GetLatestPendingTransactionsRequest',
+        responseType: 'LatestPendingTransactionsResponse',
+    },
 };

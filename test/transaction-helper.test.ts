@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { TransactionHelper } from '../build/contracts/TransactionHelpper.js';
-import { address as btcAddress, networks, type PsbtOutputExtended } from '@btc-vision/bitcoin';
+import { address as btcAddress, networks, toBytes20, type PsbtOutputExtended } from '@btc-vision/bitcoin';
 import type { UTXO } from '@btc-vision/transaction';
 
 const network = networks.bitcoin;
@@ -10,11 +10,11 @@ const network = networks.bitcoin;
 /* ------------------------------------------------------------------ */
 
 const ADDR = {
-    P2TR: btcAddress.toBech32(Buffer.alloc(32, 0xcd), 1, network.bech32),
-    P2MR: btcAddress.toBech32(Buffer.alloc(32, 0xab), 2, network.bech32),
-    P2WPKH: btcAddress.toBech32(Buffer.alloc(20, 0xef), 0, network.bech32),
-    P2PKH: btcAddress.toBase58Check(Buffer.alloc(20, 0x01), network.pubKeyHash),
-    P2SH: btcAddress.toBase58Check(Buffer.alloc(20, 0x02), network.scriptHash),
+    P2TR: btcAddress.toBech32(new Uint8Array(32).fill(0xcd), 1, network.bech32),
+    P2MR: btcAddress.toBech32(new Uint8Array(32).fill(0xab), 2, network.bech32),
+    P2WPKH: btcAddress.toBech32(new Uint8Array(20).fill(0xef), 0, network.bech32),
+    P2PKH: btcAddress.toBase58Check(toBytes20(new Uint8Array(20).fill(0x01)), network.pubKeyHash),
+    P2SH: btcAddress.toBase58Check(toBytes20(new Uint8Array(20).fill(0x02)), network.scriptHash),
 };
 
 /* ------------------------------------------------------------------ */

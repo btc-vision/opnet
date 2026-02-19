@@ -39,4 +39,13 @@ export enum JSONRpcMethods {
 
     /** Simulation */
     CALL = 'btc_call',
+
+    /** Mempool */
+
+    /** Retrieve aggregate mempool statistics (count, OPNet count, byte size). */
+    GET_MEMPOOL_INFO = 'btc_getMempoolInfo',
+    /** Fetch a single pending mempool transaction by its hash. */
+    GET_PENDING_TRANSACTION = 'btc_getPendingTransaction',
+    /** Fetch the latest pending mempool transactions, optionally filtered by address(es). */
+    GET_LATEST_PENDING_TRANSACTIONS = 'btc_getLatestPendingTransactions',
 }

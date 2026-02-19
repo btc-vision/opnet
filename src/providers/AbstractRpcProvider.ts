@@ -59,6 +59,8 @@ import {
     JsonRpcResult,
     JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
+import { MempoolInfo } from './interfaces/mempool/MempoolInfo.js';
+import { MempoolTransactionData } from './interfaces/mempool/MempoolTransactionData.js';
 import { AddressesInfo, IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
@@ -1100,6 +1102,95 @@ export abstract class AbstractRpcProvider {
 
         const result: RawSubmittedEpoch = rawSubmission.result as RawSubmittedEpoch;
         return new SubmittedEpoch(result);
+    }
+
+    /**
+     * @description Get mempool information (transaction count, size, etc.)
+     * @returns {Promise<MempoolInfo>} Mempool information
+     */
+    public async getMempoolInfo(): Promise<MempoolInfo> {
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_MEMPOOL_INFO,
+            [],
+        );
+        const rawResult: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        if ('error' in rawResult) {
+            throw new Error(
+                `Error fetching mempool info: ${rawResult.error?.message || 'Unknown error'}`,
+            );
+        }
+
+        return rawResult.result as MempoolInfo;
+    }
+
+    /**
+     * @description Get a pending transaction from the mempool by hash
+     * @param {string} hash - The transaction txid (64 hex characters)
+     * @returns {Promise<MempoolTransactionData | null>} The pending transaction data, or null if not found
+     */
+    public async getPendingTransaction(hash: string): Promise<MempoolTransactionData | null> {
+        if (!hash || !/^[0-9a-fA-F]{64}$/.test(hash)) {
+            throw new Error(
+                `getPendingTransaction: expected a 64-character hex txid, got "${hash}"`,
+            );
+        }
+
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_PENDING_TRANSACTION,
+            [hash],
+        );
+        const rawResult: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        if ('error' in rawResult) {
+            const msg = rawResult.error?.message ?? 'Unknown error';
+            // The node returns an error (not null) when a transaction is not in the mempool.
+            if (/not found/i.test(msg)) return null;
+            throw new Error(`Error fetching pending transaction: ${msg}`);
+        }
+
+        return (rawResult.result as MempoolTransactionData) ?? null;
+    }
+
+    /**
+     * @description Get the latest pending transactions from the mempool.
+     *   `address` and `addresses` are independent server-side filters that are OR-ed together.
+     *   Either, both, or neither may be supplied.
+     * @param {string} [address] - Optional single address to filter by
+     * @param {string[]} [addresses] - Optional list of addresses to filter by
+     * @param {number} [limit] - Optional maximum number of transactions to return (positive integer)
+     * @returns {Promise<MempoolTransactionData[]>} Array of pending transactions
+     */
+    public async getLatestPendingTransactions(
+        address?: string,
+        addresses?: string[],
+        limit?: number,
+    ): Promise<MempoolTransactionData[]> {
+        if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+            throw new Error(
+                `getLatestPendingTransactions: limit must be a positive integer, got ${limit}`,
+            );
+        }
+
+        const params: unknown[] = [];
+        params.push(address ?? null);
+        params.push(addresses ?? null);
+        params.push(limit ?? null);
+
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.GET_LATEST_PENDING_TRANSACTIONS,
+            params,
+        );
+        const rawResult: JsonRpcResult = await this.callPayloadSingle(payload);
+
+        if ('error' in rawResult) {
+            throw new Error(
+                `Error fetching latest pending transactions: ${rawResult.error?.message || 'Unknown error'}`,
+            );
+        }
+
+        const result = (rawResult.result as { transactions?: MempoolTransactionData[] }) ?? {};
+        return result.transactions ?? [];
     }
 
     protected abstract providerUrl(url: string): string;

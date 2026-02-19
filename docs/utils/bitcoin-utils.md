@@ -285,6 +285,49 @@ console.log(sats); // 50000000n
 
 ---
 
+## P2MR Address Detection
+
+The `isP2MRAddress` utility detects Pay-to-Merkle-Root (BIP 360) addresses by checking for witness version 2 with a 32-byte Merkle root.
+
+```typescript
+import { isP2MRAddress } from 'opnet';
+import { networks } from '@btc-vision/bitcoin';
+
+// Mainnet P2MR addresses start with bc1z
+const isP2MR = isP2MRAddress('bc1z...', networks.bitcoin);
+
+// Regtest P2MR addresses start with bcrt1z
+const isRegtestP2MR = isP2MRAddress('bcrt1z...', networks.regtest);
+```
+
+### Method Signature
+
+```typescript
+function isP2MRAddress(addr: string, network: Network): boolean
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `addr` | `string` | The address string to test |
+| `network` | `Network` | The Bitcoin network to validate against |
+
+---
+
+## Script Constants
+
+Two magic-byte constants are re-exported from `@btc-vision/transaction` for low-level script construction:
+
+```typescript
+import { P2MR_MS, P2TR_MS } from 'opnet';
+```
+
+| Constant | Description |
+|----------|-------------|
+| `P2MR_MS` | Magic byte identifying P2MR (BIP 360) script outputs |
+| `P2TR_MS` | Magic byte identifying P2TR (Taproot) script outputs |
+
+---
+
 ## Next Steps
 
 - [Revert Decoder](./revert-decoder.md) - Error decoding

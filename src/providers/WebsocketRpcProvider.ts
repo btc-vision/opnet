@@ -27,6 +27,7 @@ import {
     EpochNotification,
     EventHandler,
     InternalPendingRequest,
+    MempoolNotification,
     SubscriptionHandler,
     WebSocketClientEvent,
 } from './websocket/types/WebSocketProviderTypes.js';
@@ -216,6 +217,31 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
 
         await this.sendRequest(requestId, fullMessage);
         this.subscriptions.set(SubscriptionType.EPOCHS, handler as SubscriptionHandler);
+    }
+
+    /**
+     * Subscribe to new mempool transactions
+     */
+    public async subscribeMempool(
+        handler: SubscriptionHandler<MempoolNotification>,
+    ): Promise<void> {
+        if (this.state !== ConnectionState.READY) {
+            throw new Error('Not connected');
+        }
+
+        const type = this.getType('SubscribeMempoolRequest');
+        const message = type.create({});
+        const encodedPayload = type.encode(message).finish();
+
+        const requestId = this.nextRequestId();
+        const fullMessage = this.buildMessage(
+            WebSocketRequestOpcode.SUBSCRIBE_MEMPOOL,
+            requestId,
+            encodedPayload,
+        );
+
+        await this.sendRequest(requestId, fullMessage);
+        this.subscriptions.set(SubscriptionType.MEMPOOL, handler as SubscriptionHandler);
     }
 
     /**
@@ -483,6 +509,22 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
                     7: submitParams.signature,
                 };
             }
+
+            case JSONRpcMethods.GET_MEMPOOL_INFO:
+                return {};
+
+            case JSONRpcMethods.GET_PENDING_TRANSACTION:
+                // GetPendingTransactionRequest: requestId=1, hash=2
+                return { 2: params[0] };
+
+            case JSONRpcMethods.GET_LATEST_PENDING_TRANSACTIONS:
+                // GetLatestPendingTransactionsRequest: requestId=1, address=2, addresses=3, limit=4
+                // Omit fields that were not provided so the server treats them as absent.
+                return {
+                    ...(params[0] != null ? { 2: params[0] } : {}),
+                    ...(params[1] != null ? { 3: params[1] } : {}),
+                    ...(params[2] != null ? { 4: params[2] } : {}),
+                };
 
             default:
                 return {};
@@ -893,6 +935,11 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
             return;
         }
 
+        if (opcode === WebSocketResponseOpcode.NEW_MEMPOOL_TX_NOTIFICATION) {
+            this.handleMempoolNotification(buffer.slice(1));
+            return;
+        }
+
         // Extract request ID (little-endian uint32)
         const requestId = buffer[1] | (buffer[2] << 8) | (buffer[3] << 16) | (buffer[4] << 24);
 
@@ -997,6 +1044,38 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         }
     }
 
+    private handleMempoolNotification(payload: Uint8Array): void {
+        const handler = this.subscriptions.get(SubscriptionType.MEMPOOL);
+        if (!handler) return;
+
+        try {
+            const type = this.getType('NewMempoolTransactionNotification');
+            const decoded = type.decode(payload);
+            const mempool = type.toObject(decoded, {
+                longs: String,
+                defaults: true,
+            }) as {
+                subscription_id?: number;
+                tx_id?: string;
+                txId?: string;
+                is_o_p_net?: boolean;
+                isOPNet?: boolean;
+                timestamp?: string;
+            };
+
+            const notification: MempoolNotification = {
+                txId: mempool.tx_id || mempool.txId || '',
+                isOPNet: mempool.is_o_p_net ?? mempool.isOPNet ?? false,
+                timestamp: BigInt(mempool.timestamp || '0'),
+            };
+
+            handler(notification);
+            this.emit(WebSocketClientEvent.MEMPOOL, notification);
+        } catch (e) {
+            console.error('Failed to parse mempool notification:', e);
+        }
+    }
+
     private handleClose(event: CloseEvent): void {
         const wasReady = this.state === ConnectionState.READY;
         this.state = ConnectionState.DISCONNECTED;
@@ -1059,6 +1138,10 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
                     await this.subscribeBlocks(handler as SubscriptionHandler<BlockNotification>);
                 } else if (type === SubscriptionType.EPOCHS) {
                     await this.subscribeEpochs(handler as SubscriptionHandler<EpochNotification>);
+                } else if (type === SubscriptionType.MEMPOOL) {
+                    await this.subscribeMempool(
+                        handler as SubscriptionHandler<MempoolNotification>,
+                    );
                 }
             } catch (e) {
                 console.error(`Failed to resubscribe to ${type}:`, e);
