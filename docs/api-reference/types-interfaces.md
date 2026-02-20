@@ -640,12 +640,8 @@ interface MempoolTransactionData {
     readonly firstSeen: string;
     /** Block height at which the transaction was observed, as a `0x`-prefixed hex string. */
     readonly blockHeight: string;
-    /** Theoretical gas limit for OPNet execution, as a `0x`-prefixed hex string. */
-    readonly theoreticalGasLimit: string;
-    /** Priority fee attached to the transaction, as a `0x`-prefixed hex string. */
-    readonly priorityFee: string;
-    /** Whether this transaction targets an OPNet contract. */
-    readonly isOPNet: boolean;
+    /** The OPNet transaction type (`Generic`, `Interaction`, or `Deployment`). */
+    readonly transactionType: OPNetTransactionTypes | string;
     /** Whether the transaction was submitted as a PSBT. */
     readonly psbt: boolean;
     /** The transaction inputs. */
@@ -654,7 +650,46 @@ interface MempoolTransactionData {
     readonly outputs: MempoolTransactionOutput[];
     /** The full raw transaction as a hex string. */
     readonly raw: string;
+
+    // OPNet-specific fields (present only for non-Generic transactions)
+
+    /** Theoretical gas limit for OPNet execution (`0x`-prefixed hex). */
+    readonly theoreticalGasLimit?: string;
+    /** Priority fee attached to the transaction (`0x`-prefixed hex). */
+    readonly priorityFee?: string;
+    /** The sender address (p2tr format). */
+    readonly from?: string;
+    /** The target contract address (p2op format). */
+    readonly contractAddress?: string;
+    /** Hex-encoded calldata. */
+    readonly calldata?: string;
+    /** Hex-encoded bytecode (deployment transactions only). */
+    readonly bytecode?: string;
 }
+```
+
+#### Type-Agnostic Narrowing
+
+For OPNet transactions, use the narrower interfaces to get required typings for
+OPNet-specific fields:
+
+```typescript
+/** OPNet transaction — all OPNet fields are required. */
+interface MempoolOPNetTransactionData extends MempoolTransactionData { ... }
+
+/** Smart contract interaction. */
+interface MempoolInteractionTransactionData extends MempoolOPNetTransactionData {}
+
+/** Smart contract deployment (adds required `bytecode`). */
+interface MempoolDeploymentTransactionData extends MempoolOPNetTransactionData {
+    readonly bytecode: string;
+}
+
+/** Union of all possible shapes. */
+type AnyMempoolTransactionData =
+    | MempoolTransactionData
+    | MempoolInteractionTransactionData
+    | MempoolDeploymentTransactionData;
 ```
 
 ### MempoolTransactionInput

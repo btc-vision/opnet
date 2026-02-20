@@ -62,8 +62,8 @@ await provider.subscribeBlocks((block) => {
     console.log('New block!');
     console.log('  Block number:', block.blockNumber);
     console.log('  Hash:', block.blockHash);
-    console.log('  Previous hash:', block.previousBlockHash);
     console.log('  Timestamp:', block.timestamp);
+    console.log('  TX count:', block.txCount);
 });
 
 // Later, unsubscribe
@@ -82,7 +82,6 @@ await provider.subscribeEpochs((epoch) => {
     console.log('Epoch update!');
     console.log('  Epoch number:', epoch.epochNumber);
     console.log('  Epoch hash:', epoch.epochHash);
-    console.log('  Timestamp:', epoch.timestamp);
 });
 
 // Unsubscribe when done

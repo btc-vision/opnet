@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { JSONRpcProvider } from '../src/providers/JSONRpcProvider.js';
 import { networks } from '@btc-vision/bitcoin';
+import { AddressTypes } from '@btc-vision/transaction';
 import type { JsonRpcPayload } from '../src/providers/interfaces/JSONRpc.js';
 import type { JsonRpcCallResult } from '../src/providers/interfaces/JSONRpcResult.js';
 import type { MempoolInfo } from '../src/providers/interfaces/mempool/MempoolInfo.js';
@@ -149,9 +150,12 @@ describe('Mempool API - Unit Tests', () => {
             id: 'abc123def456abc123def456abc123def456abc123def456abc123def456abc1',
             firstSeen: '2023-11-14T22:13:20.000Z',
             blockHeight: '0xcf080',
+            transactionType: 'Interaction',
             theoreticalGasLimit: '0xf4240',
             priorityFee: '0x1f4',
-            isOPNet: true,
+            from: 'bcrt1psender...',
+            contractAddress: 'bcrt1pcontract...',
+            calldata: 'deadbeef',
             psbt: false,
             inputs: [
                 {
@@ -184,7 +188,7 @@ describe('Mempool API - Unit Tests', () => {
 
             expect(result).not.toBeNull();
             expect(result!.id).toBe(mockTx.id);
-            expect(result!.isOPNet).toBe(true);
+            expect(result!.transactionType).toBe('Interaction');
             expect(result!.psbt).toBe(false);
             expect(result!.inputs).toHaveLength(1);
             expect(result!.outputs).toHaveLength(1);
@@ -264,12 +268,15 @@ describe('Mempool API - Unit Tests', () => {
             ).rejects.toThrow('getPendingTransaction: expected a 64-character hex txid');
         });
 
-        it('should handle non-OPNet transaction', async () => {
+        it('should handle Generic transaction', async () => {
             const nonOPNetTx: MempoolTransactionData = {
                 ...mockTx,
-                isOPNet: false,
-                theoreticalGasLimit: '0',
-                priorityFee: '0',
+                transactionType: 'Generic',
+                theoreticalGasLimit: undefined,
+                priorityFee: undefined,
+                from: undefined,
+                contractAddress: undefined,
+                calldata: undefined,
             };
 
             provider.mockSend.mockResolvedValue([
@@ -283,7 +290,7 @@ describe('Mempool API - Unit Tests', () => {
             const result = await provider.getPendingTransaction(nonOPNetTx.id);
 
             expect(result).not.toBeNull();
-            expect(result!.isOPNet).toBe(false);
+            expect(result!.transactionType).toBe('Generic');
         });
 
         it('should handle PSBT transaction', async () => {
@@ -344,12 +351,15 @@ describe('Mempool API - Unit Tests', () => {
 
     describe('getLatestPendingTransactions', () => {
         const mockTx1: MempoolTransactionData = {
-            id: 'tx1_hash_0000000000000000000000000000000000000000000000000000000001',
+            id: 'a000000000000000000000000000000000000000000000000000000000000001',
             firstSeen: '2023-11-14T22:13:20.000Z',
             blockHeight: '0xcf080',
+            transactionType: 'Interaction',
             theoreticalGasLimit: '0xf4240',
             priorityFee: '0x1f4',
-            isOPNet: true,
+            from: 'bcrt1psender...',
+            contractAddress: 'bcrt1pcontract...',
+            calldata: 'aabbccdd',
             psbt: false,
             inputs: [{ transactionId: 'input1', outputIndex: 0 }],
             outputs: [
@@ -359,12 +369,10 @@ describe('Mempool API - Unit Tests', () => {
         };
 
         const mockTx2: MempoolTransactionData = {
-            id: 'tx2_hash_0000000000000000000000000000000000000000000000000000000002',
+            id: 'a000000000000000000000000000000000000000000000000000000000000002',
             firstSeen: '2023-11-14T22:13:21.000Z',
             blockHeight: '0xcf080',
-            theoreticalGasLimit: '0x7a120',
-            priorityFee: '0x12c',
-            isOPNet: false,
+            transactionType: 'Generic',
             psbt: false,
             inputs: [{ transactionId: 'input2', outputIndex: 1 }],
             outputs: [
@@ -406,6 +414,7 @@ describe('Mempool API - Unit Tests', () => {
         });
 
         it('should pass single address filter', async () => {
+            vi.spyOn(provider, 'validateAddress').mockReturnValue(AddressTypes.P2WPKH);
             provider.mockSend.mockResolvedValue([
                 {
                     jsonrpc: '2.0',
@@ -414,25 +423,10 @@ describe('Mempool API - Unit Tests', () => {
                 },
             ]);
 
-            await provider.getLatestPendingTransactions('bcrt1qtest...');
+            await provider.getLatestPendingTransactions({ address: 'bcrt1qtest...' });
 
             const payload = provider.mockSend.mock.calls[0][0] as JsonRpcPayload;
             expect(payload.params).toEqual(['bcrt1qtest...', null, null]);
-        });
-
-        it('should pass multiple addresses filter', async () => {
-            provider.mockSend.mockResolvedValue([
-                {
-                    jsonrpc: '2.0',
-                    id: 1,
-                    result: { transactions: [mockTx1, mockTx2] },
-                },
-            ]);
-
-            await provider.getLatestPendingTransactions(undefined, ['addr1', 'addr2']);
-
-            const payload = provider.mockSend.mock.calls[0][0] as JsonRpcPayload;
-            expect(payload.params).toEqual([null, ['addr1', 'addr2'], null]);
         });
 
         it('should pass limit parameter', async () => {
@@ -444,25 +438,10 @@ describe('Mempool API - Unit Tests', () => {
                 },
             ]);
 
-            await provider.getLatestPendingTransactions(undefined, undefined, 10);
+            await provider.getLatestPendingTransactions({ limit: 10 });
 
             const payload = provider.mockSend.mock.calls[0][0] as JsonRpcPayload;
             expect(payload.params).toEqual([null, null, 10]);
-        });
-
-        it('should pass all filters together', async () => {
-            provider.mockSend.mockResolvedValue([
-                {
-                    jsonrpc: '2.0',
-                    id: 1,
-                    result: { transactions: [mockTx1] },
-                },
-            ]);
-
-            await provider.getLatestPendingTransactions('bcrt1qtest...', ['addr1', 'addr2'], 5);
-
-            const payload = provider.mockSend.mock.calls[0][0] as JsonRpcPayload;
-            expect(payload.params).toEqual(['bcrt1qtest...', ['addr1', 'addr2'], 5]);
         });
 
         it('should return empty array when no transactions found', async () => {
@@ -509,12 +488,19 @@ describe('Mempool API - Unit Tests', () => {
 
         it('should handle many transactions', async () => {
             const manyTxs: MempoolTransactionData[] = Array.from({ length: 100 }, (_, i) => ({
-                id: `tx_${String(i).padStart(60, '0')}`,
+                id: `a${String(i).padStart(63, '0')}`,
                 firstSeen: new Date(1700000000000 + i * 1000).toISOString(),
                 blockHeight: '0xcf080',
-                theoreticalGasLimit: '0xf4240',
-                priorityFee: `0x${(i * 100).toString(16)}`,
-                isOPNet: i % 2 === 0,
+                transactionType: i % 2 === 0 ? 'Interaction' : 'Generic',
+                ...(i % 2 === 0
+                    ? {
+                          theoreticalGasLimit: '0xf4240',
+                          priorityFee: `0x${(i * 100).toString(16)}`,
+                          from: `bcrt1psender${i}`,
+                          contractAddress: `bcrt1pcontract${i}`,
+                          calldata: 'aa',
+                      }
+                    : {}),
                 psbt: false,
                 inputs: [{ transactionId: `input_${i}`, outputIndex: 0 }],
                 outputs: [
@@ -539,8 +525,8 @@ describe('Mempool API - Unit Tests', () => {
             const result = await provider.getLatestPendingTransactions();
 
             expect(result).toHaveLength(100);
-            expect(result[0].isOPNet).toBe(true);
-            expect(result[1].isOPNet).toBe(false);
+            expect(result[0].transactionType).toBe('Interaction');
+            expect(result[1].transactionType).toBe('Generic');
         });
 
         it('should handle null result gracefully', async () => {
@@ -557,22 +543,165 @@ describe('Mempool API - Unit Tests', () => {
             expect(result).toEqual([]);
         });
 
+        it('should throw for a malformed response shape', async () => {
+            provider.mockSend.mockResolvedValue([
+                {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    result: 42,
+                },
+            ]);
+
+            await expect(provider.getLatestPendingTransactions()).rejects.toThrow(
+                'unexpected response shape',
+            );
+        });
+
+        it('should throw when transactions field is not an array', async () => {
+            provider.mockSend.mockResolvedValue([
+                {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    result: { transactions: 'not-an-array' },
+                },
+            ]);
+
+            await expect(provider.getLatestPendingTransactions()).rejects.toThrow(
+                'expected transactions to be an array',
+            );
+        });
+
+        it('should throw for an invalid address', async () => {
+            vi.spyOn(provider, 'validateAddress').mockReturnValue(null);
+
+            await expect(
+                provider.getLatestPendingTransactions({ address: 'not-a-valid-address' }),
+            ).rejects.toThrow('getLatestPendingTransactions: invalid address');
+        });
+
         it('should throw for a non-integer limit', async () => {
             await expect(
-                provider.getLatestPendingTransactions(undefined, undefined, 3.7),
-            ).rejects.toThrow('getLatestPendingTransactions: limit must be a positive integer');
+                provider.getLatestPendingTransactions({ limit: 3.7 }),
+            ).rejects.toThrow('limit must be a positive integer');
         });
 
         it('should throw for a zero limit', async () => {
             await expect(
-                provider.getLatestPendingTransactions(undefined, undefined, 0),
-            ).rejects.toThrow('getLatestPendingTransactions: limit must be a positive integer');
+                provider.getLatestPendingTransactions({ limit: 0 }),
+            ).rejects.toThrow('limit must be a positive integer');
         });
 
         it('should throw for a negative limit', async () => {
             await expect(
-                provider.getLatestPendingTransactions(undefined, undefined, -1),
-            ).rejects.toThrow('getLatestPendingTransactions: limit must be a positive integer');
+                provider.getLatestPendingTransactions({ limit: -1 }),
+            ).rejects.toThrow('limit must be a positive integer');
+        });
+    });
+
+    // ========================================================================
+    // getLatestPendingTransactionsByAddresses
+    // ========================================================================
+
+    describe('getLatestPendingTransactionsByAddresses', () => {
+        const mockTx1: MempoolTransactionData = {
+            id: 'a000000000000000000000000000000000000000000000000000000000000001',
+            firstSeen: '2023-11-14T22:13:20.000Z',
+            blockHeight: '0xcf080',
+            transactionType: 'Interaction',
+            theoreticalGasLimit: '0xf4240',
+            priorityFee: '0x1f4',
+            from: 'bcrt1psender...',
+            contractAddress: 'bcrt1pcontract...',
+            calldata: 'aabbccdd',
+            psbt: false,
+            inputs: [{ transactionId: 'input1', outputIndex: 0 }],
+            outputs: [
+                { address: 'addr1', outputIndex: 0, value: '100000', scriptPubKey: '0014abc' },
+            ],
+            raw: 'deadbeef01',
+        };
+
+        const mockTx2: MempoolTransactionData = {
+            id: 'a000000000000000000000000000000000000000000000000000000000000002',
+            firstSeen: '2023-11-14T22:13:21.000Z',
+            blockHeight: '0xcf080',
+            transactionType: 'Generic',
+            psbt: false,
+            inputs: [{ transactionId: 'input2', outputIndex: 1 }],
+            outputs: [
+                { address: 'addr2', outputIndex: 0, value: '200000', scriptPubKey: '0014def' },
+            ],
+            raw: 'deadbeef02',
+        };
+
+        it('should pass addresses filter', async () => {
+            vi.spyOn(provider, 'validateAddress').mockReturnValue(AddressTypes.P2WPKH);
+            provider.mockSend.mockResolvedValue([
+                {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    result: { transactions: [mockTx1, mockTx2] },
+                },
+            ]);
+
+            await provider.getLatestPendingTransactionsByAddresses({ addresses: ['addr1', 'addr2'] });
+
+            const payload = provider.mockSend.mock.calls[0][0] as JsonRpcPayload;
+            expect(payload.params).toEqual([null, ['addr1', 'addr2'], null]);
+        });
+
+        it('should pass addresses and limit filter', async () => {
+            vi.spyOn(provider, 'validateAddress').mockReturnValue(AddressTypes.P2WPKH);
+            provider.mockSend.mockResolvedValue([
+                {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    result: { transactions: [mockTx1] },
+                },
+            ]);
+
+            await provider.getLatestPendingTransactionsByAddresses({ addresses: ['addr1', 'addr2'], limit: 5 });
+
+            const payload = provider.mockSend.mock.calls[0][0] as JsonRpcPayload;
+            expect(payload.params).toEqual([null, ['addr1', 'addr2'], 5]);
+        });
+
+        it('should throw for an empty addresses array', async () => {
+            await expect(
+                provider.getLatestPendingTransactionsByAddresses({ addresses: [] }),
+            ).rejects.toThrow('addresses array must not be empty');
+        });
+
+        it('should throw for an invalid address in the array', async () => {
+            vi.spyOn(provider, 'validateAddress').mockReturnValue(null);
+
+            await expect(
+                provider.getLatestPendingTransactionsByAddresses({ addresses: ['bad-address'] }),
+            ).rejects.toThrow('getLatestPendingTransactionsByAddresses: invalid address');
+        });
+
+        it('should throw for a non-integer limit', async () => {
+            vi.spyOn(provider, 'validateAddress').mockReturnValue(AddressTypes.P2WPKH);
+
+            await expect(
+                provider.getLatestPendingTransactionsByAddresses({ addresses: ['addr1'], limit: 3.7 }),
+            ).rejects.toThrow('limit must be a positive integer');
+        });
+
+        it('should throw for a zero limit', async () => {
+            vi.spyOn(provider, 'validateAddress').mockReturnValue(AddressTypes.P2WPKH);
+
+            await expect(
+                provider.getLatestPendingTransactionsByAddresses({ addresses: ['addr1'], limit: 0 }),
+            ).rejects.toThrow('limit must be a positive integer');
+        });
+
+        it('should throw for a negative limit', async () => {
+            vi.spyOn(provider, 'validateAddress').mockReturnValue(AddressTypes.P2WPKH);
+
+            await expect(
+                provider.getLatestPendingTransactionsByAddresses({ addresses: ['addr1'], limit: -1 }),
+            ).rejects.toThrow('limit must be a positive integer');
         });
     });
 });
@@ -618,7 +747,7 @@ describe('Mempool API - Integration Tests (regtest.opnet.org)', () => {
                 expect(typeof tx.id).toBe('string');
                 expect(typeof tx.firstSeen).toBe('string');
                 expect(typeof tx.blockHeight).toBe('string');
-                expect(typeof tx.isOPNet).toBe('boolean');
+                expect(typeof tx.transactionType).toBe('string');
                 expect(typeof tx.psbt).toBe('boolean');
                 expect(Array.isArray(tx.inputs)).toBe(true);
                 expect(Array.isArray(tx.outputs)).toBe(true);
@@ -629,12 +758,34 @@ describe('Mempool API - Integration Tests (regtest.opnet.org)', () => {
         }, 30000);
 
         it('should respect limit parameter', async () => {
-            const txs = await provider.getLatestPendingTransactions(undefined, undefined, 5);
+            const txs = await provider.getLatestPendingTransactions({ limit: 5 });
 
             expect(Array.isArray(txs)).toBe(true);
             expect(txs.length).toBeLessThanOrEqual(5);
 
             console.log(`Fetched ${txs.length} pending transactions (limit 5)`);
+        }, 30000);
+    });
+
+    describe('getLatestPendingTransactionsByAddresses', () => {
+        it('should filter transactions by address', async () => {
+            const allTxs = await provider.getLatestPendingTransactions({ limit: 1 });
+
+            const addressableOutput = allTxs.flatMap((tx) => tx.outputs).find((o) => o.address !== null);
+
+            if (!addressableOutput?.address) {
+                console.log('No addressable outputs in pending transactions — skipping');
+                return;
+            }
+
+            const txs = await provider.getLatestPendingTransactionsByAddresses({
+                addresses: [addressableOutput.address],
+            });
+
+            expect(Array.isArray(txs)).toBe(true);
+            console.log(
+                `Found ${txs.length} transactions for address ${addressableOutput.address}`,
+            );
         }, 30000);
     });
 
@@ -651,7 +802,7 @@ describe('Mempool API - Integration Tests (regtest.opnet.org)', () => {
 
         it('should fetch a pending transaction if one exists', async () => {
             // First get list of pending transactions
-            const txs = await provider.getLatestPendingTransactions(undefined, undefined, 1);
+            const txs = await provider.getLatestPendingTransactions({ limit: 1 });
 
             if (txs.length === 0) {
                 console.log('No pending transactions to test getPendingTransaction');
@@ -663,12 +814,12 @@ describe('Mempool API - Integration Tests (regtest.opnet.org)', () => {
 
             expect(result).not.toBeNull();
             expect(result!.id).toBe(txHash);
-            expect(typeof result!.isOPNet).toBe('boolean');
+            expect(typeof result!.transactionType).toBe('string');
             expect(Array.isArray(result!.inputs)).toBe(true);
             expect(Array.isArray(result!.outputs)).toBe(true);
 
             console.log(
-                `Fetched pending tx ${txHash.slice(0, 16)}... (OPNet: ${result!.isOPNet})`,
+                `Fetched pending tx ${txHash.slice(0, 16)}... (type: ${result!.transactionType})`,
             );
         }, 30000);
     });

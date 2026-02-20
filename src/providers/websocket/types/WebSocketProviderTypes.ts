@@ -29,8 +29,8 @@ export type SubscriptionHandler<T = unknown> = (data: T) => void;
 export interface BlockNotification {
     readonly blockNumber: bigint;
     readonly blockHash: string;
-    readonly previousBlockHash: string;
     readonly timestamp: bigint;
+    readonly txCount: number;
 }
 
 /**
@@ -39,7 +39,6 @@ export interface BlockNotification {
 export interface EpochNotification {
     readonly epochNumber: bigint;
     readonly epochHash: string;
-    readonly timestamp: bigint;
 }
 
 /**
@@ -47,7 +46,8 @@ export interface EpochNotification {
  */
 export interface MempoolNotification {
     readonly txId: string;
-    readonly isOPNet: boolean;
+    /** The OPNet transaction type (`Generic`, `Interaction`, or `Deployment`). */
+    readonly transactionType: string;
     readonly timestamp: bigint;
 }
 

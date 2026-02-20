@@ -60,7 +60,10 @@ import {
     JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
 import { MempoolInfo } from './interfaces/mempool/MempoolInfo.js';
-import { MempoolTransactionData } from './interfaces/mempool/MempoolTransactionData.js';
+import {
+    MempoolTransactionData,
+    PendingTransactionsResult,
+} from './interfaces/mempool/MempoolTransactionData.js';
 import { AddressesInfo, IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
@@ -1153,29 +1156,71 @@ export abstract class AbstractRpcProvider {
     }
 
     /**
-     * @description Get the latest pending transactions from the mempool.
-     *   `address` and `addresses` are independent server-side filters that are OR-ed together.
-     *   Either, both, or neither may be supplied.
-     * @param {string} [address] - Optional single address to filter by
-     * @param {string[]} [addresses] - Optional list of addresses to filter by
-     * @param {number} [limit] - Optional maximum number of transactions to return (positive integer)
+     * @description Get the latest pending transactions from the mempool, optionally filtered by a single address.
+     * @param {object} [options]
+     * @param {string} [options.address] - Optional address to filter transactions by
+     * @param {number} [options.limit] - Optional maximum number of transactions to return (positive integer)
      * @returns {Promise<MempoolTransactionData[]>} Array of pending transactions
      */
-    public async getLatestPendingTransactions(
-        address?: string,
-        addresses?: string[],
-        limit?: number,
-    ): Promise<MempoolTransactionData[]> {
-        if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+    public async getLatestPendingTransactions(options?: {
+        address?: string;
+        limit?: number;
+    }): Promise<MempoolTransactionData[]> {
+        if (options?.address !== undefined) {
+            if (this.validateAddress(options.address, this.network) === null) {
+                throw new Error(
+                    `getLatestPendingTransactions: invalid address "${options.address}"`,
+                );
+            }
+        }
+
+        return this._fetchPendingTransactions(options?.address ?? null, null, options?.limit);
+    }
+
+    /**
+     * @description Get the latest pending transactions from the mempool filtered by a list of addresses.
+     * @param {object} options
+     * @param {string[]} options.addresses - Addresses to filter transactions by
+     * @param {number} [options.limit] - Optional maximum number of transactions to return (positive integer)
+     * @returns {Promise<MempoolTransactionData[]>} Array of pending transactions
+     */
+    public async getLatestPendingTransactionsByAddresses(options: {
+        addresses: string[];
+        limit?: number;
+    }): Promise<MempoolTransactionData[]> {
+        if (options.addresses.length === 0) {
             throw new Error(
-                `getLatestPendingTransactions: limit must be a positive integer, got ${limit}`,
+                'getLatestPendingTransactionsByAddresses: addresses array must not be empty',
             );
         }
 
-        const params: unknown[] = [];
-        params.push(address ?? null);
-        params.push(addresses ?? null);
-        params.push(limit ?? null);
+        for (const addr of options.addresses) {
+            if (this.validateAddress(addr, this.network) === null) {
+                throw new Error(
+                    `getLatestPendingTransactionsByAddresses: invalid address "${addr}"`,
+                );
+            }
+        }
+
+        return this._fetchPendingTransactions(null, options.addresses, options.limit);
+    }
+
+    private async _fetchPendingTransactions(
+        address: string | null,
+        addresses: string[] | null,
+        limit?: number,
+    ): Promise<MempoolTransactionData[]> {
+        if (address !== null && addresses !== null) {
+            throw new Error(
+                '_fetchPendingTransactions: address and addresses are mutually exclusive',
+            );
+        }
+
+        if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+            throw new Error(`limit must be a positive integer, got ${limit}`);
+        }
+
+        const params: unknown[] = [address, addresses, limit ?? null];
 
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(
             JSONRpcMethods.GET_LATEST_PENDING_TRANSACTIONS,
@@ -1183,14 +1228,35 @@ export abstract class AbstractRpcProvider {
         );
         const rawResult: JsonRpcResult = await this.callPayloadSingle(payload);
 
-        if ('error' in rawResult) {
+        if (rawResult.error != null) {
             throw new Error(
-                `Error fetching latest pending transactions: ${rawResult.error?.message || 'Unknown error'}`,
+                `Error fetching latest pending transactions: ${rawResult.error.message}`,
             );
         }
 
-        const result = (rawResult.result as { transactions?: MempoolTransactionData[] }) ?? {};
-        return result.transactions ?? [];
+        const result = rawResult.result as PendingTransactionsResult | null | undefined;
+
+        if (result == null) {
+            return [];
+        }
+
+        if (typeof result !== 'object' || Array.isArray(result)) {
+            throw new Error(
+                'Error fetching latest pending transactions: unexpected response shape',
+            );
+        }
+
+        if (result.transactions == null) {
+            return [];
+        }
+
+        if (!Array.isArray(result.transactions)) {
+            throw new Error(
+                'Error fetching latest pending transactions: expected transactions to be an array',
+            );
+        }
+
+        return result.transactions;
     }
 
     protected abstract providerUrl(url: string): string;
