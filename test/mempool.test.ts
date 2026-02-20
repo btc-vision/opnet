@@ -5,7 +5,7 @@ import { AddressTypes } from '@btc-vision/transaction';
 import type { JsonRpcPayload } from '../src/providers/interfaces/JSONRpc.js';
 import type { JsonRpcCallResult } from '../src/providers/interfaces/JSONRpcResult.js';
 import type { MempoolInfo } from '../src/providers/interfaces/mempool/MempoolInfo.js';
-import type { MempoolTransactionData } from '../src/providers/interfaces/mempool/MempoolTransactionData.js';
+import type { IMempoolTransactionData } from '../src/providers/interfaces/mempool/MempoolTransactionData.js';
 
 // ============================================================================
 // Mock provider that intercepts _send
@@ -146,7 +146,7 @@ describe('Mempool API - Unit Tests', () => {
     // ========================================================================
 
     describe('getPendingTransaction', () => {
-        const mockTx: MempoolTransactionData = {
+        const mockTx: IMempoolTransactionData = {
             id: 'abc123def456abc123def456abc123def456abc123def456abc123def456abc1',
             firstSeen: '2023-11-14T22:13:20.000Z',
             blockHeight: '0xcf080',
@@ -269,7 +269,7 @@ describe('Mempool API - Unit Tests', () => {
         });
 
         it('should handle Generic transaction', async () => {
-            const nonOPNetTx: MempoolTransactionData = {
+            const nonOPNetTx: IMempoolTransactionData = {
                 ...mockTx,
                 transactionType: 'Generic',
                 theoreticalGasLimit: undefined,
@@ -294,7 +294,7 @@ describe('Mempool API - Unit Tests', () => {
         });
 
         it('should handle PSBT transaction', async () => {
-            const psbtTx: MempoolTransactionData = {
+            const psbtTx: IMempoolTransactionData = {
                 ...mockTx,
                 psbt: true,
             };
@@ -314,7 +314,7 @@ describe('Mempool API - Unit Tests', () => {
         });
 
         it('should handle transaction with multiple inputs and outputs', async () => {
-            const multiTx: MempoolTransactionData = {
+            const multiTx: IMempoolTransactionData = {
                 ...mockTx,
                 inputs: [
                     { transactionId: 'tx1', outputIndex: 0 },
@@ -350,7 +350,7 @@ describe('Mempool API - Unit Tests', () => {
     // ========================================================================
 
     describe('getLatestPendingTransactions', () => {
-        const mockTx1: MempoolTransactionData = {
+        const mockTx1: IMempoolTransactionData = {
             id: 'a000000000000000000000000000000000000000000000000000000000000001',
             firstSeen: '2023-11-14T22:13:20.000Z',
             blockHeight: '0xcf080',
@@ -368,7 +368,7 @@ describe('Mempool API - Unit Tests', () => {
             raw: 'deadbeef01',
         };
 
-        const mockTx2: MempoolTransactionData = {
+        const mockTx2: IMempoolTransactionData = {
             id: 'a000000000000000000000000000000000000000000000000000000000000002',
             firstSeen: '2023-11-14T22:13:21.000Z',
             blockHeight: '0xcf080',
@@ -487,7 +487,7 @@ describe('Mempool API - Unit Tests', () => {
         });
 
         it('should handle many transactions', async () => {
-            const manyTxs: MempoolTransactionData[] = Array.from({ length: 100 }, (_, i) => ({
+            const manyTxs: IMempoolTransactionData[] = Array.from({ length: 100 }, (_, i) => ({
                 id: `a${String(i).padStart(63, '0')}`,
                 firstSeen: new Date(1700000000000 + i * 1000).toISOString(),
                 blockHeight: '0xcf080',
@@ -603,7 +603,7 @@ describe('Mempool API - Unit Tests', () => {
     // ========================================================================
 
     describe('getLatestPendingTransactionsByAddresses', () => {
-        const mockTx1: MempoolTransactionData = {
+        const mockTx1: IMempoolTransactionData = {
             id: 'a000000000000000000000000000000000000000000000000000000000000001',
             firstSeen: '2023-11-14T22:13:20.000Z',
             blockHeight: '0xcf080',
@@ -621,7 +621,7 @@ describe('Mempool API - Unit Tests', () => {
             raw: 'deadbeef01',
         };
 
-        const mockTx2: MempoolTransactionData = {
+        const mockTx2: IMempoolTransactionData = {
             id: 'a000000000000000000000000000000000000000000000000000000000000002',
             firstSeen: '2023-11-14T22:13:21.000Z',
             blockHeight: '0xcf080',

@@ -22,22 +22,17 @@ export interface MempoolTransactionOutput {
 
 /** Shape of the server response for the `GET_LATEST_PENDING_TRANSACTIONS` RPC method. */
 export interface PendingTransactionsResult {
-    readonly transactions?: MempoolTransactionData[];
+    readonly transactions?: IMempoolTransactionData[];
 }
 
 /**
- * Full representation of a pending mempool transaction returned by the API.
+ * Raw wire-format representation of a pending mempool transaction returned by the API.
  *
  * OPNet-specific fields (`theoreticalGasLimit`, `priorityFee`, `from`,
  * `contractAddress`, `calldata`, `bytecode`) are only present when
  * `transactionType` is **not** `Generic`.
- *
- * Use the narrower {@link MempoolOPNetTransactionData},
- * {@link MempoolInteractionTransactionData}, or
- * {@link MempoolDeploymentTransactionData} interfaces when you know the
- * transaction type to get required (non-optional) typings for those fields.
  */
-export interface MempoolTransactionData {
+export interface IMempoolTransactionData {
     /** Internal transaction identifier (txid). */
     readonly id: string;
     /** ISO-8601 timestamp of when the transaction was first seen (e.g. `"2025-02-19T15:30:45.123Z"`). */
@@ -71,8 +66,8 @@ export interface MempoolTransactionData {
     readonly bytecode?: string;
 }
 
-/** OPNet transaction data with required OPNet-specific fields. */
-export interface MempoolOPNetTransactionData extends MempoolTransactionData {
+/** OPNet wire-format transaction data with required OPNet-specific fields. */
+export interface IMempoolOPNetTransactionData extends IMempoolTransactionData {
     readonly theoreticalGasLimit: string;
     readonly priorityFee: string;
     readonly from: string;
@@ -80,16 +75,16 @@ export interface MempoolOPNetTransactionData extends MempoolTransactionData {
     readonly calldata: string;
 }
 
-/** Interaction transaction data (alias for {@link MempoolOPNetTransactionData}). */
-export interface MempoolInteractionTransactionData extends MempoolOPNetTransactionData {}
+/** Interaction wire-format transaction data. */
+export interface IMempoolInteractionTransactionData extends IMempoolOPNetTransactionData {}
 
-/** Deployment transaction data with the required `bytecode` field. */
-export interface MempoolDeploymentTransactionData extends MempoolOPNetTransactionData {
+/** Deployment wire-format transaction data with the required `bytecode` field. */
+export interface IMempoolDeploymentTransactionData extends IMempoolOPNetTransactionData {
     readonly bytecode: string;
 }
 
-/** Union of all possible mempool transaction data shapes. */
-export type AnyMempoolTransactionData =
-    | MempoolTransactionData
-    | MempoolInteractionTransactionData
-    | MempoolDeploymentTransactionData;
+/** Union of all possible raw mempool transaction data shapes. */
+export type AnyIMempoolTransactionData =
+    | IMempoolTransactionData
+    | IMempoolInteractionTransactionData
+    | IMempoolDeploymentTransactionData;

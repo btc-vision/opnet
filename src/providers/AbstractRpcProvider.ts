@@ -59,9 +59,11 @@ import {
     JsonRpcResult,
     JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
+import { MempoolTransactionData } from '../mempool/MempoolTransactionData.js';
+import { MempoolTransactionParser } from '../mempool/MempoolTransactionParser.js';
 import { MempoolInfo } from './interfaces/mempool/MempoolInfo.js';
 import {
-    MempoolTransactionData,
+    IMempoolTransactionData,
     PendingTransactionsResult,
 } from './interfaces/mempool/MempoolTransactionData.js';
 import { AddressesInfo, IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
@@ -1132,7 +1134,9 @@ export abstract class AbstractRpcProvider {
      * @param {string} hash - The transaction txid (64 hex characters)
      * @returns {Promise<MempoolTransactionData | null>} The pending transaction data, or null if not found
      */
-    public async getPendingTransaction(hash: string): Promise<MempoolTransactionData | null> {
+    public async getPendingTransaction(
+        hash: string,
+    ): Promise<MempoolTransactionData<OPNetTransactionTypes> | null> {
         if (!hash || !/^[0-9a-fA-F]{64}$/.test(hash)) {
             throw new Error(
                 `getPendingTransaction: expected a 64-character hex txid, got "${hash}"`,
@@ -1152,7 +1156,10 @@ export abstract class AbstractRpcProvider {
             throw new Error(`Error fetching pending transaction: ${msg}`);
         }
 
-        return (rawResult.result as MempoolTransactionData) ?? null;
+        const raw = rawResult.result as IMempoolTransactionData | null | undefined;
+        if (raw == null) return null;
+
+        return MempoolTransactionParser.parseTransaction(raw);
     }
 
     /**
@@ -1165,7 +1172,7 @@ export abstract class AbstractRpcProvider {
     public async getLatestPendingTransactions(options?: {
         address?: string;
         limit?: number;
-    }): Promise<MempoolTransactionData[]> {
+    }): Promise<MempoolTransactionData<OPNetTransactionTypes>[]> {
         if (options?.address !== undefined) {
             if (this.validateAddress(options.address, this.network) === null) {
                 throw new Error(
@@ -1187,7 +1194,7 @@ export abstract class AbstractRpcProvider {
     public async getLatestPendingTransactionsByAddresses(options: {
         addresses: string[];
         limit?: number;
-    }): Promise<MempoolTransactionData[]> {
+    }): Promise<MempoolTransactionData<OPNetTransactionTypes>[]> {
         if (options.addresses.length === 0) {
             throw new Error(
                 'getLatestPendingTransactionsByAddresses: addresses array must not be empty',
@@ -1209,7 +1216,7 @@ export abstract class AbstractRpcProvider {
         address: string | null,
         addresses: string[] | null,
         limit?: number,
-    ): Promise<MempoolTransactionData[]> {
+    ): Promise<MempoolTransactionData<OPNetTransactionTypes>[]> {
         if (address !== null && addresses !== null) {
             throw new Error(
                 '_fetchPendingTransactions: address and addresses are mutually exclusive',
@@ -1256,7 +1263,7 @@ export abstract class AbstractRpcProvider {
             );
         }
 
-        return result.transactions;
+        return MempoolTransactionParser.parseTransactions(result.transactions);
     }
 
     protected abstract providerUrl(url: string): string;
