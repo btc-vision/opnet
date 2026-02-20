@@ -16,9 +16,12 @@ export class MempoolDeploymentTransactionData extends MempoolOPNetTransactionDat
     public constructor(data: IMempoolDeploymentTransactionData) {
         super(data);
 
-        const bytecodeHex = data.bytecode.startsWith('0x')
-            ? data.bytecode.slice(2)
-            : data.bytecode;
+        if (!data.bytecode) {
+            throw new Error('Bytecode is required for deployment transactions.');
+        }
+
+        const bytecodeHex = data.bytecode.startsWith('0x') ? data.bytecode.slice(2) : data.bytecode;
+
         this.bytecode = fromHex(bytecodeHex);
     }
 }

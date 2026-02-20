@@ -31,14 +31,23 @@ export class MempoolOPNetTransactionData<
     protected constructor(data: IMempoolOPNetTransactionData) {
         super(data);
 
+        if (
+            !data.theoreticalGasLimit ||
+            !data.priorityFee ||
+            !data.from ||
+            !data.contractAddress ||
+            !data.calldata
+        ) {
+            throw new Error('Missing required OPNet transaction fields in mempool data.');
+        }
+
         this.theoreticalGasLimit = BigInt(data.theoreticalGasLimit);
         this.priorityFee = BigInt(data.priorityFee);
         this.from = data.from;
         this.contractAddress = data.contractAddress;
 
-        const calldataHex = data.calldata.startsWith('0x')
-            ? data.calldata.slice(2)
-            : data.calldata;
+        const calldataHex = data.calldata.startsWith('0x') ? data.calldata.slice(2) : data.calldata;
+
         this.calldata = fromHex(calldataHex);
     }
 }

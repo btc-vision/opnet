@@ -31,7 +31,7 @@ export class MempoolTransactionParser {
     ): MempoolTransactionData<OPNetTransactionTypes> {
         if (!data) throw new Error('Mempool transaction data is required');
 
-        switch (data.transactionType) {
+        switch (data.transactionType as OPNetTransactionTypes) {
             case OPNetTransactionTypes.Generic:
                 return new MempoolGenericTransactionData(data);
             case OPNetTransactionTypes.Interaction:
