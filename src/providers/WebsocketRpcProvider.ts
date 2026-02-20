@@ -993,23 +993,26 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         if (!handler) return;
 
         try {
-            const type = this.getType('BlockNotification');
+            const type = this.getType('NewBlockNotification');
             const decoded = type.decode(payload);
             const block = type.toObject(decoded, {
                 longs: String,
                 defaults: true,
             }) as {
                 block_number?: string;
+                blockNumber?: string;
                 block_hash?: string;
-                previous_block_hash?: string;
+                blockHash?: string;
                 timestamp?: string;
+                tx_count?: number;
+                txCount?: number;
             };
 
             const notification: BlockNotification = {
-                blockNumber: BigInt(block.block_number || '0'),
-                blockHash: block.block_hash || '',
-                previousBlockHash: block.previous_block_hash || '',
+                blockNumber: BigInt(block.block_number || block.blockNumber || '0'),
+                blockHash: block.block_hash || block.blockHash || '',
                 timestamp: BigInt(block.timestamp || '0'),
+                txCount: block.tx_count ?? block.txCount ?? 0,
             };
 
             handler(notification);
@@ -1024,17 +1027,21 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         if (!handler) return;
 
         try {
-            const type = this.getType('EpochNotification');
+            const type = this.getType('NewEpochNotification');
             const decoded = type.decode(payload);
             const epoch = type.toObject(decoded, {
                 longs: String,
                 defaults: true,
-            }) as { epoch_number?: string; epoch_hash?: string; timestamp?: string };
+            }) as {
+                epoch_number?: string;
+                epochNumber?: string;
+                epoch_hash?: string;
+                epochHash?: string;
+            };
 
             const notification: EpochNotification = {
-                epochNumber: BigInt(epoch.epoch_number || '0'),
-                epochHash: epoch.epoch_hash || '',
-                timestamp: BigInt(epoch.timestamp || '0'),
+                epochNumber: BigInt(epoch.epoch_number || epoch.epochNumber || '0'),
+                epochHash: epoch.epoch_hash || epoch.epochHash || '',
             };
 
             handler(notification);
@@ -1058,14 +1065,14 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
                 subscription_id?: number;
                 tx_id?: string;
                 txId?: string;
-                is_o_p_net?: boolean;
-                isOPNet?: boolean;
+                transaction_type?: string;
+                transactionType?: string;
                 timestamp?: string;
             };
 
             const notification: MempoolNotification = {
                 txId: mempool.tx_id || mempool.txId || '',
-                isOPNet: mempool.is_o_p_net ?? mempool.isOPNet ?? false,
+                transactionType: mempool.transaction_type || mempool.transactionType || 'Generic',
                 timestamp: BigInt(mempool.timestamp || '0'),
             };
 

@@ -280,7 +280,7 @@ if (tx === null) {
     console.log('Transaction not found in mempool');
 } else {
     console.log(`First seen : ${tx.firstSeen}`);
-    console.log(`OPNet tx   : ${tx.isOPNet}`);
+    console.log(`Type       : ${tx.transactionType}`);
     console.log(`Inputs     : ${tx.inputs.length}`);
     console.log(`Outputs    : ${tx.outputs.length}`);
 }
@@ -332,7 +332,7 @@ const txs = await provider.getLatestPendingTransactions(
 );
 
 for (const tx of txs) {
-    console.log(`${tx.id} — OPNet: ${tx.isOPNet}, fee: ${tx.priorityFee}`);
+    console.log(`${tx.id} — type: ${tx.transactionType}, fee: ${tx.priorityFee}`);
 }
 ```
 
@@ -581,12 +581,23 @@ Unsubscribe from a subscription.
 async unsubscribe(subscriptionType: SubscriptionType): Promise<void>
 ```
 
+### subscribeMempool
+
+Subscribe to new mempool transaction notifications.
+
+```typescript
+async subscribeMempool(
+    handler: SubscriptionHandler<MempoolNotification>
+): Promise<void>
+```
+
 ### SubscriptionType
 
 ```typescript
 enum SubscriptionType {
-    BLOCKS = 1,
-    EPOCHS = 2,
+    BLOCKS = 0,
+    EPOCHS = 1,
+    MEMPOOL = 2,
 }
 ```
 

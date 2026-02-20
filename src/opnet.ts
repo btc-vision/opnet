@@ -32,6 +32,14 @@ export * from './providers/websocket/types/WebSocketProviderTypes.js';
 export * from './providers/websocket/types/WebSocketErrorCodes.js';
 export * from './providers/websocket/types/WebSocketOpcodes.js';
 
+/** Mempool */
+export * from './mempool/MempoolTransactionData.js';
+export * from './mempool/MempoolTransactionParser.js';
+export * from './mempool/decoders/MempoolDeploymentTransactionData.js';
+export * from './mempool/decoders/MempoolGenericTransactionData.js';
+export * from './mempool/decoders/MempoolInteractionTransactionData.js';
+export * from './mempool/decoders/MempoolOPNetTransactionData.js';
+
 /** Providers interfaces */
 export * from './providers/interfaces/ReorgInformation.js';
 export * from './providers/interfaces/mempool/MempoolInfo.js';
