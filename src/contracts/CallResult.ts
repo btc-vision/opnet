@@ -289,6 +289,8 @@ export class CallResult<
                 return networks.bitcoin;
             case NetworkName.Testnet:
                 return networks.testnet;
+            case NetworkName.OpnetTestnet:
+                return networks.opnetTestnet;
             case NetworkName.Regtest:
                 return networks.regtest;
             default:
@@ -658,6 +660,7 @@ export class CallResult<
         const network = this.#provider.network;
         if (network === networks.bitcoin) return NetworkName.Mainnet;
         if (network === networks.testnet) return NetworkName.Testnet;
+        if (network === networks.opnetTestnet) return NetworkName.OpnetTestnet;
         if (network === networks.regtest) return NetworkName.Regtest;
         return NetworkName.Regtest; // Default fallback
     }

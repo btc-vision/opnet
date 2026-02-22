@@ -90,7 +90,7 @@ interface JSONRpcProviderConfig {
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `url` | `string` | *required* | RPC endpoint URL |
-| `network` | `Network` | *required* | Bitcoin network (mainnet/testnet/regtest) |
+| `network` | `Network` | *required* | Bitcoin network (mainnet/testnet/opnetTestnet/regtest) |
 | `timeout` | `number` | `20000` | Request timeout in milliseconds |
 | `fetcherConfigurations` | `Agent.Options` | *see below* | HTTP agent configuration |
 | `useThreadedParsing` | `boolean` | `false` | Parse responses in worker thread |

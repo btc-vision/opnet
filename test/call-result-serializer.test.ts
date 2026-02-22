@@ -122,6 +122,7 @@ describe('NetworkName Enum', () => {
     it('should have correct string values', () => {
         expect(NetworkName.Mainnet).toBe('mainnet');
         expect(NetworkName.Testnet).toBe('testnet');
+        expect(NetworkName.OpnetTestnet).toBe('opnetTestnet');
         expect(NetworkName.Regtest).toBe('regtest');
     });
 });
@@ -261,7 +262,7 @@ describe('CallResultSerializer - Round-Trip Serialization', () => {
     });
 
     it('should preserve network through round-trip for all networks', () => {
-        const networks = [NetworkName.Mainnet, NetworkName.Testnet, NetworkName.Regtest];
+        const networks = [NetworkName.Mainnet, NetworkName.Testnet, NetworkName.OpnetTestnet, NetworkName.Regtest];
 
         for (const network of networks) {
             const data = createMockOfflineData({ network });
@@ -1274,6 +1275,15 @@ describe('CallResult.fromOfflineBuffer', () => {
 
     it('should restore network correctly for regtest', () => {
         const data = createMockOfflineData({ network: NetworkName.Regtest });
+        const buffer = CallResultSerializer.serialize(data);
+
+        const callResult = CallResult.fromOfflineBuffer(buffer);
+
+        expect(callResult).toBeDefined();
+    });
+
+    it('should restore network correctly for opnetTestnet', () => {
+        const data = createMockOfflineData({ network: NetworkName.OpnetTestnet });
         const buffer = CallResultSerializer.serialize(data);
 
         const callResult = CallResult.fromOfflineBuffer(buffer);

@@ -296,6 +296,9 @@ import { networks } from '@btc-vision/bitcoin';
 // Mainnet P2MR addresses start with bc1z
 const isP2MR = isP2MRAddress('bc1z...', networks.bitcoin);
 
+// OPNet Testnet P2MR addresses start with opt1z
+const isOpnetTestnetP2MR = isP2MRAddress('opt1z...', networks.opnetTestnet);
+
 // Regtest P2MR addresses start with bcrt1z
 const isRegtestP2MR = isP2MRAddress('bcrt1z...', networks.regtest);
 ```

@@ -301,7 +301,7 @@ interface OfflineCallResultData {
     readonly result: Uint8Array;             // Simulation result
     readonly accessList: IAccessList;       // Storage access list
     readonly bitcoinFees?: BitcoinFees;     // Current fee rates
-    readonly network: NetworkName;          // mainnet/testnet/regtest
+    readonly network: NetworkName;          // mainnet/testnet/opnetTestnet/regtest
     readonly estimatedGas?: bigint;         // Gas units
     readonly refundedGas?: bigint;          // Refunded gas
     readonly challenge: RawChallenge;       // PoW challenge data

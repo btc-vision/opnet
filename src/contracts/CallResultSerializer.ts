@@ -11,6 +11,7 @@ import { IAccessList } from './interfaces/IAccessList.js';
 export enum NetworkName {
     Mainnet = 'mainnet',
     Testnet = 'testnet',
+    OpnetTestnet = 'opnetTestnet',
     Regtest = 'regtest',
 }
 
@@ -215,6 +216,8 @@ export class CallResultSerializer {
                 return 1;
             case NetworkName.Regtest:
                 return 2;
+            case NetworkName.OpnetTestnet:
+                return 3;
             default:
                 return 2;
         }
@@ -228,6 +231,8 @@ export class CallResultSerializer {
                 return NetworkName.Testnet;
             case 2:
                 return NetworkName.Regtest;
+            case 3:
+                return NetworkName.OpnetTestnet;
             default:
                 return NetworkName.Regtest;
         }

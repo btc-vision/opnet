@@ -10,7 +10,7 @@ const P2MR_DATA_LENGTH = 32;
  *
  * P2MR addresses encode witness version 2 with a 32-byte Merkle root using
  * bech32m.  On mainnet they carry the `bc1z` prefix; on testnet `tb1z`;
- * on regtest `bcrt1z`.
+ * on opnetTestnet `opt1z`; on regtest `bcrt1z`.
  *
  * @param addr    - The address string to test.
  * @param network - The Bitcoin network to validate against.
