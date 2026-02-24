@@ -16,7 +16,7 @@ export class MempoolDeploymentTransactionData extends MempoolOPNetTransactionDat
     public constructor(data: IMempoolDeploymentTransactionData) {
         super(data);
 
-        if (!data.bytecode) {
+        if (data.bytecode === undefined) {
             throw new Error('Bytecode is required for deployment transactions.');
         }
 

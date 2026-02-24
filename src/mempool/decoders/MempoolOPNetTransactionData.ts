@@ -31,12 +31,13 @@ export class MempoolOPNetTransactionData<
     protected constructor(data: IMempoolOPNetTransactionData) {
         super(data);
 
+        console.log(data);
+
         if (
-            !data.theoreticalGasLimit ||
-            !data.priorityFee ||
-            !data.from ||
-            !data.contractAddress ||
-            !data.calldata
+            data.theoreticalGasLimit === undefined ||
+            data.priorityFee === undefined ||
+            data.from === undefined ||
+            data.contractAddress === undefined
         ) {
             throw new Error('Missing required OPNet transaction fields in mempool data.');
         }
