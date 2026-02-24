@@ -31,19 +31,24 @@ export class MempoolOPNetTransactionData<
     protected constructor(data: IMempoolOPNetTransactionData) {
         super(data);
 
-        console.log(data);
+        if (data.theoreticalGasLimit === undefined) {
+            throw new Error('Missing theoreticalGasLimit field in OPNet transaction mempool data.');
+        }
 
-        if (
-            data.theoreticalGasLimit === undefined ||
-            data.priorityFee === undefined ||
-            data.from === undefined ||
-            data.contractAddress === undefined
-        ) {
-            throw new Error('Missing required OPNet transaction fields in mempool data.');
+        if (data.calldata === undefined) {
+            throw new Error('Missing calldata field in OPNet transaction mempool data.');
+        }
+
+        if (data.from === undefined) {
+            throw new Error('Missing from field in OPNet transaction mempool data.');
+        }
+
+        if (data.contractAddress === undefined) {
+            throw new Error('Missing contractAddress field in OPNet transaction mempool data.');
         }
 
         this.theoreticalGasLimit = BigInt(data.theoreticalGasLimit);
-        this.priorityFee = BigInt(data.priorityFee);
+        this.priorityFee = BigInt(data.priorityFee || '0x00');
         this.from = data.from;
         this.contractAddress = data.contractAddress;
 
