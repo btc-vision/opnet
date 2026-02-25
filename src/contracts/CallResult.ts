@@ -1,13 +1,5 @@
 import { QuantumBIP32Interface } from '@btc-vision/bip32';
-import {
-    fromBase64,
-    fromHex,
-    Network,
-    networks,
-    PsbtOutputExtended,
-    Signer,
-    toHex,
-} from '@btc-vision/bitcoin';
+import { fromBase64, fromHex, Network, networks, PsbtOutputExtended, Signer, toHex, } from '@btc-vision/bitcoin';
 import { UniversalSigner } from '@btc-vision/ecpair';
 import {
     Address,
@@ -70,6 +62,8 @@ export interface TransactionParameters {
     readonly revealMLDSAPublicKey?: boolean;
 
     readonly challenge?: ChallengeSolution;
+
+    readonly subtractExtraUTXOFromAmountRequired?: boolean;
 }
 
 export interface UTXOTrackingInfo {
@@ -398,6 +392,8 @@ export class CallResult<
             txVersion: interactionParams.txVersion || 2,
             linkMLDSAPublicKeyToAddress: interactionParams.linkMLDSAPublicKeyToAddress ?? true,
             revealMLDSAPublicKey: interactionParams.revealMLDSAPublicKey ?? false,
+            subtractExtraUTXOFromAmountRequired:
+                interactionParams.subtractExtraUTXOFromAmountRequired ?? false,
         };
 
         const params: IInteractionParameters | InteractionParametersWithoutSigner =
@@ -774,6 +770,7 @@ export class CallResult<
         const totalOuts = addedOuts.reduce((s, o) => s + BigInt(o.value), 0n);
 
         const gasFee = this.bigintMax(this.estimatedSatGas, interactionParams.minGas ?? 0n);
+
         const preWant =
             gasFee +
             priority +
@@ -853,9 +850,27 @@ export class CallResult<
                     : undefined,
         };
 
-        const utxos: UTXO[] = await this.#provider.utxoManager.getUTXOsForAmount(utxoSetting);
+        let utxos: UTXO[] = await this.#provider.utxoManager.getUTXOsForAmount(utxoSetting);
         if (!utxos) {
             throw new Error('No UTXOs found');
+        }
+
+        // Remove any UTXOs that overlap with extraInputs so they never count
+        // toward the funding balance. Without this, acquire's `have` sum
+        // includes value that signTransaction will strip out, causing the
+        // funding transaction to be short or to double-spend the extra inputs.
+        if (interactionParams.extraInputs && interactionParams.extraInputs.length > 0) {
+            utxos = utxos.filter((utxo) => {
+                if (!interactionParams.extraInputs) {
+                    throw new Error('extraInputs should be defined here');
+                }
+
+                return !interactionParams.extraInputs.some(
+                    (extra) =>
+                        extra.transactionId === utxo.transactionId &&
+                        extra.outputIndex === utxo.outputIndex,
+                );
+            });
         }
 
         if (this.csvAddress) {

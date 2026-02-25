@@ -26,6 +26,8 @@ export interface IUTXO extends Omit<RawIUTXO, 'raw'> {
      * The actual raw transaction hex is in the separate `raw[]` array at this index.
      */
     readonly raw: string;
+
+    readonly witnessScript?: string | Uint8Array;
 }
 
 /**
