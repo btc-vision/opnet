@@ -135,6 +135,7 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
             { name: 'maximumAmountIn', type: ABIDataTypes.UINT64 },
             { name: 'minimumAmountOut', type: ABIDataTypes.UINT256 },
             { name: 'activationDelay', type: ABIDataTypes.UINT8 },
+            { name: 'sender', type: ABIDataTypes.BYTES },
         ],
         outputs: [],
         type: BitcoinAbiTypes.Function,
@@ -146,6 +147,19 @@ export const NativeSwapAbi: BitcoinInterfaceAbi = [
     {
         name: 'swap',
         inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
+        outputs: [],
+        type: BitcoinAbiTypes.Function,
+    },
+
+    //=================================================
+    // UPDATE
+    //=================================================
+    {
+        name: 'update',
+        inputs: [
+            { name: 'address', type: ABIDataTypes.ADDRESS },
+            { name: 'calldata', type: ABIDataTypes.BYTES },
+        ],
         outputs: [],
         type: BitcoinAbiTypes.Function,
     },

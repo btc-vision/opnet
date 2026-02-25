@@ -237,6 +237,7 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @param maximumAmountIn - The maximum amount of satoshis to spend.
      * @param minimumAmountOut - The minimum amount of tokens expected out.
      * @param activationDelay - Number of blocks before activation.
+     * @param sender - The address of the sender (bytes).
      * @returns {Promise<ReserveNativeSwap>}
      */
     reserve(
@@ -244,6 +245,7 @@ export interface INativeSwapContract extends IOP_NETContract {
         maximumAmountIn: bigint,
         minimumAmountOut: bigint,
         activationDelay: number,
+        sender: Uint8Array,
     ): Promise<ReserveNativeSwap>;
 
     /**
@@ -438,4 +440,6 @@ export interface INativeSwapContract extends IOP_NETContract {
      * @returns {Promise<GetPoolInfo>}
      */
     getPoolInfo(token: Address): Promise<GetPoolInfoNativeSwap>;
+
+    update(address: Address, calldata: Uint8Array): Promise<CallResult>;
 }
