@@ -1,5 +1,4 @@
-// Browser shim for protobufjs - uses the pre-bundled minimal version
-import protobuf from 'protobufjs/minimal.js';
+import protobuf from 'protobufjs/full';
 
 export default protobuf;
 export const Reader = protobuf.Reader;

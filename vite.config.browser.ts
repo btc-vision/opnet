@@ -79,8 +79,9 @@ export default defineConfig({
             vm: resolve(__dirname, 'src/shims/vm-browser.js'),
             stream: 'stream-browserify',
             buffer: 'buffer',
+            'protobufjs/full': resolve(__dirname, 'node_modules/protobufjs/dist/protobuf.min.js'),
             '@protobufjs/inquire': resolve(__dirname, 'src/shims/inquire-browser.js'),
-            protobufjs: resolve(__dirname, 'node_modules/protobufjs/dist/minimal/protobuf.min.js'),
+            protobufjs: resolve(__dirname, 'src/shims/protobuf-browser.js'),
             // Use source versions for proper tree-shaking (not browser bundles)
             '@btc-vision/transaction': resolve(
                 __dirname,
