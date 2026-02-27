@@ -39,6 +39,8 @@ import {
 } from '../epoch/interfaces/IEpoch.js';
 import { SubmittedEpoch } from '../epoch/SubmittedEpoch.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
+import { MempoolTransactionData } from '../mempool/MempoolTransactionData.js';
+import { MempoolTransactionParser } from '../mempool/MempoolTransactionParser.js';
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
 import { BroadcastedTransaction } from '../transactions/interfaces/BroadcastedTransaction.js';
@@ -59,8 +61,6 @@ import {
     JsonRpcResult,
     JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
-import { MempoolTransactionData } from '../mempool/MempoolTransactionData.js';
-import { MempoolTransactionParser } from '../mempool/MempoolTransactionParser.js';
 import { MempoolInfo } from './interfaces/mempool/MempoolInfo.js';
 import {
     IMempoolTransactionData,
@@ -129,13 +129,16 @@ export abstract class AbstractRpcProvider {
     public async getPublicKeyInfo(
         addressRaw: string | Address,
         isContract: boolean,
-    ): Promise<Address> {
+    ): Promise<Address | undefined> {
         const address = addressRaw.toString();
 
         try {
             const pubKeyInfo = await this.getPublicKeysInfo(address, isContract);
 
-            return pubKeyInfo[address] || pubKeyInfo[address.startsWith('0x') ? address.slice(2) : address];
+            return (
+                pubKeyInfo[address] ||
+                pubKeyInfo[address.startsWith('0x') ? address.slice(2) : address]
+            );
         } catch (e) {
             if (AddressVerificator.isValidPublicKey(address, this.network)) {
                 return Address.fromString(address);
@@ -245,7 +248,9 @@ export abstract class AbstractRpcProvider {
         }
 
         // Check if the solution is all zeros (invalid)
-        const solutionHex = result.solution.startsWith('0x') ? result.solution.slice(2) : result.solution;
+        const solutionHex = result.solution.startsWith('0x')
+            ? result.solution.slice(2)
+            : result.solution;
         if (solutionHex === '0'.repeat(64)) {
             throw new Error(
                 'No valid challenge found. OPNet is probably not active yet on this blockchain.',
@@ -1212,6 +1217,8 @@ export abstract class AbstractRpcProvider {
         return this._fetchPendingTransactions(null, options.addresses, options.limit);
     }
 
+    protected abstract providerUrl(url: string): string;
+
     private async _fetchPendingTransactions(
         address: string | null,
         addresses: string[] | null,
@@ -1265,8 +1272,6 @@ export abstract class AbstractRpcProvider {
 
         return MempoolTransactionParser.parseTransactions(result.transactions);
     }
-
-    protected abstract providerUrl(url: string): string;
 
     private async _gasParameters(): Promise<BlockGasParameters> {
         const payload: JsonRpcPayload = this.buildJsonRpcPayload(JSONRpcMethods.GAS, []);
