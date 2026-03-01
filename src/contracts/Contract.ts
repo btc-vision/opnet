@@ -20,11 +20,7 @@ import { BitcoinAbiTypes } from '../abi/BitcoinAbiTypes.js';
 import { BitcoinInterface } from '../abi/BitcoinInterface.js';
 import { BaseContractProperties } from '../abi/interfaces/BaseContractProperties.js';
 import { BitcoinAbiValue } from '../abi/interfaces/BitcoinAbiValue.js';
-import {
-    BitcoinInterfaceAbi,
-    EventBaseData,
-    FunctionBaseData,
-} from '../abi/interfaces/BitcoinInterfaceAbi.js';
+import { BitcoinInterfaceAbi, EventBaseData, FunctionBaseData, } from '../abi/interfaces/BitcoinInterfaceAbi.js';
 import { BlockGasParameters } from '../block/BlockGasParameters.js';
 import { DecodedCallResult } from '../common/CommonTypes.js';
 import { AbstractRpcProvider } from '../providers/AbstractRpcProvider.js';
@@ -137,7 +133,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
     public get contractAddress(): Promise<Address> {
         if (typeof this.address === 'string') {
             if (!this._rlAddress) {
-                this._rlAddress = this.provider.getPublicKeyInfo(this.address, true);
+                this._rlAddress = this.getAddressOrThrow(this.address, true);
             }
 
             return this._rlAddress;
@@ -145,7 +141,7 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
 
         return Promise.resolve(this.address);
     }
-
+    
     /**
      * Sets the sender of the transaction.
      * @param {Address} sender The sender of the transaction.
@@ -290,6 +286,15 @@ export abstract class IBaseContract<T extends BaseContractProperties> implements
         >;
 
         return this[key];
+    }
+
+    private async getAddressOrThrow(address: string | Address, isContract: boolean): Promise<Address> {
+        const info = await this.provider.getPublicKeyInfo(address, isContract);
+        if(!info) {
+            throw new Error(`Address ${address} not found on the network.`);
+        }
+
+        return info;
     }
 
     /**
