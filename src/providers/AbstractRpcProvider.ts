@@ -23,20 +23,12 @@ import { TransactionOutputFlags } from '../contracts/enums/TransactionFlags.js';
 import { IAccessList } from '../contracts/interfaces/IAccessList.js';
 import { ICallRequestError, ICallResult } from '../contracts/interfaces/ICallResult.js';
 import { IRawContract } from '../contracts/interfaces/IRawContract.js';
-import {
-    ParsedSimulatedTransaction,
-    SimulatedTransaction,
-} from '../contracts/interfaces/SimulatedTransaction.js';
+import { ParsedSimulatedTransaction, SimulatedTransaction, } from '../contracts/interfaces/SimulatedTransaction.js';
 import { Epoch } from '../epoch/Epoch.js';
 import { EpochWithSubmissions } from '../epoch/EpochSubmission.js';
 import { EpochTemplate } from '../epoch/EpochTemplate.js';
 import { EpochSubmissionParams } from '../epoch/interfaces/EpochSubmissionParams.js';
-import {
-    RawEpoch,
-    RawEpochTemplate,
-    RawEpochWithSubmissions,
-    RawSubmittedEpoch,
-} from '../epoch/interfaces/IEpoch.js';
+import { RawEpoch, RawEpochTemplate, RawEpochWithSubmissions, RawSubmittedEpoch, } from '../epoch/interfaces/IEpoch.js';
 import { SubmittedEpoch } from '../epoch/SubmittedEpoch.js';
 import { OPNetTransactionTypes } from '../interfaces/opnet/OPNetTransactionTypes.js';
 import { MempoolTransactionData } from '../mempool/MempoolTransactionData.js';
@@ -62,10 +54,7 @@ import {
     JSONRpcResultError,
 } from './interfaces/JSONRpcResult.js';
 import { MempoolInfo } from './interfaces/mempool/MempoolInfo.js';
-import {
-    IMempoolTransactionData,
-    PendingTransactionsResult,
-} from './interfaces/mempool/MempoolTransactionData.js';
+import { IMempoolTransactionData, PendingTransactionsResult, } from './interfaces/mempool/MempoolTransactionData.js';
 import { AddressesInfo, IPublicKeyInfoResult } from './interfaces/PublicKeyInfo.js';
 import { ReorgInformation } from './interfaces/ReorgInformation.js';
 
@@ -129,20 +118,14 @@ export abstract class AbstractRpcProvider {
     public async getPublicKeyInfo(
         addressRaw: string | Address,
         isContract: boolean,
-    ): Promise<Address> {
+    ): Promise<Address | undefined> {
         const address = addressRaw.toString();
 
         try {
             const pubKeyInfo = await this.getPublicKeysInfo(address, isContract);
-            const addressFinal =
-                pubKeyInfo[address] ||
+
+            return pubKeyInfo[address] ||
                 pubKeyInfo[address.startsWith('0x') ? address.slice(2) : address];
-
-            if (!addressFinal) {
-                throw new Error(`No public key information found for address: ${address}`);
-            }
-
-            return addressFinal;
         } catch (e) {
             if (AddressVerificator.isValidPublicKey(address, this.network)) {
                 return Address.fromString(address);
