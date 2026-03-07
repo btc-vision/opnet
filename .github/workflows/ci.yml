@@ -70,10 +70,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Determine if prerelease
+        id: prerelease
+        run: |
+          VERSION="${{ github.ref_name }}"
+          if [[ "$VERSION" == *"-alpha"* ]] || [[ "$VERSION" == *"-beta"* ]] || [[ "$VERSION" == *"-rc"* ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Generate changelog
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v6
         with:
+          ignorePreReleases: ${{ steps.prerelease.outputs.is_prerelease == 'false' }}
           configurationJson: |
             {
               "categories": [
@@ -170,16 +181,6 @@ jobs:
           git add CHANGELOG.md
           git diff --staged --quiet || git commit -m "docs: update CHANGELOG.md for ${{ github.ref_name }}"
           git push origin HEAD:main || echo "No changes to push or push failed"
-
-      - name: Determine if prerelease
-        id: prerelease
-        run: |
-          VERSION="${{ github.ref_name }}"
-          if [[ "$VERSION" == *"-alpha"* ]] || [[ "$VERSION" == *"-beta"* ]] || [[ "$VERSION" == *"-rc"* ]]; then
-            echo "is_prerelease=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_prerelease=false" >> $GITHUB_OUTPUT
-          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
