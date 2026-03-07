@@ -1,5 +1,55 @@
 # Changelog
 
+## [v1.8.1] - 2026-03-07
+
+### Breaking Changes
+
+- breaking: upgraded deps, refactor buffer -> uint8array for consistency, upgraded eslint v10. ([#134](https://github.com/btc-vision/opnet/pull/134)) by @BlobMaster41
+
+### Features
+
+- Rename targetHash to checksumRoot in epoch interfaces ([#120](https://github.com/btc-vision/opnet/pull/120)) by @BlobMaster41
+- Upgrade/deps add http threader ([#121](https://github.com/btc-vision/opnet/pull/121)) by @BlobMaster41
+- Fix/react native ([#126](https://github.com/btc-vision/opnet/pull/126)) by @BlobMaster41
+- Add constant/payable validation to CallResult ([#131](https://github.com/btc-vision/opnet/pull/131)) by @BlobMaster41
+- breaking: upgraded deps, refactor buffer -> uint8array for consistency, upgraded eslint v10. ([#134](https://github.com/btc-vision/opnet/pull/134)) by @BlobMaster41
+- Normalize hex strings; strip 0x prefix safely ([#135](https://github.com/btc-vision/opnet/pull/135)) by @BlobMaster41
+- feat: add mempool API and WebSocket support ([#136](https://github.com/btc-vision/opnet/pull/136)) by @BlobMaster41
+- Rework/mempool ([#137](https://github.com/btc-vision/opnet/pull/137)) by @BlobMaster41
+
+### Bug Fixes
+
+- Upgrade/deps add http threader ([#121](https://github.com/btc-vision/opnet/pull/121)) by @BlobMaster41
+- Fix/react native ([#126](https://github.com/btc-vision/opnet/pull/126)) by @BlobMaster41
+- Normalize hex strings; strip 0x prefix safely ([#135](https://github.com/btc-vision/opnet/pull/135)) by @BlobMaster41
+
+### Documentation
+
+- Upgrade/deps add http threader ([#121](https://github.com/btc-vision/opnet/pull/121)) by @BlobMaster41
+- Add constant/payable validation to CallResult ([#131](https://github.com/btc-vision/opnet/pull/131)) by @BlobMaster41
+- docs: add ABI flags and update contract APIs ([#132](https://github.com/btc-vision/opnet/pull/132)) by @BlobMaster41
+- breaking: upgraded deps, refactor buffer -> uint8array for consistency, upgraded eslint v10. ([#134](https://github.com/btc-vision/opnet/pull/134)) by @BlobMaster41
+- feat: add mempool API and WebSocket support ([#136](https://github.com/btc-vision/opnet/pull/136)) by @BlobMaster41
+
+### Other Changes
+
+- Refactor ABI interfaces and events for OPNet and stablecoins ([#110](https://github.com/btc-vision/opnet/pull/110)) by @BlobMaster41
+- Update docs for mnemonic-based wallet usage and add tables of contents ([#114](https://github.com/btc-vision/opnet/pull/114)) by @BlobMaster41
+- Bump version to 1.8.0 ([#115](https://github.com/btc-vision/opnet/pull/115)) by @BlobMaster41
+- Add security policy, templates, and extended ABI support ([#118](https://github.com/btc-vision/opnet/pull/118)) by @BlobMaster41
+- update motochef factory and template motochef abi/interface ([#117](https://github.com/btc-vision/opnet/pull/117)) by @icedevera
+- Bump version to 1.8.1-alpha.0 ([#119](https://github.com/btc-vision/opnet/pull/119)) by @BlobMaster41
+- ⬆️(deps-dev): Bump vite-plugin-node-polyfills from 0.24.0 to 0.25.0 in the dev-deps group ([#116](https://github.com/btc-vision/opnet/pull/116)) by @dependabot[bot]
+- Bump btc-vision deps and relax signer type ([#124](https://github.com/btc-vision/opnet/pull/124)) by @BlobMaster41
+- Tuple/implmentation ([#127](https://github.com/btc-vision/opnet/pull/127)) by @BlobMaster41
+- Bump version and disable threaded parsing ([#128](https://github.com/btc-vision/opnet/pull/128)) by @BlobMaster41
+- Added constant to ABI ([#133](https://github.com/btc-vision/opnet/pull/133)) by @BlobMaster41
+- Bump version and relax getPublicKeyInfo return ([#141](https://github.com/btc-vision/opnet/pull/141)) by @BlobMaster41
+- ⬆️(deps): Bump bignumber.js from 9.3.1 to 10.0.2 ([#140](https://github.com/btc-vision/opnet/pull/140)) by @dependabot[bot]
+
+
+
+
 ## [v1.8.1-rc.17] - 2026-02-27
 
 - No changes
