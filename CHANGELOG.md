@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.8.2] - 2026-03-07
+
+- No changes
+
+
 ## [v1.8.1] - 2026-03-07
 
 ### Breaking Changes
