@@ -7,7 +7,8 @@
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-The official client library for building Bitcoin-based applications on OPNet. Full TypeScript support with type-safe contract interactions.
+The official client library for building Bitcoin-based applications on OPNet.
+Full TypeScript support with type-safe contract interactions.
 
 ## Security Audit
 
@@ -26,7 +27,8 @@ The official client library for building Bitcoin-based applications on OPNet. Fu
   </a>
 </p>
 
-This library has been professionally audited by [Verichains](https://verichains.io).
+This library has been professionally audited
+by [Verichains](https://verichains.io).
 
 See [SECURITY.md](./SECURITY.md) for details.
 
@@ -41,18 +43,22 @@ npm install opnet @btc-vision/transaction @btc-vision/bitcoin
 Check out the full documentation in [`/docs`](./docs)!
 
 - [Getting Started](./docs/getting-started/quick-start.md)
-- [Providers](./docs/providers/json-rpc-provider.md) - JSON-RPC & WebSocket connections
-- [Smart Contracts](./docs/contracts/overview.md) - Contract interactions & transactions
+- [Providers](./docs/providers/json-rpc-provider.md) - JSON-RPC & WebSocket
+  connections
+- [Smart Contracts](./docs/contracts/overview.md) - Contract interactions &
+  transactions
 - [UTXO Management](./docs/bitcoin/utxos.md) - Bitcoin UTXO handling
 - [Offline Signing](./docs/contracts/offline-signing.md) - Cold wallet support
-- [ABI Reference](./docs/abi-reference/abi-overview.md) - OP20, OP721, MotoSwap ABIs
+- [ABI Reference](./docs/abi-reference/abi-overview.md) - OP20, OP721, MotoSwap
+  ABIs
 - [API Reference](./docs/api-reference/provider-api.md) - Full API documentation
 
 ## RPC Endpoints
 
-| Network | URL |
-|---------|-----|
+| Network | URL                         |
+|---------|-----------------------------|
 | Mainnet | `https://mainnet.opnet.org` |
+| Testnet | `https://testnet.opnet.org` |
 | Regtest | `https://regtest.opnet.org` |
 
 ## Quick Start
@@ -63,16 +69,17 @@ import { AddressTypes, Mnemonic, MLDSASecurityLevel } from '@btc-vision/transact
 import { networks } from '@btc-vision/bitcoin';
 
 // Connect to OPNet
-const provider = new JSONRpcProvider('https://regtest.opnet.org', networks.regtest);
+const provider = new JSONRpcProvider('https://testnet.opnet.org', networks.
+opnetTestnet);
 
 // Create wallet from mnemonic
 const mnemonic = new Mnemonic(
     'your twenty four word seed phrase goes here ...',
     '',
-    networks.regtest,
+    networks.opnetTestnet,
     MLDSASecurityLevel.LEVEL2,
 );
-const wallet = mnemonic.deriveUnisat(AddressTypes.P2TR, 0);
+const wallet = mnemonic.deriveOPWallet(AddressTypes.P2TR, 0);
 const myAddress = wallet.address;
 
 // Interact with a token contract
@@ -80,7 +87,7 @@ const token = getContract<IOP20Contract>(
     'op1...', // contract address
     OP_20_ABI,
     provider,
-    networks.regtest,
+    networks.opnetTestnet,
     myAddress
 );
 
@@ -105,7 +112,7 @@ const tx = await simulation.sendTransaction({
     refundTo: wallet.p2tr,
     maximumAllowedSatToSpend: 50000n,
     feeRate: 10,
-    network: networks.regtest,
+    network: networks.opnetTestnet,
 });
 
 console.log('TX ID:', tx.transactionId);
@@ -133,12 +140,15 @@ npm run build
 4. Run tests: `npm test`
 5. Submit a pull request
 
-See the [pull request template](./.github/PULL_REQUEST_TEMPLATE.md) for requirements.
+See the [pull request template](./.github/PULL_REQUEST_TEMPLATE.md) for
+requirements.
 
 ## Reporting Issues
 
-- **Bugs**: Use the [bug report template](https://github.com/btc-vision/opnet/issues/new?template=bug_report.yml)
-- **Security**: See [SECURITY.md](./SECURITY.md) - do not open public issues for vulnerabilities
+- **Bugs**: Use
+  the [bug report template](https://github.com/btc-vision/opnet/issues/new?template=bug_report.yml)
+- **Security**: See [SECURITY.md](./SECURITY.md) - do not open public issues for
+  vulnerabilities
 
 ## License
 
