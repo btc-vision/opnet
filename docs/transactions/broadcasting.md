@@ -6,15 +6,7 @@ This guide covers broadcasting raw transactions on OPNet.
 
 After building and signing a transaction, it needs to be broadcast to the network. OPNet supports both single and batch transaction broadcasting.
 
-```mermaid
-flowchart LR
-    A[Signed Transaction] --> B[sendRawTransaction]
-    B --> C[Network]
-    C --> D[BroadcastedTransaction]
-    D --> E{Success?}
-    E -->|Yes| F[Propagated]
-    E -->|No| G[Error]
-```
+![Transaction Broadcast Flow](../svg/tx-broadcast-flow.svg)
 
 ---
 
@@ -76,6 +68,122 @@ interface BroadcastedTransaction {
     result?: string;      // Transaction ID if successful
     error?: string;       // Error message if failed
     peers?: number;       // Number of peers that received the transaction
+}
+```
+
+---
+
+## Send Transaction Package
+
+### Atomic Package Broadcasting
+
+Use `sendRawTransactionPackage` to broadcast an ordered array of raw transactions atomically via Bitcoin Core's `submitpackage` RPC. This is ideal for CPFP (Child-Pays-For-Parent) chains or any set of dependent transactions that must be accepted together.
+
+```typescript
+import { JSONRpcProvider, BroadcastedTransactionPackage } from 'opnet';
+import { networks } from '@btc-vision/bitcoin';
+
+const network = networks.regtest;
+const provider = new JSONRpcProvider({ url: 'https://regtest.opnet.org', network });
+
+const parentTx = '02000000000101...';
+const childTx = '02000000000101...';
+
+// Atomic package submission (uses submitpackage RPC)
+const result: BroadcastedTransactionPackage = await provider.sendRawTransactionPackage(
+    [parentTx, childTx],
+    true,  // isPackage=true (default) for atomic submission
+);
+
+if (result.success) {
+    console.log('Package broadcast successfully!');
+
+    if (result.packageResult) {
+        console.log('Package message:', result.packageResult.package_msg);
+        for (const [wtxid, txResult] of Object.entries(result.packageResult['tx-results'])) {
+            console.log(`  ${wtxid}: txid=${txResult.txid}, vsize=${txResult.vsize}`);
+        }
+    }
+} else {
+    console.log('Package broadcast failed:', result.error);
+}
+```
+
+### Sequential Validated Broadcasting
+
+Set `isPackage=false` to use validated sequential broadcast instead. This first validates all transactions with `testmempoolaccept`, then broadcasts each one individually.
+
+```typescript
+// Sequential broadcast (testmempoolaccept + sendrawtransaction)
+const result = await provider.sendRawTransactionPackage(
+    [tx1, tx2, tx3],
+    false,  // sequential validated broadcast
+);
+
+if (result.success) {
+    if (result.testResults) {
+        for (const test of result.testResults) {
+            console.log(`${test.txid}: allowed=${test.allowed}, vsize=${test.vsize}`);
+        }
+    }
+
+    if (result.sequentialResults) {
+        for (const seq of result.sequentialResults) {
+            console.log(`${seq.txid}: success=${seq.success}`);
+        }
+    }
+}
+
+// Check if the node fell back to sequential from package
+if (result.fellBackToSequential) {
+    console.log('submitpackage failed, fell back to sequential broadcast');
+}
+```
+
+### Method Signature
+
+```typescript
+async sendRawTransactionPackage(
+    txs: string[],          // Raw transactions as hex strings (max 25)
+    isPackage?: boolean     // Use atomic submitpackage (default: true)
+): Promise<BroadcastedTransactionPackage>
+```
+
+---
+
+## BroadcastedTransactionPackage Result
+
+```typescript
+interface BroadcastedTransactionPackage {
+    success: boolean;                              // Whether the overall broadcast succeeded
+    error?: string;                                // Error message if failed
+    testResults?: readonly TestMempoolAcceptResult[]; // From testmempoolaccept validation
+    packageResult?: PackageResult;                 // From submitpackage (atomic path)
+    sequentialResults?: readonly SequentialBroadcastTxResult[]; // Per-tx results (sequential path)
+    fellBackToSequential?: boolean;                // True if submitpackage failed and fell back
+}
+
+interface SequentialBroadcastTxResult {
+    txid: string;          // The txid of the transaction
+    success: boolean;      // Whether the individual transaction was broadcast
+    error?: string;        // Error message if this transaction failed
+}
+
+interface TestMempoolAcceptResult {
+    txid: string;
+    wtxid: string;
+    allowed?: boolean;
+    vsize?: number;
+    fees?: TestMempoolAcceptFees;
+    'package-error'?: string;
+    'reject-reason'?: string;
+    'reject-details'?: string;
+}
+
+interface PackageResult {
+    package_msg: string;
+    'tx-results': { [wtxid: string]: PackageTxResult };
+    'replaced-transactions'?: readonly string[];
 }
 ```
 
