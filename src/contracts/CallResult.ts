@@ -543,7 +543,6 @@ export class CallResult<
 
         // Extract the interaction tx result (second tx in the package)
         const interactionSeqResult = result.sequentialResults?.[1];
-
         if (interactionSeqResult && !interactionSeqResult.success) {
             throw new Error(
                 `Interaction transaction failed: ${interactionSeqResult.error || 'Unknown error'}`,
