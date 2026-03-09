@@ -244,6 +244,13 @@ export class CallResult<
                     ),
                 );
             },
+            sendRawTransactionPackage: () => {
+                return Promise.reject(
+                    new Error(
+                        'Cannot broadcast from offline CallResult. Export signed transaction and broadcast online.',
+                    ),
+                );
+            },
             getCSV1ForAddress: () => {
                 if (!data.csvAddress) {
                     throw new Error('CSV address not available in offline data');
@@ -461,54 +468,83 @@ export class CallResult<
 
     /**
      * Broadcasts a pre-signed interaction transaction.
+     * Uses sendRawTransactionPackage for atomic broadcast when a funding tx is present,
+     * falls back to sendRawTransaction for P2WDA (interaction-only) transactions.
      * @param {SignedInteractionTransactionReceipt} signedTx - The signed transaction data.
      * @returns {Promise<InteractionTransactionReceipt>} The transaction receipt with broadcast results.
      */
     public async sendPresignedTransaction(
         signedTx: SignedInteractionTransactionReceipt,
     ): Promise<InteractionTransactionReceipt> {
-        if (!signedTx.utxoTracking.isP2WDA) {
-            if (!signedTx.fundingTransactionRaw) {
-                throw new Error('Funding transaction not created');
-            }
-
-            const tx1 = await this.#provider.sendRawTransaction(
-                signedTx.fundingTransactionRaw,
+        if (signedTx.utxoTracking.isP2WDA || !signedTx.fundingTransactionRaw) {
+            // P2WDA or no funding tx — broadcast interaction tx alone
+            const tx = await this.#provider.sendRawTransaction(
+                signedTx.interactionTransactionRaw,
                 false,
             );
 
-            if (!tx1 || tx1.error) {
-                throw new Error(`Error sending transaction: ${tx1?.error || 'Unknown error'}`);
+            if (!tx || tx.error) {
+                throw new Error(`Error sending transaction: ${tx?.error || 'Unknown error'}`);
             }
 
-            if (!tx1.success) {
-                throw new Error(`Error sending transaction: ${tx1.result || 'Unknown error'}`);
+            if (!tx.result) {
+                throw new Error('No transaction ID returned');
             }
+
+            if (!tx.success) {
+                throw new Error(`Error sending transaction: ${tx.result || 'Unknown error'}`);
+            }
+
+            this.#processUTXOTracking(signedTx);
+
+            return {
+                interactionAddress: signedTx.interactionAddress,
+                transactionId: tx.result,
+                peerAcknowledgements: tx.peers || 0,
+                newUTXOs: signedTx.nextUTXOs,
+                estimatedFees: signedTx.estimatedFees,
+                challengeSolution: signedTx.challengeSolution,
+                rawTransaction: signedTx.interactionTransactionRaw,
+                fundingUTXOs: signedTx.fundingUTXOs,
+                fundingInputUtxos: signedTx.fundingInputUtxos,
+                compiledTargetScript: signedTx.compiledTargetScript,
+            };
         }
 
-        const tx2 = await this.#provider.sendRawTransaction(
-            signedTx.interactionTransactionRaw,
-            false,
+        // Atomic package broadcast: [funding, interaction]
+        const packageResult = await this.#provider.sendRawTransactionPackage(
+            [signedTx.fundingTransactionRaw, signedTx.interactionTransactionRaw],
+            true,
         );
 
-        if (!tx2 || tx2.error) {
-            throw new Error(`Error sending transaction: ${tx2?.error || 'Unknown error'}`);
+        if (!packageResult.success) {
+            throw new Error(
+                `Error sending transaction package: ${packageResult.error || 'Unknown error'}`,
+            );
         }
 
-        if (!tx2.result) {
-            throw new Error('No transaction ID returned');
+        // Extract the interaction tx result (second tx in the package)
+        const interactionSeqResult = packageResult.sequentialResults?.find(
+            (_r, i) => i === 1,
+        );
+
+        if (interactionSeqResult && !interactionSeqResult.success) {
+            throw new Error(
+                `Interaction transaction failed: ${interactionSeqResult.error || 'Unknown error'}`,
+            );
         }
 
-        if (!tx2.success) {
-            throw new Error(`Error sending transaction: ${tx2.result || 'Unknown error'}`);
-        }
+        const interactionTxId =
+            interactionSeqResult?.txid || signedTx.interactionTransactionRaw;
+
+        const peers = interactionSeqResult?.peers || 0;
 
         this.#processUTXOTracking(signedTx);
 
         return {
             interactionAddress: signedTx.interactionAddress,
-            transactionId: tx2.result,
-            peerAcknowledgements: tx2.peers || 0,
+            transactionId: interactionTxId,
+            peerAcknowledgements: peers,
             newUTXOs: signedTx.nextUTXOs,
             estimatedFees: signedTx.estimatedFees,
             challengeSolution: signedTx.challengeSolution,
