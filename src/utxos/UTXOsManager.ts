@@ -260,7 +260,15 @@ export class UTXOsManager {
             }),
         );
 
-        const combinedUTXOs: UTXOs = (await Promise.all(utxosPromises)).flat();
+        const allUTXOS: UTXOs[] = await Promise.all(utxosPromises);
+
+        const combinedUTXOs: UTXOs = allUTXOS.flat();
+        combinedUTXOs.sort((a, b) => {
+            if (b.value > a.value) return 1;
+            if (b.value < a.value) return -1;
+            return 0;
+        });
+
         const utxoUntilAmount: UTXOs = [];
 
         let currentValue = 0n;
