@@ -1,5 +1,25 @@
 # Changelog
 
+## [v1.8.3] - 2026-03-09
+
+### Features
+
+- fix: prefer normal UTXOs first; add selector ([#142](https://github.com/btc-vision/opnet/pull/142)) by @BlobMaster41
+- feat: submit transaction package ([#143](https://github.com/btc-vision/opnet/pull/143)) by @BlobMaster41
+- fix: support package broadcasts; rename package fields ([#144](https://github.com/btc-vision/opnet/pull/144)) by @BlobMaster41
+
+### Bug Fixes
+
+- fix: prefer normal UTXOs first; add selector ([#142](https://github.com/btc-vision/opnet/pull/142)) by @BlobMaster41
+- fix: support package broadcasts; rename package fields ([#144](https://github.com/btc-vision/opnet/pull/144)) by @BlobMaster41
+
+### Documentation
+
+- feat: submit transaction package ([#143](https://github.com/btc-vision/opnet/pull/143)) by @BlobMaster41
+
+
+
+
 ## [v1.8.2] - 2026-03-07
 
 - No changes
