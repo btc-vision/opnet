@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 1080" font-family="'Segoe UI','Helvetica Neue',sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#1a1520"/>
+      <stop offset="50%" stop-color="#151119"/>
+      <stop offset="100%" stop-color="#0e0b12"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a2233"/>
+      <stop offset="100%" stop-color="#1f1928"/>
+    </linearGradient>
+    <linearGradient id="entryGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="cardShadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <marker id="arrW" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#7c6f8a" stroke-width="1.2" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrG" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#4ade80" stroke-width="1.2" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrR" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#fb7185" stroke-width="1.2" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrO" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <path d="M0,0 L7,2.5 L0,5" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="860" height="1080" fill="url(#bg)" rx="16"/>
+
+  <!-- Decorative ambient circles -->
+  <circle cx="780" cy="80" r="120" fill="#a855f7" opacity="0.03"/>
+  <circle cx="60" cy="950" r="160" fill="#4ade80" opacity="0.025"/>
+  <circle cx="430" cy="540" r="300" fill="#a855f7" opacity="0.012"/>
+
+  <!-- ====== TITLE ====== -->
+  <text x="430" y="52" text-anchor="middle" fill="#e8dff0" font-size="22" font-weight="600" letter-spacing="0.5">How Transactions Get Broadcast</text>
+  <text x="430" y="76" text-anchor="middle" fill="#7c6f8a" font-size="13">From your wallet to the Bitcoin network</text>
+
+  <!-- ====== ENTRY PILL ====== -->
+  <rect x="295" y="104" width="270" height="52" rx="26" fill="url(#entryGrad)" filter="url(#softGlow)" opacity="0.9"/>
+  <text x="430" y="127" text-anchor="middle" fill="#fff" font-size="14" font-weight="600">You submit transactions</text>
+  <text x="430" y="145" text-anchor="middle" fill="#ede2ff" font-size="11" opacity="0.85">one or more, as an ordered batch</text>
+
+  <!-- Arrow down -->
+  <line x1="430" y1="156" x2="430" y2="194" stroke="#7c6f8a" stroke-width="1.5" marker-end="url(#arrW)"/>
+
+  <!-- ====== DECISION: How many? ====== -->
+  <rect x="320" y="198" width="220" height="48" rx="24" fill="url(#card)" stroke="#3d3350" stroke-width="1" filter="url(#cardShadow)"/>
+  <text x="430" y="220" text-anchor="middle" fill="#d4bfea" font-size="13" font-weight="500">How many transactions?</text>
+  <text x="430" y="237" text-anchor="middle" fill="#7c6f8a" font-size="11">checking the batch size</text>
+
+  <!-- ====== PATH A: Just One (left branch) ====== -->
+  <line x1="320" y1="222" x2="150" y2="222" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <rect x="128" y="206" width="48" height="20" rx="10" fill="#1a2e1a"/>
+  <text x="152" y="220" text-anchor="middle" fill="#4ade80" font-size="10" font-weight="600">JUST 1</text>
+
+  <rect x="22" y="258" width="220" height="120" rx="14" fill="url(#card)" stroke="#2d4a2d" stroke-width="1" filter="url(#cardShadow)"/>
+  <circle cx="50" cy="286" r="12" fill="#1a2e1a" stroke="#4ade80" stroke-width="1"/>
+  <text x="50" y="291" text-anchor="middle" fill="#4ade80" font-size="14">1</text>
+  <text x="72" y="291" fill="#d4bfea" font-size="13" font-weight="500">Simple Path</text>
+  <line x1="38" y1="306" x2="226" y2="306" stroke="#2d4a2d" stroke-width="0.7"/>
+  <text x="132" y="326" text-anchor="middle" fill="#b8a5cc" font-size="11.5">First, validate the transaction</text>
+  <text x="132" y="344" text-anchor="middle" fill="#b8a5cc" font-size="11.5">against the mempool.</text>
+  <text x="132" y="365" text-anchor="middle" fill="#b8a5cc" font-size="11.5">If it passes, send it out.</text>
+
+  <line x1="132" y1="378" x2="132" y2="410" stroke="#4ade80" stroke-width="1.2" marker-end="url(#arrG)"/>
+  <rect x="82" y="414" width="100" height="30" rx="15" fill="#0f2a14" stroke="#22c55e" stroke-width="1"/>
+  <text x="132" y="434" text-anchor="middle" fill="#4ade80" font-size="12" font-weight="500">Done</text>
+
+  <!-- ====== Multiple txs (down branch) ====== -->
+  <line x1="430" y1="246" x2="430" y2="294" stroke="#7c6f8a" stroke-width="1.5" marker-end="url(#arrW)"/>
+  <rect x="380" y="252" width="82" height="20" rx="10" fill="#1f1928"/>
+  <text x="421" y="266" text-anchor="middle" fill="#b8a5cc" font-size="10">MULTIPLE</text>
+
+  <!-- ====== DECISION: Package mode? ====== -->
+  <rect x="310" y="298" width="240" height="48" rx="24" fill="url(#card)" stroke="#3d3350" stroke-width="1" filter="url(#cardShadow)"/>
+  <text x="430" y="320" text-anchor="middle" fill="#d4bfea" font-size="13" font-weight="500">Try package mode?</text>
+  <text x="430" y="337" text-anchor="middle" fill="#7c6f8a" font-size="11">on by default</text>
+
+  <!-- ====== PATH B: Package Submission (right branch) ====== -->
+  <line x1="550" y1="322" x2="618" y2="322" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <rect x="560" y="306" width="44" height="20" rx="10" fill="#1a2e1a"/>
+  <text x="582" y="320" text-anchor="middle" fill="#4ade80" font-size="10" font-weight="600">YES</text>
+
+  <rect x="622" y="270" width="216" height="142" rx="14" fill="url(#card)" stroke="#2d4a2d" stroke-width="1" filter="url(#cardShadow)"/>
+  <circle cx="650" cy="298" r="12" fill="#1a2e1a" stroke="#4ade80" stroke-width="1"/>
+  <text x="650" y="303" text-anchor="middle" fill="#4ade80" font-size="14">2</text>
+  <text x="672" y="303" fill="#d4bfea" font-size="13" font-weight="500">Package Relay</text>
+  <line x1="638" y1="318" x2="822" y2="318" stroke="#2d4a2d" stroke-width="0.7"/>
+  <text x="730" y="339" text-anchor="middle" fill="#b8a5cc" font-size="11.5">Submit all transactions as</text>
+  <text x="730" y="357" text-anchor="middle" fill="#b8a5cc" font-size="11.5">a single atomic package.</text>
+  <text x="730" y="378" text-anchor="middle" fill="#b8a5cc" font-size="11.5">The network validates them</text>
+  <text x="730" y="396" text-anchor="middle" fill="#b8a5cc" font-size="11.5">together, including fees.</text>
+
+  <!-- Package success -->
+  <line x1="838" y1="341" x2="852" y2="341" stroke="#4ade80" stroke-width="1"/>
+  <line x1="852" y1="341" x2="852" y2="430" stroke="#4ade80" stroke-width="1"/>
+  <line x1="852" y1="430" x2="790" y2="430" stroke="#4ade80" stroke-width="1.2" marker-end="url(#arrG)"/>
+  <rect x="690" y="416" width="95" height="30" rx="15" fill="#0f2a14" stroke="#22c55e" stroke-width="1"/>
+  <text x="737" y="436" text-anchor="middle" fill="#4ade80" font-size="12" font-weight="500">Done</text>
+  <text x="848" y="390" fill="#4ade80" font-size="10" font-weight="500">OK</text>
+
+  <!-- Package failure: fallback -->
+  <line x1="730" y1="412" x2="730" y2="482" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrO)"/>
+  <rect x="688" y="454" width="84" height="20" rx="10" fill="#2e2510"/>
+  <text x="730" y="468" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">FAILED</text>
+
+  <rect x="640" y="486" width="180" height="56" rx="12" fill="#2a2010" stroke="#92400e" stroke-width="1" filter="url(#cardShadow)"/>
+  <text x="730" y="510" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="500">Falls back gracefully</text>
+  <text x="730" y="528" text-anchor="middle" fill="#a08050" font-size="10.5">tries the one-by-one approach</text>
+
+  <!-- Fallback arrow merges into sequential path -->
+  <path d="M640,514 Q560,560 500,580" fill="none" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrO)"/>
+
+  <!-- ====== PATH C: Sequential (down from package decision) ====== -->
+  <line x1="430" y1="346" x2="430" y2="488" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arrR)"/>
+  <rect x="408" y="352" width="38" height="20" rx="10" fill="#2e1a1f"/>
+  <text x="427" y="366" text-anchor="middle" fill="#fb7185" font-size="10" font-weight="600">NO</text>
+
+  <!-- Merge zone label -->
+  <rect x="126" y="480" width="410" height="28" rx="14" fill="none" stroke="#3d3350" stroke-width="0.8" stroke-dasharray="6,4"/>
+  <text x="331" y="499" text-anchor="middle" fill="#7c6f8a" font-size="10.5">One-by-one approach (or fallback from package failure)</text>
+
+  <!-- Step 3: Validate all -->
+  <rect x="250" y="530" width="290" height="100" rx="14" fill="url(#card)" stroke="#3d2d4a" stroke-width="1" filter="url(#cardShadow)"/>
+  <circle cx="282" cy="560" r="14" fill="#2a1a38" stroke="#a855f7" stroke-width="1"/>
+  <text x="282" y="565" text-anchor="middle" fill="#c084fc" font-size="13" font-weight="600">3</text>
+  <text x="306" y="565" fill="#d4bfea" font-size="13" font-weight="500">Validate Everything First</text>
+  <line x1="266" y1="580" x2="524" y2="580" stroke="#3d2d4a" stroke-width="0.7"/>
+  <text x="395" y="600" text-anchor="middle" fill="#b8a5cc" font-size="11.5">Check every transaction against</text>
+  <text x="395" y="618" text-anchor="middle" fill="#b8a5cc" font-size="11.5">the mempool before sending any.</text>
+
+  <line x1="395" y1="630" x2="395" y2="668" stroke="#7c6f8a" stroke-width="1.5" marker-end="url(#arrW)"/>
+
+  <rect x="290" y="672" width="210" height="42" rx="21" fill="url(#card)" stroke="#3d3350" stroke-width="1"/>
+  <text x="395" y="698" text-anchor="middle" fill="#d4bfea" font-size="12.5">Did they all pass?</text>
+
+  <!-- Fail left -->
+  <line x1="290" y1="693" x2="180" y2="693" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arrR)"/>
+  <rect x="236" y="680" width="42" height="18" rx="9" fill="#2e1a1f"/>
+  <text x="257" y="693" text-anchor="middle" fill="#fb7185" font-size="10" font-weight="600">NO</text>
+
+  <rect x="36" y="676" width="140" height="42" rx="12" fill="#2a0f15" stroke="#9f1239" stroke-width="1" filter="url(#cardShadow)"/>
+  <text x="106" y="695" text-anchor="middle" fill="#fb7185" font-size="12" font-weight="500">Rejected</text>
+  <text x="106" y="710" text-anchor="middle" fill="#885060" font-size="10">tells you what failed</text>
+
+  <!-- Pass down -->
+  <line x1="395" y1="714" x2="395" y2="758" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <rect x="370" y="722" width="44" height="18" rx="9" fill="#1a2e1a"/>
+  <text x="392" y="735" text-anchor="middle" fill="#4ade80" font-size="10" font-weight="600">YES</text>
+
+  <!-- Step 4: Send one by one -->
+  <rect x="250" y="762" width="290" height="118" rx="14" fill="url(#card)" stroke="#3d2d4a" stroke-width="1" filter="url(#cardShadow)"/>
+  <circle cx="282" cy="792" r="14" fill="#2a1a38" stroke="#a855f7" stroke-width="1"/>
+  <text x="282" y="797" text-anchor="middle" fill="#c084fc" font-size="13" font-weight="600">4</text>
+  <text x="306" y="797" fill="#d4bfea" font-size="13" font-weight="500">Send One by One</text>
+  <line x1="266" y1="812" x2="524" y2="812" stroke="#3d2d4a" stroke-width="0.7"/>
+  <text x="395" y="832" text-anchor="middle" fill="#b8a5cc" font-size="11.5">Send each transaction in order.</text>
+  <text x="395" y="852" text-anchor="middle" fill="#b8a5cc" font-size="11.5">If one fails, stop immediately</text>
+  <text x="395" y="870" text-anchor="middle" fill="#b8a5cc" font-size="11.5">since later ones depend on it.</text>
+
+  <!-- Fail branch from send loop -->
+  <line x1="250" y1="840" x2="180" y2="840" stroke="#fb7185" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <rect x="36" y="822" width="140" height="42" rx="12" fill="#2a0f15" stroke="#9f1239" stroke-width="1" filter="url(#cardShadow)"/>
+  <text x="106" y="841" text-anchor="middle" fill="#fb7185" font-size="12" font-weight="500">Stopped early</text>
+  <text x="106" y="856" text-anchor="middle" fill="#885060" font-size="10">partial results returned</text>
+
+  <!-- Loop indicator -->
+  <path d="M540,800 C574,800 574,864 540,864" fill="none" stroke="#7c6f8a" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="582" y="836" fill="#7c6f8a" font-size="10">repeats</text>
+
+  <!-- Success from send loop -->
+  <line x1="395" y1="880" x2="395" y2="920" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arrG)"/>
+
+  <!-- Final success -->
+  <rect x="335" y="924" width="120" height="36" rx="18" fill="#0f2a14" stroke="#22c55e" stroke-width="1.2" filter="url(#softGlow)"/>
+  <text x="395" y="948" text-anchor="middle" fill="#4ade80" font-size="13" font-weight="600">All sent</text>
+
+  <!-- ====== LEGEND ====== -->
+  <rect x="50" y="990" width="760" height="70" rx="14" fill="#1a1520" stroke="#2a2233" stroke-width="1"/>
+  <circle cx="100" cy="1025" r="8" fill="#0f2a14" stroke="#22c55e" stroke-width="1"/>
+  <text x="118" y="1030" fill="#9a8aaa" font-size="11">Success</text>
+  <circle cx="220" cy="1025" r="8" fill="#2a0f15" stroke="#f43f5e" stroke-width="1"/>
+  <text x="238" y="1030" fill="#9a8aaa" font-size="11">Failure</text>
+  <circle cx="340" cy="1025" r="8" fill="#2a2010" stroke="#f59e0b" stroke-width="1"/>
+  <text x="358" y="1030" fill="#9a8aaa" font-size="11">Fallback</text>
+  <line x1="460" y1="1025" x2="490" y2="1025" stroke="#7c6f8a" stroke-width="1.5" marker-end="url(#arrW)"/>
+  <text x="500" y="1030" fill="#9a8aaa" font-size="11">Flow</text>
+  <line x1="570" y1="1025" x2="600" y2="1025" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrO)"/>
+  <text x="610" y="1030" fill="#9a8aaa" font-size="11">Graceful retry</text>
+</svg>
