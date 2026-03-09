@@ -424,6 +424,13 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
                     3: params[1] ?? false,
                 };
 
+            case JSONRpcMethods.BROADCAST_TRANSACTION_PACKAGE:
+                // BroadcastTransactionPackageRequest: requestId=1, transactions=2, isPackage=3
+                return {
+                    2: params[0],
+                    3: params[1] ?? true,
+                };
+
             case JSONRpcMethods.TRANSACTION_PREIMAGE:
                 return {};
 
@@ -661,6 +668,23 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
                             response[txField.name] as Record<string, unknown>,
                         );
                     }
+                }
+                return response;
+            }
+
+            case JSONRpcMethods.BROADCAST_TRANSACTION_PACKAGE: {
+                // Parse JSON-serialized complex fields back into objects
+                if (typeof response['testResultsJson'] === 'string') {
+                    response['testResults'] = JSON.parse(
+                        response['testResultsJson'],
+                    ) as unknown[];
+                    delete response['testResultsJson'];
+                }
+                if (typeof response['packageResultJson'] === 'string') {
+                    response['packageResult'] = JSON.parse(
+                        response['packageResultJson'],
+                    ) as Record<string, unknown>;
+                    delete response['packageResultJson'];
                 }
                 return response;
             }

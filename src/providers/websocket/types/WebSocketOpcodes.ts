@@ -19,6 +19,7 @@ export enum WebSocketRequestOpcode {
     GET_TRANSACTION_BY_HASH = 0x20,
     GET_TRANSACTION_RECEIPT = 0x21,
     BROADCAST_TRANSACTION = 0x22,
+    BROADCAST_TRANSACTION_PACKAGE = 0x27,
     GET_PREIMAGE = 0x23,
 
     // Mempool Methods (0x24 - 0x2F)
@@ -80,6 +81,7 @@ export enum WebSocketResponseOpcode {
     TRANSACTION = 0xa0,
     TRANSACTION_RECEIPT = 0xa1,
     BROADCAST_RESULT = 0xa2,
+    BROADCAST_PACKAGE_RESULT = 0xa7,
     PREIMAGE = 0xa3,
     /** Response containing aggregate mempool statistics. */
     MEMPOOL_INFO = 0xa4,

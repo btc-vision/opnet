@@ -218,6 +218,22 @@ Broadcast multiple transactions.
 sendRawTransactions(txs: string[]): Promise<BroadcastedTransaction[]>
 ```
 
+### sendRawTransactionPackage
+
+Broadcast a package of raw transactions atomically via Bitcoin Core's `submitpackage` RPC, or fall back to validated sequential broadcast.
+
+```typescript
+sendRawTransactionPackage(
+    txs: string[],
+    isPackage?: boolean
+): Promise<BroadcastedTransactionPackage>
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `txs` | `string[]` | Required | Raw transactions as hex strings (max 25) |
+| `isPackage` | `boolean` | `true` | Use atomic `submitpackage` (`true`) or validated sequential broadcast (`false`) |
+
 ### getChallenge
 
 Get the current PoW challenge.

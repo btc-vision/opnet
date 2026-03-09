@@ -274,6 +274,96 @@ interface BroadcastedTransaction {
 }
 ```
 
+### BroadcastedTransactionPackage
+
+Result of a package broadcast via [`sendRawTransactionPackage()`](./provider-api.md#sendrawtransactionpackage).
+
+```typescript
+interface BroadcastedTransactionPackage {
+    /** Whether the overall package broadcast succeeded. */
+    readonly success: boolean;
+    /** Error message if the broadcast failed. */
+    readonly error?: string;
+    /** Present when testMempoolAccept was used (sequential or single tx path). */
+    readonly testResults?: readonly TestMempoolAcceptResult[];
+    /** Present when submitPackage was used successfully. */
+    readonly packageResult?: PackageResult;
+    /** Per-transaction results for sequential or single tx broadcasts. */
+    readonly sequentialResults?: readonly SequentialBroadcastTxResult[];
+    /** True when submitPackage failed and the node fell back to sequential broadcast. */
+    readonly fellBackToSequential?: boolean;
+}
+```
+
+### SequentialBroadcastTxResult
+
+```typescript
+interface SequentialBroadcastTxResult {
+    readonly txid: string;
+    readonly success: boolean;
+    readonly error?: string;
+}
+```
+
+### TestMempoolAcceptResult
+
+```typescript
+interface TestMempoolAcceptResult {
+    readonly txid: string;
+    readonly wtxid: string;
+    readonly allowed?: boolean;
+    readonly vsize?: number;
+    readonly 'package-error'?: string;
+    readonly 'reject-reason'?: string;
+    readonly 'reject-details'?: string;
+    readonly fees?: TestMempoolAcceptFees;
+}
+```
+
+### TestMempoolAcceptFees
+
+```typescript
+interface TestMempoolAcceptFees {
+    readonly base: number;
+    readonly 'effective-feerate': number;
+    readonly 'effective-includes': readonly string[];
+}
+```
+
+### PackageResult
+
+```typescript
+interface PackageResult {
+    readonly package_msg: string;
+    readonly 'tx-results': {
+        readonly [wtxid: string]: PackageTxResult;
+    };
+    readonly 'replaced-transactions'?: readonly string[];
+}
+```
+
+### PackageTxResult
+
+```typescript
+interface PackageTxResult {
+    readonly txid: string;
+    readonly 'other-wtxid'?: string;
+    readonly vsize?: number;
+    readonly fees?: PackageTxFees;
+    readonly error?: string;
+}
+```
+
+### PackageTxFees
+
+```typescript
+interface PackageTxFees {
+    readonly base: number;
+    readonly 'effective-feerate'?: number;
+    readonly 'effective-includes'?: readonly string[];
+}
+```
+
 ---
 
 ## Contract Types

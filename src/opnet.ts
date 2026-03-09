@@ -102,6 +102,7 @@ export * from './storage/StoredValue.js';
 /** Interfaces */
 export * from './contracts/interfaces/IRawContract.js';
 export * from './transactions/interfaces/BroadcastedTransaction.js';
+export * from './transactions/interfaces/BroadcastedTransactionPackage.js';
 export * from './transactions/interfaces/ITransaction.js';
 export * from './transactions/interfaces/ITransactionReceipt.js';
 export * from './transactions/metadata/TransactionReceipt.js';

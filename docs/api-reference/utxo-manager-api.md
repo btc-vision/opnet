@@ -53,11 +53,13 @@ async getUTXOsForAmount(
 interface RequestUTXOsParamsWithAmount extends RequestUTXOsParams {
     readonly amount: bigint;                    // Amount to cover
     readonly throwErrors?: boolean;             // Throw if insufficient
-    readonly csvAddress?: string;               // CSV address for priority
-    readonly maxUTXOs?: number;                 // Max UTXOs to select
+    readonly csvAddress?: string;               // CSV address as fallback
+    readonly maxUTXOs?: number;                 // Max UTXOs to select (default: 5000)
     readonly throwIfUTXOsLimitReached?: boolean; // Throw if limit reached
 }
 ```
+
+> **Note:** `getUTXOsForAmount` prioritizes normal UTXOs first and only falls back to CSV UTXOs if normal ones cannot cover the requested amount. UTXOs are sorted by value descending (largest first) for greedy selection.
 
 ### spentUTXO
 
