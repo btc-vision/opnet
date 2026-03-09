@@ -1,13 +1,5 @@
 import { QuantumBIP32Interface } from '@btc-vision/bip32';
-import {
-    fromBase64,
-    fromHex,
-    Network,
-    networks,
-    PsbtOutputExtended,
-    Signer,
-    toHex,
-} from '@btc-vision/bitcoin';
+import { fromBase64, fromHex, Network, networks, PsbtOutputExtended, Signer, toHex, } from '@btc-vision/bitcoin';
 import { UniversalSigner } from '@btc-vision/ecpair';
 import {
     Address,
@@ -24,6 +16,7 @@ import {
 } from '@btc-vision/transaction';
 import { UTXO } from '../bitcoin/UTXOs.js';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
+import { PackageResult } from '../transactions/interfaces/BroadcastedTransactionPackage.js';
 import { decodeRevertData } from '../utils/RevertDecoder.js';
 import { RequestUTXOsParamsWithAmount } from '../utxos/interfaces/IUTXOsManager.js';
 import { CallResultSerializer, NetworkName } from './CallResultSerializer.js';
@@ -109,6 +102,23 @@ export interface InteractionTransactionReceipt {
     readonly fundingUTXOs: UTXO[];
     readonly fundingInputUtxos: UTXO[];
     readonly compiledTargetScript: string | null;
+}
+
+function extractPackageFailures(packageResult: PackageResult): string[] {
+    const failures: string[] = [];
+    const results = packageResult.txResults;
+
+    for (const [submittedTxid, result] of Object.entries(results)) {
+        if (result.error) {
+            failures.push(`tx ${submittedTxid} failed: ${result.error}`);
+        }
+    }
+
+    if (failures.length === 0 && packageResult.packageMsg !== 'success') {
+        failures.push(`package rejected: ${packageResult.packageMsg}`);
+    }
+
+    return failures;
 }
 
 /**
@@ -517,6 +527,12 @@ export class CallResult<
             true,
         );
 
+        const packageTxsResult = packageResult.packageResult as PackageResult;
+        const failures = extractPackageFailures(packageTxsResult);
+        if (failures.length > 0) {
+            throw new Error(`Transaction package failed:\n${failures.join('\n')}`);
+        }
+
         if (!packageResult.success) {
             throw new Error(
                 `Error sending transaction package: ${packageResult.error || 'Unknown error'}`,
@@ -524,9 +540,7 @@ export class CallResult<
         }
 
         // Extract the interaction tx result (second tx in the package)
-        const interactionSeqResult = packageResult.sequentialResults?.find(
-            (_r, i) => i === 1,
-        );
+        const interactionSeqResult = packageResult.sequentialResults?.find((_r, i) => i === 1);
 
         if (interactionSeqResult && !interactionSeqResult.success) {
             throw new Error(
@@ -534,8 +548,7 @@ export class CallResult<
             );
         }
 
-        const interactionTxId =
-            interactionSeqResult?.txid || signedTx.interactionTransactionRaw;
+        const interactionTxId = interactionSeqResult?.txid || signedTx.interactionTransactionRaw;
 
         const peers = interactionSeqResult?.peers || 0;
 
