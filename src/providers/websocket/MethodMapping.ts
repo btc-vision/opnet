@@ -60,6 +60,12 @@ export const METHOD_MAPPINGS: Partial<Record<JSONRpcMethods, MethodMapping>> = {
         requestType: 'BroadcastTransactionRequest',
         responseType: 'BroadcastTransactionResponse',
     },
+    [JSONRpcMethods.BROADCAST_TRANSACTION_PACKAGE]: {
+        requestOpcode: WebSocketRequestOpcode.BROADCAST_TRANSACTION_PACKAGE,
+        responseOpcode: WebSocketResponseOpcode.BROADCAST_PACKAGE_RESULT,
+        requestType: 'BroadcastTransactionPackageRequest',
+        responseType: 'BroadcastTransactionPackageResponse',
+    },
     [JSONRpcMethods.TRANSACTION_PREIMAGE]: {
         requestOpcode: WebSocketRequestOpcode.GET_PREIMAGE,
         responseOpcode: WebSocketResponseOpcode.PREIMAGE,

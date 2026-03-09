@@ -36,6 +36,7 @@ import { MempoolTransactionParser } from '../mempool/MempoolTransactionParser.js
 import { IStorageValue } from '../storage/interfaces/IStorageValue.js';
 import { StoredValue } from '../storage/StoredValue.js';
 import { BroadcastedTransaction } from '../transactions/interfaces/BroadcastedTransaction.js';
+import { BroadcastedTransactionPackage } from '../transactions/interfaces/BroadcastedTransactionPackage.js';
 import { ITransaction } from '../transactions/interfaces/ITransaction.js';
 import { ITransactionReceipt } from '../transactions/interfaces/ITransactionReceipt.js';
 import { TransactionReceipt } from '../transactions/metadata/TransactionReceipt.js';
@@ -706,6 +707,39 @@ export abstract class AbstractRpcProvider {
         return rawTxs.map((rawTx) => {
             return rawTx.result as BroadcastedTransaction;
         });
+    }
+
+    /**
+     * Broadcast a package of raw transactions atomically.
+     * @description Submits an ordered array of raw transactions via Bitcoin Core's submitpackage
+     * RPC for atomic acceptance, or falls back to validated sequential broadcast.
+     * @param {string[]} txs The raw transactions to send as hex strings (max 25)
+     * @param {boolean} [isPackage=true] Whether to use atomic package submission (submitpackage)
+     *        or validated sequential broadcast (testmempoolaccept + sendrawtransaction)
+     * @returns {Promise<BroadcastedTransactionPackage>} The result of the package broadcast
+     * @throws {Error} If something went wrong while broadcasting the package
+     */
+    public async sendRawTransactionPackage(
+        txs: string[],
+        isPackage: boolean = true,
+    ): Promise<BroadcastedTransactionPackage> {
+        if (!txs.length) {
+            throw new Error('sendRawTransactionPackage: txs array must not be empty');
+        }
+
+        for (let i = 0; i < txs.length; i++) {
+            if (!/^[0-9A-Fa-f]+$/.test(txs[i])) {
+                throw new Error(`sendRawTransactionPackage: txs[${i}] is not a valid hex string`);
+            }
+        }
+
+        const payload: JsonRpcPayload = this.buildJsonRpcPayload(
+            JSONRpcMethods.BROADCAST_TRANSACTION_PACKAGE,
+            [txs, isPackage],
+        );
+
+        const result: JsonRpcResult = await this.callPayloadSingle(payload);
+        return result.result as BroadcastedTransactionPackage;
     }
 
     /**
