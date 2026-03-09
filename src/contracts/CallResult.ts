@@ -521,26 +521,28 @@ export class CallResult<
             };
         }
 
-        // Atomic package broadcast: [funding, interaction]
-        const packageResult = await this.#provider.sendRawTransactionPackage(
+        // Package broadcast: [funding, interaction]
+        const result = await this.#provider.sendRawTransactionPackage(
             [signedTx.fundingTransactionRaw, signedTx.interactionTransactionRaw],
             true,
         );
 
-        const packageTxsResult = packageResult.packageResult as PackageResult;
-        const failures = extractPackageFailures(packageTxsResult);
-        if (failures.length > 0) {
-            throw new Error(`Transaction package failed:\n${failures.join('\n')}`);
-        }
-
-        if (!packageResult.success) {
+        if (!result.success) {
             throw new Error(
-                `Error sending transaction package: ${packageResult.error || 'Unknown error'}`,
+                `Error sending transaction package: ${result.error || 'Unknown error'}`,
             );
         }
 
+        // Check submitPackage per-tx failures if packageResult is present
+        if (result.packageResult) {
+            const failures = extractPackageFailures(result.packageResult);
+            if (failures.length > 0) {
+                throw new Error(`Transaction package failed:\n${failures.join('\n')}`);
+            }
+        }
+
         // Extract the interaction tx result (second tx in the package)
-        const interactionSeqResult = packageResult.sequentialResults?.find((_r, i) => i === 1);
+        const interactionSeqResult = result.sequentialResults?.[1];
 
         if (interactionSeqResult && !interactionSeqResult.success) {
             throw new Error(
