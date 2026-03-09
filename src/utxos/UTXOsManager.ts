@@ -40,7 +40,7 @@ interface AddressData {
  */
 export class UTXOsManager {
     /**
-     * Holds all address-specific data so we don’t mix up UTXOs between addresses/wallets.
+     * Holds all address-specific data so we don't mix up UTXOs between addresses/wallets.
      */
     private dataByAddress: Record<string, AddressData> = {};
 
@@ -97,7 +97,7 @@ export class UTXOsManager {
             );
         }
 
-        // Push the new UTXOs into this address’s pending and set their depth
+        // Push the new UTXOs into this address's pending and set their depth
         for (const nu of newUTXOs) {
             addressData.pendingUTXOs.push(nu);
             addressData.pendingUtxoDepth[utxoKey(nu)] = newDepth;
@@ -212,11 +212,14 @@ export class UTXOsManager {
      * Fetch UTXOs for a specific amount needed, from a single address,
      * merging from pending and confirmed UTXOs.
      *
+     * Prioritizes normal UTXOs first, only falling back to CSV UTXOs
+     * if the normal ones cannot cover the requested amount.
+     *
      * @param {object} options
      * @param {string} options.address The address to fetch UTXOs for
      * @param {bigint} options.amount The needed amount
      * @param {boolean} [options.optimize=true] Optimize the UTXOs
-     * @param {boolean} [options.csvAddress] Use CSV UTXOs in priority
+     * @param {boolean} [options.csvAddress] Use CSV UTXOs as fallback
      * @param {boolean} [options.mergePendingUTXOs=true] Merge pending
      * @param {boolean} [options.filterSpentUTXOs=true] Filter out spent
      * @param {boolean} [options.throwErrors=false] Throw error if insufficient
@@ -235,60 +238,46 @@ export class UTXOsManager {
         maxUTXOs = 5000,
         throwIfUTXOsLimitReached = false,
     }: RequestUTXOsParamsWithAmount): Promise<UTXOs> {
-        const utxosPromises: Promise<UTXO[]>[] = [];
+        const selected: UTXOs = [];
+        let currentValue = 0n;
 
-        if (csvAddress) {
-            utxosPromises.push(
-                this.getUTXOs({
-                    address: csvAddress,
-                    optimize: true,
-                    mergePendingUTXOs: false,
-                    filterSpentUTXOs: true,
-                    olderThan: 1n,
-                    isCSV: true,
-                }),
-            );
-        }
-
-        utxosPromises.push(
-            this.getUTXOs({
-                address,
-                optimize,
-                mergePendingUTXOs,
-                filterSpentUTXOs,
-                olderThan,
-            }),
-        );
-
-        const allUTXOS: UTXOs[] = await Promise.all(utxosPromises);
-
-        const combinedUTXOs: UTXOs = allUTXOS.flat();
-        combinedUTXOs.sort((a, b) => {
-            if (b.value > a.value) return 1;
-            if (b.value < a.value) return -1;
-            return 0;
+        // Fetch and greedily select from normal UTXOs first
+        const normalUTXOs: UTXOs = await this.getUTXOs({
+            address,
+            optimize,
+            mergePendingUTXOs,
+            filterSpentUTXOs,
+            olderThan,
         });
 
-        const utxoUntilAmount: UTXOs = [];
+        currentValue = this.selectUTXOsGreedily(
+            normalUTXOs,
+            selected,
+            currentValue,
+            amount,
+            maxUTXOs,
+            throwIfUTXOsLimitReached,
+        );
 
-        let currentValue = 0n;
-        for (const utxo of combinedUTXOs) {
-            if (maxUTXOs && utxoUntilAmount.length >= maxUTXOs) {
-                if (throwIfUTXOsLimitReached) {
-                    throw new Error(
-                        `Woah. You must consolidate your UTXOs (${combinedUTXOs.length})! This transaction is too large.`,
-                    );
-                }
+        // Fall back to CSV UTXOs only if normal ones were insufficient
+        if (currentValue < amount && csvAddress) {
+            const csvUTXOs: UTXOs = await this.getUTXOs({
+                address: csvAddress,
+                optimize: true,
+                mergePendingUTXOs: false,
+                filterSpentUTXOs: true,
+                olderThan: 1n,
+                isCSV: true,
+            });
 
-                break;
-            }
-
-            utxoUntilAmount.push(utxo);
-            currentValue += utxo.value;
-
-            if (currentValue >= amount) {
-                break;
-            }
+            currentValue = this.selectUTXOsGreedily(
+                csvUTXOs,
+                selected,
+                currentValue,
+                amount,
+                maxUTXOs,
+                throwIfUTXOsLimitReached,
+            );
         }
 
         if (currentValue < amount && throwErrors) {
@@ -297,7 +286,7 @@ export class UTXOsManager {
             );
         }
 
-        return utxoUntilAmount;
+        return selected;
     }
 
     /**
@@ -394,6 +383,45 @@ export class UTXOsManager {
         }
 
         return result;
+    }
+
+    /**
+     * Sort UTXOs by value descending and greedily append to `selected` until
+     * `currentValue >= amount` or the pool is exhausted. Mutates `candidates`
+     * (sort in-place) and `selected` (pushes chosen UTXOs). Returns the
+     * updated cumulative value.
+     */
+    private selectUTXOsGreedily(
+        candidates: UTXOs,
+        selected: UTXOs,
+        currentValue: bigint,
+        amount: bigint,
+        maxUTXOs: number,
+        throwIfLimitReached: boolean,
+    ): bigint {
+        candidates.sort((a, b) => {
+            if (b.value > a.value) return 1;
+            if (b.value < a.value) return -1;
+            return 0;
+        });
+
+        for (const utxo of candidates) {
+            if (currentValue >= amount) break;
+
+            if (maxUTXOs && selected.length >= maxUTXOs) {
+                if (throwIfLimitReached) {
+                    throw new Error(
+                        `Woah. You must consolidate your UTXOs (${candidates.length + selected.length})! This transaction is too large.`,
+                    );
+                }
+                break;
+            }
+
+            selected.push(utxo);
+            currentValue += utxo.value;
+        }
+
+        return currentValue;
     }
 
     /**
