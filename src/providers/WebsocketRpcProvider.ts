@@ -672,23 +672,6 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
                 return response;
             }
 
-            case JSONRpcMethods.BROADCAST_TRANSACTION_PACKAGE: {
-                // Parse JSON-serialized complex fields back into objects
-                if (typeof response['testResultsJson'] === 'string') {
-                    response['testResults'] = JSON.parse(
-                        response['testResultsJson'],
-                    ) as unknown[];
-                    delete response['testResultsJson'];
-                }
-                if (typeof response['packageResultJson'] === 'string') {
-                    response['packageResult'] = JSON.parse(
-                        response['packageResultJson'],
-                    ) as Record<string, unknown>;
-                    delete response['packageResultJson'];
-                }
-                return response;
-            }
-
             default:
                 return response;
         }

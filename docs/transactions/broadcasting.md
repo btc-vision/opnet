@@ -99,9 +99,15 @@ if (result.success) {
     console.log('Package broadcast successfully!');
 
     if (result.packageResult) {
-        console.log('Package message:', result.packageResult.package_msg);
-        for (const [wtxid, txResult] of Object.entries(result.packageResult['tx-results'])) {
+        console.log('Package message:', result.packageResult.packageMsg);
+        for (const [wtxid, txResult] of Object.entries(result.packageResult.txResults)) {
             console.log(`  ${wtxid}: txid=${txResult.txid}, vsize=${txResult.vsize}`);
+        }
+    }
+
+    if (result.sequentialResults) {
+        for (const seq of result.sequentialResults) {
+            console.log(`${seq.txid}: success=${seq.success}, peers=${seq.peers}`);
         }
     }
 } else {
@@ -129,7 +135,7 @@ if (result.success) {
 
     if (result.sequentialResults) {
         for (const seq of result.sequentialResults) {
-            console.log(`${seq.txid}: success=${seq.success}`);
+            console.log(`${seq.txid}: success=${seq.success}, peers=${seq.peers}`);
         }
     }
 }
@@ -167,6 +173,7 @@ interface SequentialBroadcastTxResult {
     txid: string;          // The txid of the transaction
     success: boolean;      // Whether the individual transaction was broadcast
     error?: string;        // Error message if this transaction failed
+    peers?: number;        // Number of peers that received the transaction
 }
 
 interface TestMempoolAcceptResult {
@@ -175,15 +182,15 @@ interface TestMempoolAcceptResult {
     allowed?: boolean;
     vsize?: number;
     fees?: TestMempoolAcceptFees;
-    'package-error'?: string;
-    'reject-reason'?: string;
-    'reject-details'?: string;
+    packageError?: string;
+    rejectReason?: string;
+    rejectDetails?: string;
 }
 
 interface PackageResult {
-    package_msg: string;
-    'tx-results': { [wtxid: string]: PackageTxResult };
-    'replaced-transactions'?: readonly string[];
+    packageMsg: string;
+    txResults: { [wtxid: string]: PackageTxResult };
+    replacedTransactions?: readonly string[];
 }
 ```
 

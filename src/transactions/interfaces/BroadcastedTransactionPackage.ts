@@ -7,6 +7,9 @@ export interface SequentialBroadcastTxResult {
 
     /** Error message if this transaction failed. */
     readonly error?: string;
+
+    /** Number of peers that received the transaction. */
+    readonly peers?: number;
 }
 
 export interface BroadcastedTransactionPackage {
@@ -34,21 +37,21 @@ export interface TestMempoolAcceptResult {
     readonly wtxid: string;
     readonly allowed?: boolean;
     readonly vsize?: number;
-    readonly 'package-error'?: string;
-    readonly 'reject-reason'?: string;
-    readonly 'reject-details'?: string;
+    readonly packageError?: string;
+    readonly rejectReason?: string;
+    readonly rejectDetails?: string;
     readonly fees?: TestMempoolAcceptFees;
 }
 
 export interface TestMempoolAcceptFees {
     readonly base: number;
-    readonly 'effective-feerate': number;
-    readonly 'effective-includes': readonly string[];
+    readonly effectiveFeerate: number;
+    readonly effectiveIncludes: readonly string[];
 }
 
 export interface PackageTxResult {
     readonly txid: string;
-    readonly 'other-wtxid'?: string;
+    readonly otherWtxid?: string;
     readonly vsize?: number;
     readonly fees?: PackageTxFees;
     readonly error?: string;
@@ -56,14 +59,14 @@ export interface PackageTxResult {
 
 export interface PackageTxFees {
     readonly base: number;
-    readonly 'effective-feerate'?: number;
-    readonly 'effective-includes'?: readonly string[];
+    readonly effectiveFeerate?: number;
+    readonly effectiveIncludes?: readonly string[];
 }
 
 export interface PackageResult {
-    readonly package_msg: string;
-    readonly 'tx-results': {
+    readonly packageMsg: string;
+    readonly txResults: {
         readonly [wtxid: string]: PackageTxResult;
     };
-    readonly 'replaced-transactions'?: readonly string[];
+    readonly replacedTransactions?: readonly string[];
 }

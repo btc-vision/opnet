@@ -302,6 +302,7 @@ interface SequentialBroadcastTxResult {
     readonly txid: string;
     readonly success: boolean;
     readonly error?: string;
+    readonly peers?: number;
 }
 ```
 
@@ -313,9 +314,9 @@ interface TestMempoolAcceptResult {
     readonly wtxid: string;
     readonly allowed?: boolean;
     readonly vsize?: number;
-    readonly 'package-error'?: string;
-    readonly 'reject-reason'?: string;
-    readonly 'reject-details'?: string;
+    readonly packageError?: string;
+    readonly rejectReason?: string;
+    readonly rejectDetails?: string;
     readonly fees?: TestMempoolAcceptFees;
 }
 ```
@@ -325,8 +326,8 @@ interface TestMempoolAcceptResult {
 ```typescript
 interface TestMempoolAcceptFees {
     readonly base: number;
-    readonly 'effective-feerate': number;
-    readonly 'effective-includes': readonly string[];
+    readonly effectiveFeerate: number;
+    readonly effectiveIncludes: readonly string[];
 }
 ```
 
@@ -334,11 +335,11 @@ interface TestMempoolAcceptFees {
 
 ```typescript
 interface PackageResult {
-    readonly package_msg: string;
-    readonly 'tx-results': {
+    readonly packageMsg: string;
+    readonly txResults: {
         readonly [wtxid: string]: PackageTxResult;
     };
-    readonly 'replaced-transactions'?: readonly string[];
+    readonly replacedTransactions?: readonly string[];
 }
 ```
 
@@ -347,7 +348,7 @@ interface PackageResult {
 ```typescript
 interface PackageTxResult {
     readonly txid: string;
-    readonly 'other-wtxid'?: string;
+    readonly otherWtxid?: string;
     readonly vsize?: number;
     readonly fees?: PackageTxFees;
     readonly error?: string;
@@ -359,8 +360,8 @@ interface PackageTxResult {
 ```typescript
 interface PackageTxFees {
     readonly base: number;
-    readonly 'effective-feerate'?: number;
-    readonly 'effective-includes'?: readonly string[];
+    readonly effectiveFeerate?: number;
+    readonly effectiveIncludes?: readonly string[];
 }
 ```
 
