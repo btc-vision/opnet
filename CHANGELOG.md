@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.8.5] - 2026-03-13
+
+### Features
+
+- Fix/bug with building tx ([#146](https://github.com/btc-vision/opnet/pull/146)) by @BlobMaster41
+
+### Bug Fixes
+
+- Fix/bug with building tx ([#146](https://github.com/btc-vision/opnet/pull/146)) by @BlobMaster41
+
+
+
+
 ## [v1.8.3] - 2026-03-09
 
 ### Features
