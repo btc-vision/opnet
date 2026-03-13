@@ -816,6 +816,34 @@ export class CallResult<
         return a > b ? a : b;
     }
 
+    private ensureUTXOsAvailable(
+        utxos: UTXO[] | undefined | null,
+    ): asserts utxos is UTXO[] & { length: number } {
+        if (!utxos || utxos.length === 0) {
+            throw new Error(
+                'No UTXOs available. You may need to split your wallet UTXOs so at ' +
+                    'least one non-extra-input UTXO is available for the funding transaction.',
+            );
+        }
+    }
+
+    private computeRequiredAmount(
+        gasFee: bigint,
+        priority: bigint,
+        amountAddition: bigint,
+        totalOuts: bigint,
+        extraInputValue: bigint,
+        miningCost: bigint = 0n,
+        maximumAllowedSatToSpend: bigint = 0n,
+    ): bigint {
+        const gross = this.max(
+            gasFee + priority + amountAddition + totalOuts + miningCost,
+            maximumAllowedSatToSpend,
+        );
+
+        return gross > extraInputValue ? gross - extraInputValue : 1n;
+    }
+
     /**
      * Acquire UTXOs for the transaction.
      * @param {TransactionParameters} interactionParams - The transaction parameters.
@@ -841,12 +869,24 @@ export class CallResult<
 
         const gasFee = this.bigintMax(this.estimatedSatGas, interactionParams.minGas ?? 0n);
 
-        const preWant = this.max(
-            gasFee + priority + amountAddition + totalOuts,
+        const extraInputValue = (interactionParams.extraInputs ?? []).reduce(
+            (s, u) => s + u.value,
+            0n,
+        );
+
+        const preWant = this.computeRequiredAmount(
+            gasFee,
+            priority,
+            amountAddition,
+            totalOuts,
+            extraInputValue,
+            0n,
             interactionParams.maximumAllowedSatToSpend,
         );
 
         let utxos = interactionParams.utxos ?? (await this.#fetchUTXOs(preWant, interactionParams));
+
+        this.ensureUTXOsAvailable(utxos);
 
         let refetched = false;
         while (true) {
@@ -858,8 +898,13 @@ export class CallResult<
                 feeRate,
             );
 
-            const want = this.max(
-                gasFee + priority + amountAddition + totalOuts + miningCost,
+            const want = this.computeRequiredAmount(
+                gasFee,
+                priority,
+                amountAddition,
+                totalOuts,
+                extraInputValue,
+                miningCost,
                 interactionParams.maximumAllowedSatToSpend,
             );
 
@@ -872,6 +917,8 @@ export class CallResult<
 
             utxos = await this.#fetchUTXOs(want, interactionParams);
             refetched = true;
+
+            this.ensureUTXOsAvailable(utxos);
 
             const haveAfter = utxos.reduce((s, u) => s + u.value, 0n);
             if (haveAfter === have) {
