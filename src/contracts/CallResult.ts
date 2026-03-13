@@ -1,5 +1,13 @@
 import { QuantumBIP32Interface } from '@btc-vision/bip32';
-import { fromBase64, fromHex, Network, networks, PsbtOutputExtended, Signer, toHex, } from '@btc-vision/bitcoin';
+import {
+    fromBase64,
+    fromHex,
+    Network,
+    networks,
+    PsbtOutputExtended,
+    Signer,
+    toHex,
+} from '@btc-vision/bitcoin';
 import { UniversalSigner } from '@btc-vision/ecpair';
 import {
     Address,
@@ -804,6 +812,10 @@ export class CallResult<
         }
     }
 
+    private max(a: bigint, b: bigint): bigint {
+        return a > b ? a : b;
+    }
+
     /**
      * Acquire UTXOs for the transaction.
      * @param {TransactionParameters} interactionParams - The transaction parameters.
@@ -829,12 +841,10 @@ export class CallResult<
 
         const gasFee = this.bigintMax(this.estimatedSatGas, interactionParams.minGas ?? 0n);
 
-        const preWant =
-            gasFee +
-            priority +
-            amountAddition +
-            totalOuts +
-            interactionParams.maximumAllowedSatToSpend;
+        const preWant = this.max(
+            gasFee + priority + amountAddition + totalOuts,
+            interactionParams.maximumAllowedSatToSpend,
+        );
 
         let utxos = interactionParams.utxos ?? (await this.#fetchUTXOs(preWant, interactionParams));
 
@@ -848,13 +858,10 @@ export class CallResult<
                 feeRate,
             );
 
-            const want =
-                gasFee +
-                priority +
-                amountAddition +
-                totalOuts +
-                miningCost +
-                interactionParams.maximumAllowedSatToSpend;
+            const want = this.max(
+                gasFee + priority + amountAddition + totalOuts + miningCost,
+                interactionParams.maximumAllowedSatToSpend,
+            );
 
             const have = utxos.reduce((s, u) => s + u.value, 0n);
             if (have >= want) break;
