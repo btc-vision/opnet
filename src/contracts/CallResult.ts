@@ -1,13 +1,5 @@
 import { QuantumBIP32Interface } from '@btc-vision/bip32';
-import {
-    fromBase64,
-    fromHex,
-    Network,
-    networks,
-    PsbtOutputExtended,
-    Signer,
-    toHex,
-} from '@btc-vision/bitcoin';
+import { fromBase64, fromHex, Network, networks, PsbtOutputExtended, Signer, toHex, } from '@btc-vision/bitcoin';
 import { UniversalSigner } from '@btc-vision/ecpair';
 import {
     Address,
@@ -821,7 +813,7 @@ export class CallResult<
     ): asserts utxos is UTXO[] & { length: number } {
         if (!utxos || utxos.length === 0) {
             throw new Error(
-                'No UTXOs available. You may need to split your wallet UTXOs so at ' +
+                'Wallet optimization required. No UTXOs available. You may need to split your wallet UTXOs so at ' +
                     'least one non-extra-input UTXO is available for the funding transaction.',
             );
         }
