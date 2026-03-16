@@ -759,7 +759,6 @@ export abstract class AbstractRpcProvider {
      * Get block witnesses.
      * @description This method is used to get the witnesses of a block. This proves that the actions executed inside a block are valid and confirmed by the network. If the minimum number of witnesses are not met, the block is considered as potentially invalid.
      * @param {BlockTag} height The block number or hash, use -1 for latest block
-     * @param {boolean} [trusted] Whether to trust the witnesses or not
      * @param {number} [limit] The maximum number of witnesses to return
      * @param {number} [page] The page number of the witnesses
      * @returns {Promise<BlockWitnesses>} The witnesses of the block
@@ -768,13 +767,11 @@ export abstract class AbstractRpcProvider {
      */
     public async getBlockWitness(
         height: BigNumberish = -1,
-        trusted?: boolean,
         limit?: number,
         page?: number,
     ): Promise<BlockWitnesses> {
-        const params: [BigNumberish, boolean?, number?, number?] = [height.toString()];
+        const params: [BigNumberish, number?, number?] = [height.toString()];
 
-        if (trusted !== undefined && trusted !== null) params.push(trusted);
         if (limit !== undefined && limit !== null) params.push(limit);
         if (page !== undefined && page !== null) params.push(page);
 

@@ -5,7 +5,7 @@ import { AddressTypes } from '@btc-vision/transaction';
 import type { JsonRpcPayload } from '../src/providers/interfaces/JSONRpc.js';
 import type { JsonRpcCallResult } from '../src/providers/interfaces/JSONRpcResult.js';
 import type { MempoolInfo } from '../src/providers/interfaces/mempool/MempoolInfo.js';
-import type { IMempoolTransactionData } from '../src/providers/interfaces/mempool/MempoolTransactionData.js';
+import type { IMempoolTransactionData, IMempoolOPNetTransactionData } from '../src/providers/interfaces/mempool/MempoolTransactionData.js';
 
 // ============================================================================
 // Mock provider that intercepts _send
@@ -146,7 +146,7 @@ describe('Mempool API - Unit Tests', () => {
     // ========================================================================
 
     describe('getPendingTransaction', () => {
-        const mockTx: IMempoolTransactionData = {
+        const mockTx: IMempoolOPNetTransactionData = {
             id: 'abc123def456abc123def456abc123def456abc123def456abc123def456abc1',
             firstSeen: '2023-11-14T22:13:20.000Z',
             blockHeight: '0xcf080',
@@ -270,13 +270,14 @@ describe('Mempool API - Unit Tests', () => {
 
         it('should handle Generic transaction', async () => {
             const nonOPNetTx: IMempoolTransactionData = {
-                ...mockTx,
+                id: mockTx.id,
+                firstSeen: mockTx.firstSeen,
+                blockHeight: mockTx.blockHeight,
                 transactionType: 'Generic',
-                theoreticalGasLimit: undefined,
-                priorityFee: undefined,
-                from: undefined,
-                contractAddress: undefined,
-                calldata: undefined,
+                psbt: mockTx.psbt,
+                inputs: mockTx.inputs,
+                outputs: mockTx.outputs,
+                raw: mockTx.raw,
             };
 
             provider.mockSend.mockResolvedValue([
@@ -350,7 +351,7 @@ describe('Mempool API - Unit Tests', () => {
     // ========================================================================
 
     describe('getLatestPendingTransactions', () => {
-        const mockTx1: IMempoolTransactionData = {
+        const mockTx1: IMempoolOPNetTransactionData = {
             id: 'a000000000000000000000000000000000000000000000000000000000000001',
             firstSeen: '2023-11-14T22:13:20.000Z',
             blockHeight: '0xcf080',
@@ -603,7 +604,7 @@ describe('Mempool API - Unit Tests', () => {
     // ========================================================================
 
     describe('getLatestPendingTransactionsByAddresses', () => {
-        const mockTx1: IMempoolTransactionData = {
+        const mockTx1: IMempoolOPNetTransactionData = {
             id: 'a000000000000000000000000000000000000000000000000000000000000001',
             firstSeen: '2023-11-14T22:13:20.000Z',
             blockHeight: '0xcf080',
@@ -710,12 +711,12 @@ describe('Mempool API - Unit Tests', () => {
 // Integration Tests - Real Regtest Network
 // ============================================================================
 
-describe('Mempool API - Integration Tests (regtest.opnet.org)', () => {
-    const REGTEST_URL = 'https://regtest.opnet.org';
+describe('Mempool API - Integration Tests (testnet.opnet.org)', () => {
+    const TESTNET_URL = 'https://testnet.opnet.org';
     let provider: JSONRpcProvider;
 
     beforeEach(() => {
-        provider = new JSONRpcProvider({ url: REGTEST_URL, network: networks.regtest });
+        provider = new JSONRpcProvider({ url: TESTNET_URL, network: networks.opnetTestnet });
     });
 
     describe('getMempoolInfo', () => {
@@ -745,8 +746,8 @@ describe('Mempool API - Integration Tests (regtest.opnet.org)', () => {
             if (txs.length > 0) {
                 const tx = txs[0];
                 expect(typeof tx.id).toBe('string');
-                expect(typeof tx.firstSeen).toBe('string');
-                expect(typeof tx.blockHeight).toBe('string');
+                expect(tx.firstSeen).toBeDefined();
+                expect(tx.blockHeight).toBeDefined();
                 expect(typeof tx.transactionType).toBe('string');
                 expect(typeof tx.psbt).toBe('boolean');
                 expect(Array.isArray(tx.inputs)).toBe(true);

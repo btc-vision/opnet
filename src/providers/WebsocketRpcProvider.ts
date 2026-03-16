@@ -398,12 +398,11 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
                 };
 
             case JSONRpcMethods.BLOCK_WITNESS:
-                // GetBlockWitnessRequest: requestId=1, height=2, trusted=3, limit=4, page=5
+                // GetBlockWitnessRequest: requestId=1, height=2, limit=3, page=4
                 return {
                     2: Long.fromString(String(params[0] ?? -1)),
                     3: params[1],
                     4: params[2],
-                    5: params[3],
                 };
 
             case JSONRpcMethods.GAS:
