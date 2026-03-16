@@ -8,7 +8,6 @@ import {
 } from './interfaces/IBlockWitness.js';
 
 export class BlockWitnessAPI implements IBlockWitnessAPI {
-    public readonly trusted: boolean;
     public readonly signature: Uint8Array;
     public readonly timestamp: number;
     public readonly proofs: readonly Uint8Array[];
@@ -16,7 +15,6 @@ export class BlockWitnessAPI implements IBlockWitnessAPI {
     public readonly publicKey?: Address;
 
     constructor(data: RawBlockWitnessAPI) {
-        this.trusted = data.trusted;
         this.signature = stringBase64ToBuffer(data.signature);
         this.timestamp = data.timestamp;
         this.proofs = Object.freeze(data.proofs.map((proof) => stringBase64ToBuffer(proof)));

@@ -1,13 +1,5 @@
 import { QuantumBIP32Interface } from '@btc-vision/bip32';
-import {
-    fromBase64,
-    fromHex,
-    Network,
-    networks,
-    PsbtOutputExtended,
-    Signer,
-    toHex,
-} from '@btc-vision/bitcoin';
+import { fromBase64, fromHex, Network, networks, PsbtOutputExtended, Signer, toHex, } from '@btc-vision/bitcoin';
 import { UniversalSigner } from '@btc-vision/ecpair';
 import {
     Address,

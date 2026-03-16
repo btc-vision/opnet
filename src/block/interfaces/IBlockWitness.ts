@@ -1,7 +1,6 @@
 import { Address } from '@btc-vision/transaction';
 
 export interface IBlockWitnessAPI {
-    readonly trusted: boolean;
     readonly signature: Uint8Array;
     readonly timestamp: number;
 
@@ -12,7 +11,6 @@ export interface IBlockWitnessAPI {
 }
 
 export interface RawBlockWitnessAPI {
-    readonly trusted: boolean;
     readonly signature: string;
     readonly timestamp: number;
 
