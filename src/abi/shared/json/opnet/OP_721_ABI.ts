@@ -23,7 +23,7 @@ export const OP721Events: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
             {
-                name: 'amount',
+                name: 'tokenId',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -37,11 +37,11 @@ export const OP721Events: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.ADDRESS,
             },
             {
-                name: 'spender',
+                name: 'operator',
                 type: ABIDataTypes.ADDRESS,
             },
             {
-                name: 'amount',
+                name: 'tokenId',
                 type: ABIDataTypes.UINT256,
             },
         ],
@@ -61,6 +61,34 @@ export const OP721Events: BitcoinInterfaceAbi = [
             {
                 name: 'approved',
                 type: ABIDataTypes.BOOL,
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Burned',
+        values: [
+            {
+                name: 'from',
+                type: ABIDataTypes.ADDRESS
+            },
+            {
+                name: 'tokenId',
+                type: ABIDataTypes.UINT256
+            },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Minted',
+        values: [
+            {
+                name: 'to',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'tokenId',
+                type: ABIDataTypes.UINT256,
             },
         ],
         type: BitcoinAbiTypes.Event,
@@ -118,30 +146,6 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
             {
                 name: 'maxSupply',
                 type: ABIDataTypes.UINT256,
-            },
-        ],
-    },
-    {
-        name: 'collectionInfo',
-        type: BitcoinAbiTypes.Function,
-        constant: true,
-        inputs: [],
-        outputs: [
-            {
-                name: 'icon',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'banner',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'description',
-                type: ABIDataTypes.STRING,
-            },
-            {
-                name: 'website',
-                type: ABIDataTypes.STRING,
             },
         ],
     },
@@ -426,7 +430,7 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
         ],
     },
     {
-        name: 'getApproveNonce',
+        name: 'nonceOf',
         type: BitcoinAbiTypes.Function,
         constant: true,
         inputs: [
