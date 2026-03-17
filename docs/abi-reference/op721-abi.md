@@ -30,7 +30,6 @@ import {
 | `name()` | - | `string` | Collection name |
 | `symbol()` | - | `string` | Collection symbol |
 | `maxSupply()` | - | `bigint` | Maximum supply |
-| `collectionInfo()` | - | `{ icon, banner, description, website }` | Collection metadata |
 | `tokenURI(tokenId)` | `bigint` | `string` | Token metadata URI |
 | `metadata()` | - | Full metadata object | All metadata in one call |
 
@@ -79,7 +78,7 @@ import {
 | `changeMetadata()` | - | - | Trigger metadata change |
 | `setBaseURI(baseURI)` | `string` | - | Set base URI for tokens |
 | `domainSeparator()` | - | `Uint8Array` | EIP-712 domain separator |
-| `getApproveNonce(owner)` | `Address` | `bigint` | Get nonce for signatures |
+| `nonceOf(owner)` | `Address` | `bigint` | Get nonce for signatures |
 
 ---
 
@@ -94,7 +93,7 @@ interface TransferredEventNFT {
     operator: Address;  // Who initiated the transfer
     from: Address;      // Sender
     to: Address;        // Recipient
-    amount: bigint;     // Amount (1 for single NFT)
+    tokenId: bigint;    // Token ID
 }
 ```
 
@@ -105,8 +104,8 @@ Emitted when single token approval changes.
 ```typescript
 interface ApprovedEventNFT {
     owner: Address;     // Token owner
-    spender: Address;   // Approved spender
-    amount: bigint;     // Token ID as amount
+    operator: Address;  // Approved operator
+    tokenId: bigint;    // Token ID
 }
 ```
 
@@ -119,6 +118,28 @@ interface ApprovedForAllEventNFT {
     account: Address;   // Token owner
     operator: Address;  // Operator address
     approved: boolean;  // Approval status
+}
+```
+
+### Burned
+
+Emitted when a token is burned.
+
+```typescript
+interface BurnedEventNFT {
+    from: Address;      // Token owner
+    tokenId: bigint;    // Token ID
+}
+```
+
+### Minted
+
+Emitted when a new token is minted.
+
+```typescript
+interface MintedEventNFT {
+    to: Address;        // Recipient
+    tokenId: bigint;    // Token ID
 }
 ```
 
@@ -165,10 +186,10 @@ console.log('Collection:', name.properties.name);
 console.log('Symbol:', symbol.properties.symbol);
 console.log('Max Supply:', maxSupply.properties.maxSupply);
 
-// Get full collection metadata
-const info = await nft.collectionInfo();
-console.log('Description:', info.properties.description);
-console.log('Website:', info.properties.website);
+// Get full collection metadata in one call
+const metadata = await nft.metadata();
+console.log('Description:', metadata.properties.description);
+console.log('Website:', metadata.properties.website);
 ```
 
 ### Check Ownership
@@ -364,18 +385,6 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
     },
     {
-        name: 'collectionInfo',
-        constant: true,
-        inputs: [],
-        outputs: [
-            { name: 'icon', type: ABIDataTypes.STRING },
-            { name: 'banner', type: ABIDataTypes.STRING },
-            { name: 'description', type: ABIDataTypes.STRING },
-            { name: 'website', type: ABIDataTypes.STRING },
-        ],
-        type: BitcoinAbiTypes.Function,
-    },
-    {
         name: 'tokenURI',
         constant: true,
         inputs: [{ name: 'tokenId', type: ABIDataTypes.UINT256 }],
@@ -549,7 +558,7 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
     },
     {
-        name: 'getApproveNonce',
+        name: 'nonceOf',
         constant: true,
         inputs: [{ name: 'owner', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'nonce', type: ABIDataTypes.UINT256 }],
@@ -563,7 +572,7 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
             { name: 'operator', type: ABIDataTypes.ADDRESS },
             { name: 'from', type: ABIDataTypes.ADDRESS },
             { name: 'to', type: ABIDataTypes.ADDRESS },
-            { name: 'amount', type: ABIDataTypes.UINT256 },
+            { name: 'tokenId', type: ABIDataTypes.UINT256 },
         ],
         type: BitcoinAbiTypes.Event,
     },
@@ -571,8 +580,8 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
         name: 'Approved',
         values: [
             { name: 'owner', type: ABIDataTypes.ADDRESS },
-            { name: 'spender', type: ABIDataTypes.ADDRESS },
-            { name: 'amount', type: ABIDataTypes.UINT256 },
+            { name: 'operator', type: ABIDataTypes.ADDRESS },
+            { name: 'tokenId', type: ABIDataTypes.UINT256 },
         ],
         type: BitcoinAbiTypes.Event,
     },
@@ -582,6 +591,22 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
             { name: 'account', type: ABIDataTypes.ADDRESS },
             { name: 'operator', type: ABIDataTypes.ADDRESS },
             { name: 'approved', type: ABIDataTypes.BOOL },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Burned',
+        values: [
+            { name: 'from', type: ABIDataTypes.ADDRESS },
+            { name: 'tokenId', type: ABIDataTypes.UINT256 },
+        ],
+        type: BitcoinAbiTypes.Event,
+    },
+    {
+        name: 'Minted',
+        values: [
+            { name: 'to', type: ABIDataTypes.ADDRESS },
+            { name: 'tokenId', type: ABIDataTypes.UINT256 },
         ],
         type: BitcoinAbiTypes.Event,
     },
