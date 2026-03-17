@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.8.6] - 2026-03-17
+
+### Features
+
+- Remove trusted from BlockWitness and providers ([#147](https://github.com/btc-vision/opnet/pull/147)) by @BlobMaster41
+
+
+
+
 ## [v1.8.5] - 2026-03-13
 
 ### Features
