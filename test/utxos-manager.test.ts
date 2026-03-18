@@ -83,7 +83,7 @@ function createMockProvider(): IProviderForUTXO & {
 } {
     const mockCallPayloadSingle = vi.fn<(payload: JsonRpcPayload) => Promise<JsonRpcResult>>();
     const mockCallMultiplePayloads = vi.fn<(payloads: JsonRpcPayload[]) => Promise<JsonRpcCallResult>>();
-    const mockBuildJsonRpcPayload = vi.fn((method, params) => ({
+    const mockBuildJsonRpcPayload = vi.fn((method: unknown, params: unknown) => ({
         method,
         params,
         id: 1,
@@ -91,6 +91,7 @@ function createMockProvider(): IProviderForUTXO & {
     }));
 
     return {
+        // @ts-expect-error - This is a mockup for mockBuildJsonRpcPayload
         buildJsonRpcPayload: mockBuildJsonRpcPayload,
         callPayloadSingle: mockCallPayloadSingle,
         callMultiplePayloads: mockCallMultiplePayloads,
@@ -1159,7 +1160,7 @@ describe('UTXOsManager - Ultra Complex Tests', () => {
             expect(manager.getPendingUTXOs(address)).toHaveLength(1);
         });
 
-        it('should handle no fetched data gracefully', async () => {
+        it('should handle no fetched data gracefully', () => {
             const address = 'bc1qtest...';
 
             // Add pending UTXO
@@ -1487,6 +1488,58 @@ describe('UTXOsManager - Ultra Complex Tests', () => {
             // But only 1 actual fetch should have happened (cache)
             // Note: First call fetches, subsequent use cache
             expect(callCount).toBeGreaterThanOrEqual(1);
+        });
+
+        it('should do real getUTXOs fetch for calls with different threshold', async () => {
+            const address = 'bc1qconcurrent...';
+
+            let callCount = 0;
+            mockProvider.mockCallPayloadSingle.mockImplementation(async (data: unknown) => {
+                ++callCount;
+
+                const mockData = createMockRawUTXOsData([
+                    { txId: `tx${callCount}`, index: 0, value: '1000' },
+                ]);
+
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 10));
+                return { result: mockData, jsonrpc: '2.0', id: callCount };
+            });
+
+            // First call without threshold
+            const promises = [
+                manager.getUTXOs({ address })
+            ];
+            vi.advanceTimersByTime(50);
+            const first = await Promise.all(promises);
+            expect(first).toHaveLength(1);
+            expect(first[0][0]).toHaveProperty('transactionId', 'tx1');
+
+            // Fire multiple concurrent requests
+            const promises2 = [
+                manager.getUTXOs({ address, olderThan: 1n }),
+                manager.getUTXOs({ address }),
+                manager.getUTXOs({ address, olderThan: 2n }),
+            ];
+
+            // Advance timers to complete all requests
+            vi.advanceTimersByTime(50);
+
+            const results = await Promise.all(promises2);
+            const [csv1, all, csv2] = results;
+
+            // All should return same data
+            for (const result of results) {
+                expect(result).toHaveLength(1);
+            }
+
+            expect(csv1[0]).toHaveProperty('transactionId', 'tx2');
+            expect(all[0]).toHaveProperty('transactionId', 'tx1');   // Fetched from cache
+            expect(csv2[0]).toHaveProperty('transactionId', 'tx3');
+
+            // But only 1 actual fetch should have happened (cache)
+            // Note: First call fetches, subsequent use cache
+            expect(callCount).toBe(3);  // Only one call cached
         });
     });
 
