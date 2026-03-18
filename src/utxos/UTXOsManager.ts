@@ -116,10 +116,10 @@ export class UTXOsManager {
     /**
      * Clean (reset) the data for a particular address or for all addresses if none is passed.
      */
-    public clean(address?: string): void {
+    public clean(address?: string, threshold?: bigint): void {
         if (address) {
             // Reset a single address
-            const addressData = this.getAddressData(address);
+            const addressData = this.getAddressData(address, threshold);
             addressData.spentUTXOs = [];
             addressData.pendingUTXOs = [];
             addressData.pendingUtxoDepth = {};
@@ -156,7 +156,7 @@ export class UTXOsManager {
         filterSpentUTXOs = true,
         olderThan,
     }: RequestUTXOsParams): Promise<UTXOs> {
-        const addressData = this.getAddressData(address);
+        const addressData = this.getAddressData(address, olderThan);
         const fetchedData = await this.maybeFetchUTXOs(address, optimize, olderThan, isCSV);
 
         const utxoKey = (utxo: UTXO) => `${utxo.transactionId}:${utxo.outputIndex}`;
@@ -493,9 +493,10 @@ export class UTXOsManager {
     /**
      * Return the AddressData object for a given address. Initializes it if nonexistent.
      */
-    private getAddressData(address: string): AddressData {
-        if (!this.dataByAddress[address]) {
-            this.dataByAddress[address] = {
+    private getAddressData(address: string, threshold?: bigint): AddressData {
+        const addressWithThreshold = threshold ? `${address}_${threshold}` : address;
+        if (!this.dataByAddress[addressWithThreshold]) {
+            this.dataByAddress[addressWithThreshold] = {
                 spentUTXOs: [],
                 pendingUTXOs: [],
                 pendingUtxoDepth: {},
@@ -504,7 +505,7 @@ export class UTXOsManager {
                 lastFetchedData: null,
             };
         }
-        return this.dataByAddress[address];
+        return this.dataByAddress[addressWithThreshold];
     }
 
     /**
@@ -516,13 +517,13 @@ export class UTXOsManager {
         olderThan: bigint | undefined,
         isCSV: boolean = false,
     ): Promise<IUTXOsData> {
-        const addressData = this.getAddressData(address);
+        const addressData = this.getAddressData(address, olderThan);
         const now = Date.now();
         const age = now - addressData.lastFetchTimestamp;
 
         // Purge if it's been too long for this address
         if (now - addressData.lastCleanup > AUTO_PURGE_AFTER) {
-            this.clean(address); // Clean only this address data
+            this.clean(address, olderThan); // Clean only this address data
         }
 
         // If it's been less than FETCH_COOLDOWN ms, return cached data if available
@@ -535,7 +536,9 @@ export class UTXOsManager {
         addressData.lastFetchTimestamp = now;
 
         // Remove any pending UTXOs that have become confirmed or known spent
-        this.syncPendingDepthWithFetched(address);
+        if (!olderThan) {
+            this.syncPendingDepthWithFetched(address);
+        }
 
         return addressData.lastFetchedData;
     }
