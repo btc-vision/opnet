@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.8.7] - 2026-03-19
+
+### Other Changes
+
+- Fix csv UTXOs switching between locked/unlocked on refresh (wallet) ([#148](https://github.com/btc-vision/opnet/pull/148)) by @savardd
+
+
+
+
 ## [v1.8.6] - 2026-03-17
 
 ### Features
