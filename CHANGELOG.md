@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.8.8] - 2026-03-23
+
+### Features
+
+- Bump version to 1.8.8 and update deps ([#149](https://github.com/btc-vision/opnet/pull/149)) by @BlobMaster41
+
+
+
+
 ## [v1.8.7] - 2026-03-19
 
 ### Other Changes
