@@ -684,6 +684,7 @@ export abstract class AbstractRpcProvider {
      * @returns {Promise<BroadcastedTransaction>} The result of the transaction
      * @example await sendRawTransaction('02000000000101ad897689f66c98daae5fdc3606235c1ad7a17b9e0a6aaa0ea9e58ecc1198ad2a0100000000ffffffff01a154c39400000000160014482038efcc91af945f0c756d07a46401920380520247304402201c1f8718dec637ddb41b42abc44dcbf35a94c6be6a9de8c1db48c9fa6e456b7e022032a4b3286808372a7ac2c5094d6341b4d61b17663f4ccd1c1d92efa85c7dada80121020373626d317ae8788ce3280b491068610d840c23ecb64c14075bbb9f670af52c00000000', false);
      * @throws {Error} If something went wrong while sending the transaction
+     * @deprecated Use sendRawTransactionPackage instead. User may lose funds if you use sendRawTransaction.
      */
     public async sendRawTransaction(tx: string, psbt: boolean): Promise<BroadcastedTransaction> {
         // verify if tx is a valid hex string
@@ -706,6 +707,7 @@ export abstract class AbstractRpcProvider {
      * @param {string[]} txs The raw transactions to send as hex string
      * @returns {Promise<BroadcastedTransaction[]>} The result of the transaction
      * @throws {Error} If something went wrong while sending the transaction
+     * @deprecated Use sendRawTransactionPackage instead for better performance and atomicity guarantees. User may lose funds if you use sendRawTransactions.
      */
     public async sendRawTransactions(txs: string[]): Promise<BroadcastedTransaction[]> {
         const payloads: JsonRpcPayload[] = txs.map((tx) => {
