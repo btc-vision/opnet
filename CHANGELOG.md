@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.8.9] - 2026-03-23
+
+- No changes
+
+
 ## [v1.8.8] - 2026-03-23
 
 ### Features
