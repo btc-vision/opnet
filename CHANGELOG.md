@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.8.10] - 2026-03-24
+
+### Features
+
+- Bump version to 1.8.10 and update ESLint ([#150](https://github.com/btc-vision/opnet/pull/150)) by @BlobMaster41
+
+
+
+
 ## [v1.8.9] - 2026-03-23
 
 - No changes
