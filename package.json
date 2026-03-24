@@ -106,9 +106,9 @@
         "@eslint/js": "^10.0.1",
         "@microsoft/api-extractor": "7.57.7",
         "@types/node": "^25.5.0",
-        "@vitest/browser": "^4.1.0",
-        "@vitest/browser-playwright": "^4.1.0",
-        "@vitest/ui": "^4.1.0",
+        "@vitest/browser": "^4.1.1",
+        "@vitest/browser-playwright": "^4.1.1",
+        "@vitest/ui": "^4.1.1",
         "esbuild": "^0.27.4",
         "eslint": "^10.1.0",
         "madge": "^8.0.0",
@@ -116,11 +116,11 @@
         "stream-browserify": "^3.0.0",
         "typedoc": "^0.28.18",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.57.1",
-        "vite": "^8.0.1",
+        "typescript-eslint": "^8.57.2",
+        "vite": "^8.0.2",
         "vite-plugin-dts": "4.5.4",
         "vite-plugin-node-polyfills": "^0.25.0",
-        "vitest": "^4.1.0"
+        "vitest": "^4.1.1"
     },
     "peerDependencies": {
         "react-native-worklets": ">=0.7.0"
@@ -136,7 +136,7 @@
         "@btc-vision/bitcoin-rpc": "^1.1.2",
         "@btc-vision/ecpair": "^4.0.5",
         "@btc-vision/logger": "^1.0.8",
-        "@btc-vision/transaction": "^1.8.3",
+        "@btc-vision/transaction": "^1.8.4",
         "@noble/hashes": "^2.0.1",
         "bignumber.js": "^10.0.2",
         "long": "^5.3.2",
