@@ -70,11 +70,11 @@ export const OP721Events: BitcoinInterfaceAbi = [
         values: [
             {
                 name: 'from',
-                type: ABIDataTypes.ADDRESS
+                type: ABIDataTypes.ADDRESS,
             },
             {
                 name: 'tokenId',
-                type: ABIDataTypes.UINT256
+                type: ABIDataTypes.UINT256,
             },
         ],
         type: BitcoinAbiTypes.Event,
@@ -168,9 +168,14 @@ export const OP_721_ABI: BitcoinInterfaceAbi = [
     },
     {
         name: 'changeMetadata',
-        type: BitcoinAbiTypes.Function,
-        inputs: [],
+        inputs: [
+            { name: 'icon', type: ABIDataTypes.STRING },
+            { name: 'banner', type: ABIDataTypes.STRING },
+            { name: 'description', type: ABIDataTypes.STRING },
+            { name: 'website', type: ABIDataTypes.STRING },
+        ],
         outputs: [],
+        type: BitcoinAbiTypes.Function,
     },
     {
         name: 'totalSupply',

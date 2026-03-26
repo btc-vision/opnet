@@ -238,7 +238,12 @@ export interface IOP721Contract extends IOP_NETContract {
 
     tokenURI(tokenId: bigint): Promise<TokenURI>;
 
-    changeMetadata(): Promise<ChangeMetadata>;
+    changeMetadata(
+        icon: string,
+        banner: string,
+        description: string,
+        website: string,
+    ): Promise<ChangeMetadata>;
 
     totalSupply(): Promise<TotalSupplyNFT>;
 
