@@ -53,7 +53,7 @@ export type GetMotoAddress = CallResult<{
 }>;
 
 export type MotoAddress = CallResult<{
-    totalSupply: bigint;
+    motoAddress: Address;
 }>;
 
 export type LastInteractedBlock = CallResult<{
@@ -73,18 +73,20 @@ export type PendingReward = CallResult<{
 }>;
 
 export type CalculateSlashingFee = CallResult<{
-    slashingFee: bigint;
+    fee: bigint;
 }>;
 
 export type EnabledRewardTokens = CallResult<{
-    enabledRewardTokens: Address[];
+    tokens: Address[];
 }>;
 
 export type Stake = CallResult;
 
 export type Unstake = CallResult;
 
-export type ClaimRewards = CallResult;
+export type ClaimRewards = CallResult<{
+    rewards: Map<Address, bigint>;
+}>;
 
 export type AdminAddRewardToken = CallResult;
 
@@ -147,11 +149,12 @@ export interface IMotoswapStakingContract extends IMotoswapOwnableReentrancyGuar
     rewardDebt(user: Address, rewardToken: Address): Promise<RewardDebt>;
 
     /**
-     * @description Returns the pending reward balances that a user can claim.
-     * @param user {Address} the address of the staker
+     * @description Returns the pending reward balances that a user can claim for a given token.
+     * @param userAddress {Address} the address of the staker
+     * @param tokenAddress {Address} the reward token address
      * @returns {RewardBalance}
      */
-    rewardBalance(user: Address): Promise<RewardBalance>;
+    rewardBalance(userAddress: Address, tokenAddress: Address): Promise<RewardBalance>;
 
     /**
      * @description Returns the pending reward amount for a user and a reward token.
@@ -164,11 +167,11 @@ export interface IMotoswapStakingContract extends IMotoswapOwnableReentrancyGuar
 
     /**
      * @description Returns the amount of the user's stake that would be slashed, if they were to withdraw
-     * @param user {Address} the address of the staker
-     * @param amount {bigint} the amount to calculate the slashing fee of
-     * @returns {RewardDebt}
+     * @param address {Address} the address of the staker
+     * @param tokenBalance {bigint} the token balance to calculate the slashing fee of
+     * @returns {CalculateSlashingFee}
      */
-    calculateSlashingFee(user: Address, amount: bigint): Promise<CalculateSlashingFee>;
+    calculateSlashingFee(address: Address, tokenBalance: bigint): Promise<CalculateSlashingFee>;
 
     /**
      * @description Returns a list of all tokens which rewards can be claimed for
@@ -208,16 +211,16 @@ export interface IMotoswapStakingContract extends IMotoswapOwnableReentrancyGuar
      * @param token {Address} the address of the token to disable
      * @returns {AdminRemoveRewardToken}
      */
-    adminRemoveRewardToken(token: Address): Promise<AdminAddRewardToken>;
+    adminRemoveRewardToken(token: Address): Promise<AdminRemoveRewardToken>;
 
     /**
      * @description Changes the address of the Moto token the protocol allows the users to stake
      * Also affects what token is paid out when unstaking.
      * NOTE: Can only be called if the Moto token address is not set yet (i.e. == Address.dead())
-     * @param token {Address} the address of the Moto token
+     * @param motoAddress {Address} the address of the Moto token
      * @returns {AdminChangeMotoAddress}
      */
-    adminChangeMotoAddress(token: Address): Promise<AdminAddRewardToken>;
+    adminChangeMotoAddress(motoAddress: Address): Promise<AdminChangeMotoAddress>;
 
     /**
      * @description Changes the following parameters of the protocol
@@ -227,7 +230,7 @@ export interface IMotoswapStakingContract extends IMotoswapOwnableReentrancyGuar
      * @returns {AdminChangeLockupParameters}
      */
     adminChangeLockupParameters(
-        newLockupDuration: bigint,
+        newLockupDurationBlocks: bigint,
         newMaxSlashingFeePercent: bigint,
         newBlocksPerOnePercentSlashingFeeReduction: bigint,
     ): Promise<AdminChangeLockupParameters>;

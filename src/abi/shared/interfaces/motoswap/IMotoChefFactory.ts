@@ -5,25 +5,30 @@ import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
 export type TokenDeployedEvent = {
     readonly deployer: Address;
-    readonly token: Address;
+    readonly tokenAddress: Address;
     readonly name: string;
     readonly symbol: string;
 };
 
 export type MotoChefDeployedEvent = {
     readonly deployer: Address;
-    readonly token: Address;
-    readonly motoChef: Address;
+    readonly tokenAddress: Address;
+    readonly motoChefAddress: Address;
     readonly userBTCFeePercentage: bigint;
     readonly farmName: string;
 };
 
+export type FeeRecipientsUpdatedEvent = {
+    readonly motoSwap: string;
+    readonly opnet: string;
+};
+
 export type FactoryPausedEvent = {
-    readonly by: Address;
+    readonly pausedBy: Address;
 };
 
 export type FactoryUnpausedEvent = {
-    readonly by: Address;
+    readonly unpausedBy: Address;
 };
 
 export type InitializeFactory = CallResult<{ success: boolean }, []>;

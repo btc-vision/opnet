@@ -5,17 +5,17 @@ import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
 
 export type TokenDeployedEvent = {
     readonly deployer: Address;
-    readonly token: Address;
+    readonly tokenAddress: Address;
     readonly name: string;
     readonly symbol: string;
 };
 
 export type FactoryPausedEvent = {
-    readonly by: Address;
+    readonly pausedBy: Address;
 };
 
 export type FactoryUnpausedEvent = {
-    readonly by: Address;
+    readonly unpausedBy: Address;
 };
 
 export type Owner = CallResult<{ owner: Address }, []>;
