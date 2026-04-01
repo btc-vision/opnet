@@ -262,6 +262,21 @@ const MotoChefEvents: BitcoinInterfaceAbi = [
 
 export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
     {
+        name: 'update',
+        type: BitcoinAbiTypes.Function,
+        inputs: [
+            {
+                name: 'sourceAddress',
+                type: ABIDataTypes.ADDRESS,
+            },
+            {
+                name: 'updateCalldata',
+                type: ABIDataTypes.BYTES,
+            },
+        ],
+        outputs: [],
+    },
+    {
         name: 'initialize',
         type: BitcoinAbiTypes.Function,
         inputs: [
@@ -274,7 +289,7 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
             {
-                name: 'devAddress',
+                name: 'premineRecipient',
                 type: ABIDataTypes.ADDRESS,
             },
             {
@@ -313,18 +328,6 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
             {
                 name: 'totalAllocPoint',
                 type: ABIDataTypes.UINT256,
-            },
-        ],
-    },
-    {
-        name: 'devAddress',
-        type: BitcoinAbiTypes.Function,
-        constant: true,
-        inputs: [],
-        outputs: [
-            {
-                name: 'devAddress',
-                type: ABIDataTypes.ADDRESS,
             },
         ],
     },
@@ -610,6 +613,10 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
                 name: 'allocPoint',
                 type: ABIDataTypes.UINT256,
             },
+            {
+                name: 'withUpdate',
+                type: ABIDataTypes.UINT8,
+            },
         ],
         outputs: [],
     },
@@ -796,17 +803,6 @@ export const MOTOCHEF_ABI: BitcoinInterfaceAbi = [
             {
                 name: 'bonusMultiplier',
                 type: ABIDataTypes.UINT256,
-            },
-        ],
-        outputs: [],
-    },
-    {
-        name: 'setDev',
-        type: BitcoinAbiTypes.Function,
-        inputs: [
-            {
-                name: 'devAddress',
-                type: ABIDataTypes.ADDRESS,
             },
         ],
         outputs: [],

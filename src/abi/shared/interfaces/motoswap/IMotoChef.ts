@@ -111,6 +111,11 @@ export type EmergencyWithdrawnEvent = {
 // ------------------------------------------------------------------
 
 /**
+ * @description Represents the result of the update function call.
+ */
+export type Update = CallResult<{}, OPNetEvent<never>[]>;
+
+/**
  * @description Represents the result of the initialize function call.
  */
 export type Initialize = CallResult<{}, OPNetEvent<PoolAddedEvent | InitializedEvent>[]>;
@@ -121,16 +126,6 @@ export type Initialize = CallResult<{}, OPNetEvent<PoolAddedEvent | InitializedE
 export type TotalAllocPoint = CallResult<
     {
         totalAllocPoint: bigint;
-    },
-    OPNetEvent<never>[]
->;
-
-/**
- * @description Represents the result of the devAddress function call.
- */
-export type DevAddress = CallResult<
-    {
-        devAddress: Address;
     },
     OPNetEvent<never>[]
 >;
@@ -367,28 +362,25 @@ export type SetBonusEndBlock = CallResult<{}, OPNetEvent<never>[]>;
 export type SetBonusMultiplier = CallResult<{}, OPNetEvent<never>[]>;
 
 /**
- * @description Represents the result of the setDev function call.
- */
-export type SetDev = CallResult<{}, OPNetEvent<never>[]>;
-
-/**
  * @description Represents the result of the onOP20Received function call.
  */
 export type OnOP20Received = CallResult<
     {
         selector: Uint8Array;
     },
-    []
+    OPNetEvent<never>[]
 >;
 
 // ------------------------------------------------------------------
 // IMotoChef
 // ------------------------------------------------------------------
 export interface IMotoChef extends IOwnable {
+    update(sourceAddress: Address, updateCalldata: Uint8Array): Promise<Update>;
+
     initialize(
         motoAddress: Address,
         premineAmount: bigint,
-        devAddress: Address,
+        premineRecipient: Address,
         motoPerBlock: bigint,
         bonusEndBlock: bigint,
         bonusMultiplier: bigint,
@@ -398,8 +390,6 @@ export interface IMotoChef extends IOwnable {
     ): Promise<Initialize>;
 
     totalAllocPoint(): Promise<TotalAllocPoint>;
-
-    devAddress(): Promise<DevAddress>;
 
     getMotoPerBlock(): Promise<GetMotoPerBlock>;
 
@@ -437,7 +427,7 @@ export interface IMotoChef extends IOwnable {
 
     add(allocPoint: bigint, lpToken: Address): Promise<Add>;
 
-    set(poolId: number, allocPoint: bigint): Promise<Set>;
+    set(poolId: number, allocPoint: bigint, withUpdate: number): Promise<Set>;
 
     updatePool(poolId: number): Promise<UpdatePool>;
 
@@ -453,18 +443,16 @@ export interface IMotoChef extends IOwnable {
 
     emergencyWithdraw(poolId: number, to: Address): Promise<EmergencyWithdraw>;
 
-    setMotoPerBlock(motoPerBlock: bigint): Promise<SetMotoPerBlock>;
-
-    setBonusEndBlock(bonusEndBlock: bigint): Promise<SetBonusEndBlock>;
-
-    setBonusMultiplier(bonusMultiplier: bigint): Promise<SetBonusMultiplier>;
-
-    setDev(devAddress: Address): Promise<SetDev>;
-
     onOP20Received(
         operator: Address,
         from: Address,
         amount: bigint,
         data: Uint8Array,
     ): Promise<OnOP20Received>;
+
+    setMotoPerBlock(motoPerBlock: bigint): Promise<SetMotoPerBlock>;
+
+    setBonusEndBlock(bonusEndBlock: bigint): Promise<SetBonusEndBlock>;
+
+    setBonusMultiplier(bonusMultiplier: bigint): Promise<SetBonusMultiplier>;
 }
