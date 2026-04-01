@@ -104,7 +104,7 @@
         "@babel/preset-env": "^7.29.2",
         "@babel/preset-typescript": "^7.28.5",
         "@eslint/js": "^10.0.1",
-        "@microsoft/api-extractor": "7.57.7",
+        "@microsoft/api-extractor": "7.57.8",
         "@types/node": "^25.5.0",
         "@vitest/browser": "^4.1.1",
         "@vitest/browser-playwright": "^4.1.1",
