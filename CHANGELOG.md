@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.8.14-rc.0] - 2026-04-03
+
+### Other Changes
+
+- ⬆️(deps-dev): Bump vite-plugin-node-polyfills from 0.25.0 to 0.26.0 in the dev-deps group across 1 directory ([#152](https://github.com/btc-vision/opnet/pull/152)) by @dependabot[bot]
+- ⬆️(deps-dev): Bump typescript from 5.9.3 to 6.0.2 ([#151](https://github.com/btc-vision/opnet/pull/151)) by @dependabot[bot]
+
+
+
+
 ## [v1.8.12] - 2026-03-31
 
 - No changes
