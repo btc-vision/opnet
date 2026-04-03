@@ -130,7 +130,12 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
 
     {
         name: 'skim',
-        inputs: [],
+        inputs: [
+            {
+                name: 'to',
+                type: ABIDataTypes.ADDRESS,
+            },
+        ],
         outputs: [],
         type: BitcoinAbiTypes.Function,
     },
@@ -253,11 +258,16 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
     // Overwrites
     {
         name: 'mint',
-        inputs: [],
-        outputs: [
+        inputs: [
             {
                 name: 'to',
                 type: ABIDataTypes.ADDRESS,
+            },
+        ],
+        outputs: [
+            {
+                name: 'liquidity',
+                type: ABIDataTypes.UINT256,
             },
         ],
         type: BitcoinAbiTypes.Function,
@@ -280,6 +290,18 @@ export const MotoswapPoolAbi: BitcoinInterfaceAbi = [
                 type: ABIDataTypes.UINT256,
             },
         ],
+        type: BitcoinAbiTypes.Function,
+    },
+
+    {
+        name: 'onOP20Received',
+        inputs: [
+            { name: 'operator', type: ABIDataTypes.ADDRESS },
+            { name: 'from', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+            { name: 'data', type: ABIDataTypes.BYTES },
+        ],
+        outputs: [{ name: 'selector', type: ABIDataTypes.BYTES4 }],
         type: BitcoinAbiTypes.Function,
     },
 

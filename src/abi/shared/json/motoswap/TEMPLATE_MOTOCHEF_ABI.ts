@@ -5,8 +5,8 @@ import { MOTOCHEF_ABI } from './MOTOCHEF_ABI.js';
 
 const FUNCTIONS_TO_OVERRIDE = new Set([
     'initialize',
-    'stakeBtc',
-    'unstakeBtc',
+    'stakeBTC',
+    'unstakeBTC',
     'harvest',
     'withdrawAndHarvest',
 ]);

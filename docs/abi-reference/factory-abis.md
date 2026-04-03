@@ -136,11 +136,11 @@ The `getDeploymentInfo` return type includes an additional `motoChef: Address` f
 
 | Event | Fields |
 |-------|--------|
-| `TokenDeployed` | `deployer: Address, token: Address, name: string, symbol: string` |
-| `MotoChefDeployed` | `deployer: Address, token: Address, motoChef: Address, userBTCFeePercentage: bigint, farmName: string` |
-| `FeeRecipientsUpdated` | `motoSwapFeeRecipient: string, opnetFeeRecipient: string` |
-| `FactoryPaused` | `by: Address` |
-| `FactoryUnpaused` | `by: Address` |
+| `TokenDeployed` | `deployer: Address, tokenAddress: Address, name: string, symbol: string` |
+| `MotoChefDeployed` | `deployer: Address, tokenAddress: Address, motoChefAddress: Address, userBTCFeePercentage: bigint, farmName: string` |
+| `FeeRecipientsUpdated` | `motoSwap: string, opnet: string` |
+| `FactoryPaused` | `pausedBy: Address` |
+| `FactoryUnpaused` | `unpausedBy: Address` |
 
 ### Example: Deploy MotoChef
 
@@ -301,11 +301,11 @@ Emitted when the factory is paused or unpaused.
 
 ```typescript
 type FactoryPausedEvent = {
-    readonly by: Address;
+    readonly pausedBy: Address;
 };
 
 type FactoryUnpausedEvent = {
-    readonly by: Address;
+    readonly unpausedBy: Address;
 };
 ```
 
@@ -315,8 +315,8 @@ Emitted when fee recipients are updated (MotoChef Factory only).
 
 ```typescript
 type FeeRecipientsUpdatedEvent = {
-    readonly motoSwapFeeRecipient: string;
-    readonly opnetFeeRecipient: string;
+    readonly motoSwap: string;
+    readonly opnet: string;
 };
 ```
 
