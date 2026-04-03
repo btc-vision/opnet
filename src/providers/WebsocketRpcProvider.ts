@@ -9,19 +9,12 @@ import { JSONRpcMethods } from './interfaces/JSONRpcMethods.js';
 import { JsonRpcCallResult, JsonRpcResult } from './interfaces/JSONRpcResult.js';
 import { METHOD_MAPPINGS } from './websocket/MethodMapping.js';
 import { OPNetError } from './websocket/OPNetError.js';
-import {
-    clearProtobufCache,
-    getProtobufType,
-    loadProtobufSchema,
-} from './websocket/ProtobufLoader.js';
+import { clearProtobufCache, getProtobufType, loadProtobufSchema, } from './websocket/ProtobufLoader.js';
 import { ConnectionState, getConnectionStateName } from './websocket/types/ConnectionState.js';
 import { SubscriptionType } from './websocket/types/SubscriptionType.js';
 import { DEFAULT_CONFIG, WebSocketClientConfig } from './websocket/types/WebSocketClientConfig.js';
 import { InternalError, WebSocketErrorCode } from './websocket/types/WebSocketErrorCodes.js';
-import {
-    WebSocketRequestOpcode,
-    WebSocketResponseOpcode,
-} from './websocket/types/WebSocketOpcodes.js';
+import { WebSocketRequestOpcode, WebSocketResponseOpcode, } from './websocket/types/WebSocketOpcodes.js';
 import {
     BlockNotification,
     EpochNotification,
@@ -914,11 +907,12 @@ export class WebSocketRpcProvider extends AbstractRpcProvider {
         });
     }
 
-    private send(data: Uint8Array): void {
+    private send(data: Uint8Array | Uint8Array<ArrayBuffer>): void {
         if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
             throw new Error('WebSocket not connected');
         }
-        this.socket.send(data);
+
+        this.socket.send(data as BufferSource);
     }
 
     private handleMessage(data: ArrayBuffer): void {

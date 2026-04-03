@@ -405,3 +405,4 @@ build
 browser
 cjs
 .yarn
+tsconfig.build.tsbuildinfo
