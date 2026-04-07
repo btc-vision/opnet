@@ -73,7 +73,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         name: 'balanceOf',
         type: BitcoinAbiTypes.Function,
         constant: true,
-        inputs: [{ name: 'address', type: ABIDataTypes.ADDRESS }],
+        inputs: [{ name: 'user', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'balance', type: ABIDataTypes.UINT256 }],
     },
     {
@@ -94,7 +94,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         name: 'lastInteractedBlock',
         type: BitcoinAbiTypes.Function,
         constant: true,
-        inputs: [{ name: 'address', type: ABIDataTypes.ADDRESS }],
+        inputs: [{ name: 'user', type: ABIDataTypes.ADDRESS }],
         outputs: [{ name: 'lastInteractedBlock', type: ABIDataTypes.UINT256 }],
     },
     {
@@ -112,8 +112,8 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
         constant: false,
         inputs: [
-            { name: 'user', type: ABIDataTypes.ADDRESS },
-            { name: 'rewardToken', type: ABIDataTypes.ADDRESS },
+            { name: 'userAddress', type: ABIDataTypes.ADDRESS },
+            { name: 'tokenAddress', type: ABIDataTypes.ADDRESS },
         ],
         outputs: [{ name: 'rewardBalance', type: ABIDataTypes.UINT256 }],
     },
@@ -133,17 +133,17 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
         constant: true,
         inputs: [
-            { name: 'user', type: ABIDataTypes.ADDRESS },
-            { name: 'amount', type: ABIDataTypes.UINT256 },
+            { name: 'address', type: ABIDataTypes.ADDRESS },
+            { name: 'tokenBalance', type: ABIDataTypes.UINT256 },
         ],
-        outputs: [{ name: 'rewardDebt', type: ABIDataTypes.UINT256 }],
+        outputs: [{ name: 'fee', type: ABIDataTypes.UINT256 }],
     },
     {
         name: 'enabledRewardTokens',
         type: BitcoinAbiTypes.Function,
         constant: false,
         inputs: [],
-        outputs: [{ name: 'enabledRewardTokens', type: ABIDataTypes.ARRAY_OF_ADDRESSES }],
+        outputs: [{ name: 'tokens', type: ABIDataTypes.ARRAY_OF_ADDRESSES }],
     },
     {
         name: 'stake',
@@ -167,14 +167,14 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [],
-        outputs: [],
+        outputs: [{ name: 'rewards', type: ABIDataTypes.ADDRESS_UINT256_TUPLE }],
     },
     {
         name: 'adminAddRewardToken',
         type: BitcoinAbiTypes.Function,
         constant: false,
         payable: false,
-        inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
+        inputs: [{ name: 'tokenToAdd', type: ABIDataTypes.ADDRESS }],
         outputs: [],
     },
     {
@@ -182,7 +182,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
         constant: false,
         payable: false,
-        inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
+        inputs: [{ name: 'tokenToRemove', type: ABIDataTypes.ADDRESS }],
         outputs: [],
     },
     {
@@ -190,7 +190,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         type: BitcoinAbiTypes.Function,
         constant: false,
         payable: false,
-        inputs: [{ name: 'token', type: ABIDataTypes.ADDRESS }],
+        inputs: [{ name: 'motoAddress', type: ABIDataTypes.ADDRESS }],
         outputs: [],
     },
     {
@@ -199,7 +199,7 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         constant: false,
         payable: false,
         inputs: [
-            { name: 'newLockupDuration', type: ABIDataTypes.UINT256 },
+            { name: 'newLockupDurationBlocks', type: ABIDataTypes.UINT256 },
             { name: 'newMaxSlashingFeePercent', type: ABIDataTypes.UINT256 },
             { name: 'newBlocksPerOnePercentSlashingFeeReduction', type: ABIDataTypes.UINT256 },
         ],
@@ -212,6 +212,19 @@ export const MOTOSWAP_STAKING_ABI: BitcoinInterfaceAbi = [
         payable: false,
         inputs: [],
         outputs: [],
+    },
+
+    {
+        name: 'onOP20Received',
+        type: BitcoinAbiTypes.Function,
+        constant: true,
+        inputs: [
+            { name: 'operator', type: ABIDataTypes.ADDRESS },
+            { name: 'from', type: ABIDataTypes.ADDRESS },
+            { name: 'amount', type: ABIDataTypes.UINT256 },
+            { name: 'data', type: ABIDataTypes.BYTES },
+        ],
+        outputs: [{ name: 'selector', type: ABIDataTypes.BYTES4 }],
     },
 
     // Ownable Reentrancy Guard

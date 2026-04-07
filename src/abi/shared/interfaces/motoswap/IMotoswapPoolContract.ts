@@ -74,8 +74,9 @@ export interface IMotoswapPoolContract extends Omit<IOP20Contract, 'burn' | 'min
 
     /**
      * Skim
+     * @param {Address} to The address to send excess tokens to
      */
-    skim(): Promise<CallResult>;
+    skim(to: Address): Promise<CallResult>;
 
     /**
      * kLast
