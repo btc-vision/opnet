@@ -1,4 +1,4 @@
-import { Address } from '@btc-vision/transaction';
+import { Address, AddressMap } from '@btc-vision/transaction';
 import { CallResult } from '../../../../contracts/CallResult.js';
 import { BalanceOf, TotalSupply } from '../opnet/IOP20Contract.js';
 import { IOP_NETContract } from '../opnet/IOP_NETContract.js';
@@ -85,7 +85,7 @@ export type Stake = CallResult;
 export type Unstake = CallResult;
 
 export type ClaimRewards = CallResult<{
-    rewards: Map<Address, bigint>;
+    rewards: AddressMap<bigint>;
 }>;
 
 export type AdminAddRewardToken = CallResult;
