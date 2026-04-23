@@ -10,7 +10,15 @@
         "sourceMap": false,
         "moduleDetection": "force",
         "experimentalDecorators": true,
-        "lib": ["es6", "es2020", "es2021", "es2022", "esnext", "webworker", "dom", "scripthost"],
+        "lib": [
+            "ESNext",
+            "DOM",
+            "DOM.Iterable",
+            "DOM.AsyncIterable",
+            "WebWorker",
+            "WebWorker.AsyncIterable",
+            "WebWorker.ImportScripts"
+        ],
         "strict": true,
         "strictNullChecks": true,
         "strictFunctionTypes": true,
