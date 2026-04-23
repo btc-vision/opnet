@@ -443,16 +443,16 @@ export interface IMotoChef extends IOwnable {
 
     emergencyWithdraw(poolId: number, to: Address): Promise<EmergencyWithdraw>;
 
+    setMotoPerBlock(motoPerBlock: bigint): Promise<SetMotoPerBlock>;
+
+    setBonusEndBlock(bonusEndBlock: bigint): Promise<SetBonusEndBlock>;
+
+    setBonusMultiplier(bonusMultiplier: bigint): Promise<SetBonusMultiplier>;
+
     onOP20Received(
         operator: Address,
         from: Address,
         amount: bigint,
         data: Uint8Array,
     ): Promise<OnOP20Received>;
-
-    setMotoPerBlock(motoPerBlock: bigint): Promise<SetMotoPerBlock>;
-
-    setBonusEndBlock(bonusEndBlock: bigint): Promise<SetBonusEndBlock>;
-
-    setBonusMultiplier(bonusMultiplier: bigint): Promise<SetBonusMultiplier>;
 }

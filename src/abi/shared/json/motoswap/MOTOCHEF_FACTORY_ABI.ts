@@ -8,7 +8,7 @@ export const MotoChefFactoryEvents: BitcoinInterfaceAbi = [
         name: 'TokenDeployed',
         values: [
             { name: 'deployer', type: ABIDataTypes.ADDRESS },
-            { name: 'token', type: ABIDataTypes.ADDRESS },
+            { name: 'tokenAddress', type: ABIDataTypes.ADDRESS },
             { name: 'name', type: ABIDataTypes.STRING },
             { name: 'symbol', type: ABIDataTypes.STRING },
         ],
@@ -18,8 +18,8 @@ export const MotoChefFactoryEvents: BitcoinInterfaceAbi = [
         name: 'MotoChefDeployed',
         values: [
             { name: 'deployer', type: ABIDataTypes.ADDRESS },
-            { name: 'token', type: ABIDataTypes.ADDRESS },
-            { name: 'motoChef', type: ABIDataTypes.ADDRESS },
+            { name: 'tokenAddress', type: ABIDataTypes.ADDRESS },
+            { name: 'motoChefAddress', type: ABIDataTypes.ADDRESS },
             { name: 'userBTCFeePercentage', type: ABIDataTypes.UINT256 },
             { name: 'farmName', type: ABIDataTypes.STRING },
         ],
@@ -28,19 +28,19 @@ export const MotoChefFactoryEvents: BitcoinInterfaceAbi = [
     {
         name: 'FeeRecipientsUpdated',
         values: [
-            { name: 'motoSwapFeeRecipient', type: ABIDataTypes.STRING },
-            { name: 'opnetFeeRecipient', type: ABIDataTypes.STRING },
+            { name: 'motoSwap', type: ABIDataTypes.STRING },
+            { name: 'opnet', type: ABIDataTypes.STRING },
         ],
         type: BitcoinAbiTypes.Event,
     },
     {
         name: 'FactoryPaused',
-        values: [{ name: 'by', type: ABIDataTypes.ADDRESS }],
+        values: [{ name: 'pausedBy', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Event,
     },
     {
         name: 'FactoryUnpaused',
-        values: [{ name: 'by', type: ABIDataTypes.ADDRESS }],
+        values: [{ name: 'unpausedBy', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Event,
     },
 ];

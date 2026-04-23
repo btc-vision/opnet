@@ -8,7 +8,7 @@ export const OP20FactoryEvents: BitcoinInterfaceAbi = [
         name: 'TokenDeployed',
         values: [
             { name: 'deployer', type: ABIDataTypes.ADDRESS },
-            { name: 'token', type: ABIDataTypes.ADDRESS },
+            { name: 'tokenAddress', type: ABIDataTypes.ADDRESS },
             { name: 'name', type: ABIDataTypes.STRING },
             { name: 'symbol', type: ABIDataTypes.STRING },
         ],
@@ -16,12 +16,12 @@ export const OP20FactoryEvents: BitcoinInterfaceAbi = [
     },
     {
         name: 'FactoryPaused',
-        values: [{ name: 'by', type: ABIDataTypes.ADDRESS }],
+        values: [{ name: 'pausedBy', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Event,
     },
     {
         name: 'FactoryUnpaused',
-        values: [{ name: 'by', type: ABIDataTypes.ADDRESS }],
+        values: [{ name: 'unpausedBy', type: ABIDataTypes.ADDRESS }],
         type: BitcoinAbiTypes.Event,
     },
 ];
