@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.8.14-rc.1] - 2026-04-24
+
+### Other Changes
+
+- Update moto ABIs ([#153](https://github.com/btc-vision/opnet/pull/153)) by @icedevera
+
+
+
+
 ## [v1.8.14-rc.0] - 2026-04-03
 
 ### Other Changes
