@@ -13,6 +13,7 @@ import {
     RawChallenge,
     SupportedTransactionVersion,
     TransactionFactory,
+    Web3Provider,
 } from '@btc-vision/transaction';
 import { UTXO } from '../bitcoin/UTXOs.js';
 import { BitcoinFees } from '../block/BlockGasParameters.js';
@@ -65,6 +66,17 @@ export interface TransactionParameters {
     readonly challenge?: ChallengeSolution;
 
     readonly subtractExtraUTXOFromAmountRequired?: boolean;
+
+    /**
+     * Optional browser wallet provider to route signing through a specific wallet
+     * (e.g. when multiple OPNet-compatible wallets are installed).
+     * When omitted, TransactionFactory falls back to auto-detecting
+     * `window.opnet.web3` — preserving current behavior.
+     *
+     * Requires @btc-vision/transaction >= 1.8.6 with the `walletProvider` param
+     * on `signInteraction` (see btc-vision/transaction#128).
+     */
+    readonly walletProvider?: Web3Provider;
 }
 
 export interface UTXOTrackingInfo {
@@ -431,7 +443,10 @@ export class CallResult<
                   }
                 : sharedParams;
 
-        const transaction = await factory.signInteraction(params);
+        const transaction = await factory.signInteraction(
+            params,
+            interactionParams.walletProvider,
+        );
 
         const csvUTXOs = UTXOs.filter((u) => u.isCSV === true);
         const p2wdaUTXOs = UTXOs.filter((u) => u.witnessScript && u.isCSV !== true);
