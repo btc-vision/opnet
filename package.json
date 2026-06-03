@@ -136,7 +136,7 @@
         "@btc-vision/bitcoin-rpc": "^1.1.2",
         "@btc-vision/ecpair": "^4.0.5",
         "@btc-vision/logger": "^1.0.8",
-        "@btc-vision/transaction": "^1.8.7-beta.0",
+        "@btc-vision/transaction": "^1.8.7",
         "@noble/hashes": "^2.2.0",
         "bignumber.js": "^11.0.0",
         "long": "^5.3.2",
