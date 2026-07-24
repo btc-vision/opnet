@@ -1,7 +1,7 @@
 {
     "name": "opnet",
     "type": "module",
-    "version": "1.8.14-rc.1",
+    "version": "1.9.0",
     "author": "OP_NET",
     "description": "The perfect library for building Bitcoin-based applications.",
     "engines": {
@@ -100,27 +100,27 @@
         "prebuild": "npm run check:circular"
     },
     "devDependencies": {
-        "@babel/core": "^7.29.0",
-        "@babel/preset-env": "^7.29.2",
-        "@babel/preset-typescript": "^7.28.5",
+        "@babel/core": "^8.0.1",
+        "@babel/preset-env": "^8.0.2",
+        "@babel/preset-typescript": "^8.0.1",
         "@eslint/js": "^10.0.1",
-        "@microsoft/api-extractor": "7.58.7",
-        "@types/node": "^25.6.0",
-        "@vitest/browser": "^4.1.5",
-        "@vitest/browser-playwright": "^4.1.5",
-        "@vitest/ui": "^4.1.5",
-        "esbuild": "^0.28.0",
-        "eslint": "^10.2.1",
+        "@microsoft/api-extractor": "7.58.12",
+        "@types/node": "^26.1.1",
+        "@vitest/browser": "^4.1.10",
+        "@vitest/browser-playwright": "^4.1.10",
+        "@vitest/ui": "^4.1.10",
+        "esbuild": "^0.28.1",
+        "eslint": "^10.7.0",
         "madge": "^8.0.0",
-        "playwright": "^1.59.1",
+        "playwright": "^1.61.1",
         "stream-browserify": "^3.0.0",
-        "typedoc": "^0.28.19",
+        "typedoc": "^0.28.20",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.59.0",
-        "vite": "^8.0.10",
-        "vite-plugin-dts": "4.5.4",
+        "typescript-eslint": "^8.65.0",
+        "vite": "^8.1.5",
+        "vite-plugin-dts": "5.0.3",
         "vite-plugin-node-polyfills": "^0.28.0",
-        "vitest": "^4.1.5"
+        "vitest": "^4.1.10"
     },
     "peerDependencies": {
         "react-native-worklets": ">=0.7.0"
@@ -136,14 +136,14 @@
         "@btc-vision/bitcoin-rpc": "^1.1.2",
         "@btc-vision/ecpair": "^4.0.5",
         "@btc-vision/logger": "^1.0.8",
-        "@btc-vision/transaction": "^1.8.7",
+        "@btc-vision/transaction": "^1.8.9",
         "@noble/hashes": "^2.2.0",
-        "bignumber.js": "^11.0.0",
+        "bignumber.js": "^11.1.5",
         "long": "^5.3.2",
-        "p-limit": "^7.3.0",
-        "pako": "^2.1.0",
-        "protobufjs": "^8.0.1",
-        "undici": "^8.1.0"
+        "p-limit": "^7.3.1",
+        "pako": "^3.0.1",
+        "protobufjs": "^8.7.1",
+        "undici": "^8.8.0"
     },
     "overrides": {
         "madge": {
