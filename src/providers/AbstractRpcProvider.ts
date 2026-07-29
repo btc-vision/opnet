@@ -932,6 +932,44 @@ export abstract class AbstractRpcProvider {
     }
 
     /**
+     * @description Whether an ML-DSA public key is already linked on-chain to the given key.
+     *
+     * Use this to decide whether a link request must reveal the ML-DSA public key:
+     * a FIRST link has to reveal, a subsequent one does not and can skip the
+     * ~3.7 KB of on-chain data (ML-DSA-44: 1312-byte key + 2420-byte signature).
+     *
+     * Do NOT infer this from the presence of `mldsaHashedPublicKey`. When the node
+     * is queried with a 32-byte key it echoes that key back as the identity whether
+     * or not a link exists, so testing for it reports a false positive on a first
+     * link. The transaction is then built without the reveal and the node rejects
+     * it with "A new ML-DSA link must reveal the public key and a valid ML-DSA
+     * signature."
+     *
+     * Fails safe: on an unreachable node, a lookup error, or a node too old to
+     * report linkage, this returns false so the caller reveals. Revealing when it
+     * was unnecessary only costs bytes; not revealing when it was required gets
+     * the transaction rejected.
+     *
+     * @param {string | Address} address The address or public key to check.
+     * @returns {Promise<boolean>} True only when a link is known to exist.
+     */
+    public async isMLDSALinked(address: string | Address): Promise<boolean> {
+        try {
+            const key = address.toString();
+            const result = await this.getPublicKeysInfoRaw(key);
+            const info = result[key] ?? result[key.startsWith('0x') ? key.slice(2) : `0x${key}`];
+
+            if (!info || 'error' in info) {
+                return false;
+            }
+
+            return info.mldsaLinked === true;
+        } catch {
+            return false;
+        }
+    }
+
+    /**
      * Get the public key information and transform to Address objects.
      * @description Fetches public key information from the API and converts results to Address instances
      * containing both ML-DSA (quantum-resistant) and classical key data when available.
